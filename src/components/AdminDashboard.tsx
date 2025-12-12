@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Clock, DollarSign, Users, ArrowLeft, Zap } from "lucide-react";
+import { CheckCircle, XCircle, Clock, DollarSign, Users, ArrowLeft, Zap, Crown } from "lucide-react";
 import { Booking } from "@/types/booking";
 import { ARENA_CONFIG } from "@/config/arena";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,11 @@ interface AdminDashboardProps {
   bookings: Booking[];
   onApprove: (bookingId: string) => void;
   onReject: (bookingId: string) => void;
+  onToggleMensalista: (bookingId: string) => void;
   onBack: () => void;
 }
 
-export function AdminDashboard({ bookings, onApprove, onReject, onBack }: AdminDashboardProps) {
+export function AdminDashboard({ bookings, onApprove, onReject, onToggleMensalista, onBack }: AdminDashboardProps) {
   const pendingBookings = bookings.filter(b => b.status === "pending_approval");
   const confirmedBookings = bookings.filter(b => b.status === "confirmed" || b.status === "approved");
 
@@ -127,15 +128,21 @@ export function AdminDashboard({ bookings, onApprove, onReject, onBack }: AdminD
               {confirmedBookings.map((booking) => (
                 <div
                   key={booking.id}
-                  className="p-4 rounded-xl bg-card border border-primary/30 space-y-3"
+                  className={cn(
+                    "p-4 rounded-xl bg-card space-y-3",
+                    booking.isMensalista 
+                      ? "border-2 border-amber-500/50 bg-gradient-to-r from-amber-500/5 to-transparent" 
+                      : "border border-primary/30"
+                  )}
                 >
                   <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-bold text-foreground">{booking.bookedBy}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(booking.date)} às {booking.time}
-                      </p>
-                      <p className="text-sm text-primary">{booking.fieldName}</p>
+                    <div className="flex items-center gap-2">
+                      {booking.isMensalista && (
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20">
+                          <Crown className="w-3 h-3 text-amber-500" />
+                          <span className="text-xs font-bold text-amber-500">Mensalista</span>
+                        </div>
+                      )}
                     </div>
                     <div className={cn(
                       "flex items-center gap-1 px-2 py-1 rounded-full",
@@ -154,11 +161,35 @@ export function AdminDashboard({ bookings, onApprove, onReject, onBack }: AdminD
                       )}
                     </div>
                   </div>
+
+                  <div>
+                    <p className="font-bold text-foreground">{booking.bookedBy}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(booking.date)} às {booking.time}
+                    </p>
+                    <p className="text-sm text-primary">{booking.fieldName}</p>
+                  </div>
                   
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Users className="w-4 h-4" />
                     <span>{booking.players.length}/{booking.totalPlayers} jogadores</span>
                   </div>
+
+                  {/* Mensalista Toggle */}
+                  <Button
+                    onClick={() => onToggleMensalista(booking.id)}
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "w-full gap-2 btn-press",
+                      booking.isMensalista 
+                        ? "border-amber-500/50 text-amber-500 hover:bg-amber-500/10" 
+                        : "border-border text-muted-foreground hover:text-amber-500 hover:border-amber-500/50"
+                    )}
+                  >
+                    <Crown className="w-4 h-4" />
+                    {booking.isMensalista ? "Remover Mensalista" : "Tornar Mensalista (Fixo)"}
+                  </Button>
                 </div>
               ))}
             </div>

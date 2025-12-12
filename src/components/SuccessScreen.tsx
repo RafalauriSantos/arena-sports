@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { CheckCircle, Copy, Users, Shirt, Plus, ArrowLeft, Share2 } from "lucide-react";
+import { CheckCircle, Copy, Users, Shirt, Plus, ArrowLeft, Share2, MessageCircle } from "lucide-react";
 import { Booking } from "@/types/booking";
+import { ARENA_CONFIG } from "@/config/arena";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,20 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
       title: "Link copiado!",
       description: "Compartilhe com seu time",
     });
+  };
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(
+      `🎉 *Reserva Confirmada!*\n\n` +
+      `📍 ${ARENA_CONFIG.name}\n` +
+      `⚽ ${booking.fieldName}\n` +
+      `📅 ${displayDate}\n` +
+      `🕐 ${booking.time}\n` +
+      `👤 Responsável: ${booking.bookedBy}\n` +
+      `💳 Pagamento: ${booking.paymentType === "pix" ? "Pix (Confirmado)" : "No Local"}\n\n` +
+      `Segue comprovante da reserva!`
+    );
+    window.open(`https://wa.me/${ARENA_CONFIG.whatsapp}?text=${message}`, "_blank");
   };
 
   const handleAddPlayer = () => {
@@ -104,10 +119,20 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
           </div>
         </div>
 
+        {/* WhatsApp Button */}
+        <Button
+          onClick={handleWhatsApp}
+          className="w-full h-14 gap-3 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold btn-press"
+        >
+          <MessageCircle className="w-5 h-5" />
+          Enviar Comprovante no WhatsApp do Dono
+        </Button>
+
         {/* Share Button */}
         <Button
           onClick={handleCopyLink}
-          className="w-full h-14 gap-3 bg-secondary hover:bg-secondary/80 text-foreground font-semibold btn-press"
+          variant="outline"
+          className="w-full h-12 gap-3 border-border text-foreground font-medium btn-press"
         >
           <Share2 className="w-5 h-5" />
           Copiar Link do Jogo
