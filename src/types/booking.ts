@@ -26,4 +26,5 @@ export interface Booking {
   pricePerPlayer: number;
   totalPlayers: number;
   createdAt: string;
+  isMensalista?: boolean;
 }

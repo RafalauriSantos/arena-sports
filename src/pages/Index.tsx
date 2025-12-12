@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar } from "lucide-react";
 import { Header } from "@/components/Header";
 import { FieldSelector } from "@/components/FieldSelector";
+import { DateStrip } from "@/components/DateStrip";
 import { DateSection } from "@/components/DateSection";
 import { PaymentDrawer } from "@/components/PaymentDrawer";
 import { SuccessScreen } from "@/components/SuccessScreen";
@@ -11,11 +15,7 @@ import { FieldId } from "@/config/arena";
 import { ARENA_CONFIG } from "@/config/arena";
 import { 
   initialTimeSlots, 
-  initialBookings, 
-  todayStr, 
-  tomorrowStr,
-  todayDisplay,
-  tomorrowDisplay
+  initialBookings
 } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,6 +24,7 @@ type View = "player" | "admin" | "success";
 const Index = () => {
   const [activeView, setActiveView] = useState<View>("player");
   const [selectedField, setSelectedField] = useState<FieldId>("principal");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
@@ -31,16 +32,21 @@ const Index = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { toast } = useToast();
 
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+  
   const filteredSlots = useMemo(() => {
-    return timeSlots.filter(slot => slot.fieldId === selectedField);
-  }, [timeSlots, selectedField]);
+    return timeSlots.filter(slot => 
+      slot.fieldId === selectedField && slot.date === selectedDateStr
+    );
+  }, [timeSlots, selectedField, selectedDateStr]);
 
-  const todaySlots = filteredSlots.filter(slot => slot.date === todayStr);
-  const tomorrowSlots = filteredSlots.filter(slot => slot.date === tomorrowStr);
+  const displayDate = format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR });
 
   const handleSlotClick = (slot: TimeSlot) => {
-    setSelectedSlot(slot);
-    setIsDrawerOpen(true);
+    if (slot.status === "available") {
+      setSelectedSlot(slot);
+      setIsDrawerOpen(true);
+    }
   };
 
   const handleBookingConfirm = (slot: TimeSlot, paymentType: PaymentType, name: string) => {
@@ -128,6 +134,20 @@ const Index = () => {
     });
   };
 
+  const handleToggleMensalista = (bookingId: string) => {
+    setBookings(prev => prev.map(b => 
+      b.id === bookingId ? { ...b, isMensalista: !b.isMensalista } : b
+    ));
+
+    const booking = bookings.find(b => b.id === bookingId);
+    toast({
+      title: booking?.isMensalista ? "Mensalista removido" : "Mensalista adicionado!",
+      description: booking?.isMensalista 
+        ? `${booking.bookedBy} não é mais mensalista.`
+        : `${booking?.bookedBy} agora é mensalista fixo.`,
+    });
+  };
+
   const handleBackFromSuccess = () => {
     setActiveView("player");
     setCurrentBooking(null);
@@ -152,6 +172,7 @@ const Index = () => {
           bookings={bookings}
           onApprove={handleApproveBooking}
           onReject={handleRejectBooking}
+          onToggleMensalista={handleToggleMensalista}
           onBack={() => setActiveView("player")}
         />
         <BottomNav 
@@ -174,18 +195,34 @@ const Index = () => {
           onFieldChange={setSelectedField}
         />
 
+        {/* Date Strip Navigation */}
+        <DateStrip 
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+        />
+
         {/* Schedule */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <DateSection 
-            title={`Hoje - ${todayDisplay}`}
-            slots={todaySlots}
+            title={displayDate}
+            slots={filteredSlots}
             onSlotClick={handleSlotClick}
           />
-          <DateSection 
-            title={`Amanhã - ${tomorrowDisplay}`}
-            slots={tomorrowSlots}
-            onSlotClick={handleSlotClick}
-          />
+
+          {/* Empty state / Hint */}
+          {filteredSlots.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Nenhum horário disponível para esta data.</p>
+            </div>
+          )}
+
+          {/* Scroll Hint */}
+          {filteredSlots.length > 0 && (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+              <Calendar className="w-4 h-4" />
+              <span>Procurando outra data? Use o calendário no topo 👆</span>
+            </div>
+          )}
         </div>
       </main>
 

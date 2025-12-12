@@ -2,6 +2,7 @@
 export const ARENA_CONFIG = {
   name: "Arena Society",
   subtitle: "Agende seu jogo em 30 segundos",
+  whatsapp: "5511999999999", // WhatsApp do dono (com código do país)
   fields: [
     {
       id: "principal",
