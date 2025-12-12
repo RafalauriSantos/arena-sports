@@ -8,7 +8,7 @@ import { DateStrip } from "@/components/DateStrip";
 import { DateSection } from "@/components/DateSection";
 import { PaymentDrawer } from "@/components/PaymentDrawer";
 import { SuccessScreen } from "@/components/SuccessScreen";
-import { AdminDashboard } from "@/components/AdminDashboard";
+import { AdminDashboardNew } from "@/components/admin/AdminDashboardNew";
 import { BottomNav } from "@/components/BottomNav";
 import { TimeSlot, Booking, PaymentType } from "@/types/booking";
 import { FieldId } from "@/config/arena";
@@ -135,16 +135,52 @@ const Index = () => {
   };
 
   const handleToggleMensalista = (bookingId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    const wasAlreadyMensalista = booking?.isMensalista;
+    
     setBookings(prev => prev.map(b => 
       b.id === bookingId ? { ...b, isMensalista: !b.isMensalista } : b
     ));
 
-    const booking = bookings.find(b => b.id === bookingId);
     toast({
-      title: booking?.isMensalista ? "Mensalista removido" : "Mensalista adicionado!",
-      description: booking?.isMensalista 
-        ? `${booking.bookedBy} não é mais mensalista.`
+      title: wasAlreadyMensalista ? "Mensalista removido" : "Mensalista adicionado!",
+      description: wasAlreadyMensalista 
+        ? `${booking?.bookedBy} não é mais mensalista.`
         : `${booking?.bookedBy} agora é mensalista fixo.`,
+    });
+  };
+
+  const handleCancelBooking = (bookingId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    setBookings(prev => prev.filter(b => b.id !== bookingId));
+    setTimeSlots(prev => prev.map(s => 
+      s.id === booking.slotId ? { ...s, status: "available", bookedBy: undefined, paymentType: undefined } : s
+    ));
+
+    toast({
+      title: "Reserva cancelada",
+      description: `A reserva de ${booking.bookedBy} foi cancelada.`,
+      variant: "destructive",
+    });
+  };
+
+  const handleMarkAsPaid = (bookingId: string) => {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    setBookings(prev => prev.map(b => 
+      b.id === bookingId ? { ...b, status: "confirmed" } : b
+    ));
+    
+    setTimeSlots(prev => prev.map(s => 
+      s.id === booking.slotId ? { ...s, status: "reserved" } : s
+    ));
+
+    toast({
+      title: "Pagamento confirmado!",
+      description: `${booking.bookedBy} pagou no local.`,
     });
   };
 
@@ -167,19 +203,18 @@ const Index = () => {
   // Admin Dashboard
   if (activeView === "admin") {
     return (
-      <>
-        <AdminDashboard 
-          bookings={bookings}
-          onApprove={handleApproveBooking}
-          onReject={handleRejectBooking}
-          onToggleMensalista={handleToggleMensalista}
-          onBack={() => setActiveView("player")}
-        />
-        <BottomNav 
-          activeView="admin" 
-          onViewChange={(view) => setActiveView(view)} 
-        />
-      </>
+      <AdminDashboardNew 
+        bookings={bookings}
+        timeSlots={timeSlots}
+        selectedField={selectedField}
+        selectedDate={selectedDateStr}
+        onApproveBooking={handleApproveBooking}
+        onRejectBooking={handleRejectBooking}
+        onToggleMensalista={handleToggleMensalista}
+        onCancelBooking={handleCancelBooking}
+        onMarkAsPaid={handleMarkAsPaid}
+        onBackToPlayer={() => setActiveView("player")}
+      />
     );
   }
 
