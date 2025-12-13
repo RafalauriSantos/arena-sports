@@ -1,9 +1,9 @@
-import { Calendar, Settings } from "lucide-react";
+import { Calendar, Settings, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
-  activeView: "player" | "admin";
-  onViewChange: (view: "player" | "admin") => void;
+  activeView: "player" | "admin" | "history";
+  onViewChange: (view: "player" | "admin" | "history") => void;
 }
 
 export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
@@ -14,7 +14,7 @@ export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
           <button
             onClick={() => onViewChange("player")}
             className={cn(
-              "flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all btn-press",
+              "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all btn-press",
               activeView === "player" 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
@@ -24,9 +24,21 @@ export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
             <span className="text-xs font-medium">Agenda</span>
           </button>
           <button
+            onClick={() => onViewChange("history")}
+            className={cn(
+              "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all btn-press",
+              activeView === "history" 
+                ? "text-primary" 
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <ClipboardList className="w-6 h-6" />
+            <span className="text-xs font-medium">Meus</span>
+          </button>
+          <button
             onClick={() => onViewChange("admin")}
             className={cn(
-              "flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all btn-press",
+              "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all btn-press",
               activeView === "admin" 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"

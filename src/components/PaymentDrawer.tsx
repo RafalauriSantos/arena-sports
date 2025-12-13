@@ -109,13 +109,13 @@ export function PaymentDrawer({ slot, isOpen, onClose, onConfirm }: PaymentDrawe
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-foreground">Pagar Agora (Pix)</p>
+                        <p className="font-bold text-foreground">Confirmar Pagamento (Pix)</p>
                         <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-semibold">
                           Economize R$ {discount}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Reserva garantida imediatamente. Sem filas.
+                        Reserva garantida imediatamente. Gera link Pix.
                       </p>
                     </div>
                   </div>
@@ -139,30 +139,30 @@ export function PaymentDrawer({ slot, isOpen, onClose, onConfirm }: PaymentDrawe
                 className={cn(
                   "w-full p-4 rounded-xl border-2 text-left transition-all duration-200 btn-press",
                   selectedPayment === "local"
-                    ? "border-muted-foreground bg-secondary"
-                    : "border-border bg-card hover:border-muted-foreground"
+                    ? "border-warning bg-warning/10"
+                    : "border-border bg-card hover:border-warning/50"
                 )}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-muted mt-0.5">
-                      <DollarSign className="w-5 h-5 text-muted-foreground" />
+                    <div className="p-2 rounded-lg bg-warning/20 mt-0.5">
+                      <DollarSign className="w-5 h-5 text-warning" />
                     </div>
                     <div>
-                      <p className="font-bold text-foreground">Pagar no Local</p>
+                      <p className="font-bold text-foreground">Pagar Presencialmente</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Sujeito a aprovação do dono. O horário continua visível até aprovar.
+                        Sujeito à aprovação do dono. Preço cheio.
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-xl text-muted-foreground">
+                    <p className="font-bold text-xl text-warning">
                       R$ {priceLocal.toFixed(2).replace('.', ',')}
                     </p>
                   </div>
                 </div>
                 {selectedPayment === "local" && (
-                  <div className="mt-3 flex items-center gap-2 text-muted-foreground">
+                  <div className="mt-3 flex items-center gap-2 text-warning">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">Selecionado</span>
                   </div>
@@ -174,9 +174,16 @@ export function PaymentDrawer({ slot, isOpen, onClose, onConfirm }: PaymentDrawe
             <Button
               onClick={handleConfirm}
               disabled={!selectedPayment || !name.trim()}
-              className="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed btn-press glow-primary"
+              className={cn(
+                "w-full h-14 text-lg font-bold btn-press disabled:opacity-50 disabled:cursor-not-allowed",
+                selectedPayment === "pix" 
+                  ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-primary"
+                  : "bg-warning hover:bg-warning/90 text-warning-foreground"
+              )}
             >
-              Confirmar Reserva
+              {selectedPayment === "pix" ? "Confirmar Pagamento" : 
+               selectedPayment === "local" ? "Reservar Mesmo Assim" : 
+               "Confirmar Reserva"}
             </Button>
           </div>
         </div>
