@@ -8,6 +8,9 @@ import { DateStrip } from "@/components/DateStrip";
 import { DateSection } from "@/components/DateSection";
 import { PaymentDrawer } from "@/components/PaymentDrawer";
 import { SuccessScreen } from "@/components/SuccessScreen";
+import { BookingConfirmation } from "@/components/BookingConfirmation";
+import { BookingHistory } from "@/components/BookingHistory";
+import { PixPaymentModal } from "@/components/PixPaymentModal";
 import { AdminDashboardNew } from "@/components/admin/AdminDashboardNew";
 import { BottomNav } from "@/components/BottomNav";
 import { TimeSlot, Booking, PaymentType } from "@/types/booking";
@@ -19,7 +22,7 @@ import {
 } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
-type View = "player" | "admin" | "success";
+type View = "player" | "admin" | "success" | "confirmation" | "history";
 
 const Index = () => {
   const [activeView, setActiveView] = useState<View>("player");
@@ -30,6 +33,8 @@ const Index = () => {
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isPixModalOpen, setIsPixModalOpen] = useState(false);
+  const [pendingPixBooking, setPendingPixBooking] = useState<{slot: TimeSlot; name: string} | null>(null);
   const { toast } = useToast();
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
@@ -46,6 +51,26 @@ const Index = () => {
     if (slot.status === "available") {
       setSelectedSlot(slot);
       setIsDrawerOpen(true);
+    }
+  };
+
+  const handlePaymentSelection = (slot: TimeSlot, paymentType: PaymentType, name: string) => {
+    if (paymentType === "pix") {
+      // Open Pix modal for payment
+      setPendingPixBooking({ slot, name });
+      setIsDrawerOpen(false);
+      setIsPixModalOpen(true);
+    } else {
+      // Direct booking for "local" payment
+      handleBookingConfirm(slot, paymentType, name);
+    }
+  };
+
+  const handlePixPaymentConfirmed = () => {
+    if (pendingPixBooking) {
+      handleBookingConfirm(pendingPixBooking.slot, "pix", pendingPixBooking.name);
+      setPendingPixBooking(null);
+      setIsPixModalOpen(false);
     }
   };
 
@@ -80,7 +105,7 @@ const Index = () => {
     setBookings(prev => [...prev, newBooking]);
     setCurrentBooking(newBooking);
     setIsDrawerOpen(false);
-    setActiveView("success");
+    setActiveView("confirmation");
 
     toast({
       title: paymentType === "pix" ? "Reserva confirmada!" : "Solicitação enviada!",
@@ -189,13 +214,47 @@ const Index = () => {
     setCurrentBooking(null);
   };
 
-  // Success Screen
+  const handleViewBookingFromHistory = (booking: Booking) => {
+    setCurrentBooking(booking);
+    setActiveView("success");
+  };
+
+  const getPixAmount = () => {
+    if (!pendingPixBooking) return 0;
+    const field = ARENA_CONFIG.fields.find(f => f.id === pendingPixBooking.slot.fieldId);
+    return field?.priceOnline || 150;
+  };
+
+  // Confirmation Screen (after booking)
+  if (activeView === "confirmation" && currentBooking) {
+    return (
+      <BookingConfirmation 
+        booking={currentBooking}
+        onContinue={() => setActiveView("success")}
+        onBack={handleBackFromSuccess}
+      />
+    );
+  }
+
+  // Success/Team Management Screen
   if (activeView === "success" && currentBooking) {
     return (
       <SuccessScreen 
         booking={currentBooking} 
         onBack={handleBackFromSuccess}
         onUpdatePlayers={handleUpdatePlayers}
+      />
+    );
+  }
+
+  // Booking History Screen
+  if (activeView === "history") {
+    return (
+      <BookingHistory 
+        bookings={bookings}
+        onBack={() => setActiveView("player")}
+        onCancelBooking={handleCancelBooking}
+        onViewBooking={handleViewBookingFromHistory}
       />
     );
   }
@@ -266,12 +325,21 @@ const Index = () => {
         slot={selectedSlot}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        onConfirm={handleBookingConfirm}
+        onConfirm={handlePaymentSelection}
+      />
+
+      {/* Pix Payment Modal */}
+      <PixPaymentModal
+        open={isPixModalOpen}
+        onOpenChange={setIsPixModalOpen}
+        amount={getPixAmount()}
+        bookingCode={`B${Date.now().toString().slice(-6)}`}
+        onPaymentConfirmed={handlePixPaymentConfirmed}
       />
 
       {/* Bottom Navigation */}
       <BottomNav 
-        activeView="player" 
+        activeView="player"
         onViewChange={(view) => setActiveView(view)} 
       />
     </div>
