@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar } from "lucide-react";
 import { Header } from "@/components/Header";
 import { FieldSelector } from "@/components/FieldSelector";
 import { DateStrip } from "@/components/DateStrip";
@@ -13,6 +12,8 @@ import { BookingHistory } from "@/components/BookingHistory";
 import { PixPaymentModal } from "@/components/PixPaymentModal";
 import { AdminDashboardNew } from "@/components/admin/AdminDashboardNew";
 import { BottomNav } from "@/components/BottomNav";
+import { LoginScreen } from "@/components/LoginScreen";
+import { MensalistaCard } from "@/components/MensalistaCard";
 import { TimeSlot, Booking, PaymentType } from "@/types/booking";
 import { FieldId } from "@/config/arena";
 import { ARENA_CONFIG } from "@/config/arena";
@@ -22,10 +23,11 @@ import {
 } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
-type View = "player" | "admin" | "success" | "confirmation" | "history";
+type View = "login" | "player" | "admin" | "success" | "confirmation" | "history";
 
 const Index = () => {
-  const [activeView, setActiveView] = useState<View>("player");
+  const [activeView, setActiveView] = useState<View>("login");
+  const [userPhone, setUserPhone] = useState<string>("");
   const [selectedField, setSelectedField] = useState<FieldId>("principal");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
@@ -47,6 +49,15 @@ const Index = () => {
 
   const displayDate = format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR });
 
+  const handleLogin = (phone: string) => {
+    setUserPhone(phone);
+    setActiveView("player");
+    toast({
+      title: "Bem-vindo!",
+      description: "Escolha seu horário para jogar",
+    });
+  };
+
   const handleSlotClick = (slot: TimeSlot) => {
     if (slot.status === "available") {
       setSelectedSlot(slot);
@@ -56,12 +67,10 @@ const Index = () => {
 
   const handlePaymentSelection = (slot: TimeSlot, paymentType: PaymentType, name: string) => {
     if (paymentType === "pix") {
-      // Open Pix modal for payment
       setPendingPixBooking({ slot, name });
       setIsDrawerOpen(false);
       setIsPixModalOpen(true);
     } else {
-      // Direct booking for "local" payment
       handleBookingConfirm(slot, paymentType, name);
     }
   };
@@ -78,14 +87,12 @@ const Index = () => {
     const field = ARENA_CONFIG.fields.find(f => f.id === slot.fieldId);
     if (!field) return;
 
-    // Update slot status
     setTimeSlots(prev => prev.map(s => 
       s.id === slot.id 
         ? { ...s, status: paymentType === "pix" ? "reserved" : "pending", bookedBy: name, paymentType }
         : s
     ));
 
-    // Create booking
     const newBooking: Booking = {
       id: `b${Date.now()}`,
       slotId: slot.id,
@@ -225,7 +232,12 @@ const Index = () => {
     return field?.priceOnline || 150;
   };
 
-  // Confirmation Screen (after booking)
+  // Login Screen
+  if (activeView === "login") {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  // Confirmation Screen
   if (activeView === "confirmation" && currentBooking) {
     return (
       <BookingConfirmation 
@@ -282,39 +294,37 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-24">
       <Header />
       
-      <main className="container py-6 space-y-6">
-        {/* Field Selector */}
+      <main className="container py-4 space-y-4">
+        {/* Field Selector (Pills) */}
         <FieldSelector 
           selectedField={selectedField}
           onFieldChange={setSelectedField}
         />
 
-        {/* Date Strip Navigation */}
+        {/* Date Strip (Horizontal Scroll) */}
         <DateStrip 
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
         />
 
+        {/* Mensalista Card (Premium) */}
+        <MensalistaCard />
+
         {/* Schedule */}
-        <div className="space-y-4">
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Horários Disponíveis
+          </h2>
+          
           <DateSection 
             title={displayDate}
             slots={filteredSlots}
             onSlotClick={handleSlotClick}
           />
 
-          {/* Empty state / Hint */}
           {filteredSlots.length === 0 && (
-            <div className="text-center py-8">
+            <div className="text-center py-12">
               <p className="text-muted-foreground">Nenhum horário disponível para esta data.</p>
-            </div>
-          )}
-
-          {/* Scroll Hint */}
-          {filteredSlots.length > 0 && (
-            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span>Procurando outra data? Use o calendário no topo 👆</span>
             </div>
           )}
         </div>

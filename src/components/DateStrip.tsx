@@ -34,8 +34,7 @@ export function DateStrip({ selectedDate, onDateChange }: DateStripProps) {
       {/* Scrollable Date Strip */}
       <div 
         ref={scrollRef}
-        className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide pb-1"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        className="flex-1 flex gap-2 overflow-x-auto hide-scrollbar pb-1"
       >
         {days.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
@@ -44,16 +43,22 @@ export function DateStrip({ selectedDate, onDateChange }: DateStripProps) {
               key={date.toISOString()}
               onClick={() => onDateChange(date)}
               className={cn(
-                "flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-xl transition-all btn-press min-w-[60px]",
+                "flex-shrink-0 flex flex-col items-center px-4 py-2 rounded-xl transition-all btn-press min-w-[68px]",
                 isSelected 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  ? "bg-primary text-primary-foreground glow-primary" 
+                  : "bg-card border border-border text-muted-foreground hover:border-primary/50"
               )}
             >
-              <span className="text-[10px] font-medium uppercase tracking-wide">
+              <span className={cn(
+                "text-[10px] font-bold uppercase tracking-wider",
+                isSelected ? "text-primary-foreground" : "text-muted-foreground"
+              )}>
                 {getDayLabel(date, index)}
               </span>
-              <span className="text-lg font-bold">
+              <span className={cn(
+                "text-xl font-black number-display",
+                isSelected ? "text-primary-foreground" : "text-foreground"
+              )}>
                 {format(date, "dd")}
               </span>
             </button>
@@ -67,12 +72,12 @@ export function DateStrip({ selectedDate, onDateChange }: DateStripProps) {
           <Button
             variant="outline"
             size="icon"
-            className="flex-shrink-0 h-14 w-14 border-border bg-secondary hover:bg-secondary/80"
+            className="flex-shrink-0 h-14 w-14 border-border bg-card hover:bg-secondary hover:border-primary/50"
           >
             <Calendar className="w-5 h-5 text-primary" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent className="w-auto p-0 bg-card border-border" align="end">
           <CalendarComponent
             mode="single"
             selected={selectedDate}
