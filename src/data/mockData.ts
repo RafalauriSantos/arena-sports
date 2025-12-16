@@ -1,52 +1,73 @@
 import { TimeSlot, Booking } from "@/types/booking";
 
 const today = new Date();
-const tomorrow = new Date(today);
-tomorrow.setDate(tomorrow.getDate() + 1);
 
 const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-const formatDisplayDate = (date: Date): string => {
-  const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric' };
-  return date.toLocaleDateString('pt-BR', options);
+// Generate time slots for the entire month
+const generateTimeSlots = (): TimeSlot[] => {
+  const slots: TimeSlot[] = [];
+  let slotId = 1;
+
+  // Generate for 30 days starting from today
+  for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+    // Create a fresh date for each day to avoid mutation issues
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + dayOffset);
+    const dateStr = formatDate(date);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    console.log(`Data: ${dateStr}, Dia da semana: ${dayNames[dayOfWeek]} (${dayOfWeek})`);
+
+    // Define working hours based on day of week
+    let startHour: number;
+    let endHour: number;
+
+    if (dayOfWeek === 0) {
+      // Domingo: 8h às 12h
+      startHour = 8;
+      endHour = 12;
+    } else {
+      // Segunda a Sábado: 9h às 22h
+      startHour = 9;
+      endHour = 22;
+    }
+
+    // Generate slots for both fields
+    const fields: Array<{ id: "principal" | "medio" }> = [
+      { id: "principal" },
+      { id: "medio" }
+    ];
+
+    fields.forEach(field => {
+      for (let hour = startHour; hour <= endHour; hour++) {
+        const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+
+        slots.push({
+          id: slotId.toString(),
+          time: timeStr,
+          status: "available",
+          date: dateStr,
+          fieldId: field.id,
+        });
+
+        slotId++;
+      }
+    });
+  }
+
+  console.log(`Total de slots gerados: ${slots.length}`);
+  return slots;
 };
 
-export const todayStr = formatDate(today);
-export const tomorrowStr = formatDate(tomorrow);
-export const todayDisplay = formatDisplayDate(today);
-export const tomorrowDisplay = formatDisplayDate(tomorrow);
+export const initialTimeSlots: TimeSlot[] = generateTimeSlots();
 
-export const initialTimeSlots: TimeSlot[] = [
-  // Today - Campo Principal
-  { id: "1", time: "18:00", status: "reserved", date: todayStr, fieldId: "principal", bookedBy: "João Silva" },
-  { id: "2", time: "19:00", status: "available", date: todayStr, fieldId: "principal" },
-  { id: "3", time: "20:00", status: "pending", date: todayStr, fieldId: "principal", bookedBy: "Carlos Mendes", paymentType: "local" },
-  { id: "4", time: "21:00", status: "available", date: todayStr, fieldId: "principal" },
-  { id: "5", time: "22:00", status: "reserved", date: todayStr, fieldId: "principal", bookedBy: "Time Amigos FC", paymentType: "pix" },
-  
-  // Tomorrow - Campo Principal
-  { id: "6", time: "18:00", status: "available", date: tomorrowStr, fieldId: "principal" },
-  { id: "7", time: "19:00", status: "available", date: tomorrowStr, fieldId: "principal" },
-  { id: "8", time: "20:00", status: "pending", date: tomorrowStr, fieldId: "principal", bookedBy: "Roberto Lima", paymentType: "local" },
-  { id: "9", time: "21:00", status: "available", date: tomorrowStr, fieldId: "principal" },
-  { id: "10", time: "22:00", status: "available", date: tomorrowStr, fieldId: "principal" },
-  
-  // Today - Campo Médio
-  { id: "11", time: "18:00", status: "available", date: todayStr, fieldId: "medio" },
-  { id: "12", time: "19:00", status: "reserved", date: todayStr, fieldId: "medio", bookedBy: "Pelada do Zé", paymentType: "pix" },
-  { id: "13", time: "20:00", status: "available", date: todayStr, fieldId: "medio" },
-  { id: "14", time: "21:00", status: "pending", date: todayStr, fieldId: "medio", bookedBy: "André Santos", paymentType: "local" },
-  { id: "15", time: "22:00", status: "available", date: todayStr, fieldId: "medio" },
-  
-  // Tomorrow - Campo Médio
-  { id: "16", time: "18:00", status: "reserved", date: tomorrowStr, fieldId: "medio", bookedBy: "Time da Firma", paymentType: "pix" },
-  { id: "17", time: "19:00", status: "available", date: tomorrowStr, fieldId: "medio" },
-  { id: "18", time: "20:00", status: "available", date: tomorrowStr, fieldId: "medio" },
-  { id: "19", time: "21:00", status: "available", date: tomorrowStr, fieldId: "medio" },
-  { id: "20", time: "22:00", status: "reserved", date: tomorrowStr, fieldId: "medio", bookedBy: "Veteranos FC", paymentType: "pix" },
-];
+const todayStr = formatDate(today);
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+const tomorrowStr = formatDate(tomorrow);
 
 export const initialBookings: Booking[] = [
   {

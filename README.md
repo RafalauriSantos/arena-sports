@@ -1,12 +1,12 @@
-# Welcome to your Lovable project
+# E-SPORTIVO
 
-## Project info
+Sistema completo de gestão e agendamento para quadras esportivas.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🎯 Sobre o Projeto
 
-## How can I edit this code?
+E-SPORTIVO é uma plataforma web moderna para gerenciamento de quadras esportivas, oferecendo recursos completos para donos de arena e jogadores.
 
-There are several ways of editing your application.
+## ✨ Funcionalidades
 
 **Use Lovable**
 

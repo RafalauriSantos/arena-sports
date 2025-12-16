@@ -1,8 +1,8 @@
 // Arena configuration - Easy to change
 export const ARENA_CONFIG = {
-  pixKey: "arena@saopaulocenter.com.br",
-  name: "Sao Paulo Center",
-  subtitle: "Agende seu jogo em 30 segundos",
+  pixKey: "pix@esportivo.com",
+  name: "E-SPORTIVO",
+  subtitle: "Gestão Inteligente de Quadras Esportivas",
   whatsapp: "5511999999999", // WhatsApp do dono (com código do país)
   fields: [
     {
