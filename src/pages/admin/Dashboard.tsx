@@ -1,5 +1,6 @@
 import { TrendingUp, Calendar, DollarSign, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DivulgacaoCard } from "@/components/admin/DivulgacaoCard";
 import {
 	Bar,
 	BarChart,
@@ -23,6 +24,7 @@ const revenueData = [
 export default function Dashboard() {
 	return (
 		<div className="space-y-6">
+			<DivulgacaoCard />
 			{/* KPIs */}
 			<div className="grid gap-4 md:grid-cols-3">
 				<Card className="bg-gradient-to-br from-primary/20 to-primary/5 border-primary/20">

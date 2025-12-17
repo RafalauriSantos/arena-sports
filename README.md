@@ -1,73 +1,79 @@
-# E-SPORTIVO
 
-Sistema completo de gestão e agendamento para quadras esportivas.
+# ⚽ e-Sportivo
 
-## 🎯 Sobre o Projeto
+> Plataforma SaaS moderna para gestão inteligente de quadras e complexos esportivos.
 
-E-SPORTIVO é uma plataforma web moderna para gerenciamento de quadras esportivas, oferecendo recursos completos para donos de arena e jogadores.
+![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
 
-## ✨ Funcionalidades
+## 💻 Sobre o Projeto
 
-**Use Lovable**
+O **e-Sportivo** é uma solução B2B/B2C desenvolvida para resolver a dor de cabeça no agendamento de quadras esportivas. O sistema elimina o uso de planilhas e conversas demoradas no WhatsApp, oferecendo:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+1.  **Para o Dono (Admin):** Um painel de controle completo para gerenciar horários e visualizar a ocupação.
+2.  **Para o Jogador (Cliente Final):** Um link público e rápido para verificar disponibilidade e realizar agendamentos.
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🎨 Layout
 
-**Use your preferred IDE**
+<div align="center">
+	<img src="https://via.placeholder.com/800x400?text=Print+do+Dashboard+Admin" alt="Dashboard Admin" width="700">
+</div>
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠 Tecnologias Utilizadas
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+O projeto foi construído com foco em **performance** e **DX (Developer Experience)**, utilizando o que há de mais moderno no ecossistema JavaScript:
 
-Follow these steps:
+- **[React 19](https://react.dev/):** Biblioteca principal para construção da interface.
+- **[Vite](https://vitejs.dev/):** Build tool de próxima geração (extremamente rápido).
+- **[Bun](https://bun.sh/):** Runtime e gerenciador de pacotes (substituindo o Node.js para maior velocidade).
+- **[TypeScript](https://www.typescriptlang.org/):** Tipagem estática para maior segurança e escalabilidade.
+- **[Tailwind CSS](https://tailwindcss.com/) & [Shadcn/UI](https://ui.shadcn.com/):** Para estilização moderna, responsiva e acessível.
+- **React Router DOM:** Gerenciamento de rotas e navegação SPA.
+- **React Helmet Async:** Otimização de SEO e metadados.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🚀 Como Rodar o Projeto
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Pré-requisitos
 
-# Step 3: Install the necessary dependencies.
-npm i
+Você precisa ter o **[Bun](https://bun.sh/)** instalado em sua máquina.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Instalação
+
+```bash
+# Clone este repositório
+$ git clone https://github.com/RafalauriSantos/campo-verde-agil.git
+
+# Acesse a pasta do projeto no terminal/cmd
+$ cd campo-verde-agil
+
+# Instale as dependências (Ultra rápido com Bun ⚡)
+$ bun install
+
+# Execute a aplicação em modo de desenvolvimento
+$ bun dev
 ```
 
-**Edit a file directly in GitHub**
+A aplicação será aberta na porta: http://localhost:5173
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## ⚙️ Funcionalidades Atuais (MVP)
 
-**Use GitHub Codespaces**
+- [x] Login Administrativo: Acesso seguro para proprietários.
+- [x] Dashboard: Visão geral do sistema.
+- [x] Agenda Pública: Link compartilhável (/agendar) para jogadores visualizarem horários.
+- [x] Roteamento Inteligente: Redirecionamentos automáticos baseados no perfil de acesso.
+- [x] SEO Otimizado: Metatags dinâmicas para compartilhamento em redes sociais.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔜 Próximos Passos (Roadmap)
 
-## What technologies are used for this project?
+- [ ] Integração com Gateway de Pagamento.
+- [ ] Notificações via WhatsApp para confirmação de jogos.
+- [ ] Implementação de IA (Python) para análise preditiva de horários de pico.
 
-This project is built with:
+## 📝 Licença
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Este projeto está sob a licença MIT.
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Desenvolvido por Rafael Lauri 🚀

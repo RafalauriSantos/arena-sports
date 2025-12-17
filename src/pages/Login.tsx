@@ -1,3 +1,4 @@
+//login page for admin access
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Shield } from "lucide-react";
@@ -20,11 +21,11 @@ export default function Login() {
 	const handleAdminLogin = (e: React.FormEvent) => {
 		e.preventDefault();
 
-		// Simulação simples para a reunião
-		if (adminEmail === "admin@esportivo.com" && adminPassword === "admin123") {
-			navigate("/admin");
+		// Simulação para teste: aceita qualquer email com "@" e senha com número.
+		if (adminEmail.includes("@") && /\d/.test(adminPassword)) {
+			navigate("/admin/dashboard");
 		} else {
-			alert("Credenciais inválidas");
+			alert("Credenciais inválidas. O email deve conter '@' e a senha deve conter um número.");
 		}
 	};
 
@@ -64,7 +65,7 @@ export default function Login() {
 									<Input
 										id="email"
 										type="email"
-										placeholder="admin@esportivo.com"
+										placeholder="qualquer@email.com"
 										className="pl-9"
 										value={adminEmail}
 										onChange={(e) => setAdminEmail(e.target.value)}
@@ -98,7 +99,7 @@ export default function Login() {
 						{/* Demo Credentials */}
 						<div className="mt-4 p-3 bg-muted rounded-lg">
 							<p className="text-xs text-muted-foreground text-center">
-								<strong>Demo:</strong> admin@esportivo.com / admin123
+								<strong>Exemplo:</strong> qualquer@email.com / senha123
 							</p>
 						</div>
 					</CardContent>
