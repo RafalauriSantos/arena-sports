@@ -7,10 +7,48 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependências (O MAIS IMPORTANTE)
 node_modules
+.pnp
+.pnp.js
+
+# Build (O que o Vercel cria)
 dist
 dist-ssr
 *.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Variaveis de Ambiente (SEGURANÇA MÁXIMA)
+.env
+.env.*
+!.env.example
+
+# Bun (Aqui está a novidade)
+# O bun.lockb É BINÁRIO e DEVE ser comitado (não ignore ele)
+# Mas cache do bun deve ser ignorado:
+.bun/
+
+# Vercel
+.vercel
 
 # Editor directories and files
 .vscode/*
