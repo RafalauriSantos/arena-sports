@@ -20,9 +20,9 @@ export function AdminLayout({
 
         return (
                 <div className="min-h-screen bg-background">
-                        {/* Mobile Header */}
-                        <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
-                                <h1 className="text-lg font-bold text-gradient-primary">E-SPORTIVO</h1>
+                        {/* Mobile Header - Always visible and compact */}
+                        <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border px-3 py-2 flex items-center justify-between">
+                                <h1 className="text-base font-bold text-gradient-primary">E-SPORTIVO</h1>
                                 <Button
                                         variant="ghost"
                                         size="icon"
@@ -54,7 +54,7 @@ export function AdminLayout({
                         </div>
 
                         {/* Main Content Area */}
-                        <main className="md:ml-64 pt-16 md:pt-0 p-4 md:p-8">
+                        <main className="md:ml-64 pt-14 md:pt-0 px-3 py-3 md:p-6">
                                 <div className="max-w-7xl mx-auto">{children}</div>
                         </main>
                 </div>

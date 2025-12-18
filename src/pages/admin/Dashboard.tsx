@@ -23,10 +23,10 @@ const revenueData = [
 
 export default function Dashboard() {
         return (
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                         <DivulgacaoCard />
                         {/* KPIs */}
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-3">
                                 <Card className="bg-gradient-to-br from-primary/20 to-primary/5 border-primary/20">
                                         <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between pb-2 gap-2">
                                                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -113,7 +113,7 @@ export default function Dashboard() {
                         </Card>
 
                         {/* Quick Stats */}
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-2">
                                 <Card>
                                         <CardHeader>
                                                 <CardTitle className="text-base">Campo Principal</CardTitle>
