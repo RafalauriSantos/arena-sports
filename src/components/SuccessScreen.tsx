@@ -260,7 +260,7 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
             {/* Dashed line */}
             <div className="border-t-2 border-dashed border-border my-4" />
             
-            <div className="grid grid-cols-2 gap-4 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
               <div>
                 <p className="text-xs text-muted-foreground uppercase">Horário</p>
                 <p className="text-2xl font-black text-foreground number-display">{booking.time}</p>
@@ -291,7 +291,7 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
         </Button>
 
         {/* Secondary Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Button
             onClick={handleWhatsAppOwner}
             variant="outline"
@@ -400,7 +400,7 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
           )}
 
           {/* Players Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Array.from({ length: booking.totalPlayers }).map((_, index) => {
               const player = players[index];
               

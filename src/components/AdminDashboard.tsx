@@ -45,7 +45,7 @@ export function AdminDashboard({ bookings, onApprove, onReject, onToggleMensalis
 
       <div className="container py-6 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="p-4 rounded-xl bg-warning/10 border border-warning/30">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-warning" />
@@ -94,7 +94,7 @@ export function AdminDashboard({ bookings, onApprove, onReject, onToggleMensalis
                     <span>{booking.players.length}/{booking.totalPlayers} jogadores confirmados</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <Button
                       onClick={() => onApprove(booking.id)}
                       className="h-12 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold btn-press"

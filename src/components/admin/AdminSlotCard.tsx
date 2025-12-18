@@ -108,7 +108,7 @@ export function AdminSlotCard({
         getStatusStyles()
       )}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             {getStatusIcon()}
@@ -121,7 +121,7 @@ export function AdminSlotCard({
             variant="secondary"
             size="sm"
             onClick={onBlock}
-            className="text-muted-foreground hover:text-foreground btn-press"
+            className="text-muted-foreground hover:text-foreground btn-press w-full md:w-auto"
           >
             <Lock className="w-4 h-4 mr-2" />
             Bloquear Horário
@@ -133,7 +133,7 @@ export function AdminSlotCard({
             variant="ghost"
             size="sm"
             onClick={onUnblock}
-            className="text-muted-foreground hover:text-foreground btn-press"
+            className="text-muted-foreground hover:text-foreground btn-press w-full md:w-auto"
           >
             <X className="w-4 h-4 mr-2" />
             Desbloquear
