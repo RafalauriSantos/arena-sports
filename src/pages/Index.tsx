@@ -15,20 +15,30 @@ import { useBookings } from "@/contexts/BookingsContext";
 import { useToast } from "@/hooks/use-toast";
 
 // Lazy load heavy components that are conditionally rendered
-const PaymentDrawer = lazy(() => 
-	import("@/components/PaymentDrawer").then(module => ({ default: module.PaymentDrawer }))
+const PaymentDrawer = lazy(() =>
+	import("@/components/PaymentDrawer").then((module) => ({
+		default: module.PaymentDrawer,
+	}))
 );
-const SuccessScreen = lazy(() => 
-	import("@/components/SuccessScreen").then(module => ({ default: module.SuccessScreen }))
+const SuccessScreen = lazy(() =>
+	import("@/components/SuccessScreen").then((module) => ({
+		default: module.SuccessScreen,
+	}))
 );
-const BookingConfirmation = lazy(() => 
-	import("@/components/BookingConfirmation").then(module => ({ default: module.BookingConfirmation }))
+const BookingConfirmation = lazy(() =>
+	import("@/components/BookingConfirmation").then((module) => ({
+		default: module.BookingConfirmation,
+	}))
 );
-const BookingHistory = lazy(() => 
-	import("@/components/BookingHistory").then(module => ({ default: module.BookingHistory }))
+const BookingHistory = lazy(() =>
+	import("@/components/BookingHistory").then((module) => ({
+		default: module.BookingHistory,
+	}))
 );
-const PixPaymentModal = lazy(() => 
-	import("@/components/PixPaymentModal").then(module => ({ default: module.PixPaymentModal }))
+const PixPaymentModal = lazy(() =>
+	import("@/components/PixPaymentModal").then((module) => ({
+		default: module.PixPaymentModal,
+	}))
 );
 
 type View = "login" | "player" | "success" | "confirmation" | "history";
@@ -64,18 +74,29 @@ const Index = () => {
 		);
 	}, [timeSlots, selectedField, selectedDateStr]);
 
+	const userBookings = useMemo(
+		() =>
+			bookings.filter(
+				(b) => b.bookedBy === userPhone || b.players.includes(userPhone)
+			),
+		[bookings, userPhone]
+	);
+
 	const displayDate = format(selectedDate, "EEEE, d 'de' MMMM", {
 		locale: ptBR,
 	});
 
-	const handleLogin = useCallback((phone: string) => {
-		setUserPhone(phone);
-		setActiveView("player");
-		toast({
-			title: "Bem-vindo!",
-			description: "Escolha seu horário para jogar",
-		});
-	}, [toast]);
+	const handleLogin = useCallback(
+		(phone: string) => {
+			setUserPhone(phone);
+			setActiveView("player");
+			toast({
+				title: "Bem-vindo!",
+				description: "Escolha seu horário para jogar",
+			});
+		},
+		[toast]
+	);
 
 	const handleSlotClick = useCallback((slot: TimeSlot) => {
 		if (slot.status === "available") {
@@ -84,66 +105,66 @@ const Index = () => {
 		}
 	}, []);
 
-	const handleBookingConfirm = useCallback((
-		slot: TimeSlot,
-		paymentType: PaymentType,
-		name: string
-	) => {
-		const field = ARENA_CONFIG.fields.find((f) => f.id === slot.fieldId);
-		if (!field) return;
+	const handleBookingConfirm = useCallback(
+		(slot: TimeSlot, paymentType: PaymentType, name: string) => {
+			const field = ARENA_CONFIG.fields.find((f) => f.id === slot.fieldId);
+			if (!field) return;
 
-		updateTimeSlot(slot.id, {
-			status: paymentType === "pix" ? "reserved" : "pending",
-			bookedBy: name,
-			paymentType,
-		});
+			updateTimeSlot(slot.id, {
+				status: paymentType === "pix" ? "reserved" : "pending",
+				bookedBy: name,
+				paymentType,
+			});
 
-		const newBooking: Booking = {
-			id: `b${Date.now()}`,
-			slotId: slot.id,
-			fieldId: slot.fieldId,
-			fieldName: field.name,
-			date: slot.date,
-			time: slot.time,
-			paymentType,
-			status: paymentType === "pix" ? "confirmed" : "pending_approval",
-			bookedBy: name,
-			players: [name],
-			pricePerPlayer:
-				(paymentType === "pix" ? field.priceOnline : field.priceLocal) /
-				field.players,
-			totalPlayers: field.players,
-			createdAt: new Date().toISOString(),
-		};
+			const newBooking: Booking = {
+				id: `b${Date.now()}`,
+				slotId: slot.id,
+				fieldId: slot.fieldId,
+				fieldName: field.name,
+				date: slot.date,
+				time: slot.time,
+				paymentType,
+				status: paymentType === "pix" ? "confirmed" : "pending_approval",
+				bookedBy: name,
+				players: [name],
+				pricePerPlayer:
+					(paymentType === "pix" ? field.priceOnline : field.priceLocal) /
+					field.players,
+				totalPlayers: field.players,
+				createdAt: new Date().toISOString(),
+			};
 
-		addBooking(newBooking);
-		setCurrentBooking(newBooking);
-		setIsDrawerOpen(false);
-		setActiveView("confirmation");
-
-		toast({
-			title:
-				paymentType === "pix" ? "Reserva confirmada!" : "Solicitação enviada!",
-			description:
-				paymentType === "pix"
-					? "Seu horário está garantido."
-					: "Aguardando aprovação do dono da arena.",
-		});
-	}, [addBooking, toast]);
-
-	const handlePaymentSelection = useCallback((
-		slot: TimeSlot,
-		paymentType: PaymentType,
-		name: string
-	) => {
-		if (paymentType === "pix") {
-			setPendingPixBooking({ slot, name });
+			addBooking(newBooking);
+			setCurrentBooking(newBooking);
 			setIsDrawerOpen(false);
-			setIsPixModalOpen(true);
-		} else {
-			handleBookingConfirm(slot, paymentType, name);
-		}
-	}, [handleBookingConfirm]);
+			setActiveView("confirmation");
+
+			toast({
+				title:
+					paymentType === "pix"
+						? "Reserva confirmada!"
+						: "Solicitação enviada!",
+				description:
+					paymentType === "pix"
+						? "Seu horário está garantido."
+						: "Aguardando aprovação do dono da arena.",
+			});
+		},
+		[addBooking, toast, updateTimeSlot]
+	);
+
+	const handlePaymentSelection = useCallback(
+		(slot: TimeSlot, paymentType: PaymentType, name: string) => {
+			if (paymentType === "pix") {
+				setPendingPixBooking({ slot, name });
+				setIsDrawerOpen(false);
+				setIsPixModalOpen(true);
+			} else {
+				handleBookingConfirm(slot, paymentType, name);
+			}
+		},
+		[handleBookingConfirm]
+	);
 
 	const handlePixPaymentConfirmed = useCallback(() => {
 		if (pendingPixBooking) {
@@ -157,22 +178,28 @@ const Index = () => {
 		}
 	}, [pendingPixBooking, handleBookingConfirm]);
 
-	const handleUpdatePlayers = useCallback((players: string[]) => {
-		if (!currentBooking) return;
+	const handleUpdatePlayers = useCallback(
+		(players: string[]) => {
+			if (!currentBooking) return;
 
-		setCurrentBooking((prev) => (prev ? { ...prev, players } : null));
-		updateBooking(currentBooking.id, { players });
-	}, [currentBooking, updateBooking]);
+			setCurrentBooking((prev) => (prev ? { ...prev, players } : null));
+			updateBooking(currentBooking.id, { players });
+		},
+		[currentBooking, updateBooking]
+	);
 
-	const handleCancelBooking = useCallback((bookingId: string) => {
-		const booking = bookings.find((b) => b.id === bookingId);
-		deleteBooking(bookingId);
+	const handleCancelBooking = useCallback(
+		(bookingId: string) => {
+			const booking = bookings.find((b) => b.id === bookingId);
+			deleteBooking(bookingId);
 
-		toast({
-			title: "Reserva cancelada",
-			description: `A reserva de ${booking?.bookedBy} foi cancelada.`,
-		});
-	}, [bookings, deleteBooking, toast]);
+			toast({
+				title: "Reserva cancelada",
+				description: `A reserva de ${booking?.bookedBy} foi cancelada.`,
+			});
+		},
+		[bookings, deleteBooking, toast]
+	);
 
 	const handleBackFromSuccess = useCallback(() => {
 		setActiveView("player");
@@ -200,7 +227,12 @@ const Index = () => {
 	// Confirmation Screen
 	if (activeView === "confirmation" && currentBooking) {
 		return (
-			<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+			<Suspense
+				fallback={
+					<div className="min-h-screen bg-background flex items-center justify-center">
+						<div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+					</div>
+				}>
 				<BookingConfirmation
 					booking={currentBooking}
 					onContinue={() => setActiveView("success")}
@@ -213,7 +245,12 @@ const Index = () => {
 	// Success/Team Management Screen
 	if (activeView === "success" && currentBooking) {
 		return (
-			<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+			<Suspense
+				fallback={
+					<div className="min-h-screen bg-background flex items-center justify-center">
+						<div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+					</div>
+				}>
 				<SuccessScreen
 					booking={currentBooking}
 					onBack={handleBackFromSuccess}
@@ -225,15 +262,13 @@ const Index = () => {
 
 	// Booking History Screen
 	if (activeView === "history") {
-		const userBookings = useMemo(() => 
-			bookings.filter(
-				(b) => b.bookedBy === userPhone || b.players.includes(userPhone)
-			),
-			[bookings, userPhone]
-		);
-		
 		return (
-			<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+			<Suspense
+				fallback={
+					<div className="min-h-screen bg-background flex items-center justify-center">
+						<div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+					</div>
+				}>
 				<BookingHistory
 					bookings={userBookings}
 					onBack={() => setActiveView("player")}
@@ -249,7 +284,7 @@ const Index = () => {
 		<div className="min-h-screen bg-background pb-28 md:pb-24">
 			<Header />
 
-			<main className="container px-5 md:px-6 py-4 md:py-5 space-y-3 md:space-y-4">
+			<main className="container px-5 md:px-6 pt-6 pb-4 md:py-5 space-y-3 md:space-y-4">
 				{/* Field Selector (Pills) */}
 				<FieldSelector
 					selectedField={selectedField}

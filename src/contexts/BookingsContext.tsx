@@ -9,7 +9,7 @@ import {
 	ReactNode,
 } from "react";
 import { TimeSlot, Booking } from "@/types/booking";
-import { initialTimeSlots, initialBookings } from "@/data/mockData";
+import { initialTimeSlots } from "@/data/mockData";
 
 interface BookingsContextType {
 	timeSlots: TimeSlot[];
@@ -39,7 +39,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 
 	const [bookings, setBookings] = useState<Booking[]>(() => {
 		const stored = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
-		return stored ? JSON.parse(stored) : initialBookings;
+		return stored ? JSON.parse(stored) : [];
 	});
 
 	// Persist to localStorage whenever data changes
@@ -96,7 +96,8 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 
 			if (storedBookings) {
 				// Simple hash check instead of full JSON.stringify
-				const bookingsHash = storedBookings.slice(0, 100) + storedBookings.length;
+				const bookingsHash =
+					storedBookings.slice(0, 100) + storedBookings.length;
 				if (bookingsHash !== lastBookingsHash) {
 					try {
 						const parsedBookings = JSON.parse(storedBookings);
@@ -113,21 +114,29 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 	}, []); // Empty deps - using refs internally
 
 	// Memoized callbacks to prevent unnecessary re-renders
-	const updateTimeSlot = useCallback((slotId: string, updates: Partial<TimeSlot>) => {
-		setTimeSlots((prev) =>
-			prev.map((slot) => (slot.id === slotId ? { ...slot, ...updates } : slot))
-		);
-	}, []);
+	const updateTimeSlot = useCallback(
+		(slotId: string, updates: Partial<TimeSlot>) => {
+			setTimeSlots((prev) =>
+				prev.map((slot) =>
+					slot.id === slotId ? { ...slot, ...updates } : slot
+				)
+			);
+		},
+		[]
+	);
 
 	const addBooking = useCallback((booking: Booking) => {
 		setBookings((prev) => [...prev, booking]);
 	}, []);
 
-	const updateBooking = useCallback((bookingId: string, updates: Partial<Booking>) => {
-		setBookings((prev) =>
-			prev.map((b) => (b.id === bookingId ? { ...b, ...updates } : b))
-		);
-	}, []);
+	const updateBooking = useCallback(
+		(bookingId: string, updates: Partial<Booking>) => {
+			setBookings((prev) =>
+				prev.map((b) => (b.id === bookingId ? { ...b, ...updates } : b))
+			);
+		},
+		[]
+	);
 
 	const deleteBooking = useCallback((bookingId: string) => {
 		setBookings((prev) => {
@@ -142,7 +151,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 									status: "available" as const,
 									bookedBy: undefined,
 									paymentType: undefined,
-								}
+							  }
 							: slot
 					)
 				);
@@ -151,12 +160,15 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 		});
 	}, []);
 
-	const blockTimeSlot = useCallback((slotId: string, reason: string) => {
-		updateTimeSlot(slotId, {
-			status: "reserved",
-			bookedBy: `🔒 ${reason}`,
-		});
-	}, [updateTimeSlot]);
+	const blockTimeSlot = useCallback(
+		(slotId: string, reason: string) => {
+			updateTimeSlot(slotId, {
+				status: "reserved",
+				bookedBy: `🔒 ${reason}`,
+			});
+		},
+		[updateTimeSlot]
+	);
 
 	const refreshData = useCallback(() => {
 		const storedSlots = localStorage.getItem(STORAGE_KEYS.SLOTS);
@@ -190,7 +202,16 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			blockTimeSlot,
 			refreshData,
 		}),
-		[timeSlots, bookings, updateTimeSlot, addBooking, updateBooking, deleteBooking, blockTimeSlot, refreshData]
+		[
+			timeSlots,
+			bookings,
+			updateTimeSlot,
+			addBooking,
+			updateBooking,
+			deleteBooking,
+			blockTimeSlot,
+			refreshData,
+		]
 	);
 
 	return (

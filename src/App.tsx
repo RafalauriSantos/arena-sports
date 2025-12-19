@@ -36,34 +36,43 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BookingsProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* 1. O DONO (Entra no site -> Vai pro Login) */}
-              <Route path="/" element={<Navigate to="/admin/login" replace />} />
-              
-              {/* Rotas de Admin */}
-              <Route path="/admin/login" element={<Login />} />
-              <Route path="/admin/dashboard" element={<AdminIndex />} />
-              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+	<QueryClientProvider client={queryClient}>
+		<BookingsProvider>
+			<TooltipProvider>
+				<Toaster />
+				<Sonner />
+				<BrowserRouter>
+					<Suspense fallback={<PageLoader />}>
+						<Routes>
+							{/* 1. O DONO (Entra no site -> Vai pro Login) */}
+							<Route
+								path="/"
+								element={<Navigate to="/admin/login" replace />}
+							/>
 
-              {/* 2. O JOGADOR (Link público: /agendar) */}
-              <Route path="/agendar" element={<Index />} />
-              {/* Redireciona links antigos (/user) para o novo */}
-              <Route path="/user" element={<Navigate to="/agendar" replace />} />
+							{/* Rotas de Admin */}
+							<Route path="/admin/login" element={<Login />} />
+							<Route path="/admin/dashboard" element={<AdminIndex />} />
+							<Route
+								path="/admin"
+								element={<Navigate to="/admin/login" replace />}
+							/>
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </BookingsProvider>
-  </QueryClientProvider>
+							{/* 2. O JOGADOR (Link público: /agendar) */}
+							<Route path="/agendar" element={<Index />} />
+							{/* Redireciona links antigos (/user) para o novo */}
+							<Route
+								path="/user"
+								element={<Navigate to="/agendar" replace />}
+							/>
+
+							<Route path="*" element={<NotFound />} />
+						</Routes>
+					</Suspense>
+				</BrowserRouter>
+			</TooltipProvider>
+		</BookingsProvider>
+	</QueryClientProvider>
 );
 
 export default App;

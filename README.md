@@ -1,5 +1,4 @@
-
-# ⚽ e-Sportivo
+# ⚽ Sport.Ai
 
 > Plataforma SaaS moderna para gestão inteligente de quadras e complexos esportivos.
 
@@ -11,7 +10,7 @@
 
 ## 💻 Sobre o Projeto
 
-O **e-Sportivo** é uma solução B2B/B2C desenvolvida para resolver a dor de cabeça no agendamento de quadras esportivas. O sistema elimina o uso de planilhas e conversas demoradas no WhatsApp, oferecendo:
+O **Sport.Ai** é uma solução B2B/B2C desenvolvida para resolver a dor de cabeça no agendamento de quadras esportivas. O sistema elimina o uso de planilhas e conversas demoradas no WhatsApp, oferecendo:
 
 1.  **Para o Dono (Admin):** Um painel de controle completo para gerenciar horários e visualizar a ocupação.
 2.  **Para o Jogador (Cliente Final):** Um link público e rápido para verificar disponibilidade e realizar agendamentos.

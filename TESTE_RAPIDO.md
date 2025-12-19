@@ -85,3 +85,4 @@ bun run lint
 
 **Pronto!** Agora você pode testar todas as otimizações! 🚀
 
+

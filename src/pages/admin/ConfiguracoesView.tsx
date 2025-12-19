@@ -58,7 +58,7 @@ interface ArenaConfig {
 }
 
 const defaultConfig: ArenaConfig = {
-	name: "Arena Campo Verde",
+	name: "Arena Sport.Ai",
 	address: "Rua Exemplo, 123 - Bairro",
 	phone: "(11) 98765-4321",
 	email: "contato@campoverde.com",
@@ -484,7 +484,7 @@ export default function ConfiguracoesView() {
 						<div className="flex-1">
 							<h3 className="font-bold text-lg mb-1">Rafael Lauri Santos</h3>
 							<p className="text-sm text-muted-foreground mb-4">
-								Desenvolvedor Full Stack | Criador do Sistema Campo Verde Ágil
+								Desenvolvedor Full Stack | Criador do Sistema Sport.Ai
 							</p>
 
 							<div className="space-y-3">
@@ -533,7 +533,7 @@ export default function ConfiguracoesView() {
 						<div className="flex gap-3 pt-2">
 							<Button variant="default" size="sm" className="gap-2" asChild>
 								<a
-									href="https://wa.me/5511999999999?text=Olá%20Rafael%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Campo%20Verde%20Ágil"
+									href="https://wa.me/5511999999999?text=Olá%20Rafael%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Sport.Ai"
 									target="_blank"
 									rel="noopener noreferrer">
 									<MessageCircle className="h-4 w-4" />
@@ -543,7 +543,7 @@ export default function ConfiguracoesView() {
 
 							<Button variant="outline" size="sm" className="gap-2" asChild>
 								<a
-									href="mailto:rafael@example.com?subject=Suporte%20Campo%20Verde%20Ágil"
+									href="mailto:rafael@example.com?subject=Suporte%20Sport.Ai"
 									target="_blank"
 									rel="noopener noreferrer">
 									<Mail className="h-4 w-4" />

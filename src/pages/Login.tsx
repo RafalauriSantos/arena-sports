@@ -25,7 +25,9 @@ export default function Login() {
 		if (adminEmail.includes("@") && /\d/.test(adminPassword)) {
 			navigate("/admin/dashboard");
 		} else {
-			alert("Credenciais inválidas. O email deve conter '@' e a senha deve conter um número.");
+			alert(
+				"Credenciais inválidas. O email deve conter '@' e a senha deve conter um número."
+			);
 		}
 	};
 
@@ -38,7 +40,7 @@ export default function Login() {
 						<Shield className="h-8 w-8 text-primary" />
 					</div>
 					<h1 className="text-4xl font-black text-gradient-primary">
-						E-SPORTIVO
+						Sport.Ai
 					</h1>
 					<p className="text-muted-foreground">
 						Painel Administrativo - Acesso Restrito
@@ -108,7 +110,7 @@ export default function Login() {
 				{/* Footer */}
 				<div className="text-center">
 					<div className="text-xs text-muted-foreground">
-						<p>© 2025 E-SPORTIVO. Todos os direitos reservados.</p>
+						<p>© 2025 Sport.Ai. Todos os direitos reservados.</p>
 						<p className="mt-1">Desenvolvido por Rafael Lauri Santos</p>
 					</div>
 				</div>

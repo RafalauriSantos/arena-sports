@@ -34,6 +34,7 @@ dist/assets/date-vendor-[hash].js  12.34 kB
 ```
 
 **O que verificar:**
+
 - ✅ Chunks separados (react-vendor, ui-vendor, etc.)
 - ✅ Tamanho total do bundle inicial < 200KB (gzipped)
 - ✅ Chunks lazy-loaded não aparecem no bundle inicial
@@ -45,14 +46,15 @@ bun add -d rollup-plugin-visualizer
 ```
 
 Adicione ao `vite.config.ts`:
+
 ```typescript
-import { visualizer } from 'rollup-plugin-visualizer';
+import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig({
-  plugins: [
-    // ... outros plugins
-    visualizer({ open: true, filename: 'dist/stats.html' })
-  ]
+	plugins: [
+		// ... outros plugins
+		visualizer({ open: true, filename: "dist/stats.html" }),
+	],
 });
 ```
 
@@ -75,10 +77,12 @@ export default defineConfig({
 ### Passo 3: Verificar Lazy Loading
 
 **O que você DEVE ver:**
+
 - ✅ Apenas `index.js` e `index.css` carregados inicialmente
 - ✅ Componentes como `PaymentDrawer`, `SuccessScreen` NÃO aparecem no carregamento inicial
 
 **Teste de Lazy Loading:**
+
 1. Navegue para `/agendar`
 2. Clique em um horário disponível
 3. **Agora** você verá `PaymentDrawer.js` sendo carregado (lazy loaded!)
@@ -92,6 +96,7 @@ export default defineConfig({
 ### Passo 1: Instalar React DevTools
 
 Se ainda não tiver:
+
 - Chrome: [React DevTools Extension](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)
 - Firefox: [React DevTools Extension](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
 
@@ -114,11 +119,13 @@ Se ainda não tiver:
 ### Passo 4: Analisar Resultados
 
 **O que verificar:**
+
 - ✅ Componentes memoizados (`TimeSlotCard`, `FieldSelector`, etc.) **NÃO** re-renderizam quando props não mudam
 - ✅ Apenas componentes que realmente precisam atualizar re-renderizam
 - ✅ Tempo de render < 16ms (60 FPS)
 
 **Exemplo de bom resultado:**
+
 ```
 TimeSlotCard (10 instâncias)
   - Renderizado: 1 vez (quando slots mudam)
@@ -144,12 +151,14 @@ TimeSlotCard (10 instâncias)
 ### Passo 3: Analisar Timeline
 
 **O que verificar:**
+
 - ✅ **First Contentful Paint (FCP)**: < 1.5s
 - ✅ **Time to Interactive (TTI)**: < 3.5s
 - ✅ **Long Tasks**: < 50ms cada
 - ✅ Sem "jank" (travamentos visuais)
 
 **Métricas esperadas:**
+
 - FCP: ~800ms - 1.2s
 - TTI: ~2s - 3s
 - Total Blocking Time: < 300ms
@@ -175,6 +184,7 @@ TimeSlotCard (10 instâncias)
 ### Passo 3: Analisar Score
 
 **Scores esperados (após otimizações):**
+
 - 🟢 **Performance**: 85-95+
 - 🟢 **First Contentful Paint**: < 1.5s
 - 🟢 **Largest Contentful Paint**: < 2.5s
@@ -183,6 +193,7 @@ TimeSlotCard (10 instâncias)
 - 🟢 **Cumulative Layout Shift**: < 0.1
 
 **O que melhorou:**
+
 - ✅ Bundle size menor
 - ✅ Code splitting funcionando
 - ✅ Lazy loading ativo
@@ -206,6 +217,7 @@ TimeSlotCard (10 instâncias)
 **O que você DEVE ver:**
 
 **Carregamento Inicial:**
+
 ```
 index-[hash].js          ~150KB  (bundle principal)
 react-vendor-[hash].js   ~120KB  (React, ReactDOM, Router)
@@ -214,6 +226,7 @@ date-vendor-[hash].js    ~12KB   (date-fns)
 ```
 
 **Lazy Loaded (quando necessário):**
+
 ```
 PaymentDrawer-[hash].js     ~8KB   (só quando abrir drawer)
 SuccessScreen-[hash].js      ~15KB  (só quando ver sucesso)
@@ -223,6 +236,7 @@ BookingConfirmation-[hash].js ~10KB (só quando confirmar)
 ### Passo 4: Verificar Waterfall
 
 **O que verificar:**
+
 - ✅ Chunks carregam em paralelo quando possível
 - ✅ Lazy chunks só carregam quando necessário
 - ✅ Tempo total de carregamento < 2s (3G)
@@ -238,10 +252,12 @@ BookingConfirmation-[hash].js ~10KB (só quando confirmar)
 ### Passo 2: Monitorar Atividade
 
 **Antes das otimizações:**
+
 - Polling a cada 1 segundo
 - JSON.stringify executando constantemente
 
 **Depois das otimizações:**
+
 - Polling a cada 3 segundos
 - Hash simples em vez de JSON.stringify completo
 
@@ -260,29 +276,34 @@ BookingConfirmation-[hash].js ~10KB (só quando confirmar)
 Use este checklist para validar todas as otimizações:
 
 ### Bundle & Code Splitting
+
 - [ ] Build gera chunks separados (react-vendor, ui-vendor, etc.)
 - [ ] Bundle inicial < 200KB (gzipped)
 - [ ] Lazy loaded components não aparecem no bundle inicial
 
 ### Lazy Loading
+
 - [ ] PaymentDrawer só carrega quando drawer abre
 - [ ] SuccessScreen só carrega quando necessário
 - [ ] BookingConfirmation só carrega quando necessário
 - [ ] Network tab mostra chunks sendo carregados sob demanda
 
 ### Memoização
+
 - [ ] React DevTools Profiler mostra menos re-renders
 - [ ] TimeSlotCard não re-renderiza quando props não mudam
 - [ ] FieldSelector não re-renderiza quando props não mudam
 - [ ] DateStrip não recria array de dias a cada render
 
 ### Performance
+
 - [ ] Lighthouse Performance score > 85
 - [ ] First Contentful Paint < 1.5s
 - [ ] Time to Interactive < 3.5s
 - [ ] Sem long tasks (> 50ms)
 
 ### Contexto Otimizado
+
 - [ ] Polling reduzido para 3s (não mais 1s)
 - [ ] Sem JSON.stringify excessivo
 - [ ] Funções do contexto memoizadas
@@ -292,6 +313,7 @@ Use este checklist para validar todas as otimizações:
 ## 🎯 Comparação: Antes vs Depois
 
 ### Antes das Otimizações
+
 - Bundle inicial: ~350KB
 - First Load: ~3-4s
 - Re-renders: Muitos desnecessários
@@ -299,6 +321,7 @@ Use este checklist para validar todas as otimizações:
 - Lazy loading: Não implementado
 
 ### Depois das Otimizações
+
 - Bundle inicial: ~150KB (57% menor!)
 - First Load: ~1-1.5s (60% mais rápido!)
 - Re-renders: Reduzidos em 40-50%
@@ -310,16 +333,21 @@ Use este checklist para validar todas as otimizações:
 ## 🐛 Troubleshooting
 
 ### Problema: Chunks não estão sendo criados
+
 **Solução:** Verifique se o `vite.config.ts` tem as configurações de `manualChunks`
 
 ### Problema: Lazy loading não funciona
+
 **Solução:** Verifique se os componentes estão usando `React.lazy()` e `Suspense`
 
 ### Problema: Muitos re-renders ainda
+
 **Solução:** Verifique se os componentes estão usando `React.memo()` e se as props são estáveis
 
 ### Problema: Performance score baixo
-**Solução:** 
+
+**Solução:**
+
 - Verifique se está testando em modo de produção (`bun run build && bun run preview`)
 - Limpe o cache antes de testar
 - Use throttling de rede (3G) para simular condições reais
@@ -334,4 +362,3 @@ Use este checklist para validar todas as otimizações:
 - **React DevTools Profiler** é essencial para debugar re-renders
 
 Boa sorte com os testes! 🚀
-
