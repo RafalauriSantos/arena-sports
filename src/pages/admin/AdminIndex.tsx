@@ -1,5 +1,5 @@
 //admin index page with navigation to different admin views
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/layout/AdminLayout";
 import Dashboard from "./Dashboard";
 import AgendaMaster from "./AgendaMaster";

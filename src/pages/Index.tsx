@@ -1,15 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useCallback, lazy, Suspense } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Header } from "@/components/Header";
 import { FieldSelector } from "@/components/FieldSelector";
 import { DateStrip } from "@/components/DateStrip";
 import { DateSection } from "@/components/DateSection";
-import { PaymentDrawer } from "@/components/PaymentDrawer";
-import { SuccessScreen } from "@/components/SuccessScreen";
-import { BookingConfirmation } from "@/components/BookingConfirmation";
-import { BookingHistory } from "@/components/BookingHistory";
-import { PixPaymentModal } from "@/components/PixPaymentModal";
 import { BottomNav } from "@/components/BottomNav";
 import { LoginScreen } from "@/components/LoginScreen";
 import { MensalistaCard } from "@/components/MensalistaCard";
@@ -18,6 +13,23 @@ import { FieldId } from "@/config/arena";
 import { ARENA_CONFIG } from "@/config/arena";
 import { useBookings } from "@/contexts/BookingsContext";
 import { useToast } from "@/hooks/use-toast";
+
+// Lazy load heavy components that are conditionally rendered
+const PaymentDrawer = lazy(() => 
+	import("@/components/PaymentDrawer").then(module => ({ default: module.PaymentDrawer }))
+);
+const SuccessScreen = lazy(() => 
+	import("@/components/SuccessScreen").then(module => ({ default: module.SuccessScreen }))
+);
+const BookingConfirmation = lazy(() => 
+	import("@/components/BookingConfirmation").then(module => ({ default: module.BookingConfirmation }))
+);
+const BookingHistory = lazy(() => 
+	import("@/components/BookingHistory").then(module => ({ default: module.BookingHistory }))
+);
+const PixPaymentModal = lazy(() => 
+	import("@/components/PixPaymentModal").then(module => ({ default: module.PixPaymentModal }))
+);
 
 type View = "login" | "player" | "success" | "confirmation" | "history";
 
@@ -56,49 +68,23 @@ const Index = () => {
 		locale: ptBR,
 	});
 
-	const handleLogin = (phone: string) => {
+	const handleLogin = useCallback((phone: string) => {
 		setUserPhone(phone);
 		setActiveView("player");
 		toast({
 			title: "Bem-vindo!",
 			description: "Escolha seu horário para jogar",
 		});
-	};
+	}, [toast]);
 
-	const handleSlotClick = (slot: TimeSlot) => {
+	const handleSlotClick = useCallback((slot: TimeSlot) => {
 		if (slot.status === "available") {
 			setSelectedSlot(slot);
 			setIsDrawerOpen(true);
 		}
-	};
+	}, []);
 
-	const handlePaymentSelection = (
-		slot: TimeSlot,
-		paymentType: PaymentType,
-		name: string
-	) => {
-		if (paymentType === "pix") {
-			setPendingPixBooking({ slot, name });
-			setIsDrawerOpen(false);
-			setIsPixModalOpen(true);
-		} else {
-			handleBookingConfirm(slot, paymentType, name);
-		}
-	};
-
-	const handlePixPaymentConfirmed = () => {
-		if (pendingPixBooking) {
-			handleBookingConfirm(
-				pendingPixBooking.slot,
-				"pix",
-				pendingPixBooking.name
-			);
-			setPendingPixBooking(null);
-			setIsPixModalOpen(false);
-		}
-	};
-
-	const handleBookingConfirm = (
+	const handleBookingConfirm = useCallback((
 		slot: TimeSlot,
 		paymentType: PaymentType,
 		name: string
@@ -143,16 +129,42 @@ const Index = () => {
 					? "Seu horário está garantido."
 					: "Aguardando aprovação do dono da arena.",
 		});
-	};
+	}, [addBooking, toast]);
 
-	const handleUpdatePlayers = (players: string[]) => {
+	const handlePaymentSelection = useCallback((
+		slot: TimeSlot,
+		paymentType: PaymentType,
+		name: string
+	) => {
+		if (paymentType === "pix") {
+			setPendingPixBooking({ slot, name });
+			setIsDrawerOpen(false);
+			setIsPixModalOpen(true);
+		} else {
+			handleBookingConfirm(slot, paymentType, name);
+		}
+	}, [handleBookingConfirm]);
+
+	const handlePixPaymentConfirmed = useCallback(() => {
+		if (pendingPixBooking) {
+			handleBookingConfirm(
+				pendingPixBooking.slot,
+				"pix",
+				pendingPixBooking.name
+			);
+			setPendingPixBooking(null);
+			setIsPixModalOpen(false);
+		}
+	}, [pendingPixBooking, handleBookingConfirm]);
+
+	const handleUpdatePlayers = useCallback((players: string[]) => {
 		if (!currentBooking) return;
 
 		setCurrentBooking((prev) => (prev ? { ...prev, players } : null));
 		updateBooking(currentBooking.id, { players });
-	};
+	}, [currentBooking, updateBooking]);
 
-	const handleCancelBooking = (bookingId: string) => {
+	const handleCancelBooking = useCallback((bookingId: string) => {
 		const booking = bookings.find((b) => b.id === bookingId);
 		deleteBooking(bookingId);
 
@@ -160,17 +172,17 @@ const Index = () => {
 			title: "Reserva cancelada",
 			description: `A reserva de ${booking?.bookedBy} foi cancelada.`,
 		});
-	};
+	}, [bookings, deleteBooking, toast]);
 
-	const handleBackFromSuccess = () => {
+	const handleBackFromSuccess = useCallback(() => {
 		setActiveView("player");
 		setCurrentBooking(null);
-	};
+	}, []);
 
-	const handleViewBookingFromHistory = (booking: Booking) => {
+	const handleViewBookingFromHistory = useCallback((booking: Booking) => {
 		setCurrentBooking(booking);
 		setActiveView("success");
-	};
+	}, []);
 
 	const getPixAmount = () => {
 		if (!pendingPixBooking) return 0;
@@ -188,45 +200,56 @@ const Index = () => {
 	// Confirmation Screen
 	if (activeView === "confirmation" && currentBooking) {
 		return (
-			<BookingConfirmation
-				booking={currentBooking}
-				onContinue={() => setActiveView("success")}
-				onBack={handleBackFromSuccess}
-			/>
+			<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+				<BookingConfirmation
+					booking={currentBooking}
+					onContinue={() => setActiveView("success")}
+					onBack={handleBackFromSuccess}
+				/>
+			</Suspense>
 		);
 	}
 
 	// Success/Team Management Screen
 	if (activeView === "success" && currentBooking) {
 		return (
-			<SuccessScreen
-				booking={currentBooking}
-				onBack={handleBackFromSuccess}
-				onUpdatePlayers={handleUpdatePlayers}
-			/>
+			<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+				<SuccessScreen
+					booking={currentBooking}
+					onBack={handleBackFromSuccess}
+					onUpdatePlayers={handleUpdatePlayers}
+				/>
+			</Suspense>
 		);
 	}
 
 	// Booking History Screen
 	if (activeView === "history") {
+		const userBookings = useMemo(() => 
+			bookings.filter(
+				(b) => b.bookedBy === userPhone || b.players.includes(userPhone)
+			),
+			[bookings, userPhone]
+		);
+		
 		return (
-			<BookingHistory
-				bookings={bookings.filter(
-					(b) => b.bookedBy === userPhone || b.players.includes(userPhone)
-				)}
-				onBack={() => setActiveView("player")}
-				onCancelBooking={handleCancelBooking}
-				onViewBooking={handleViewBookingFromHistory}
-			/>
+			<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+				<BookingHistory
+					bookings={userBookings}
+					onBack={() => setActiveView("player")}
+					onCancelBooking={handleCancelBooking}
+					onViewBooking={handleViewBookingFromHistory}
+				/>
+			</Suspense>
 		);
 	}
 
 	// Player Home
 	return (
-		<div className="min-h-screen bg-background pb-24">
+		<div className="min-h-screen bg-background pb-28 md:pb-24">
 			<Header />
 
-			<main className="container py-4 space-y-4">
+			<main className="container px-5 md:px-6 py-4 md:py-5 space-y-3 md:space-y-4">
 				{/* Field Selector (Pills) */}
 				<FieldSelector
 					selectedField={selectedField}
@@ -262,21 +285,29 @@ const Index = () => {
 			</main>
 
 			{/* Payment Drawer */}
-			<PaymentDrawer
-				slot={selectedSlot}
-				isOpen={isDrawerOpen}
-				onClose={() => setIsDrawerOpen(false)}
-				onConfirm={handlePaymentSelection}
-			/>
+			{isDrawerOpen && (
+				<Suspense fallback={null}>
+					<PaymentDrawer
+						slot={selectedSlot}
+						isOpen={isDrawerOpen}
+						onClose={() => setIsDrawerOpen(false)}
+						onConfirm={handlePaymentSelection}
+					/>
+				</Suspense>
+			)}
 
 			{/* Pix Payment Modal */}
-			<PixPaymentModal
-				open={isPixModalOpen}
-				onOpenChange={setIsPixModalOpen}
-				amount={getPixAmount()}
-				bookingCode={`B${Date.now().toString().slice(-6)}`}
-				onPaymentConfirmed={handlePixPaymentConfirmed}
-			/>
+			{isPixModalOpen && (
+				<Suspense fallback={null}>
+					<PixPaymentModal
+						open={isPixModalOpen}
+						onOpenChange={setIsPixModalOpen}
+						amount={getPixAmount()}
+						bookingCode={`B${Date.now().toString().slice(-6)}`}
+						onPaymentConfirmed={handlePixPaymentConfirmed}
+					/>
+				</Suspense>
+			)}
 
 			{/* Bottom Navigation */}
 			<BottomNav

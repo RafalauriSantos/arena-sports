@@ -119,7 +119,7 @@ export function AdminDashboardNew({
   const field = ARENA_CONFIG.fields.find((f) => f.id === selectedField);
 
   return (
-    <div className="min-h-screen bg-background pb-24 px-4 md:px-0">
+    <div className="min-h-screen bg-background pb-28 md:pb-24 px-4 md:px-0">
       <AdminFinancialHeader
         todayRevenue={todayRevenue}
         confirmedGames={confirmedBookings.length}

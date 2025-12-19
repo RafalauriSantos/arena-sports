@@ -8,8 +8,8 @@ interface BottomNavProps {
 
 export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50">
-			<div className="container">
+		<nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50 safe-area-bottom">
+			<div className="container px-4">
 				<div className="flex items-center justify-around py-2">
 					<button
 						onClick={() => onViewChange("player")}

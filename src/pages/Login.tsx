@@ -106,14 +106,7 @@ export default function Login() {
 				</Card>
 
 				{/* Footer */}
-				<div className="text-center space-y-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => navigate("/")}
-						className="gap-2">
-						← Voltar para área do jogador
-					</Button>
+				<div className="text-center">
 					<div className="text-xs text-muted-foreground">
 						<p>© 2025 E-SPORTIVO. Todos os direitos reservados.</p>
 						<p className="mt-1">Desenvolvido por Rafael Lauri Santos</p>

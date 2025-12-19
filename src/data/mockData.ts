@@ -18,8 +18,7 @@ const generateTimeSlots = (): TimeSlot[] => {
     const dateStr = formatDate(date);
     const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-    console.log(`Data: ${dateStr}, Dia da semana: ${dayNames[dayOfWeek]} (${dayOfWeek})`);
+    // Removed console.log for production performance
 
     // Define working hours based on day of week
     let startHour: number;
@@ -58,7 +57,6 @@ const generateTimeSlots = (): TimeSlot[] => {
     });
   }
 
-  console.log(`Total de slots gerados: ${slots.length}`);
   return slots;
 };
 

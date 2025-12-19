@@ -199,3 +199,26 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Safe area support for iOS */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  .h-safe-area-inset-bottom {
+    height: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}

@@ -201,7 +201,7 @@ export function BookingHistory({ bookings, onBack, onCancelBooking, onViewBookin
         </div>
       </header>
 
-      <div className="p-4 pb-32 space-y-6">
+      <div className="p-4 pb-28 md:pb-32 space-y-4 md:space-y-6">
         {/* Future Bookings */}
         <section>
           <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">

@@ -52,15 +52,15 @@ export function PaymentDrawer({ slot, isOpen, onClose, onConfirm }: PaymentDrawe
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="bg-card border-border max-h-[90vh]">
+      <DrawerContent className="bg-card border-border max-h-[92vh] safe-area-bottom">
         <div className="mx-auto w-full max-w-md overflow-y-auto">
-          <DrawerHeader className="text-left pb-2">
+          <DrawerHeader className="text-left pb-2 px-4 pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <DrawerTitle className="text-xl font-bold text-foreground">
+                <DrawerTitle className="text-lg md:text-xl font-bold text-foreground">
                   Reserva: {slot.time}
                 </DrawerTitle>
-                <p className="text-sm text-primary mt-1">{field?.name}</p>
+                <p className="text-xs md:text-sm text-primary mt-1">{field?.name}</p>
               </div>
               <button
                 onClick={onClose}
@@ -71,7 +71,7 @@ export function PaymentDrawer({ slot, isOpen, onClose, onConfirm }: PaymentDrawe
             </div>
           </DrawerHeader>
 
-          <div className="px-4 pb-8 space-y-5">
+          <div className="px-4 pb-6 md:pb-8 space-y-4 md:space-y-5">
             {/* Slot Info */}
             <div className="p-4 rounded-xl bg-secondary/50 border border-border">
               <div className="flex items-center gap-3">
@@ -224,7 +224,7 @@ export function PaymentDrawer({ slot, isOpen, onClose, onConfirm }: PaymentDrawe
               onClick={handleConfirm}
               disabled={!selectedPayment || !name.trim()}
               className={cn(
-                "w-full h-14 text-lg font-bold btn-press disabled:opacity-50 disabled:cursor-not-allowed",
+                "w-full h-12 md:h-14 text-base md:text-lg font-bold btn-press disabled:opacity-50 disabled:cursor-not-allowed mb-2",
                 selectedPayment === "local"
                   ? "bg-warning hover:bg-warning/90 text-warning-foreground"
                   : "bg-primary hover:bg-primary/90 text-primary-foreground glow-primary"

@@ -48,7 +48,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const isValidPhone = phone.replace(/\D/g, "").length >= 10;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden safe-area-top safe-area-bottom">
       {/* Flash Effect */}
       {showFlash && (
         <div className="absolute inset-0 bg-primary/30 animate-flash z-50 pointer-events-none" />

@@ -239,7 +239,7 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
         </div>
       </div>
 
-      <div className="container py-6 space-y-6">
+      <div className="container px-4 py-4 md:py-6 space-y-4 md:space-y-6 pb-28 md:pb-6">
         {/* Ticket/Comprovante Visual */}
         <Card className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-card to-card border-primary/30 p-6 rounded-2xl">
           {/* Ticket Perforations */}
@@ -284,14 +284,14 @@ export function SuccessScreen({ booking, onBack, onUpdatePlayers }: SuccessScree
         {/* Main CTA - Share to Group */}
         <Button
           onClick={handleShareWhatsApp}
-          className="w-full h-16 gap-3 bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-lg btn-press glow-primary"
+          className="w-full h-14 md:h-16 gap-2 md:gap-3 bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-base md:text-lg btn-press glow-primary"
         >
-          <MessageCircle className="w-6 h-6" />
+          <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
           Enviar Convite no Grupo do Time
         </Button>
 
         {/* Secondary Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
           <Button
             onClick={handleWhatsAppOwner}
             variant="outline"

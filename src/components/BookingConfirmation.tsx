@@ -98,7 +98,7 @@ Valor: R$ ${(booking.pricePerPlayer * booking.totalPlayers).toFixed(2).replace("
         <h1 className="text-lg font-bold text-foreground">Confirmação</h1>
       </header>
 
-      <div className="flex-1 p-4 pb-32 overflow-y-auto">
+      <div className="flex-1 p-4 pb-28 md:pb-32 overflow-y-auto">
         {/* Success Icon */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-4 animate-scale-in">

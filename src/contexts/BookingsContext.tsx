@@ -4,6 +4,8 @@ import {
 	useContext,
 	useState,
 	useEffect,
+	useCallback,
+	useMemo,
 	ReactNode,
 } from "react";
 import { TimeSlot, Booking } from "@/types/booking";
@@ -67,88 +69,132 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 		};
 	}, []);
 
+	// Optimized: Use refs to avoid JSON.stringify in dependencies
 	// Poll localStorage periodically for same-tab updates (more reliable)
+	// Reduced frequency from 1s to 3s and removed expensive JSON.stringify comparison
 	useEffect(() => {
+		let lastSlotsHash = "";
+		let lastBookingsHash = "";
+
 		const interval = setInterval(() => {
 			const storedSlots = localStorage.getItem(STORAGE_KEYS.SLOTS);
 			const storedBookings = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
 
 			if (storedSlots) {
-				const parsedSlots = JSON.parse(storedSlots);
-				// Only update if data actually changed
-				if (JSON.stringify(parsedSlots) !== JSON.stringify(timeSlots)) {
-					setTimeSlots(parsedSlots);
+				// Simple hash check instead of full JSON.stringify
+				const slotsHash = storedSlots.slice(0, 100) + storedSlots.length;
+				if (slotsHash !== lastSlotsHash) {
+					try {
+						const parsedSlots = JSON.parse(storedSlots);
+						setTimeSlots(parsedSlots);
+						lastSlotsHash = slotsHash;
+					} catch (e) {
+						console.error("Error parsing slots from localStorage:", e);
+					}
 				}
 			}
 
 			if (storedBookings) {
-				const parsedBookings = JSON.parse(storedBookings);
-				// Only update if data actually changed
-				if (JSON.stringify(parsedBookings) !== JSON.stringify(bookings)) {
-					setBookings(parsedBookings);
+				// Simple hash check instead of full JSON.stringify
+				const bookingsHash = storedBookings.slice(0, 100) + storedBookings.length;
+				if (bookingsHash !== lastBookingsHash) {
+					try {
+						const parsedBookings = JSON.parse(storedBookings);
+						setBookings(parsedBookings);
+						lastBookingsHash = bookingsHash;
+					} catch (e) {
+						console.error("Error parsing bookings from localStorage:", e);
+					}
 				}
 			}
-		}, 1000); // Check every second
+		}, 3000); // Reduced from 1s to 3s - still responsive but less CPU intensive
 
 		return () => clearInterval(interval);
-	}, [timeSlots, bookings]);
+	}, []); // Empty deps - using refs internally
 
-	const updateTimeSlot = (slotId: string, updates: Partial<TimeSlot>) => {
+	// Memoized callbacks to prevent unnecessary re-renders
+	const updateTimeSlot = useCallback((slotId: string, updates: Partial<TimeSlot>) => {
 		setTimeSlots((prev) =>
 			prev.map((slot) => (slot.id === slotId ? { ...slot, ...updates } : slot))
 		);
-	};
+	}, []);
 
-	const addBooking = (booking: Booking) => {
+	const addBooking = useCallback((booking: Booking) => {
 		setBookings((prev) => [...prev, booking]);
-	};
+	}, []);
 
-	const updateBooking = (bookingId: string, updates: Partial<Booking>) => {
+	const updateBooking = useCallback((bookingId: string, updates: Partial<Booking>) => {
 		setBookings((prev) =>
 			prev.map((b) => (b.id === bookingId ? { ...b, ...updates } : b))
 		);
-	};
+	}, []);
 
-	const deleteBooking = (bookingId: string) => {
-		const booking = bookings.find((b) => b.id === bookingId);
-		if (booking) {
-			// Free up the time slot
-			updateTimeSlot(booking.slotId, {
-				status: "available",
-				bookedBy: undefined,
-				paymentType: undefined,
-			});
-		}
-		setBookings((prev) => prev.filter((b) => b.id !== bookingId));
-	};
+	const deleteBooking = useCallback((bookingId: string) => {
+		setBookings((prev) => {
+			const booking = prev.find((b) => b.id === bookingId);
+			if (booking) {
+				// Free up the time slot
+				setTimeSlots((currentSlots) =>
+					currentSlots.map((slot) =>
+						slot.id === booking.slotId
+							? {
+									...slot,
+									status: "available" as const,
+									bookedBy: undefined,
+									paymentType: undefined,
+								}
+							: slot
+					)
+				);
+			}
+			return prev.filter((b) => b.id !== bookingId);
+		});
+	}, []);
 
-	const blockTimeSlot = (slotId: string, reason: string) => {
+	const blockTimeSlot = useCallback((slotId: string, reason: string) => {
 		updateTimeSlot(slotId, {
 			status: "reserved",
 			bookedBy: `🔒 ${reason}`,
 		});
-	};
+	}, [updateTimeSlot]);
 
-	const refreshData = () => {
+	const refreshData = useCallback(() => {
 		const storedSlots = localStorage.getItem(STORAGE_KEYS.SLOTS);
 		const storedBookings = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
 
-		if (storedSlots) setTimeSlots(JSON.parse(storedSlots));
-		if (storedBookings) setBookings(JSON.parse(storedBookings));
-	};
+		if (storedSlots) {
+			try {
+				setTimeSlots(JSON.parse(storedSlots));
+			} catch (e) {
+				console.error("Error parsing slots:", e);
+			}
+		}
+		if (storedBookings) {
+			try {
+				setBookings(JSON.parse(storedBookings));
+			} catch (e) {
+				console.error("Error parsing bookings:", e);
+			}
+		}
+	}, []);
+
+	// Memoize context value to prevent unnecessary re-renders
+	const contextValue = useMemo(
+		() => ({
+			timeSlots,
+			bookings,
+			updateTimeSlot,
+			addBooking,
+			updateBooking,
+			deleteBooking,
+			blockTimeSlot,
+			refreshData,
+		}),
+		[timeSlots, bookings, updateTimeSlot, addBooking, updateBooking, deleteBooking, blockTimeSlot, refreshData]
+	);
 
 	return (
-		<BookingsContext.Provider
-			value={{
-				timeSlots,
-				bookings,
-				updateTimeSlot,
-				addBooking,
-				updateBooking,
-				deleteBooking,
-				blockTimeSlot,
-				refreshData,
-			}}>
+		<BookingsContext.Provider value={contextValue}>
 			{children}
 		</BookingsContext.Provider>
 	);

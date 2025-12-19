@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Users } from "lucide-react";
 import { ARENA_CONFIG, FieldId } from "@/config/arena";
 import { cn } from "@/lib/utils";
@@ -7,9 +8,9 @@ interface FieldSelectorProps {
   onFieldChange: (field: FieldId) => void;
 }
 
-export function FieldSelector({ selectedField, onFieldChange }: FieldSelectorProps) {
+export const FieldSelector = memo(function FieldSelector({ selectedField, onFieldChange }: FieldSelectorProps) {
   return (
-    <div className="flex gap-2 p-1 bg-card rounded-2xl border border-border">
+    <div className="flex gap-1.5 md:gap-2 p-1 bg-card rounded-2xl border border-border">
       {ARENA_CONFIG.fields.map((field) => {
         const isSelected = selectedField === field.id;
         return (
@@ -17,7 +18,7 @@ export function FieldSelector({ selectedField, onFieldChange }: FieldSelectorPro
             key={field.id}
             onClick={() => onFieldChange(field.id)}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all duration-200 btn-press",
+              "flex-1 flex items-center justify-center gap-1.5 md:gap-2 py-2.5 md:py-3 px-2 md:px-4 rounded-xl transition-all duration-200 btn-press",
               isSelected
                 ? "bg-primary text-primary-foreground glow-primary"
                 : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -37,4 +38,4 @@ export function FieldSelector({ selectedField, onFieldChange }: FieldSelectorPro
       })}
     </div>
   );
-}
+});
