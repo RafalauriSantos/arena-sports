@@ -87,7 +87,7 @@ export function AdminLayout({
 			{/* Main Content Area */}
 			<main
 				ref={mainRef}
-				className="md:ml-64 pt-14 md:pt-0 px-4 md:px-8 py-4 md:py-8">
+				className="md:ml-64 pt-14 md:pt-8 px-4 md:px-8 py-4 md:py-8">
 				<div className="max-w-7xl mx-auto">{children}</div>
 			</main>
 		</div>
