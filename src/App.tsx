@@ -3,10 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { BookingsProvider } from "@/contexts/BookingsContext";
 
 // Lazy load pages for code splitting
+const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const Index = lazy(() => import("./pages/Index"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
