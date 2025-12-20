@@ -43,39 +43,39 @@ function IPhoneMockup({ children, className = "" }: { children: React.ReactNode;
   return (
     <div className={`relative ${className}`}>
       {/* iPhone Frame */}
-      <div className="relative w-[280px] h-[580px] bg-[#1a1a1a] rounded-[55px] p-[12px] shadow-2xl border border-[#333]">
+      <div className="relative w-[220px] md:w-[280px] h-[460px] md:h-[580px] bg-[#1a1a1a] rounded-[45px] md:rounded-[55px] p-[10px] md:p-[12px] shadow-2xl border border-[#333]">
         {/* Dynamic Island */}
-        <div className="absolute top-[18px] left-1/2 -translate-x-1/2 w-[100px] h-[32px] bg-black rounded-full z-20" />
+        <div className="absolute top-[14px] md:top-[18px] left-1/2 -translate-x-1/2 w-[80px] md:w-[100px] h-[26px] md:h-[32px] bg-black rounded-full z-20" />
         
         {/* Screen */}
-        <div className="relative w-full h-full bg-black rounded-[43px] overflow-hidden">
+        <div className="relative w-full h-full bg-black rounded-[35px] md:rounded-[43px] overflow-hidden">
           {/* Status Bar */}
-          <div className="absolute top-0 left-0 right-0 h-[50px] flex items-end justify-between px-6 pb-1 text-white text-xs font-medium z-10">
-            <span>9:41</span>
+          <div className="absolute top-0 left-0 right-0 h-[40px] md:h-[50px] flex items-end justify-between px-5 md:px-6 pb-1 text-white text-xs font-medium z-10">
+            <span className="text-[10px] md:text-xs">9:41</span>
             <div className="flex items-center gap-1">
               <div className="flex gap-[2px]">
-                <div className="w-[3px] h-[10px] bg-white rounded-sm" />
-                <div className="w-[3px] h-[10px] bg-white rounded-sm" />
-                <div className="w-[3px] h-[10px] bg-white rounded-sm" />
-                <div className="w-[3px] h-[10px] bg-white/40 rounded-sm" />
+                <div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white rounded-sm" />
+                <div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white rounded-sm" />
+                <div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white rounded-sm" />
+                <div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white/40 rounded-sm" />
               </div>
-              <div className="w-6 h-3 border border-white rounded-sm ml-1">
-                <div className="w-4 h-full bg-white rounded-sm" />
+              <div className="w-5 md:w-6 h-2.5 md:h-3 border border-white rounded-sm ml-1">
+                <div className="w-3 md:w-4 h-full bg-white rounded-sm" />
               </div>
             </div>
           </div>
           
           {/* App Content */}
-          <div className="pt-[50px] h-full">
+          <div className="pt-[40px] md:pt-[50px] h-full">
             {children}
           </div>
         </div>
         
         {/* Side Button */}
-        <div className="absolute -right-[2px] top-[120px] w-[3px] h-[80px] bg-[#333] rounded-l" />
-        <div className="absolute -left-[2px] top-[100px] w-[3px] h-[35px] bg-[#333] rounded-r" />
-        <div className="absolute -left-[2px] top-[150px] w-[3px] h-[60px] bg-[#333] rounded-r" />
-        <div className="absolute -left-[2px] top-[220px] w-[3px] h-[60px] bg-[#333] rounded-r" />
+        <div className="absolute -right-[2px] top-[100px] md:top-[120px] w-[3px] h-[60px] md:h-[80px] bg-[#333] rounded-l" />
+        <div className="absolute -left-[2px] top-[80px] md:top-[100px] w-[3px] h-[28px] md:h-[35px] bg-[#333] rounded-r" />
+        <div className="absolute -left-[2px] top-[120px] md:top-[150px] w-[3px] h-[48px] md:h-[60px] bg-[#333] rounded-r" />
+        <div className="absolute -left-[2px] top-[176px] md:top-[220px] w-[3px] h-[48px] md:h-[60px] bg-[#333] rounded-r" />
       </div>
     </div>
   );
