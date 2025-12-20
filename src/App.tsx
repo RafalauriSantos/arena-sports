@@ -51,10 +51,7 @@ const App = () => (
 							{/* Rotas de Admin */}
 							<Route path="/admin/login" element={<Login />} />
 							<Route path="/admin/dashboard" element={<AdminIndex />} />
-							<Route
-								path="/admin"
-								element={<Navigate to="/admin/login" replace />}
-							/>
+							<Route path="/admin" element={<Login />} />
 
 							{/* 2. O JOGADOR (Link público: /agendar) */}
 							<Route path="/agendar" element={<Index />} />
