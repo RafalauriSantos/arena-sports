@@ -111,29 +111,29 @@ function CalendarAppScreen() {
   const dates = [14, 15, 16, 17, 18, 19, 20];
   
   return (
-    <div className="h-full bg-black p-4">
+    <div className="h-full bg-black p-3 md:p-4">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-[#00FF00]/20 flex items-center justify-center">
-          <span className="text-lg">⚽</span>
+      <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+        <div className="w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl bg-[#00FF00]/20 flex items-center justify-center">
+          <span className="text-sm md:text-lg">⚽</span>
         </div>
         <div>
-          <h3 className="text-white font-bold text-sm">Arena Sport</h3>
-          <p className="text-white/50 text-xs">Escolha seu horário</p>
+          <h3 className="text-white font-bold text-xs md:text-sm">Arena Sport</h3>
+          <p className="text-white/50 text-[10px] md:text-xs">Escolha seu horário</p>
         </div>
       </div>
       
       {/* Date Strip */}
-      <div className="flex gap-2 mb-6 overflow-hidden">
-        {days.map((day, i) => (
+      <div className="flex gap-1.5 md:gap-2 mb-4 md:mb-6 overflow-hidden">
+        {days.slice(0, 5).map((day, i) => (
           <div
             key={day}
-            className={`flex flex-col items-center p-2 rounded-xl min-w-[40px] ${
+            className={`flex flex-col items-center p-1.5 md:p-2 rounded-lg md:rounded-xl min-w-[32px] md:min-w-[40px] ${
               i === 3 ? "bg-[#00FF00] text-black" : "bg-white/5 text-white/70"
             }`}
           >
-            <span className="text-[10px] font-medium">{day}</span>
-            <span className={`text-sm font-bold ${i === 3 ? "text-black" : "text-white"}`}>
+            <span className="text-[8px] md:text-[10px] font-medium">{day}</span>
+            <span className={`text-xs md:text-sm font-bold ${i === 3 ? "text-black" : "text-white"}`}>
               {dates[i]}
             </span>
           </div>
@@ -141,26 +141,26 @@ function CalendarAppScreen() {
       </div>
       
       {/* Time Slots */}
-      <div className="space-y-2">
+      <div className="space-y-1.5 md:space-y-2">
         {["18:00", "19:00", "20:00", "21:00"].map((time, i) => (
           <div
             key={time}
-            className={`flex items-center justify-between p-3 rounded-xl ${
+            className={`flex items-center justify-between p-2 md:p-3 rounded-lg md:rounded-xl ${
               i === 1 ? "bg-[#00FF00]/10 border border-[#00FF00]/30" : "bg-white/5"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <span className={`text-lg font-bold ${i === 1 ? "text-[#00FF00]" : "text-white"}`}>
+            <div className="flex items-center gap-2 md:gap-3">
+              <span className={`text-sm md:text-lg font-bold ${i === 1 ? "text-[#00FF00]" : "text-white"}`}>
                 {time}
               </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${
+              <span className={`text-[8px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full ${
                 i === 1 ? "bg-[#00FF00]/20 text-[#00FF00]" : "bg-white/10 text-white/50"
               }`}>
                 {i === 1 ? "Disponível" : i === 2 ? "Reservado" : "Disponível"}
               </span>
             </div>
             {(i === 0 || i === 1 || i === 3) && (
-              <span className="text-[#00FF00] font-bold text-sm">R$ 160</span>
+              <span className="text-[#00FF00] font-bold text-xs md:text-sm">R$ 160</span>
             )}
           </div>
         ))}
