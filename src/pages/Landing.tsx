@@ -248,16 +248,17 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-testid="landing-logo">
             <span className="text-2xl">⚽</span>
             <span className="text-xl font-black">Sport.Ai</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
-            <a href="#features" className="hover:text-white transition-colors">Funcionalidades</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Planos</a>
+            <a href="#features" className="hover:text-white transition-colors" data-testid="nav-features">Funcionalidades</a>
+            <a href="#pricing" className="hover:text-white transition-colors" data-testid="nav-pricing">Planos</a>
             <button 
               onClick={() => navigate("/admin/login")}
               className="text-white/70 hover:text-white transition-colors"
+              data-testid="nav-login"
             >
               Entrar
             </button>
@@ -265,6 +266,7 @@ export default function Landing() {
           <button
             onClick={() => navigate("/admin/login")}
             className="px-5 py-2.5 bg-[#00FF00] text-black font-semibold rounded-full text-sm hover:bg-[#00FF00]/90 transition-all hover:shadow-[0_0_30px_rgba(0,255,0,0.3)]"
+            data-testid="nav-cta"
           >
             Agendar Demonstração
           </button>
@@ -272,26 +274,26 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20">
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20" data-testid="hero-section">
         {/* Gradient Orb */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FF00]/5 rounded-full blur-[150px] pointer-events-none" />
         
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 text-sm text-white/70">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 text-sm text-white/70" data-testid="hero-badge">
             <span className="w-2 h-2 bg-[#00FF00] rounded-full animate-pulse" />
             Plataforma #1 em Gestão de Arenas
           </div>
           
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9]">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9]" data-testid="hero-headline">
             Sua Arena em
             <br />
             <span className="text-[#00FF00]">Alta Performance.</span>
           </h1>
           
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed" data-testid="hero-subheadline">
             Abandone o caos do WhatsApp. Organize agendamentos, atraia jogadores e maximize seu lucro com a plataforma de gestão mais avançada do esporte.
           </p>
           
@@ -300,6 +302,7 @@ export default function Landing() {
             <button
               onClick={() => navigate("/admin/login")}
               className="group px-8 py-4 bg-[#00FF00] text-black font-bold rounded-full text-lg hover:bg-[#00FF00]/90 transition-all hover:shadow-[0_0_40px_rgba(0,255,0,0.4)] flex items-center gap-2"
+              data-testid="hero-cta-primary"
             >
               Agendar Demonstração
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -307,6 +310,7 @@ export default function Landing() {
             <button
               onClick={() => navigate("/agendar")}
               className="px-8 py-4 bg-white/5 text-white font-semibold rounded-full text-lg border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2"
+              data-testid="hero-cta-secondary"
             >
               <Play className="w-5 h-5" />
               Ver Demo ao Vivo
@@ -318,6 +322,7 @@ export default function Landing() {
         <button 
           onClick={scrollToNext}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/30 hover:text-white/60 transition-colors animate-bounce"
+          data-testid="scroll-indicator"
         >
           <ChevronDown className="w-8 h-8" />
         </button>
