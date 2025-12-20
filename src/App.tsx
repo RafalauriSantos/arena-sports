@@ -45,11 +45,8 @@ const App = () => (
 				<BrowserRouter>
 					<Suspense fallback={<PageLoader />}>
 						<Routes>
-							{/* 1. O DONO (Entra no site -> Vai pro Login) */}
-							<Route
-								path="/"
-								element={<Navigate to="/admin/login" replace />}
-							/>
+							{/* Landing Page - Vitrine do Negócio */}
+							<Route path="/" element={<Landing />} />
 
 							{/* Rotas de Admin */}
 							<Route path="/admin/login" element={<Login />} />
