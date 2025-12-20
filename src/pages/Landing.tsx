@@ -86,20 +86,20 @@ function MacBookMockup({ children, className = "" }: { children: React.ReactNode
   return (
     <div className={`relative ${className}`}>
       {/* Screen */}
-      <div className="relative w-[700px] bg-[#1a1a1a] rounded-t-xl p-[8px] border-t border-l border-r border-[#333]">
+      <div className="relative w-[320px] md:w-[700px] bg-[#1a1a1a] rounded-t-xl p-[6px] md:p-[8px] border-t border-l border-r border-[#333]">
         {/* Camera */}
-        <div className="absolute top-[4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-[#0a0a0a] rounded-full" />
+        <div className="absolute top-[3px] md:top-[4px] left-1/2 -translate-x-1/2 w-1.5 md:w-2 h-1.5 md:h-2 bg-[#0a0a0a] rounded-full" />
         
         {/* Display */}
-        <div className="w-full h-[420px] bg-black rounded-lg overflow-hidden mt-2">
+        <div className="w-full h-[200px] md:h-[420px] bg-black rounded-lg overflow-hidden mt-1.5 md:mt-2">
           {children}
         </div>
       </div>
       
       {/* Base */}
-      <div className="relative w-[800px] h-[14px] bg-gradient-to-b from-[#2a2a2a] to-[#1a1a1a] rounded-b-xl -ml-[50px] border-b border-l border-r border-[#333]">
+      <div className="relative w-[360px] md:w-[800px] h-[10px] md:h-[14px] bg-gradient-to-b from-[#2a2a2a] to-[#1a1a1a] rounded-b-xl -ml-[20px] md:-ml-[50px] border-b border-l border-r border-[#333]">
         {/* Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150px] h-[4px] bg-[#0a0a0a] rounded-b-lg" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80px] md:w-[150px] h-[3px] md:h-[4px] bg-[#0a0a0a] rounded-b-lg" />
       </div>
     </div>
   );
