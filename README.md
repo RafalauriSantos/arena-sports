@@ -35,7 +35,6 @@ bun dev
 
 A build de produção também foi verificada usando Bun (`bun run build`) e completou com sucesso. Se o servidor de desenvolvimento usar outra porta, utilize a URL exibida pelo Vite no terminal.
 
-
 ## 🛠 Tecnologias Utilizadas
 
 O projeto foi construído com foco em **performance** e **DX (Developer Experience)**, utilizando o que há de mais moderno no ecossistema JavaScript:
