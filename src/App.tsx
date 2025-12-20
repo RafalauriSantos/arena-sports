@@ -53,13 +53,8 @@ const App = () => (
 							<Route path="/admin/dashboard" element={<AdminIndex />} />
 							<Route path="/admin" element={<Login />} />
 
-							{/* 2. O JOGADOR (Link público: /agendar) */}
+							{/* O JOGADOR (Link público: /agendar) */}
 							<Route path="/agendar" element={<Index />} />
-							{/* Redireciona links antigos (/user) para o novo */}
-							<Route
-								path="/user"
-								element={<Navigate to="/agendar" replace />}
-							/>
 
 							<Route path="*" element={<NotFound />} />
 						</Routes>
