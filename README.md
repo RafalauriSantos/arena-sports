@@ -21,6 +21,21 @@ O **Sport.Ai** é uma solução B2B/B2C desenvolvida para resolver a dor de cabe
 	<img src="https://via.placeholder.com/800x400?text=Print+do+Dashboard+Admin" alt="Dashboard Admin" width="700">
 </div>
 
+## 🏠 Landing Page
+
+Uma **nova landing page** foi adicionada ao projeto e está disponível na rota raiz (`/`). A página inclui mockups para **iPhone** e **MacBook**, seções de demonstração (calendário, dashboard) e animações sutis. O arquivo principal da landing é `src/pages/Landing.tsx` e a página é carregada de forma lazy no `App`.
+
+**Como testar localmente com Bun:**
+
+```bash
+bun install
+bun dev
+# Abra a URL que o Vite imprimir (ex.: http://localhost:5173 ou a porta informada no console)
+```
+
+A build de produção também foi verificada usando Bun (`bun run build`) e completou com sucesso. Se o servidor de desenvolvimento usar outra porta, utilize a URL exibida pelo Vite no terminal.
+
+
 ## 🛠 Tecnologias Utilizadas
 
 O projeto foi construído com foco em **performance** e **DX (Developer Experience)**, utilizando o que há de mais moderno no ecossistema JavaScript:
