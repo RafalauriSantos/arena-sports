@@ -175,54 +175,54 @@ function DashboardAppScreen() {
   const maxValue = Math.max(...chartData);
   
   return (
-    <div className="h-full bg-black p-6">
+    <div className="h-full bg-black p-3 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#00FF00]/20 flex items-center justify-center">
-            <span className="text-lg">⚽</span>
+      <div className="flex items-center justify-between mb-3 md:mb-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-7 md:w-10 h-7 md:h-10 rounded-lg md:rounded-xl bg-[#00FF00]/20 flex items-center justify-center">
+            <span className="text-sm md:text-lg">⚽</span>
           </div>
           <div>
-            <h3 className="text-white font-bold">Sport.Ai Dashboard</h3>
-            <p className="text-white/50 text-xs">Painel Administrativo</p>
+            <h3 className="text-white font-bold text-xs md:text-base">Sport.Ai Dashboard</h3>
+            <p className="text-white/50 text-[8px] md:text-xs">Painel Administrativo</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <div className="px-3 py-1.5 bg-white/5 rounded-lg text-white/70 text-xs">Hoje</div>
-          <div className="px-3 py-1.5 bg-[#00FF00] rounded-lg text-black text-xs font-medium">Semana</div>
+        <div className="flex gap-1 md:gap-2">
+          <div className="px-2 md:px-3 py-1 md:py-1.5 bg-white/5 rounded-md md:rounded-lg text-white/70 text-[8px] md:text-xs">Hoje</div>
+          <div className="px-2 md:px-3 py-1 md:py-1.5 bg-[#00FF00] rounded-md md:rounded-lg text-black text-[8px] md:text-xs font-medium">Semana</div>
         </div>
       </div>
       
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-[#00FF00]/20 to-[#00FF00]/5 rounded-2xl p-4 border border-[#00FF00]/20">
-          <p className="text-white/50 text-xs mb-1">Faturamento Hoje</p>
-          <p className="text-[#00FF00] text-2xl font-black">R$ 1.450</p>
-          <p className="text-[#00FF00]/70 text-xs mt-1">+23% vs ontem</p>
+      <div className="grid grid-cols-3 gap-2 md:gap-4 mb-3 md:mb-6">
+        <div className="bg-gradient-to-br from-[#00FF00]/20 to-[#00FF00]/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-[#00FF00]/20">
+          <p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">Faturamento Hoje</p>
+          <p className="text-[#00FF00] text-sm md:text-2xl font-black">R$ 1.450</p>
+          <p className="text-[#00FF00]/70 text-[7px] md:text-xs mt-0.5 md:mt-1">+23% vs ontem</p>
         </div>
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-          <p className="text-white/50 text-xs mb-1">Jogos Agendados</p>
-          <p className="text-white text-2xl font-black">8</p>
-          <p className="text-white/50 text-xs mt-1">Confirmados</p>
+        <div className="bg-white/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-white/10">
+          <p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">Jogos Agendados</p>
+          <p className="text-white text-sm md:text-2xl font-black">8</p>
+          <p className="text-white/50 text-[7px] md:text-xs mt-0.5 md:mt-1">Confirmados</p>
         </div>
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-          <p className="text-white/50 text-xs mb-1">Taxa de Ocupação</p>
-          <p className="text-white text-2xl font-black">87%</p>
-          <p className="text-white/50 text-xs mt-1">Excelente</p>
+        <div className="bg-white/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-white/10">
+          <p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">Taxa de Ocupação</p>
+          <p className="text-white text-sm md:text-2xl font-black">87%</p>
+          <p className="text-white/50 text-[7px] md:text-xs mt-0.5 md:mt-1">Excelente</p>
         </div>
       </div>
       
       {/* Chart */}
-      <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-        <p className="text-white/70 text-sm font-medium mb-4">Receita Semanal</p>
-        <div className="flex items-end justify-between h-[120px] gap-2">
+      <div className="bg-white/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-white/10">
+        <p className="text-white/70 text-[9px] md:text-sm font-medium mb-2 md:mb-4">Receita Semanal</p>
+        <div className="flex items-end justify-between h-[50px] md:h-[120px] gap-1 md:gap-2">
           {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((day, i) => (
-            <div key={day} className="flex flex-col items-center gap-2 flex-1">
+            <div key={day} className="flex flex-col items-center gap-1 md:gap-2 flex-1">
               <div 
                 className="w-full bg-gradient-to-t from-[#00FF00] to-[#00FF00]/50 rounded-t"
-                style={{ height: `${(chartData[i] / maxValue) * 100}px` }}
+                style={{ height: `${(chartData[i] / maxValue) * 100}%` }}
               />
-              <span className="text-white/50 text-[10px]">{day}</span>
+              <span className="text-white/50 text-[6px] md:text-[10px]">{day}</span>
             </div>
           ))}
         </div>
