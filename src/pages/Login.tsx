@@ -40,7 +40,7 @@ export default function Login() {
 						<Shield className="h-8 w-8 text-primary" />
 					</div>
 					<h1 className="text-4xl font-black text-gradient-primary">
-						Sport.Ai
+						Arena Sports
 					</h1>
 					<p className="text-muted-foreground">
 						Painel Administrativo - Acesso Restrito
@@ -110,7 +110,7 @@ export default function Login() {
 				{/* Footer */}
 				<div className="text-center">
 					<div className="text-xs text-muted-foreground">
-						<p>© 2025 Sport.Ai. Todos os direitos reservados.</p>
+						<p>© 2025 Arena Sports. Todos os direitos reservados.</p>
 						<p className="mt-1">Desenvolvido por Rafael Lauri Santos</p>
 					</div>
 				</div>

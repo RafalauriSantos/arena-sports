@@ -32,7 +32,9 @@ export function AdminSidebar({
 		<aside className="w-64 bg-card border-r border-border flex flex-col h-screen fixed left-0 top-0">
 			{/* Logo/Brand */}
 			<div className="p-6 border-b border-border">
-				<h1 className="text-xl font-black text-gradient-primary">Sport.Ai</h1>
+				<h1 className="text-xl font-black text-gradient-primary">
+					Arena Sports
+				</h1>
 				<p className="text-xs text-muted-foreground mt-1">
 					Painel Administrativo
 				</p>

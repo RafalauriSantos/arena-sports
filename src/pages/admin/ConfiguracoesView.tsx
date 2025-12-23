@@ -484,7 +484,7 @@ export default function ConfiguracoesView() {
 						<div className="flex-1">
 							<h3 className="font-bold text-lg mb-1">Rafael Lauri Santos</h3>
 							<p className="text-sm text-muted-foreground mb-4">
-								Desenvolvedor Full Stack | Criador do Sistema Sport.Ai
+								Desenvolvedor Full Stack | Criador do Sistema Arena Sports
 							</p>
 
 							<div className="space-y-3">
@@ -533,7 +533,7 @@ export default function ConfiguracoesView() {
 						<div className="flex gap-3 pt-2">
 							<Button variant="default" size="sm" className="gap-2" asChild>
 								<a
-									href="https://wa.me/5511999999999?text=Olá%20Rafael%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Sport.Ai"
+									href="https://wa.me/5511999999999?text=Olá%20Rafael%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Arena%20Sports"
 									target="_blank"
 									rel="noopener noreferrer">
 									<MessageCircle className="h-4 w-4" />
@@ -543,7 +543,7 @@ export default function ConfiguracoesView() {
 
 							<Button variant="outline" size="sm" className="gap-2" asChild>
 								<a
-									href="mailto:rafael@example.com?subject=Suporte%20Sport.Ai"
+									href="mailto:rafael@example.com?subject=Suporte%20Arena%20Sports"
 									target="_blank"
 									rel="noopener noreferrer">
 									<Mail className="h-4 w-4" />

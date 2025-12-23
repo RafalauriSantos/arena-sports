@@ -102,7 +102,7 @@ export function SuccessScreen({
 	const handleWhatsAppOwner = () => {
 		const displayDateShort = new Date(booking.date).toLocaleDateString("pt-BR");
 		const message = encodeURIComponent(
-			`Olá! Fiz um agendamento via Sport.Ai: ${displayDateShort} às ${booking.time}. Segue o comprovante.`
+			`Olá! Fiz um agendamento via Arena Sports: ${displayDateShort} às ${booking.time}. Segue o comprovante.`
 		);
 		window.open(
 			`https://wa.me/${ARENA_CONFIG.whatsapp}?text=${message}`,

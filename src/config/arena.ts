@@ -1,7 +1,7 @@
 // Arena configuration - Easy to change
 export const ARENA_CONFIG = {
-  pixKey: "pix@sport-ai.com",
-  name: "Sport.Ai",
+  pixKey: "pix@arenasports.com",
+  name: "Arena Sports",
   subtitle: "Gestão Inteligente de Quadras Esportivas",
   whatsapp: "5511999999999", // WhatsApp do dono (com código do país)
   fields: [

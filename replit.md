@@ -1,8 +1,8 @@
-# Sport.Ai
+# Arena Sports
 
 ## Overview
 
-Sport.Ai is a modern SaaS platform for managing sports courts and athletic complexes. It's a B2B/B2C solution designed to eliminate the hassle of scheduling sports courts through spreadsheets and lengthy WhatsApp conversations.
+Arena Sports is a modern SaaS platform for managing sports courts and athletic complexes. It's a B2B/B2C solution designed to eliminate the hassle of scheduling sports courts through spreadsheets and lengthy WhatsApp conversations.
 
 The platform serves two main user types:
 
