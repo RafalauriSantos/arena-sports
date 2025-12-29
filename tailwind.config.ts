@@ -31,6 +31,10 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+        neon: {
+          DEFAULT: "hsl(var(--neon))",
+        },
+        glass: "rgba(255, 255, 255, 0.05)",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -94,10 +98,10 @@ export default {
           to: { height: "0" },
         },
         "pulse-glow": {
-          "0%, 100%": { 
+          "0%, 100%": {
             boxShadow: "0 0 20px hsl(var(--primary) / 0.3)",
           },
-          "50%": { 
+          "50%": {
             boxShadow: "0 0 40px hsl(var(--primary) / 0.6)",
           },
         },
@@ -122,6 +126,9 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+      },
+      boxShadow: {
+        neon: '0 0 10px theme("colors.neon.DEFAULT"), 0 0 20px theme("colors.neon.DEFAULT")',
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

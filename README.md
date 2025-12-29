@@ -8,6 +8,8 @@
 ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
 
+> Preferência do projeto: use Bun para desenvolvimento e build (ex.: `bun dev`, `bun run build`).
+
 ## 💻 Sobre o Projeto
 
 O **Arena Sports** é uma solução B2B/B2C desenvolvida para resolver a dor de cabeça no agendamento de quadras esportivas. O sistema elimina o uso de planilhas e conversas demoradas no WhatsApp, oferecendo:
@@ -53,23 +55,31 @@ O projeto foi construído com foco em **performance** e **DX (Developer Experien
 
 Você precisa ter o **[Bun](https://bun.sh/)** instalado em sua máquina.
 
-### Instalação
+### Instalação & execução (Bun)
 
 ```bash
 # Clone este repositório
 $ git clone https://github.com/RafalauriSantos/campo-verde-agil.git
 
-# Acesse a pasta do projeto no terminal/cmd
+# Vá para a pasta do projeto
 $ cd campo-verde-agil
 
-# Instale as dependências (Ultra rápido com Bun ⚡)
+# Instale dependências (Bun é recomendado)
 $ bun install
 
-# Execute a aplicação em modo de desenvolvimento
-$ bun dev
+# Desenvolvimento (HMR) — testes rápidos e debug
+$ bun run dev
+# Abra a URL que o Vite imprimir no terminal (ex.: http://localhost:5173)
+
+# Build de produção — gera a pasta `dist`
+$ bun run build
+
+# Preview da build de produção (serve a pasta `dist` localmente)
+$ bun run preview
+# Abra a URL que o Vite/preview imprimir no terminal (ex.: http://localhost:4173)
 ```
 
-A aplicação será aberta na porta: http://localhost:5173
+Dica: use `bun run dev` para interatividade rápida com hot reload; para testar o comportamento de produção, rode `bun run build` e `bun run preview`.
 
 ## ⚙️ Funcionalidades Atuais (MVP)
 

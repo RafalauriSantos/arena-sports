@@ -16,8 +16,12 @@
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 135 100% 50%;
-    --primary-foreground: 0 0% 4%;
+    /* Product: Refined brand primary for UI (dashboards, buttons) */
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Marketing: Neon accent (used on landing) */
+    --neon: 120 100% 50%;
 
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
@@ -25,7 +29,7 @@
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 55%;
 
-    --accent: 135 100% 50%;
+    --accent: 120 100% 50%;
     --accent-foreground: 0 0% 4%;
 
     --destructive: 0 84% 60%;
@@ -34,7 +38,7 @@
     --warning: 38 100% 50%;
     --warning-foreground: 0 0% 4%;
 
-    --success: 135 100% 50%;
+    --success: 120 100% 50%;
     --success-foreground: 0 0% 4%;
 
     --gold: 45 100% 50%;
@@ -42,13 +46,13 @@
 
     --border: 0 0% 14%;
     --input: 0 0% 14%;
-    --ring: 135 100% 50%;
+    --ring: 120 100% 50%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 135 100% 50%;
+    --sidebar-primary: 120 100% 50%;
     --sidebar-primary-foreground: 0 0% 4%;
     --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
@@ -64,25 +68,25 @@
     --card-elevated: 0 0% 10%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 98%;
-    --primary: 135 100% 50%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 142 70% 50%;
+    --primary-foreground: 144 80% 10%;
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 55%;
-    --accent: 135 100% 50%;
+    --accent: 120 100% 50%;
     --accent-foreground: 0 0% 4%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --warning: 38 100% 50%;
     --warning-foreground: 0 0% 4%;
-    --success: 135 100% 50%;
+    --success: 120 100% 50%;
     --success-foreground: 0 0% 4%;
     --gold: 45 100% 50%;
     --gold-foreground: 0 0% 4%;
     --border: 0 0% 14%;
     --input: 0 0% 14%;
-    --ring: 135 100% 50%;
+    --ring: 120 100% 50%;
   }
 }
 
@@ -93,6 +97,8 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-color: #09090b;
+    /* Deep dark - Zinc 950 */
     font-family: 'Inter', sans-serif;
   }
 }
@@ -106,6 +112,17 @@
   .glow-primary-strong {
     box-shadow: 0 0 30px hsl(var(--primary) / 0.5),
       0 0 60px hsl(var(--primary) / 0.25);
+  }
+
+  /* neon accent glow for landing elements */
+  .glow-neon {
+    box-shadow: 0 0 18px hsl(var(--neon) / 0.85),
+      0 0 36px hsl(var(--neon) / 0.5);
+  }
+
+  /* Utility using neon for CTA shadow */
+  .shadow-neon {
+    box-shadow: 0 8px 30px -6px hsl(var(--neon) / 0.55);
   }
 
   .glow-gold {
@@ -205,19 +222,19 @@
   .safe-area-top {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
-  
+
   .safe-area-bottom {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
-  
+
   .safe-area-left {
     padding-left: max(1rem, env(safe-area-inset-left));
   }
-  
+
   .safe-area-right {
     padding-right: max(1rem, env(safe-area-inset-right));
   }
-  
+
   .h-safe-area-inset-bottom {
     height: max(0.5rem, env(safe-area-inset-bottom));
   }

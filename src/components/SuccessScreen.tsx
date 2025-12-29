@@ -359,7 +359,7 @@ export function SuccessScreen({
 				{/* Main CTA - Share to Group */}
 				<Button
 					onClick={handleShareWhatsApp}
-					className="w-full h-14 md:h-16 gap-2 md:gap-3 bg-[#25D366] hover:bg-[#20BD5A] text-white font-bold text-base md:text-lg btn-press glow-primary">
+					className="w-full h-14 md:h-16 gap-2 md:gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base md:text-lg btn-press glow-primary">
 					<MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
 					Enviar Convite no Grupo do Time
 				</Button>

@@ -42,12 +42,10 @@ export function AdminLayout({
 	}, [activeView]);
 
 	return (
-		<div className="min-h-screen bg-background">
+		<div className="min-h-screen bg-gray-950 text-gray-50 font-sans selection:bg-primary/30">
 			{/* Mobile Header - Always visible and compact */}
-			<div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border px-3 py-2 flex items-center justify-between">
-				<h1 className="text-base font-bold text-gradient-primary">
-					Arena Sports
-				</h1>
+			<div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5 px-3 py-2 flex items-center justify-between">
+				<h1 className="text-base font-bold text-white">Arena Sports</h1>
 				<Button
 					variant="ghost"
 					size="icon"
@@ -64,7 +62,7 @@ export function AdminLayout({
 			{/* Mobile Sidebar Drawer */}
 			{sidebarOpen && (
 				<div
-					className="md:hidden fixed inset-0 z-40 bg-black/50"
+					className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
 					onClick={() => setSidebarOpen(false)}
 				/>
 			)}

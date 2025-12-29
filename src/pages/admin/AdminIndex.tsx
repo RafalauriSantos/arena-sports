@@ -1,6 +1,7 @@
 //admin index page with navigation to different admin views
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/layout/AdminLayout";
+import { supabase } from "@/lib/supabaseClient";
 import Dashboard from "./Dashboard";
 import AgendaMaster from "./AgendaMaster";
 import FolgasView from "./FolgasView";
@@ -10,7 +11,8 @@ import ConfiguracoesView from "./ConfiguracoesView";
 export default function AdminIndex() {
 	const [activeView, setActiveView] = useState("dashboard");
 
-	const handleLogout = () => {
+	const handleLogout = async () => {
+		await supabase.auth.signOut();
 		window.location.href = "/admin/login";
 	};
 

@@ -1,559 +1,629 @@
 import { useState, useEffect } from "react";
-import {
-	Settings,
-	Save,
-	Clock,
-	DollarSign,
-	MapPin,
-	Phone,
-	Mail,
-	Calendar,
-	AlertCircle,
-	MessageCircle,
-	Github,
-	Code,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-
-interface ArenaConfig {
-	// Arena Info
-	name: string;
-	address: string;
-	phone: string;
-	email: string;
-
-	// Business Hours
-	openTime: string;
-	closeTime: string;
-	slotDuration: number; // in minutes
-
-	// Pricing
-	defaultPrice: number;
-	weekendPrice: number;
-
-	// Field Pricing
-	principalFieldPrice: number;
-	medioFieldPrice: number;
-
-	// Booking Rules
-	maxAdvanceDays: number;
-	minAdvanceHours: number;
-
-	// Additional Info
-	description: string;
-	rules: string;
-}
-
-const defaultConfig: ArenaConfig = {
-	name: "Arena Sport.Ai",
-	address: "Rua Exemplo, 123 - Bairro",
-	phone: "(11) 98765-4321",
-	email: "contato@campoverde.com",
-	openTime: "06:00",
-	closeTime: "23:00",
-	slotDuration: 60,
-	defaultPrice: 100,
-	weekendPrice: 150,
-	principalFieldPrice: 160,
-	medioFieldPrice: 120,
-	maxAdvanceDays: 30,
-	minAdvanceHours: 2,
-	description:
-		"Arena de futebol society com grama sintética de última geração.",
-	rules:
-		"- Respeite o horário reservado\n- Uso obrigatório de chuteiras adequadas\n- Proibido fumar nas dependências\n- Mantenha o local limpo",
-};
+import { useSettings } from "@/hooks/useSettings";
+import {
+	Building2,
+	Trophy,
+	Sparkles,
+	CreditCard,
+	LifeBuoy,
+	Copy,
+	Check,
+	Plus,
+	Save,
+	ExternalLink,
+	Loader2,
+	Trash2,
+	User,
+	BadgeDollarSign,
+	MessageCircle,
+	Mail,
+	Store, // <-- Importação do novo ícone
+} from "lucide-react";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import AvatarUpload from "@/components/admin/AvatarUpload"; // Certifique-se que este path está correto
+import { StatusBadge } from "@/components/admin"; // Certifique-se que este path está correto
 
 export default function ConfiguracoesView() {
+	const {
+		loading,
+		saving,
+		formData,
+		subscription,
+		isTrial,
+		updateTenant,
+		updatePromo,
+		updateCourt,
+		removeCourt,
+		addCourt,
+		saveSettings,
+	} = useSettings();
+
+	const { user, userProfile, updateProfile } = useAuth();
 	const { toast } = useToast();
-	const [config, setConfig] = useState<ArenaConfig>(() => {
-		const stored = localStorage.getItem("arena_config");
-		return stored ? JSON.parse(stored) : defaultConfig;
-	});
 
-	const [hasChanges, setHasChanges] = useState(false);
+	// Estado local para o formulário de perfil
+	const [profileName, setProfileName] = useState(userProfile?.full_name ?? "");
+	const [profileJobTitle, setProfileJobTitle] = useState(
+		userProfile?.job_title ?? ""
+	);
 
-	const handleChange = (field: keyof ArenaConfig, value: string | number) => {
-		setConfig((prev) => ({ ...prev, [field]: value }));
-		setHasChanges(true);
+	// Sincroniza estado local quando o perfil carrega
+	useEffect(() => {
+		setProfileName(userProfile?.full_name ?? "");
+		setProfileJobTitle(userProfile?.job_title ?? "");
+	}, [userProfile]);
+
+	// Função isolada para salvar apenas o perfil
+	const saveProfile = async () => {
+		try {
+			if (!updateProfile) throw new Error("Update not available");
+			await updateProfile({
+				full_name: profileName,
+				job_title: profileJobTitle,
+			});
+			toast({
+				title: "Perfil salvo",
+				description: "Seu perfil foi atualizado.",
+			});
+		} catch (err) {
+			console.error(err);
+			toast({
+				title: "Erro",
+				description: "Não foi possível atualizar o perfil.",
+				variant: "destructive",
+			});
+		}
 	};
 
-	const handleSave = () => {
-		localStorage.setItem("arena_config", JSON.stringify(config));
-		setHasChanges(false);
-
-		toast({
-			title: "Configurações salvas!",
-			description: "As alterações foram aplicadas com sucesso.",
-		});
+	// Lógica de copiar link
+	const [copied, setCopied] = useState(false);
+	const handleCopyLink = () => {
+		const link = `https://app.arena.com/${
+			formData.tenant.subdomain || "minha-arena"
+		}`;
+		navigator.clipboard.writeText(link);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
 	};
 
-	const handleReset = () => {
-		setConfig(defaultConfig);
-		setHasChanges(true);
-
-		toast({
-			title: "Configurações restauradas",
-			description: "Valores padrão foram restaurados.",
-		});
-	};
+	if (loading) return <LoadingSkeleton />;
 
 	return (
-		<div className="space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-3xl font-black">Configurações</h1>
-					<p className="text-muted-foreground">
-						Gerencie as configurações da sua arena
-					</p>
-				</div>
-				<div className="flex gap-3">
-					{hasChanges && (
-						<Button variant="outline" onClick={handleReset}>
-							Restaurar Padrão
-						</Button>
-					)}
+		<div className="min-h-screen bg-gray-950 text-gray-50 pb-20">
+			<div className="max-w-5xl mx-auto p-6 space-y-8">
+				{/* --- HEADER --- */}
+				<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight text-white">
+							Configurações
+						</h1>
+						<p className="text-gray-400 mt-1">
+							Gerencie sua arena, preços e automações em um só lugar.
+						</p>
+					</div>
 					<Button
-						className="gap-2 glow-primary"
-						onClick={handleSave}
-						disabled={!hasChanges}>
-						<Save className="h-4 w-4" />
-						Salvar Alterações
+						onClick={saveSettings}
+						disabled={saving}
+						className="bg-white text-gray-950 hover:bg-gray-200 font-medium px-6 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+						{saving ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
+							</>
+						) : (
+							<>
+								<Save className="mr-2 h-4 w-4" /> Salvar Alterações
+							</>
+						)}
 					</Button>
 				</div>
-			</div>
 
-			{/* Unsaved Changes Alert */}
-			{hasChanges && (
-				<Card className="border-warning/50 bg-warning/5">
-					<CardContent className="flex items-start gap-3 pt-6">
-						<AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
-						<div className="text-sm">
-							<p className="font-medium text-warning">
-								Você tem alterações não salvas
-							</p>
-							<p className="text-muted-foreground">
-								Clique em "Salvar Alterações" para aplicar as mudanças.
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-			)}
-
-			{/* Arena Info */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<MapPin className="h-5 w-5 text-primary" />
-						Informações da Arena
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="name">Nome da Arena</Label>
-							<Input
-								id="name"
-								value={config.name}
-								onChange={(e) => handleChange("name", e.target.value)}
-								placeholder="Nome da sua arena"
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="phone">Telefone</Label>
-							<div className="relative">
-								<Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									id="phone"
-									className="pl-9"
-									value={config.phone}
-									onChange={(e) => handleChange("phone", e.target.value)}
-									placeholder="(11) 98765-4321"
-								/>
-							</div>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="address">Endereço</Label>
-							<Input
-								id="address"
-								value={config.address}
-								onChange={(e) => handleChange("address", e.target.value)}
-								placeholder="Rua, número - Bairro"
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="email">E-mail</Label>
-							<div className="relative">
-								<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									id="email"
-									type="email"
-									className="pl-9"
-									value={config.email}
-									onChange={(e) => handleChange("email", e.target.value)}
-									placeholder="contato@arena.com"
-								/>
-							</div>
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="description">Descrição</Label>
-						<Textarea
-							id="description"
-							value={config.description}
-							onChange={(e) => handleChange("description", e.target.value)}
-							placeholder="Descreva sua arena..."
-							rows={3}
+				{/* --- TABS --- */}
+				<Tabs defaultValue="perfil" className="space-y-8">
+					<TabsList className="w-full h-auto bg-white/5 p-1 rounded-2xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
+						<TabTrigger value="arena" icon={Store} label="Identidade" />
+						<TabTrigger value="quadras" icon={Trophy} label="Quadras" />
+						<TabTrigger
+							value="marketing"
+							icon={Sparkles}
+							label="Marketing & IA"
 						/>
-					</div>
-				</CardContent>
-			</Card>
+						<TabTrigger
+							value="billing"
+							icon={BadgeDollarSign}
+							label="Assinatura"
+						/>
+						<TabTrigger value="support" icon={LifeBuoy} label="Suporte" />
+					</TabsList>
 
-			{/* Operating Hours */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Clock className="h-5 w-5 text-primary" />
-						Horário de Funcionamento
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-4 md:grid-cols-3">
-						<div className="space-y-2">
-							<Label htmlFor="openTime">Horário de Abertura</Label>
-							<Input
-								id="openTime"
-								type="time"
-								value={config.openTime}
-								onChange={(e) => handleChange("openTime", e.target.value)}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="closeTime">Horário de Fechamento</Label>
-							<Input
-								id="closeTime"
-								type="time"
-								value={config.closeTime}
-								onChange={(e) => handleChange("closeTime", e.target.value)}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="slotDuration">Duração do Slot (minutos)</Label>
-							<Select
-								value={config.slotDuration.toString()}
-								onValueChange={(value) =>
-									handleChange("slotDuration", parseInt(value))
-								}>
-								<SelectTrigger id="slotDuration">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="30">30 minutos</SelectItem>
-									<SelectItem value="60">60 minutos</SelectItem>
-									<SelectItem value="90">90 minutos</SelectItem>
-									<SelectItem value="120">120 minutos</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Pricing */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<DollarSign className="h-5 w-5 text-primary" />
-						Preços
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="defaultPrice">Preço Padrão (Seg-Sex)</Label>
-							<div className="relative">
-								<span className="absolute left-3 top-3 text-muted-foreground">
-									R$
-								</span>
-								<Input
-									id="defaultPrice"
-									type="number"
-									className="pl-9"
-									value={config.defaultPrice}
-									onChange={(e) =>
-										handleChange("defaultPrice", parseFloat(e.target.value))
-									}
-									min="0"
-									step="10"
-								/>
+					{/* 👤 ABA 1: MEU PERFIL */}
+					<TabsContent
+						value="perfil"
+						className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="md:col-span-1">
+								<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl h-full">
+									<CardHeader>
+										<CardTitle className="text-white">Meu Perfil</CardTitle>
+										<CardDescription className="text-gray-400">
+											Gerencie seus dados pessoais.
+										</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<div className="flex flex-col items-center gap-4">
+											<AvatarUpload />
+											<div className="w-full">
+												<Label className="text-sm text-gray-300">
+													Nome Completo
+												</Label>
+												<Input
+													value={profileName}
+													onChange={(e) => setProfileName(e.target.value)}
+													className="w-full mt-2 bg-white/5 border-white/10 focus:border-primary/50 focus:ring-0 rounded-xl h-12 text-white px-4"
+												/>
+											</div>
+											<div className="w-full">
+												<Label className="text-sm text-gray-300">
+													Cargo / Função
+												</Label>
+												<Input
+													value={profileJobTitle}
+													onChange={(e) => setProfileJobTitle(e.target.value)}
+													className="w-full mt-2 bg-white/5 border-white/10 focus:border-primary/50 focus:ring-0 rounded-xl h-12 text-white px-4"
+													placeholder="Ex: Gerente, Atendente, Proprietário"
+												/>
+											</div>
+											<div className="w-full">
+												<Label className="text-sm text-gray-300">
+													E-mail de Login
+												</Label>
+												<Input
+													value={user?.email ?? userProfile?.email ?? ""}
+													readOnly
+													className="w-full mt-2 bg-white/5 border-white/10 rounded-xl h-12 text-white px-4"
+												/>
+											</div>
+											<div className="w-full pt-4">
+												<Button
+													className="bg-primary text-primary-foreground w-full"
+													onClick={saveProfile}>
+													Salvar Perfil
+												</Button>
+											</div>
+										</div>
+									</CardContent>
+								</Card>
 							</div>
 						</div>
+					</TabsContent>
 
-						<div className="space-y-2">
-							<Label htmlFor="weekendPrice">Preço Final de Semana</Label>
-							<div className="relative">
-								<span className="absolute left-3 top-3 text-muted-foreground">
-									R$
-								</span>
-								<Input
-									id="weekendPrice"
-									type="number"
-									className="pl-9"
-									value={config.weekendPrice}
-									onChange={(e) =>
-										handleChange("weekendPrice", parseFloat(e.target.value))
-									}
-									min="0"
-									step="10"
-								/>
+					{/* 🏟️ ABA 2: IDENTIDADE */}
+					<TabsContent
+						value="arena"
+						className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div className="md:col-span-2 space-y-6">
+								<PremiumCard
+									title="Identidade da Arena"
+									description="Como seus clientes veem seu negócio.">
+									<div className="space-y-4">
+										<div className="space-y-2">
+											<Label className="text-gray-300">Nome Comercial</Label>
+											<Input
+												value={formData.tenant.business_name}
+												onChange={(e) =>
+													updateTenant("business_name", e.target.value)
+												}
+												className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-0 rounded-xl h-12 text-white px-4"
+												placeholder="Ex: Arena Champions"
+											/>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-gray-300">Descrição Curta</Label>
+											<Textarea
+												value={formData.tenant.description}
+												onChange={(e) =>
+													updateTenant("description", e.target.value)
+												}
+												className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-0 rounded-xl min-h-[100px] text-white p-3"
+												placeholder="Ex: A melhor quadra de society da região..."
+											/>
+										</div>
+									</div>
+								</PremiumCard>
+
+								<PremiumCard
+									title="Contato"
+									description="Canais de comunicação oficiais.">
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div className="space-y-2">
+											<Label className="text-gray-300">WhatsApp</Label>
+											<Input
+												value={formData.tenant.phone}
+												onChange={(e) => updateTenant("phone", e.target.value)}
+												className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-0 rounded-xl h-12 text-white px-4"
+												placeholder="(00) 00000-0000"
+											/>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-gray-300">E-mail</Label>
+											<Input
+												value={formData.tenant.email}
+												onChange={(e) => updateTenant("email", e.target.value)}
+												className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-0 rounded-xl h-12 text-white px-4"
+												placeholder="contato@arena.com"
+											/>
+										</div>
+									</div>
+								</PremiumCard>
+							</div>
+
+							<div className="md:col-span-1">
+								<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl h-full">
+									<CardHeader>
+										<CardTitle className="text-primary/90 text-lg">
+											Link Público
+										</CardTitle>
+										<CardDescription className="text-primary/70">
+											Compartilhe este link para receber agendamentos.
+										</CardDescription>
+									</CardHeader>
+									<CardContent className="space-y-4">
+										<div
+											className="p-4 bg-gray-950/60 rounded-lg border border-primary/10 flex items-center justify-between group cursor-pointer hover:border-primary/30 transition-colors"
+											onClick={handleCopyLink}>
+											<div className="truncate text-sm text-primary/70 font-mono mr-2">
+												arena.app/{formData.tenant.subdomain || "minha-arena"}
+											</div>
+											{copied ? (
+												<Check className="h-4 w-4 text-primary" />
+											) : (
+												<Copy className="h-4 w-4 text-primary opacity-50 group-hover:opacity-100" />
+											)}
+										</div>
+										<Button
+											variant="outline"
+											className="w-full border-primary/20 text-primary/80 hover:bg-primary/10 hover:text-primary/90">
+											<ExternalLink className="mr-2 h-4 w-4" /> Testar Link
+										</Button>
+									</CardContent>
+								</Card>
 							</div>
 						</div>
-					</div>
-				</CardContent>
-			</Card>
+					</TabsContent>
 
-			{/* Field Pricing */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<DollarSign className="h-5 w-5 text-primary" />
-						Preços por Campo
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="principalFieldPrice">
-								Campo Principal (Grande)
-							</Label>
-							<div className="relative">
-								<span className="absolute left-3 top-3 text-muted-foreground">
-									R$
-								</span>
-								<Input
-									id="principalFieldPrice"
-									type="number"
-									className="pl-9"
-									value={config.principalFieldPrice}
-									onChange={(e) =>
-										handleChange(
-											"principalFieldPrice",
-											parseFloat(e.target.value)
-										)
-									}
-									min="0"
-									step="10"
-								/>
+					{/* ⚽ ABA 3: QUADRAS */}
+					<TabsContent
+						value="quadras"
+						className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<PremiumCard
+							title="Estrutura da Arena"
+							description="Gerencie suas quadras e preços base.">
+							<div className="flex justify-between items-center mb-4">
+								<h3 className="text-lg font-medium text-white">Quadras</h3>
+								<Button
+									onClick={addCourt}
+									variant="outline"
+									className="border-dashed border-white/20 text-gray-300 hover:bg-white/5 hover:text-white hover:border-white/40">
+									<Plus className="mr-2 h-4 w-4" /> Nova Quadra
+								</Button>
 							</div>
-							<p className="text-xs text-muted-foreground">
-								Valor total para reserva do campo principal
-							</p>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="medioFieldPrice">Campo Médio</Label>
-							<div className="relative">
-								<span className="absolute left-3 top-3 text-muted-foreground">
-									R$
-								</span>
-								<Input
-									id="medioFieldPrice"
-									type="number"
-									className="pl-9"
-									value={config.medioFieldPrice}
-									onChange={(e) =>
-										handleChange("medioFieldPrice", parseFloat(e.target.value))
-									}
-									min="0"
-									step="10"
-								/>
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+								{formData.courts.map((court, index) => (
+									<Card
+										key={index}
+										className="bg-black/20 border-white/5 backdrop-blur-sm hover:border-white/10 transition-all group">
+										<CardHeader className="pb-3">
+											<div className="flex justify-between items-start">
+												<div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-gray-700 transition-colors">
+													<Trophy className="h-5 w-5" />
+												</div>
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={() => removeCourt(index)}
+													className="h-8 w-8 text-gray-500 hover:text-red-400 hover:bg-red-400/10">
+													<Trash2 className="h-4 w-4" />
+												</Button>
+											</div>
+										</CardHeader>
+										<CardContent className="space-y-4">
+											<div className="space-y-2">
+												<Label className="text-xs uppercase tracking-wider text-gray-500">
+													Nome
+												</Label>
+												<Input
+													value={court.name}
+													onChange={(e) =>
+														updateCourt(index, "name", e.target.value)
+													}
+													className="bg-white/5 border-white/10 text-white rounded-xl h-12 px-3"
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label className="text-xs uppercase tracking-wider text-gray-500">
+													Preço Padrão (Hora)
+												</Label>
+												<div className="relative">
+													<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+														R$
+													</span>
+													<Input
+														type="number"
+														value={court.base_price}
+														onChange={(e) =>
+															updateCourt(index, "base_price", e.target.value)
+														}
+														className="bg-white/5 border-white/10 text-white rounded-xl h-12 pl-9"
+													/>
+												</div>
+											</div>
+										</CardContent>
+									</Card>
+								))}
 							</div>
-							<p className="text-xs text-muted-foreground">
-								Valor total para reserva do campo médio
-							</p>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+						</PremiumCard>
+					</TabsContent>
 
-			{/* Booking Rules */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Calendar className="h-5 w-5 text-primary" />
-						Regras de Reserva
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="grid gap-4 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="maxAdvanceDays">
-								Reserva com Antecedência Máxima (dias)
-							</Label>
-							<Input
-								id="maxAdvanceDays"
-								type="number"
-								value={config.maxAdvanceDays}
-								onChange={(e) =>
-									handleChange("maxAdvanceDays", parseInt(e.target.value))
-								}
-								min="1"
-								max="90"
-							/>
-							<p className="text-xs text-muted-foreground">
-								Máximo de dias que jogadores podem reservar com antecedência
-							</p>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="minAdvanceHours">
-								Antecedência Mínima (horas)
-							</Label>
-							<Input
-								id="minAdvanceHours"
-								type="number"
-								value={config.minAdvanceHours}
-								onChange={(e) =>
-									handleChange("minAdvanceHours", parseInt(e.target.value))
-								}
-								min="0"
-								max="48"
-							/>
-							<p className="text-xs text-muted-foreground">
-								Horas mínimas de antecedência para fazer uma reserva
-							</p>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Arena Rules */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Settings className="h-5 w-5 text-primary" />
-						Regras da Arena
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-2">
-					<Label htmlFor="rules">Regras e Orientações</Label>
-					<Textarea
-						id="rules"
-						value={config.rules}
-						onChange={(e) => handleChange("rules", e.target.value)}
-						placeholder="Liste as regras da sua arena..."
-						rows={8}
-					/>
-					<p className="text-xs text-muted-foreground">
-						Estas regras serão exibidas para os jogadores ao fazer reservas
-					</p>
-				</CardContent>
-			</Card>
-
-			{/* Developer Support */}
-			<Card className="border-primary/30 bg-primary/5">
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<MessageCircle className="h-5 w-5 text-primary" />
-						Suporte ao Desenvolvedor
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-start gap-4">
-						<Code className="h-10 w-10 text-primary flex-shrink-0" />
-						<div className="flex-1">
-							<h3 className="font-bold text-lg mb-1">Rafael Lauri Santos</h3>
-							<p className="text-sm text-muted-foreground mb-4">
-								Desenvolvedor Full Stack | Criador do Sistema Arena Sports
-							</p>
-
-							<div className="space-y-3">
-								<div className="flex items-center gap-3">
-									<Phone className="h-4 w-4 text-muted-foreground" />
-									<a
-										href="https://wa.me/5511999999999"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-sm hover:text-primary transition-colors">
-										WhatsApp: (11) 99999-9999
-									</a>
+					{/* 🤖 ABA 4: MARKETING & IA */}
+					<TabsContent
+						value="marketing"
+						className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl overflow-hidden relative">
+							<div className="absolute top-0 right-0 p-32 bg-primary/6 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+							<CardHeader>
+								<div className="flex items-center justify-between">
+									<div className="space-y-1">
+										<CardTitle className="text-white flex items-center gap-2">
+											<Sparkles className="h-5 w-5 text-primary" />
+											Preços Dinâmicos
+										</CardTitle>
+										<CardDescription className="text-gray-400">
+											Nossa IA ajusta preços automaticamente para preencher
+											horários ociosos.
+										</CardDescription>
+									</div>
+									<Switch
+										checked={formData.promo.active}
+										onCheckedChange={(checked) =>
+											updatePromo("active", checked)
+										}
+										className="data-[state=checked]:bg-primary"
+									/>
 								</div>
+							</CardHeader>
+							{formData.promo.active && (
+								<CardContent className="space-y-8 animate-in fade-in slide-in-from-top-2">
+									<div className="space-y-6 p-6 bg-gray-950/30 rounded-xl border border-white/5">
+										<div className="space-y-4">
+											<div className="flex justify-between items-center">
+												<Label className="text-gray-200">
+													Agressividade do Desconto
+												</Label>
+												<span className="text-primary font-bold text-lg">
+													{formData.promo.discount_percentage}% OFF
+												</span>
+											</div>
+											<Slider
+												value={[Number(formData.promo.discount_percentage)]}
+												max={50}
+												step={5}
+												onValueChange={([val]) =>
+													updatePromo("discount_percentage", val)
+												}
+												className="py-2"
+											/>
+											<p className="text-xs text-gray-500">
+												Exemplo: Uma quadra de R$ 200,00 será ofertada por
+												<span className="text-white font-medium ml-1">
+													R${" "}
+													{(
+														200 *
+														(1 - formData.promo.discount_percentage / 100)
+													).toFixed(2)}
+												</span>{" "}
+												em horários de baixa demanda.
+											</p>
+										</div>
+									</div>
+								</CardContent>
+							)}
+						</Card>
+					</TabsContent>
 
-								<div className="flex items-center gap-3">
-									<Mail className="h-4 w-4 text-muted-foreground" />
-									<a
-										href="mailto:rafael@example.com"
-										className="text-sm hover:text-primary transition-colors">
-										rafael@example.com
-									</a>
-								</div>
+					{/* 💳 ABA 5: ASSINATURA */}
+					<TabsContent
+						value="billing"
+						className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<Card className="md:col-span-2 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+								<CardHeader>
+									<CardTitle className="text-white">Seu Plano</CardTitle>
+									<CardDescription className="text-gray-400">
+										Detalhes da sua subscrição atual.
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="space-y-6">
+									<div className="flex items-center justify-between p-4 bg-gray-950/50 rounded-lg border border-white/5">
+										<div>
+											<p className="text-sm text-gray-400">Plano Atual</p>
+											<p className="text-xl font-bold text-white mt-1">
+												{subscription.plan_name}
+											</p>
+										</div>
+										<StatusBadge status={isTrial ? "warning" : "success"}>
+											{isTrial ? "Período de Teste" : "Ativo"}
+										</StatusBadge>
+									</div>
+									{isTrial && (
+										<div className="bg-gradient-to-r from-primary/10 to-primary/10 p-4 rounded-lg border border-primary/20 flex items-center justify-between">
+											<div className="space-y-1">
+												<p className="text-primary/80 font-medium">
+													Faça o upgrade agora
+												</p>
+												<p className="text-xs text-primary/70">
+													Desbloqueie relatórios avançados e suporte
+													prioritário.
+												</p>
+											</div>
+											<Button
+												size="sm"
+												className="bg-primary hover:bg-primary/90 text-primary-foreground border-none">
+												Fazer Upgrade
+											</Button>
+										</div>
+									)}
+								</CardContent>
+							</Card>
 
-								<div className="flex items-center gap-3">
-									<Github className="h-4 w-4 text-muted-foreground" />
-									<a
-										href="https://github.com/RafalauriSantos"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-sm hover:text-primary transition-colors">
-										github.com/RafalauriSantos
-									</a>
-								</div>
-							</div>
+							<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+								<CardHeader>
+									<CardTitle className="text-white text-lg">Faturas</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
+										<div className="h-12 w-12 rounded-full bg-gray-800/50 flex items-center justify-center">
+											<CreditCard className="h-6 w-6 text-gray-600" />
+										</div>
+										<p className="text-sm text-gray-400">
+											Nenhuma fatura encontrada.
+										</p>
+									</div>
+								</CardContent>
+							</Card>
 						</div>
-					</div>
+					</TabsContent>
 
-					<Separator />
+					{/* 👨‍💻 ABA 6: SUPORTE */}
+					<TabsContent
+						value="support"
+						className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl max-w-2xl mx-auto">
+							<CardContent className="p-8 text-center space-y-6">
+								<Avatar className="h-24 w-24 mx-auto border-4 border-gray-900 shadow-xl">
+									<AvatarImage src="https://github.com/shadcn.png" />
+									<AvatarFallback>RF</AvatarFallback>
+								</Avatar>
+								<div className="space-y-2">
+									<h3 className="text-2xl font-bold text-white">
+										Precisa de ajuda com o sistema?
+									</h3>
+									<p className="text-gray-400 max-w-md mx-auto">
+										Fale diretamente com Rafael Lauri, fundador e desenvolvedor
+										do Arena Sports.
+									</p>
+								</div>
+								<div className="flex justify-center gap-4 pt-4">
+									<Button
+										className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 px-6"
+										asChild>
+										<a
+											href="https://wa.me/5548999999999"
+											target="_blank"
+											rel="noopener noreferrer">
+											<MessageCircle className="h-5 w-5" /> Chamar no WhatsApp
+										</a>
+									</Button>
+									<Button
+										variant="outline"
+										className="border-white/10 text-gray-300 hover:bg-white/5 flex items-center gap-2 px-6"
+										asChild>
+										<a href="mailto:rafael@arenasports.com.br">
+											<Mail className="h-5 w-5" /> Enviar E-mail
+										</a>
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+					</TabsContent>
+				</Tabs>
+			</div>
+		</div>
+	);
+}
 
+// --- Componentes Auxiliares ---
+
+function TabTrigger({
+	value,
+	icon: Icon,
+	label,
+}: {
+	value: string;
+	icon: any;
+	label: string;
+}) {
+	return (
+		<TabsTrigger
+			value={value}
+			className="w-full flex items-center gap-2 px-4 py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm text-gray-400 hover:text-white transition-all">
+			<Icon className="h-4 w-4" />
+			{label}
+		</TabsTrigger>
+	);
+}
+
+function PremiumCard({
+	title,
+	description,
+	children,
+}: {
+	title: string;
+	description: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+			<CardHeader>
+				<CardTitle className="text-white">{title}</CardTitle>
+				<CardDescription className="text-gray-400">
+					{description}
+				</CardDescription>
+			</CardHeader>
+			<CardContent>{children}</CardContent>
+		</Card>
+	);
+}
+
+function LoadingSkeleton() {
+	return (
+		<div className="min-h-screen bg-gray-950 p-6 space-y-8">
+			<div className="max-w-5xl mx-auto space-y-8">
+				<div className="flex justify-between items-center">
 					<div className="space-y-2">
-						<h4 className="font-semibold text-sm">Precisa de ajuda?</h4>
-						<p className="text-sm text-muted-foreground">
-							Entre em contato para suporte técnico, customizações ou dúvidas
-							sobre o sistema.
-						</p>
-						<div className="flex gap-3 pt-2">
-							<Button variant="default" size="sm" className="gap-2" asChild>
-								<a
-									href="https://wa.me/5511999999999?text=Olá%20Rafael%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Arena%20Sports"
-									target="_blank"
-									rel="noopener noreferrer">
-									<MessageCircle className="h-4 w-4" />
-									Falar no WhatsApp
-								</a>
-							</Button>
-
-							<Button variant="outline" size="sm" className="gap-2" asChild>
-								<a
-									href="mailto:rafael@example.com?subject=Suporte%20Arena%20Sports"
-									target="_blank"
-									rel="noopener noreferrer">
-									<Mail className="h-4 w-4" />
-									Enviar E-mail
-								</a>
-							</Button>
-						</div>
+						<Skeleton className="h-8 w-48 bg-gray-800" />
+						<Skeleton className="h-4 w-96 bg-gray-800" />
 					</div>
-				</CardContent>
-			</Card>
+					<Skeleton className="h-10 w-32 bg-gray-800" />
+				</div>
+				<div className="flex gap-4">
+					{[1, 2, 3, 4, 5].map((i) => (
+						<Skeleton key={i} className="h-10 w-32 bg-gray-800 rounded-lg" />
+					))}
+				</div>
+				<div className="grid grid-cols-3 gap-6">
+					<Skeleton className="col-span-2 h-96 bg-gray-800 rounded-2xl" />
+					<Skeleton className="col-span-1 h-96 bg-gray-800 rounded-2xl" />
+				</div>
+			</div>
 		</div>
 	);
 }

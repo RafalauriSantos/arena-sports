@@ -126,7 +126,7 @@ function CalendarAppScreen() {
 		<div className="h-full bg-black p-3 md:p-4">
 			{/* Header */}
 			<div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-				<div className="w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl bg-[#00FF00]/20 flex items-center justify-center">
+				<div className="w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl bg-primary/20 flex items-center justify-center">
 					<span className="text-sm md:text-lg">⚽</span>
 				</div>
 				<div>
@@ -145,7 +145,7 @@ function CalendarAppScreen() {
 					<div
 						key={day}
 						className={`flex flex-col items-center p-1.5 md:p-2 rounded-lg md:rounded-xl min-w-[32px] md:min-w-[40px] ${
-							i === 3 ? "bg-[#00FF00] text-black" : "bg-white/5 text-white/70"
+							i === 3 ? "bg-primary text-black" : "bg-white/5 text-white/70"
 						}`}>
 						<span className="text-[8px] md:text-[10px] font-medium">{day}</span>
 						<span
@@ -164,28 +164,26 @@ function CalendarAppScreen() {
 					<div
 						key={time}
 						className={`flex items-center justify-between p-2 md:p-3 rounded-lg md:rounded-xl ${
-							i === 1
-								? "bg-[#00FF00]/10 border border-[#00FF00]/30"
-								: "bg-white/5"
+							i === 1 ? "bg-primary/10 border border-primary/30" : "bg-white/5"
 						}`}>
 						<div className="flex items-center gap-2 md:gap-3">
 							<span
 								className={`text-sm md:text-lg font-bold ${
-									i === 1 ? "text-[#00FF00]" : "text-white"
+									i === 1 ? "text-primary" : "text-white"
 								}`}>
 								{time}
 							</span>
 							<span
 								className={`text-[8px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full ${
 									i === 1
-										? "bg-[#00FF00]/20 text-[#00FF00]"
+										? "bg-primary/20 text-primary"
 										: "bg-white/10 text-white/50"
 								}`}>
 								{i === 1 ? "Disponível" : i === 2 ? "Reservado" : "Disponível"}
 							</span>
 						</div>
 						{(i === 0 || i === 1 || i === 3) && (
-							<span className="text-[#00FF00] font-bold text-xs md:text-sm">
+							<span className="text-primary font-bold text-xs md:text-sm">
 								R$ 160
 							</span>
 						)}
@@ -206,7 +204,7 @@ function DashboardAppScreen() {
 			{/* Header */}
 			<div className="flex items-center justify-between mb-3 md:mb-6">
 				<div className="flex items-center gap-2 md:gap-3">
-					<div className="w-7 md:w-10 h-7 md:h-10 rounded-lg md:rounded-xl bg-[#00FF00]/20 flex items-center justify-center">
+					<div className="w-7 md:w-10 h-7 md:h-10 rounded-lg md:rounded-xl bg-primary/20 flex items-center justify-center">
 						<span className="text-sm md:text-lg">⚽</span>
 					</div>
 					<div>
@@ -222,7 +220,7 @@ function DashboardAppScreen() {
 					<div className="px-2 md:px-3 py-1 md:py-1.5 bg-white/5 rounded-md md:rounded-lg text-white/70 text-[8px] md:text-xs">
 						Hoje
 					</div>
-					<div className="px-2 md:px-3 py-1 md:py-1.5 bg-[#00FF00] rounded-md md:rounded-lg text-black text-[8px] md:text-xs font-medium">
+					<div className="px-2 md:px-3 py-1 md:py-1.5 bg-primary rounded-md md:rounded-lg text-black text-[8px] md:text-xs font-medium">
 						Semana
 					</div>
 				</div>
@@ -230,14 +228,14 @@ function DashboardAppScreen() {
 
 			{/* KPIs */}
 			<div className="grid grid-cols-3 gap-2 md:gap-4 mb-3 md:mb-6">
-				<div className="bg-gradient-to-br from-[#00FF00]/20 to-[#00FF00]/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-[#00FF00]/20">
+				<div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-primary/20">
 					<p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">
 						Faturamento Hoje
 					</p>
-					<p className="text-[#00FF00] text-sm md:text-2xl font-black">
+					<p className="text-primary text-sm md:text-2xl font-black">
 						R$ 1.450
 					</p>
-					<p className="text-[#00FF00]/70 text-[7px] md:text-xs mt-0.5 md:mt-1">
+					<p className="text-primary/70 text-[7px] md:text-xs mt-0.5 md:mt-1">
 						+23% vs ontem
 					</p>
 				</div>
@@ -272,7 +270,7 @@ function DashboardAppScreen() {
 							key={day}
 							className="flex flex-col items-center gap-1 md:gap-2 flex-1">
 							<div
-								className="w-full bg-gradient-to-t from-[#00FF00] to-[#00FF00]/50 rounded-t"
+								className="w-full bg-gradient-to-t from-primary to-primary/50 rounded-t"
 								style={{ height: `${(chartData[i] / maxValue) * 100}%` }}
 							/>
 							<span className="text-white/50 text-[6px] md:text-[10px]">
@@ -321,15 +319,15 @@ export default function Landing() {
 							Planos
 						</a>
 						<button
-							onClick={() => navigate("/admin/login")}
+							onClick={() => navigate("/login")}
 							className="text-white/70 hover:text-white transition-colors"
 							data-testid="nav-login">
 							Entrar
 						</button>
 					</div>
 					<button
-						onClick={() => navigate("/admin/login")}
-						className="px-5 py-2.5 bg-[#00FF00] text-black font-semibold rounded-full text-sm hover:bg-[#00FF00]/90 transition-all hover:shadow-[0_0_30px_rgba(0,255,0,0.3)]"
+						onClick={() => navigate("/login")}
+						className="px-5 py-2.5 bg-neon text-black font-semibold rounded-full text-sm hover:bg-neon/90 transition-all hover:shadow-neon"
 						data-testid="nav-cta">
 						Agendar Demonstração
 					</button>
@@ -342,14 +340,14 @@ export default function Landing() {
 				className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20"
 				data-testid="hero-section">
 				{/* Gradient Orb */}
-				<div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FF00]/5 rounded-full blur-[150px] pointer-events-none" />
+				<div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
 
 				<div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
 					{/* Badge */}
 					<div
 						className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 text-sm text-white/70"
 						data-testid="hero-badge">
-						<span className="w-2 h-2 bg-[#00FF00] rounded-full animate-pulse" />
+						<span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
 						Plataforma #1 em Gestão de Arenas
 					</div>
 
@@ -359,7 +357,7 @@ export default function Landing() {
 						data-testid="hero-headline">
 						Sua Arena em
 						<br />
-						<span className="text-[#00FF00]">Alta Performance.</span>
+						<span className="text-primary">Alta Performance.</span>
 					</h1>
 
 					{/* Subheadline */}
@@ -374,8 +372,8 @@ export default function Landing() {
 					{/* CTAs */}
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
 						<button
-							onClick={() => navigate("/admin/login")}
-							className="group px-8 py-4 bg-[#00FF00] text-black font-bold rounded-full text-lg hover:bg-[#00FF00]/90 transition-all hover:shadow-[0_0_40px_rgba(0,255,0,0.4)] flex items-center gap-2"
+							onClick={() => navigate("/login")}
+							className="group px-8 py-4 bg-neon text-black font-bold rounded-full text-lg hover:bg-neon/90 transition-all hover:shadow-neon flex items-center gap-2"
 							data-testid="hero-cta-primary">
 							Agendar Demonstração
 							<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -409,7 +407,7 @@ export default function Landing() {
 							? "opacity-100 translate-y-0"
 							: "opacity-0 translate-y-10"
 					}`}>
-					<p className="text-[#00FF00] text-sm font-medium tracking-widest uppercase mb-6">
+					<p className="text-primary text-sm font-medium tracking-widest uppercase mb-6">
 						O Problema
 					</p>
 					<h2 className="text-3xl md:text-5xl font-black mb-8 leading-tight">
@@ -455,7 +453,7 @@ export default function Landing() {
 							? "opacity-100 translate-y-0"
 							: "opacity-0 translate-y-10"
 					}`}>
-					<p className="text-[#00FF00] text-sm font-medium tracking-widest uppercase mb-6">
+					<p className="text-primary text-sm font-medium tracking-widest uppercase mb-6">
 						A Solução
 					</p>
 					<h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight">
@@ -480,7 +478,7 @@ export default function Landing() {
 								: "opacity-0 translate-y-20"
 						}`}>
 						<div className="relative">
-							<div className="absolute -inset-20 bg-[#00FF00]/5 rounded-full blur-[100px]" />
+							<div className="absolute -inset-20 bg-[hsl(var(--neon)/0.05)] rounded-full blur-[100px]" />
 							<MacBookMockup className="relative z-10 transform hover:scale-[1.02] transition-transform duration-500">
 								<DashboardAppScreen />
 							</MacBookMockup>
@@ -503,7 +501,7 @@ export default function Landing() {
 								: "opacity-0 translate-y-20"
 						}`}>
 						<div className="relative">
-							<div className="absolute -inset-20 bg-[#00FF00]/5 rounded-full blur-[100px]" />
+							<div className="absolute -inset-20 bg-[hsl(var(--neon)/0.05)] rounded-full blur-[100px]" />
 							<IPhoneMockup className="relative z-10 transform hover:scale-[1.02] transition-transform duration-500">
 								<CalendarAppScreen />
 							</IPhoneMockup>
@@ -526,7 +524,7 @@ export default function Landing() {
 							? "opacity-100 translate-y-0"
 							: "opacity-0 translate-y-10"
 					}`}>
-					<p className="text-[#00FF00] text-sm font-medium tracking-widest uppercase mb-6">
+					<p className="text-[hsl(var(--neon))] text-sm font-medium tracking-widest uppercase mb-6">
 						Funcionalidades
 					</p>
 					<h2 className="text-3xl md:text-5xl font-black leading-tight">
@@ -546,9 +544,9 @@ export default function Landing() {
 							: "opacity-0 translate-y-10"
 					}`}>
 					{/* Large Card */}
-					<div className="lg:col-span-2 p-8 bg-gradient-to-br from-[#00FF00]/10 to-transparent rounded-3xl border border-[#00FF00]/20 group hover:border-[#00FF00]/40 transition-all">
-						<div className="w-14 h-14 bg-[#00FF00]/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-							<Calendar className="w-7 h-7 text-[#00FF00]" />
+					<div className="lg:col-span-2 p-8 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl border border-primary/20 group hover:border-primary/40 transition-all">
+						<div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+							<Calendar className="w-7 h-7 text-primary" />
 						</div>
 						<h3 className="text-2xl font-bold mb-3">Agenda Inteligente</h3>
 						<p className="text-white/50 leading-relaxed">
@@ -628,7 +626,7 @@ export default function Landing() {
 						{ value: "24h", label: "Suporte" },
 					].map((stat, i) => (
 						<div key={i} className="text-center">
-							<p className="text-4xl md:text-5xl font-black text-[#00FF00] mb-2">
+							<p className="text-4xl md:text-5xl font-black text-primary mb-2">
 								{stat.value}
 							</p>
 							<p className="text-white/40 text-sm">{stat.label}</p>
@@ -651,11 +649,7 @@ export default function Landing() {
 						<p className="text-2xl md:text-3xl font-medium leading-relaxed mb-8">
 							"Antes eu perdia 3 horas por dia no WhatsApp. Agora os jogadores
 							reservam sozinhos e eu foco no que importa:
-							<span className="text-[#00FF00]">
-								{" "}
-								fazer minha arena crescer.
-							</span>
-							"
+							<span className="text-primary"> fazer minha arena crescer.</span>"
 						</p>
 						<div className="flex items-center justify-center gap-4">
 							<div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-lg">
@@ -682,7 +676,7 @@ export default function Landing() {
 							? "opacity-100 translate-y-0"
 							: "opacity-0 translate-y-10"
 					}`}>
-					<p className="text-[#00FF00] text-sm font-medium tracking-widest uppercase mb-6">
+					<p className="text-[hsl(var(--neon))] text-sm font-medium tracking-widest uppercase mb-6">
 						Investimento
 					</p>
 					<h2 className="text-3xl md:text-5xl font-black leading-tight">
@@ -698,8 +692,8 @@ export default function Landing() {
 							? "opacity-100 translate-y-0"
 							: "opacity-0 translate-y-10"
 					}`}>
-					<div className="p-8 bg-gradient-to-br from-[#00FF00]/10 to-transparent rounded-3xl border border-[#00FF00]/30 relative overflow-hidden">
-						<div className="absolute top-4 right-4 px-3 py-1 bg-[#00FF00] text-black text-xs font-bold rounded-full">
+					<div className="p-8 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl border border-primary/30 relative overflow-hidden">
+						<div className="absolute top-4 right-4 px-3 py-1 bg-primary text-black text-xs font-bold rounded-full">
 							POPULAR
 						</div>
 
@@ -721,15 +715,15 @@ export default function Landing() {
 								"Suporte prioritário",
 							].map((feature, i) => (
 								<li key={i} className="flex items-center gap-3 text-white/70">
-									<Check className="w-5 h-5 text-[#00FF00]" />
+									<Check className="w-5 h-5 text-primary" />
 									{feature}
 								</li>
 							))}
 						</ul>
 
 						<button
-							onClick={() => navigate("/admin/login")}
-							className="w-full py-4 bg-[#00FF00] text-black font-bold rounded-full text-lg hover:bg-[#00FF00]/90 transition-all hover:shadow-[0_0_40px_rgba(0,255,0,0.4)]">
+							onClick={() => navigate("/login")}
+							className="w-full py-4 bg-neon text-black font-bold rounded-full text-lg hover:bg-neon/90 transition-all hover:shadow-neon">
 							Começar Agora
 						</button>
 					</div>
@@ -756,8 +750,8 @@ export default function Landing() {
 						aumentar seu faturamento.
 					</p>
 					<button
-						onClick={() => navigate("/admin/login")}
-						className="group px-10 py-5 bg-[#00FF00] text-black font-bold rounded-full text-xl hover:bg-[#00FF00]/90 transition-all hover:shadow-[0_0_60px_rgba(0,255,0,0.5)] flex items-center gap-3 mx-auto">
+						onClick={() => navigate("/login")}
+						className="group px-10 py-5 bg-neon text-black font-bold rounded-full text-xl hover:bg-neon/90 transition-all hover:shadow-neon flex items-center gap-3 mx-auto">
 						Agendar Demonstração
 						<ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
 					</button>

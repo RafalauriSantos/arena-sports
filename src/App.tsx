@@ -5,12 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { BookingsProvider } from "@/contexts/BookingsContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Lazy load pages for code splitting
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const Index = lazy(() => import("./pages/Index"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
+const BookingPublic = lazy(() => import("./pages/BookingPublic"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Optimized QueryClient configuration
@@ -38,30 +40,29 @@ const PageLoader = () => (
 
 const App = () => (
 	<QueryClientProvider client={queryClient}>
-		<BookingsProvider>
-			<TooltipProvider>
-				<Toaster />
-				<Sonner />
-				<BrowserRouter>
-					<Suspense fallback={<PageLoader />}>
-						<Routes>
-							{/* Landing Page - Vitrine do Negócio */}
-							<Route path="/" element={<Landing />} />
-
-							{/* Rotas de Admin */}
-							<Route path="/admin/login" element={<Login />} />
-							<Route path="/admin/dashboard" element={<AdminIndex />} />
-							<Route path="/admin" element={<Login />} />
-
-							{/* O JOGADOR (Link público: /agendar) */}
-							<Route path="/agendar" element={<Index />} />
-
-							<Route path="*" element={<NotFound />} />
-						</Routes>
-					</Suspense>
-				</BrowserRouter>
-			</TooltipProvider>
-		</BookingsProvider>
+		<AuthProvider>
+			<BookingsProvider>
+				<TooltipProvider>
+					<Toaster />
+					<Sonner />
+					<BrowserRouter>
+						<Suspense fallback={<PageLoader />}>
+							<Routes>
+								<Route path="/" element={<Landing />} />
+								<Route path="/login" element={<Login />} />
+								<Route path="/dashboard" element={<AdminIndex />} />
+								<Route path="/booking/:tenantId" element={<BookingPublic />} />
+								<Route path="/agendar/:tenantId" element={<BookingPublic />} />
+								<Route path="/agendar/:tenantId/*" element={<BookingPublic />} />
+								<Route path="/agendar" element={<Index />} />
+								<Route path="/admin" element={<Login />} />
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						</Suspense>
+					</BrowserRouter>
+				</TooltipProvider>
+			</BookingsProvider>
+		</AuthProvider>
 	</QueryClientProvider>
 );
 
