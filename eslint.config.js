@@ -11,9 +11,9 @@ export default tseslint.config(
 		extends: [js.configs.recommended, ...tseslint.configs.recommended],
 		files: ["**/*.{ts,tsx}"],
 		parserOptions: {
-			// Force typescript-eslint to use the nested tsconfig (campo-verde-agil)
-			tsconfigRootDir: path.resolve(__dirname, "campo-verde-agil"),
-			project: [path.resolve(__dirname, "campo-verde-agil/tsconfig.json")],
+			// Force typescript-eslint to use the nested tsconfig (arena-sports)
+			tsconfigRootDir: path.resolve(__dirname, "arena-sports"),
+			project: [path.resolve(__dirname, "arena-sports/tsconfig.json")],
 		},
 		languageOptions: {
 			ecmaVersion: 2020,

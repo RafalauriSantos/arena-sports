@@ -27,6 +27,7 @@ interface AuthContextValue {
 	updateProfile?: (
 		updates: Partial<UserProfile>
 	) => Promise<UserProfile | null>;
+	signOut?: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -78,6 +79,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [tenantId, setTenantId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const onboardingAttempted = useRef(false);
+
+	// Função padrão de signOut do Supabase
+	const signOut = async () => {
+		await supabase.auth.signOut();
+		setUser(null);
+		setUserProfile(null);
+		setTenantId(null);
+	};
 
 	useEffect(() => {
 		let mounted = true;
@@ -149,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			tenantId,
 			loading,
 			updateProfile: doUpdateProfile,
+			signOut,
 		}),
 		[loading, tenantId, user, userProfile]
 	);

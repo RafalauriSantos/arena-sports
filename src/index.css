@@ -1,4 +1,145 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* --- Neon Border Dynamic Animation --- */
+.dynamic-neon-border {
+  position: relative;
+  z-index: 1;
+}
+
+.dynamic-neon-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.5rem;
+  padding: 0;
+  z-index: 2;
+  background: conic-gradient(from 0deg,
+      #34d399 0%,
+      #34d399 10%,
+      #a7f3d0 20%,
+      #34d399 30%,
+      #34d399 50%,
+      #a7f3d0 70%,
+      #34d399 100%);
+  filter: blur(2px);
+  opacity: 0.85;
+  pointer-events: none;
+  animation: neon-border-spin 3s linear infinite;
+}
+
+@keyframes neon-border-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Animations for Highlight Card --- */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes neon-border {
+
+  0%,
+  100% {
+    box-shadow: 0 0 16px 2px #34d399, 0 0 0 #fff0;
+  }
+
+  50% {
+    box-shadow: 0 0 32px 6px #34d399, 0 0 0 #fff0;
+  }
+}
+
+.animate-neon-border {
+  animation: neon-border 2.5s infinite alternate;
+}
+
+.shadow-neon-card {
+  box-shadow: 0 2px 32px 0 #34d39933, 0 1.5px 8px 0 #34d39922;
+}
+
+.glass-card {
+  background: rgba(16, 24, 32, 0.45);
+  backdrop-filter: blur(18px);
+}
+
+
+
+/* --- Mockup Float Animations SUTIS --- */
+@keyframes float-sutil {
+  0% {
+    transform: translateY(0px) scale(0.9);
+  }
+
+  50% {
+    transform: translateY(-6px) scale(0.9);
+  }
+
+  100% {
+    transform: translateY(0px) scale(0.9);
+  }
+}
+
+@keyframes float-sutil-delayed {
+  0% {
+    transform: translateY(0px) scale(0.9);
+  }
+
+  50% {
+    transform: translateY(-4px) scale(0.9);
+  }
+
+  100% {
+    transform: translateY(0px) scale(0.9);
+  }
+}
+
+.animate-float-sutil {
+  animation: float-sutil 7s ease-in-out infinite;
+}
+
+.animate-float-sutil-delayed {
+  animation: float-sutil-delayed 8s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
 
 @tailwind base;
 @tailwind components;
@@ -238,4 +379,42 @@
   .h-safe-area-inset-bottom {
     height: max(0.5rem, env(safe-area-inset-bottom));
   }
+}
+
+/* --- Mockup Float Animations --- */
+@keyframes float {
+  0% {
+    transform: translateY(0px) scale(0.9);
+  }
+
+  50% {
+    transform: translateY(-15px) scale(0.9);
+  }
+
+  100% {
+    transform: translateY(0px) scale(0.9);
+  }
+}
+
+@keyframes float-delayed {
+  0% {
+    transform: translateY(0px) scale(0.9);
+  }
+
+  50% {
+    transform: translateY(-10px) scale(0.9);
+  }
+
+  100% {
+    transform: translateY(0px) scale(0.9);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 7s ease-in-out infinite;
+  animation-delay: 1s;
 }

@@ -1,44 +1,6 @@
-//admin index page with navigation to different admin views
-import { useState, useEffect } from "react";
-import { AdminLayout } from "@/components/admin/layout/AdminLayout";
-import { supabase } from "@/lib/supabaseClient";
-import Dashboard from "./Dashboard";
-import AgendaMaster from "./AgendaMaster";
-import FolgasView from "./FolgasView";
-import FinanceiroView from "./FinanceiroView";
-import ConfiguracoesView from "./ConfiguracoesView";
+import DashboardHome from "./Dashboard";
 
 export default function AdminIndex() {
-	const [activeView, setActiveView] = useState("dashboard");
-
-	const handleLogout = async () => {
-		await supabase.auth.signOut();
-		window.location.href = "/admin/login";
-	};
-
-	const renderView = () => {
-		switch (activeView) {
-			case "dashboard":
-				return <Dashboard />;
-			case "agenda":
-				return <AgendaMaster />;
-			case "folgas":
-				return <FolgasView />;
-			case "financeiro":
-				return <FinanceiroView />;
-			case "configuracoes":
-				return <ConfiguracoesView />;
-			default:
-				return <Dashboard />;
-		}
-	};
-
-	return (
-		<AdminLayout
-			activeView={activeView}
-			onViewChange={setActiveView}
-			onLogout={handleLogout}>
-			{renderView()}
-		</AdminLayout>
-	);
+	// Agora o DashboardHome é o "Pai" de tudo (contém Sidebar + Views)
+	return <DashboardHome />;
 }

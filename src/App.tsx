@@ -3,24 +3,22 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BookingsProvider } from "@/contexts/BookingsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
-// Lazy load pages for code splitting
+// Lazy load pages
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
-const Index = lazy(() => import("./pages/Index"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
 const BookingPublic = lazy(() => import("./pages/BookingPublic"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Optimized QueryClient configuration
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			staleTime: 60 * 1000, // 1 minute
-			gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+			staleTime: 60 * 1000,
+			gcTime: 5 * 60 * 1000,
 			refetchOnWindowFocus: false,
 			refetchOnReconnect: true,
 			retry: 1,
@@ -28,7 +26,6 @@ const queryClient = new QueryClient({
 	},
 });
 
-// Loading fallback component
 const PageLoader = () => (
 	<div className="min-h-screen bg-background flex items-center justify-center">
 		<div className="flex flex-col items-center gap-3">
@@ -48,14 +45,24 @@ const App = () => (
 					<BrowserRouter>
 						<Suspense fallback={<PageLoader />}>
 							<Routes>
+								{/* Rotas Públicas Gerais */}
 								<Route path="/" element={<Landing />} />
 								<Route path="/login" element={<Login />} />
-								<Route path="/dashboard" element={<AdminIndex />} />
-								<Route path="/booking/:tenantId" element={<BookingPublic />} />
-								<Route path="/agendar/:tenantId" element={<BookingPublic />} />
-								<Route path="/agendar/:tenantId/*" element={<BookingPublic />} />
-								<Route path="/agendar" element={<Index />} />
-								<Route path="/admin" element={<Login />} />
+
+								{/* Redirecionamento de Admin */}
+								<Route
+									path="/admin"
+									element={<Navigate to="/dashboard" replace />}
+								/>
+
+								{/* Painel Administrativo */}
+								<Route path="/dashboard/*" element={<AdminIndex />} />
+
+								{/* 👇 ROTA DA AGENDA PÚBLICA (COM PREFIXO FIXO) 👇 */}
+								{/* Ex: arena.app/agendar/saopaulocenter */}
+								<Route path="/agendar/:subdomain" element={<BookingPublic />} />
+
+								{/* 404 Not Found */}
 								<Route path="*" element={<NotFound />} />
 							</Routes>
 						</Suspense>

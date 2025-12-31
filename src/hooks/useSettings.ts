@@ -3,12 +3,43 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-// Tipos para garantir intellisense e robustez
+// --- Interfaces (Contratos de Dados) ---
+
+export interface BookingSettings {
+  require_deposit: boolean;      // Exigir sinal?
+  deposit_type: 'percent' | 'fixed'; // Tipo (% ou R$)
+  deposit_value: number;         // Valor (ex: 30 ou 20.00)
+  enable_full_payment_discount: boolean; // Desconto à vista?
+  full_payment_discount_percent: number; // % de desconto
+}
+
+export interface Court {
+  id?: string;
+  name: string;
+  base_price: number;
+  active: boolean;
+}
+
+interface PromoSettings {
+  active: boolean;
+  discount_percentage: number;
+  promo_days: string[];
+}
+
+interface TenantData {
+  business_name: string;
+  phone: string;
+  email: string;
+  address: string;
+  description: string;
+  subdomain: string;
+  settings: Record<string, any>;
+}
+
 interface Subscription {
   plan_name: string;
   status: "trial" | "active" | "past_due" | "canceled";
   monthly_price: number;
-  current_period_end?: string;
 }
 
 const DEFAULT_SUBSCRIPTION: Subscription = {
@@ -20,15 +51,26 @@ const DEFAULT_SUBSCRIPTION: Subscription = {
 export function useSettings() {
   const { tenantId } = useAuth();
   const { toast } = useToast();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Estado para rastrear exclusões (para apagar do banco ao salvar)
   const [deletedCourtIds, setDeletedCourtIds] = useState<string[]>([]);
 
-  // Dados de leitura (Read-only ou base para o form)
-  const [subscription, setSubscription] =
-    useState<Subscription>(DEFAULT_SUBSCRIPTION);
+  // Estado de Leitura (Assinatura)
+  const [subscription, setSubscription] = useState<Subscription>(DEFAULT_SUBSCRIPTION);
 
-  // Estado do formulário (Mutável)
+  // Estado das Regras Financeiras (Novo)
+  const [bookingSettings, setBookingSettings] = useState<BookingSettings>({
+    require_deposit: false,
+    deposit_type: 'percent',
+    deposit_value: 30,
+    enable_full_payment_discount: false,
+    full_payment_discount_percent: 10,
+  });
+
+  // Estado do Formulário (Edição)
   const [formData, setFormData] = useState({
     tenant: {
       business_name: "",
@@ -36,94 +78,97 @@ export function useSettings() {
       email: "",
       address: "",
       description: "",
-      subdomain: "", // Adicionado para link público
+      subdomain: "",
       settings: {},
-    },
-    courts: [] as any[],
+    } as TenantData,
+    courts: [] as Court[],
     promo: {
       active: false,
       discount_percentage: 0,
       promo_days: ["monday", "tuesday", "wednesday"],
-    },
+    } as PromoSettings,
   });
 
-  // 1. Carregar Dados (FETCH)
+  // 1. CARREGAR DADOS (READ)
   useEffect(() => {
     if (!tenantId) return;
 
     const loadData = async () => {
       setLoading(true);
       try {
-        // A. Busca Tenant
-        const { data: tenant } = await supabase
-          .from("tenants")
-          .select("*")
-          .eq("id", tenantId)
-          .single();
+        const [tenantRes, courtsRes, promoRes, subRes] = await Promise.all([
+          supabase.from("tenants").select("*").eq("id", tenantId).single(),
+          supabase.from("courts").select("*").eq("tenant_id", tenantId).order("created_at"),
+          supabase.from("promotion_rules").select("*").eq("tenant_id", tenantId).maybeSingle(),
+          supabase.from("tenant_subscriptions").select("*").eq("tenant_id", tenantId).maybeSingle()
+        ]);
 
-        // B. Busca Quadras
-        const { data: courts } = await supabase
-          .from("courts")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .order("created_at");
+        if (tenantRes.error) throw tenantRes.error;
 
-        // C. Busca Promoção
-        const { data: promo } = await supabase
-          .from("promotion_rules")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .maybeSingle();
+        // --- AQUI ESTÁ A MÁGICA DO MULTI-TENANT ---
+        // Lemos as configurações salvas no JSON 'settings' do banco
+        if (tenantRes.data.settings?.booking) {
+          setBookingSettings(prev => ({ ...prev, ...tenantRes.data.settings.booking }));
+        }
 
-        // D. Busca Assinatura (BLINDAGEM)
-        const { data: sub } = await supabase
-          .from("tenant_subscriptions")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .maybeSingle();
+        // Atualiza Subscription
+        if (subRes.data) setSubscription(subRes.data);
 
-        // Atualiza estados
-        setSubscription(sub || DEFAULT_SUBSCRIPTION);
-
+        // Atualiza Form Data
         setFormData({
           tenant: {
-            business_name: tenant?.business_name || "",
-            phone: tenant?.phone || "",
-            email: tenant?.email || "",
-            address: tenant?.address || "",
-            description: tenant?.description || "",
-            subdomain: tenant?.subdomain || "",
-            settings: tenant?.settings || {},
+            business_name: tenantRes.data.business_name || "",
+            phone: tenantRes.data.phone || "",
+            email: tenantRes.data.email || "",
+            address: tenantRes.data.address || "",
+            description: tenantRes.data.description || "",
+            subdomain: tenantRes.data.subdomain || "",
+            settings: tenantRes.data.settings || {},
           },
-          courts: courts || [],
+          courts: courtsRes.data ? courtsRes.data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            base_price: Number(c.base_price),
+            active: c.active
+          })) : [],
           promo: {
-            active: promo?.active ?? false,
-            discount_percentage: promo?.discount_percentage ?? 20,
-            promo_days: Array.isArray(promo?.promo_days)
-              ? promo.promo_days
-              : ["monday", "tuesday"],
+            active: promoRes.data?.active ?? false,
+            discount_percentage: Number(promoRes.data?.discount_percentage ?? 20),
+            promo_days: Array.isArray(promoRes.data?.promo_days)
+              ? promoRes.data.promo_days
+              : ["monday", "tuesday", "wednesday"],
           },
         });
+
       } catch (error) {
-        console.error("Erro crítico ao carregar configurações:", error);
+        console.error("Erro ao carregar configurações:", error);
         toast({
           title: "Erro de conexão",
-          description: "Não foi possível carregar seus dados. Tente recarregar.",
+          description: "Não foi possível carregar seus dados.",
           variant: "destructive",
         });
       } finally {
         setLoading(false);
       }
     };
+
     loadData();
   }, [tenantId, toast]);
 
-  // 2. Salvar Dados (SAVE)
+  // 2. SALVAR DADOS (WRITE)
   const saveSettings = async () => {
     if (!tenantId) return;
     setSaving(true);
+
     try {
-      // A. Salvar Tenant
+      // Prepara o JSON atualizado com as novas regras financeiras
+      const currentSettings = formData.tenant.settings || {};
+      const updatedSettingsJSON = {
+        ...currentSettings,
+        booking: bookingSettings // Salva as regras aqui dentro
+      };
+
+      // A. Tenant Update
       const { error: tenantError } = await supabase
         .from("tenants")
         .update({
@@ -132,52 +177,53 @@ export function useSettings() {
           email: formData.tenant.email,
           address: formData.tenant.address,
           description: formData.tenant.description,
+          settings: updatedSettingsJSON, // <--- SALVA O JSON COM AS REGRAS FINANCEIRAS
         })
         .eq("id", tenantId);
 
       if (tenantError) throw tenantError;
 
-      // B. Salvar Quadras (Upsert)
-      for (const court of formData.courts) {
-        const payload: any = {
+      // B. Quadras Update/Insert (Parallel Promise)
+      const courtPromises = formData.courts.map(court => {
+        const payload = {
           tenant_id: tenantId,
           name: court.name,
           base_price: Number(court.base_price),
           active: true,
+          id: court.id // Se tiver ID, o Supabase entende que é Update
         };
-        if (court.id) payload.id = court.id;
-        await supabase.from("courts").upsert(payload);
-      }
+        return supabase.from("courts").upsert(payload);
+      });
 
-      // C. Excluir Quadras removidas
+      await Promise.all(courtPromises);
+
+      // C. Quadras Delete
       if (deletedCourtIds.length > 0) {
         await supabase.from("courts").delete().in("id", deletedCourtIds);
+        setDeletedCourtIds([]); // Limpa a lista após deletar
       }
 
-      // C. Salvar Promoção
-      await supabase
-        .from("promotion_rules")
-        .upsert(
-          {
-            tenant_id: tenantId,
-            saas_category: "arena",
-            active: formData.promo.active,
-            discount_percentage: Number(formData.promo.discount_percentage),
-            promo_days: formData.promo.promo_days,
-          },
-          { onConflict: "tenant_id" }
-        );
+      // D. Promo Update (Upsert)
+      await supabase.from("promotion_rules").upsert({
+        tenant_id: tenantId,
+        saas_category: "arena", // Padrão
+        active: formData.promo.active,
+        discount_percentage: Number(formData.promo.discount_percentage),
+        promo_days: formData.promo.promo_days,
+        trigger_day_of_week: 4 // Quinta-feira padrão
+      }, { onConflict: "tenant_id" });
 
       toast({
-        title: "Alterações salvas",
-        description: "Suas configurações foram atualizadas com sucesso.",
-        className: "bg-primary text-black border-none",
+        title: "Sucesso!",
+        description: "Configurações salvas.",
+        className: "bg-green-600 text-white border-none",
       });
+
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Falha ao salvar",
-        description: error.message || "Ocorreu um erro inesperado.",
+        title: "Erro ao salvar",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -185,47 +231,54 @@ export function useSettings() {
     }
   };
 
-  // Helpers de atualização de estado
-  const updateTenant = (field: string, value: any) =>
-    setFormData((prev) => ({
-      ...prev,
-      tenant: { ...prev.tenant, [field]: value },
-    }));
+  // --- Helpers de Estado ---
 
-  const updatePromo = (field: string, value: any) =>
-    setFormData((prev) => ({
-      ...prev,
-      promo: { ...prev.promo, [field]: value },
-    }));
+  const updateBookingSettings = (field: keyof BookingSettings, value: any) => {
+    setBookingSettings(prev => ({ ...prev, [field]: value }));
+  };
 
-  const updateCourt = (index: number, field: string, value: any) => {
+  const updateTenant = (field: keyof TenantData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tenant: { ...prev.tenant, [field]: value }
+    }));
+  };
+
+  const updatePromo = (field: keyof PromoSettings, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      promo: { ...prev.promo, [field]: value }
+    }));
+  };
+
+  const updateCourt = (index: number, field: keyof Court, value: any) => {
     const newCourts = [...formData.courts];
+    // @ts-ignore
     newCourts[index] = { ...newCourts[index], [field]: value };
-    setFormData((prev) => ({ ...prev, courts: newCourts }));
+    setFormData(prev => ({ ...prev, courts: newCourts }));
   };
 
   const removeCourt = (index: number) => {
     const courtToRemove = formData.courts[index];
     if (courtToRemove.id) {
-      setDeletedCourtIds((prev) => [...prev, courtToRemove.id]);
+      setDeletedCourtIds(prev => [...prev, courtToRemove.id!]);
     }
     const newCourts = formData.courts.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, courts: newCourts }));
+    setFormData(prev => ({ ...prev, courts: newCourts }));
   };
 
   const addCourt = () => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      courts: [...prev.courts, { name: "Nova Quadra", base_price: 150 }],
+      courts: [...prev.courts, { name: "Nova Quadra", base_price: 150, active: true }],
     }));
   };
 
-  // Exposição da API do Hook
   return {
     loading,
     saving,
     formData,
-    subscription, // Exposto separadamente
+    subscription,
     isTrial: subscription.status === "trial",
     updateTenant,
     updatePromo,
@@ -233,5 +286,7 @@ export function useSettings() {
     removeCourt,
     addCourt,
     saveSettings,
+    bookingSettings, // Exportado corretamente
+    updateBookingSettings, // Exportado corretamente
   };
 }

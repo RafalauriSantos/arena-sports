@@ -59,10 +59,10 @@ Você precisa ter o **[Bun](https://bun.sh/)** instalado em sua máquina.
 
 ```bash
 # Clone este repositório
-$ git clone https://github.com/RafalauriSantos/campo-verde-agil.git
+$ git clone https://github.com/RafalauriSantos/arena-sports.git
 
 # Vá para a pasta do projeto
-$ cd campo-verde-agil
+$ cd arena-sports
 
 # Instale dependências (Bun é recomendado)
 $ bun install

@@ -1,19 +1,107 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-	Calendar,
-	Smartphone,
 	TrendingUp,
-	Clock,
-	Users,
 	Zap,
-	ArrowRight,
-	Check,
 	Play,
-	ChevronDown,
+	Menu,
+	X,
+	ShieldCheck,
+	XCircle,
+	CheckCircle2,
+	AlertTriangle,
+	Lock,
+	Star,
+	Check,
+	ArrowRight,
+	Smartphone,
+	Wallet,
+	HelpCircle,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-// Hook for scroll animations
+// --- DADOS DOS DEPOIMENTOS (7 PROVAS SOCIAIS) ---
+const testimonials = [
+	{
+		name: "Carlos Silva",
+		role: "Arena Society SP",
+		text: "Aumentei meu faturamento em R$ 5.200 no primeiro mês só recuperando horários perdidos.",
+		initials: "CS",
+	},
+	{
+		name: "Ana Beatriz",
+		role: "Tennis Club Rio",
+		text: "Eu vivia no WhatsApp. Agora tenho tempo para treinar e cuidar da gestão de verdade.",
+		initials: "AB",
+	},
+	{
+		name: "Roberto Mendes",
+		role: "Beach Tennis Pro",
+		text: "O pagamento antecipado via PIX acabou com os calotes de última hora. Sensacional.",
+		initials: "RM",
+	},
+	{
+		name: "Lucas Ferreira",
+		role: "Futsal da Vila",
+		text: "Meus clientes elogiam muito a facilidade de reservar pelo link. Ficou muito profissional.",
+		initials: "LF",
+	},
+	{
+		name: "Fernanda Costa",
+		role: "Arena Multi",
+		text: "O suporte é incrível. Qualquer dúvida que tenho, eles resolvem na hora.",
+		initials: "FC",
+	},
+	{
+		name: "Marcos Paulo",
+		role: "Complexo Esportivo",
+		text: "Gerenciar 4 quadras era um caos. Com o Arena OS, virou um jogo de criança.",
+		initials: "MP",
+	},
+	{
+		name: "Juliana Santos",
+		role: "Vôlei de Areia",
+		text: "O melhor investimento que fiz. O sistema se paga na primeira semana.",
+		initials: "JS",
+	},
+];
+
+// --- DADOS DO FAQ (QUEBRA DE OBJEÇÕES) ---
+const faqList = [
+	{
+		question: "Tenho apenas uma quadra, o sistema serve para mim?",
+		answer:
+			"Com certeza. O plano 'Arena Start' foi desenhado exatamente para quem está começando ou tem estrutura enxuta. Você vai profissionalizar sua gestão pelo preço de um aluguel de quadra.",
+	},
+	{
+		question: "Preciso instalar algum programa no computador?",
+		answer:
+			"Não! O Arena OS é 100% online. Você acessa pelo navegador do celular, tablet ou computador, de qualquer lugar.",
+	},
+	{
+		question: "É difícil de configurar? Não sou bom com tecnologia.",
+		answer:
+			"Fizemos pensando nisso. O setup leva menos de 5 minutos. É tão simples quanto usar o WhatsApp, mas muito mais organizado.",
+	},
+	{
+		question: "Como funciona o recebimento via PIX?",
+		answer:
+			"O cliente paga na hora da reserva. O dinheiro cai direto na sua conta, sem intermediários segurando seu valor. Você tem fluxo de caixa imediato.",
+	},
+	{
+		question: "Existe contrato de fidelidade?",
+		answer:
+			"Nenhum. Você é livre para cancelar quando quiser. Confiamos tanto no nosso produto que não precisamos amarrar você com contratos.",
+	},
+	{
+		question: "E se eu precisar de ajuda?",
+		answer:
+			"Temos um suporte especializado via WhatsApp. Você fala com gente de verdade que entende do seu negócio, não com robôs.",
+	},
+];
+
+// --- HOOKS & UTILS ---
 function useScrollAnimation() {
 	const [visibleElements, setVisibleElements] = useState<Set<string>>(
 		new Set()
@@ -40,745 +128,753 @@ function useScrollAnimation() {
 	return visibleElements;
 }
 
-// iPhone 15 Pro Mockup Component
-function IPhoneMockup({
-	children,
-	className = "",
-}: {
-	children: React.ReactNode;
-	className?: string;
-}) {
+// --- MOCKUPS VISUAIS ---
+function IPhoneMockup({ children }: { children: React.ReactNode }) {
 	return (
-		<div className={`relative ${className}`}>
-			{/* iPhone Frame */}
-			<div className="relative w-[220px] md:w-[280px] h-[460px] md:h-[580px] bg-[#1a1a1a] rounded-[45px] md:rounded-[55px] p-[10px] md:p-[12px] shadow-2xl border border-[#333]">
-				{/* Dynamic Island */}
-				<div className="absolute top-[14px] md:top-[18px] left-1/2 -translate-x-1/2 w-[80px] md:w-[100px] h-[26px] md:h-[32px] bg-black rounded-full z-20" />
-
-				{/* Screen */}
-				<div className="relative w-full h-full bg-black rounded-[35px] md:rounded-[43px] overflow-hidden">
-					{/* Status Bar */}
-					<div className="absolute top-0 left-0 right-0 h-[40px] md:h-[50px] flex items-end justify-between px-5 md:px-6 pb-1 text-white text-xs font-medium z-10">
-						<span className="text-[10px] md:text-xs">9:41</span>
-						<div className="flex items-center gap-1">
-							<div className="flex gap-[2px]">
-								<div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white rounded-sm" />
-								<div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white rounded-sm" />
-								<div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white rounded-sm" />
-								<div className="w-[2px] md:w-[3px] h-[8px] md:h-[10px] bg-white/40 rounded-sm" />
-							</div>
-							<div className="w-5 md:w-6 h-2.5 md:h-3 border border-white rounded-sm ml-1">
-								<div className="w-3 md:w-4 h-full bg-white rounded-sm" />
-							</div>
+		<div className="relative transform hover:scale-[1.02] transition-transform duration-500">
+			<div className="relative w-[180px] md:w-[220px] h-[380px] md:h-[460px] bg-[#121212] rounded-[30px] md:rounded-[45px] p-[8px] md:p-[10px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#333] ring-1 ring-white/10">
+				<div className="absolute top-[10px] md:top-[15px] left-1/2 -translate-x-1/2 w-[60px] md:w-[80px] h-[18px] md:h-[24px] bg-black rounded-full z-20" />
+				<div className="relative w-full h-full bg-black rounded-[24px] md:rounded-[36px] overflow-hidden border border-white/5">
+					<div className="absolute top-0 inset-x-0 h-8 flex justify-between px-4 pt-2 text-[8px] font-medium text-white z-10">
+						<span>9:41</span>
+						<div className="flex gap-1">
+							<div className="w-3 h-1.5 bg-white rounded-sm" />
 						</div>
 					</div>
-
-					{/* App Content */}
-					<div className="pt-[40px] md:pt-[50px] h-full">{children}</div>
+					<div className="pt-8 h-full">{children}</div>
 				</div>
-
-				{/* Side Button */}
-				<div className="absolute -right-[2px] top-[100px] md:top-[120px] w-[3px] h-[60px] md:h-[80px] bg-[#333] rounded-l" />
-				<div className="absolute -left-[2px] top-[80px] md:top-[100px] w-[3px] h-[28px] md:h-[35px] bg-[#333] rounded-r" />
-				<div className="absolute -left-[2px] top-[120px] md:top-[150px] w-[3px] h-[48px] md:h-[60px] bg-[#333] rounded-r" />
-				<div className="absolute -left-[2px] top-[176px] md:top-[220px] w-[3px] h-[48px] md:h-[60px] bg-[#333] rounded-r" />
 			</div>
 		</div>
 	);
 }
 
-// MacBook Pro Mockup Component
-function MacBookMockup({
-	children,
-	className = "",
-}: {
-	children: React.ReactNode;
-	className?: string;
-}) {
+function MacBookMockup({ children }: { children: React.ReactNode }) {
 	return (
-		<div className={`relative ${className}`}>
-			{/* Screen */}
-			<div className="relative w-[320px] md:w-[700px] bg-[#1a1a1a] rounded-t-xl p-[6px] md:p-[8px] border-t border-l border-r border-[#333]">
-				{/* Camera */}
-				<div className="absolute top-[3px] md:top-[4px] left-1/2 -translate-x-1/2 w-1.5 md:w-2 h-1.5 md:h-2 bg-[#0a0a0a] rounded-full" />
-
-				{/* Display */}
-				<div className="w-full h-[200px] md:h-[420px] bg-black rounded-lg overflow-hidden mt-1.5 md:mt-2">
+		<div className="relative transform hover:scale-[1.01] transition-transform duration-500">
+			<div className="relative w-[280px] md:w-[580px] bg-[#121212] rounded-t-xl p-1.5 border border-[#333] shadow-2xl">
+				<div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#0a0a0a] rounded-full" />
+				<div className="w-full h-[160px] md:h-[360px] bg-black rounded-lg overflow-hidden border border-white/5 relative group">
 					{children}
+					<div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none group-hover:opacity-50 transition-opacity duration-700" />
 				</div>
 			</div>
-
-			{/* Base */}
-			<div className="relative w-[360px] md:w-[800px] h-[10px] md:h-[14px] bg-gradient-to-b from-[#2a2a2a] to-[#1a1a1a] rounded-b-xl -ml-[20px] md:-ml-[50px] border-b border-l border-r border-[#333]">
-				{/* Notch */}
-				<div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80px] md:w-[150px] h-[3px] md:h-[4px] bg-[#0a0a0a] rounded-b-lg" />
+			<div className="relative w-[320px] md:w-[660px] h-[8px] md:h-[12px] bg-[#1a1a1a] rounded-b-lg -ml-[20px] md:-ml-[40px] border-b border-l border-r border-[#333] flex justify-center">
+				<div className="w-16 md:w-24 h-1 bg-[#0f0f0f] rounded-b opacity-50" />
 			</div>
 		</div>
 	);
 }
 
-// App Screen - Calendar View (for iPhone)
+// --- TELAS FAKE ---
 function CalendarAppScreen() {
-	const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-	const dates = [14, 15, 16, 17, 18, 19, 20];
-
 	return (
-		<div className="h-full bg-black p-3 md:p-4">
-			{/* Header */}
-			<div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-				<div className="w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl bg-primary/20 flex items-center justify-center">
-					<span className="text-sm md:text-lg">⚽</span>
-				</div>
+		<div className="h-full bg-[#050507] p-3 font-sans flex flex-col">
+			<div className="flex justify-between items-center mb-3">
 				<div>
-					<h3 className="text-white font-bold text-xs md:text-sm">
-						Arena Sport
-					</h3>
-					<p className="text-white/50 text-[10px] md:text-xs">
-						Escolha seu horário
+					<h3 className="text-white font-bold text-xs">Arena Central</h3>
+					<p className="text-emerald-500 text-[9px] font-medium flex items-center gap-1">
+						<span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />{" "}
+						Online
 					</p>
 				</div>
+				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-[10px]">
+					⚽
+				</div>
 			</div>
-
-			{/* Date Strip */}
-			<div className="flex gap-1.5 md:gap-2 mb-4 md:mb-6 overflow-hidden">
-				{days.slice(0, 5).map((day, i) => (
+			<div className="flex gap-1.5 overflow-x-auto pb-2 hide-scrollbar">
+				{[14, 15, 16, 17].map((d, i) => (
 					<div
-						key={day}
-						className={`flex flex-col items-center p-1.5 md:p-2 rounded-lg md:rounded-xl min-w-[32px] md:min-w-[40px] ${
-							i === 3 ? "bg-primary text-black" : "bg-white/5 text-white/70"
+						key={d}
+						className={`min-w-[30px] h-[45px] rounded-lg flex flex-col items-center justify-center transition-all ${
+							i === 2
+								? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/20"
+								: "bg-white/5 text-white"
 						}`}>
-						<span className="text-[8px] md:text-[10px] font-medium">{day}</span>
-						<span
-							className={`text-xs md:text-sm font-bold ${
-								i === 3 ? "text-black" : "text-white"
-							}`}>
-							{dates[i]}
-						</span>
+						<span className="text-[7px] opacity-70">SEG</span>
+						<span className="font-bold text-xs">{d}</span>
 					</div>
 				))}
 			</div>
-
-			{/* Time Slots */}
-			<div className="space-y-1.5 md:space-y-2">
-				{["18:00", "19:00", "20:00", "21:00"].map((time, i) => (
-					<div
-						key={time}
-						className={`flex items-center justify-between p-2 md:p-3 rounded-lg md:rounded-xl ${
-							i === 1 ? "bg-primary/10 border border-primary/30" : "bg-white/5"
-						}`}>
-						<div className="flex items-center gap-2 md:gap-3">
-							<span
-								className={`text-sm md:text-lg font-bold ${
-									i === 1 ? "text-primary" : "text-white"
-								}`}>
-								{time}
-							</span>
-							<span
-								className={`text-[8px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full ${
-									i === 1
-										? "bg-primary/20 text-primary"
-										: "bg-white/10 text-white/50"
-								}`}>
-								{i === 1 ? "Disponível" : i === 2 ? "Reservado" : "Disponível"}
-							</span>
-						</div>
-						{(i === 0 || i === 1 || i === 3) && (
-							<span className="text-primary font-bold text-xs md:text-sm">
-								R$ 160
-							</span>
-						)}
-					</div>
-				))}
-			</div>
-		</div>
-	);
-}
-
-// App Screen - Dashboard View (for MacBook)
-function DashboardAppScreen() {
-	const chartData = [40, 65, 45, 80, 95, 100, 30];
-	const maxValue = Math.max(...chartData);
-
-	return (
-		<div className="h-full bg-black p-3 md:p-6">
-			{/* Header */}
-			<div className="flex items-center justify-between mb-3 md:mb-6">
-				<div className="flex items-center gap-2 md:gap-3">
-					<div className="w-7 md:w-10 h-7 md:h-10 rounded-lg md:rounded-xl bg-primary/20 flex items-center justify-center">
-						<span className="text-sm md:text-lg">⚽</span>
-					</div>
+			<div className="space-y-2 flex-1 overflow-hidden relative mt-1">
+				<div className="p-2 rounded-lg flex justify-between items-center bg-white/5 border border-white/5">
 					<div>
-						<h3 className="text-white font-bold text-xs md:text-base">
-							Arena Sports Dashboard
-						</h3>
-						<p className="text-white/50 text-[8px] md:text-xs">
-							Painel Administrativo
-						</p>
+						<span className="text-white font-bold block text-xs">18:00</span>
+						<span className="text-emerald-400 text-[8px]">Livre</span>
+					</div>
+					<div className="px-2 py-0.5 bg-emerald-500 text-black text-[8px] font-bold rounded">
+						Reservar
 					</div>
 				</div>
-				<div className="flex gap-1 md:gap-2">
-					<div className="px-2 md:px-3 py-1 md:py-1.5 bg-white/5 rounded-md md:rounded-lg text-white/70 text-[8px] md:text-xs">
-						Hoje
-					</div>
-					<div className="px-2 md:px-3 py-1 md:py-1.5 bg-primary rounded-md md:rounded-lg text-black text-[8px] md:text-xs font-medium">
-						Semana
+				<div className="p-2 rounded-lg flex justify-between items-center bg-emerald-500/5 border border-emerald-500/10 opacity-60">
+					<div>
+						<span className="text-white font-bold block text-xs">19:00</span>
+						<span className="text-white/40 text-[8px]">Ocupado</span>
 					</div>
 				</div>
-			</div>
-
-			{/* KPIs */}
-			<div className="grid grid-cols-3 gap-2 md:gap-4 mb-3 md:mb-6">
-				<div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-primary/20">
-					<p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">
-						Faturamento Hoje
-					</p>
-					<p className="text-primary text-sm md:text-2xl font-black">
-						R$ 1.450
-					</p>
-					<p className="text-primary/70 text-[7px] md:text-xs mt-0.5 md:mt-1">
-						+23% vs ontem
-					</p>
-				</div>
-				<div className="bg-white/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-white/10">
-					<p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">
-						Jogos Agendados
-					</p>
-					<p className="text-white text-sm md:text-2xl font-black">8</p>
-					<p className="text-white/50 text-[7px] md:text-xs mt-0.5 md:mt-1">
-						Confirmados
-					</p>
-				</div>
-				<div className="bg-white/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-white/10">
-					<p className="text-white/50 text-[7px] md:text-xs mb-0.5 md:mb-1">
-						Taxa de Ocupação
-					</p>
-					<p className="text-white text-sm md:text-2xl font-black">87%</p>
-					<p className="text-white/50 text-[7px] md:text-xs mt-0.5 md:mt-1">
-						Excelente
-					</p>
-				</div>
-			</div>
-
-			{/* Chart */}
-			<div className="bg-white/5 rounded-xl md:rounded-2xl p-2 md:p-4 border border-white/10">
-				<p className="text-white/70 text-[9px] md:text-sm font-medium mb-2 md:mb-4">
-					Receita Semanal
-				</p>
-				<div className="flex items-end justify-between h-[50px] md:h-[120px] gap-1 md:gap-2">
-					{["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((day, i) => (
-						<div
-							key={day}
-							className="flex flex-col items-center gap-1 md:gap-2 flex-1">
-							<div
-								className="w-full bg-gradient-to-t from-primary to-primary/50 rounded-t"
-								style={{ height: `${(chartData[i] / maxValue) * 100}%` }}
-							/>
-							<span className="text-white/50 text-[6px] md:text-[10px]">
-								{day}
-							</span>
-						</div>
-					))}
+				<div className="p-2 rounded-lg flex justify-between items-center bg-white/5 border border-white/5">
+					<div>
+						<span className="text-white font-bold block text-xs">20:00</span>
+						<span className="text-emerald-400 text-[8px]">Livre</span>
+					</div>
+					<div className="px-2 py-0.5 bg-emerald-500 text-black text-[8px] font-bold rounded">
+						Reservar
+					</div>
 				</div>
 			</div>
 		</div>
 	);
 }
 
-export default function Landing() {
+function DashboardAppScreen() {
+	return (
+		<div className="h-full bg-[#02040a] p-4 font-sans relative overflow-hidden">
+			<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
+			<div className="flex justify-between items-center mb-4 relative z-10">
+				<div className="flex gap-2 items-center">
+					<div className="w-5 h-5 bg-emerald-500 rounded flex items-center justify-center text-black font-bold text-[10px]">
+						A
+					</div>
+					<h3 className="text-white font-bold text-xs">Faturamento</h3>
+				</div>
+				<div className="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
+					+27% este mês
+				</div>
+			</div>
+			<div className="grid grid-cols-3 gap-3 mb-4 relative z-10">
+				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
+					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
+						Hoje
+					</p>
+					<p className="text-white text-sm font-bold mt-0.5">R$ 1.850</p>
+				</div>
+				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
+					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
+						Pix
+					</p>
+					<p className="text-emerald-400 text-sm font-bold mt-0.5">R$ 8.2k</p>
+				</div>
+				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
+					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
+						Projeção
+					</p>
+					<p className="text-white text-sm font-bold mt-0.5">R$ 42k</p>
+				</div>
+			</div>
+			<div className="bg-white/5 rounded-lg border border-white/10 h-28 relative overflow-hidden flex items-end p-2 gap-1.5 z-10">
+				{[40, 70, 50, 90, 60, 80, 100].map((h, i) => (
+					<div
+						key={i}
+						className="flex-1 bg-gradient-to-t from-emerald-500/20 to-emerald-500/60 rounded-t-[2px]"
+						style={{ height: `${h}%` }}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
+// --- PÁGINA PRINCIPAL ---
+
+export default function LandingPage() {
 	const navigate = useNavigate();
 	const visibleElements = useScrollAnimation();
-	const heroRef = useRef<HTMLDivElement>(null);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [scrolled, setScrolled] = useState(false);
 
 	const isVisible = (id: string) => visibleElements.has(id);
 
-	const scrollToNext = () => {
-		const problemSection = document.getElementById("problem");
-		problemSection?.scrollIntoView({ behavior: "smooth" });
-	};
+	useEffect(() => {
+		const handleScroll = () => setScrolled(window.scrollY > 20);
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
 
 	return (
-		<div className="min-h-screen bg-black text-white overflow-x-hidden">
-			{/* Navigation */}
-			<nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
-				<div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-					<div className="flex items-center gap-2" data-testid="landing-logo">
-						<span className="text-2xl">⚽</span>
-						<span className="text-xl font-black">Arena Sports</span>
+		<div className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+			{/* Estilos para Animação Marquee */}
+			<style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+          animation: scroll 40s linear infinite;
+        }
+      `}</style>
+
+			{/* Background Global */}
+			<div className="fixed inset-0 z-0 pointer-events-none">
+				<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
+				<div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[100px]" />
+			</div>
+
+			{/* NAVBAR FLUTUANTE */}
+			<header
+				className={cn(
+					"fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-500 ease-in-out px-4",
+					scrolled ? "pt-4" : "pt-6"
+				)}>
+				<nav
+					className={cn(
+						"relative flex items-center justify-between transition-all duration-500 ease-out border backdrop-blur-2xl",
+						scrolled
+							? "w-full max-w-4xl h-12 rounded-full bg-[#0a0a0a]/80 border-white/10 shadow-lg px-6"
+							: "w-full max-w-6xl h-16 bg-transparent border-transparent px-2"
+					)}>
+					<div
+						className="flex items-center gap-2 cursor-pointer group"
+						onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+						<div
+							className={cn(
+								"flex items-center justify-center transition-all duration-300",
+								scrolled
+									? "w-7 h-7 rounded-full bg-emerald-500/10"
+									: "w-8 h-8 rounded-xl bg-emerald-500/10"
+							)}>
+							<Zap
+								className={cn(
+									"transition-all duration-300 text-emerald-500",
+									scrolled ? "w-3 h-3" : "w-4 h-4"
+								)}
+							/>
+						</div>
+						<span
+							className={cn(
+								"font-bold tracking-tight text-white transition-all",
+								scrolled ? "text-sm" : "text-base"
+							)}>
+							Arena Sports
+						</span>
 					</div>
-					<div className="hidden md:flex items-center gap-8 text-sm text-white/70">
-						<a
-							href="#features"
-							className="hover:text-white transition-colors"
-							data-testid="nav-features">
-							Funcionalidades
-						</a>
-						<a
-							href="#pricing"
-							className="hover:text-white transition-colors"
-							data-testid="nav-pricing">
-							Planos
-						</a>
+
+					<div className="hidden md:flex items-center gap-1">
+						{[
+							{ name: "Comparativo", href: "#comparison" },
+							{ name: "Passo a Passo", href: "#steps" },
+							{ name: "Planos", href: "#pricing" },
+							{ name: "FAQ", href: "#faq" },
+						].map((item) => (
+							<a
+								key={item.name}
+								href={item.href}
+								className="px-3 py-1 text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+								{item.name}
+							</a>
+						))}
+					</div>
+
+					<div className="hidden md:flex items-center gap-2">
 						<button
 							onClick={() => navigate("/login")}
-							className="text-white/70 hover:text-white transition-colors"
-							data-testid="nav-login">
-							Entrar
+							className="text-xs font-medium text-gray-400 hover:text-white transition-colors px-2">
+							Login
 						</button>
+						<Button
+							onClick={() => navigate("/login")}
+							className={cn(
+								"rounded-full font-bold transition-all shadow-lg shadow-emerald-500/10",
+								scrolled
+									? "h-8 px-4 text-[10px] bg-white text-black hover:bg-gray-200"
+									: "h-9 px-5 text-xs bg-emerald-500 text-black hover:bg-emerald-400"
+							)}>
+							Criar Conta
+						</Button>
 					</div>
+
 					<button
-						onClick={() => navigate("/login")}
-						className="px-5 py-2.5 bg-neon text-black font-semibold rounded-full text-sm hover:bg-neon/90 transition-all hover:shadow-neon"
-						data-testid="nav-cta">
-						Agendar Demonstração
+						className="md:hidden p-2 text-gray-400 hover:text-white"
+						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+						{mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
 					</button>
-				</div>
-			</nav>
 
-			{/* Hero Section */}
-			<section
-				ref={heroRef}
-				className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20"
-				data-testid="hero-section">
-				{/* Gradient Orb */}
-				<div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
+					{mobileMenuOpen && (
+						<div className="absolute top-full left-0 right-0 mt-2 p-4 bg-[#0F1115] border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 md:hidden">
+							<a
+								href="#pricing"
+								onClick={() => setMobileMenuOpen(false)}
+								className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-sm">
+								Ver Planos
+							</a>
+							<Button
+								onClick={() => navigate("/login")}
+								className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-10 text-sm">
+								Acessar Agora
+							</Button>
+						</div>
+					)}
+				</nav>
+			</header>
 
-				<div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-					{/* Badge */}
-					<div
-						className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 text-sm text-white/70"
-						data-testid="hero-badge">
-						<span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-						Plataforma #1 em Gestão de Arenas
+			{/* --- HERO SECTION --- */}
+			<section className="relative pt-32 pb-16 lg:pt-40 lg:pb-20 px-4 overflow-hidden flex flex-col items-center">
+				<div className="relative z-10 max-w-3xl mx-auto text-center space-y-6 mb-12">
+					<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[10px] font-bold uppercase tracking-wider animate-in fade-in slide-in-from-bottom-4 duration-1000">
+						<span className="relative flex h-1.5 w-1.5">
+							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+							<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+						</span>
+						Infraestrutura Financeira para Arenas
 					</div>
 
-					{/* Headline */}
-					<h1
-						className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9]"
-						data-testid="hero-headline">
-						Sua Arena em
-						<br />
-						<span className="text-primary">Alta Performance.</span>
+					<h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+						Transforme horários vazios em <br />
+						<span className="text-transparent bg-clip-text bg-gradient-to-b from-emerald-400 to-emerald-600">
+							faturamento previsível.
+						</span>
 					</h1>
 
-					{/* Subheadline */}
-					<p
-						className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed"
-						data-testid="hero-subheadline">
-						Abandone o caos do WhatsApp. Organize agendamentos, atraia jogadores
-						e maximize seu lucro com a plataforma de gestão mais avançada do
-						esporte.
+					<p className="text-base md:text-lg text-gray-400 max-w-lg mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+						Pare de vender "horário" e comece a construir uma máquina de lucro.
+						<span className="text-white font-medium">
+							{" "}
+							Sem WhatsApp. Sem calote. Sem caos.
+						</span>
 					</p>
 
-					{/* CTAs */}
-					<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-						<button
+					<div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+						<Button
 							onClick={() => navigate("/login")}
-							className="group px-8 py-4 bg-neon text-black font-bold rounded-full text-lg hover:bg-neon/90 transition-all hover:shadow-neon flex items-center gap-2"
-							data-testid="hero-cta-primary">
-							Agendar Demonstração
-							<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-						</button>
-						<button
-							onClick={() => navigate("/agendar")}
-							className="px-8 py-4 bg-white/5 text-white font-semibold rounded-full text-lg border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2"
-							data-testid="hero-cta-secondary">
-							<Play className="w-5 h-5" />
-							Ver Demo ao Vivo
+							className="h-11 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
+							Começar Agora (R$ 79)
+						</Button>
+						<button className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-xs">
+							<Play className="w-3 h-3 fill-current" /> Ver em ação
 						</button>
 					</div>
 				</div>
 
-				{/* Scroll Indicator */}
-				<button
-					onClick={scrollToNext}
-					className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/30 hover:text-white/60 transition-colors animate-bounce"
-					data-testid="scroll-indicator">
-					<ChevronDown className="w-8 h-8" />
-				</button>
+				{/* MOCKUPS */}
+				<div className="relative w-full max-w-4xl mx-auto perspective-1000 group">
+					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[40%] bg-emerald-500/10 rounded-full blur-[80px] group-hover:bg-emerald-500/20 transition duration-1000" />
+					<div className="relative flex justify-center items-end transform transition-transform duration-700 hover:scale-[1.01]">
+						<div className="relative z-10 shadow-2xl">
+							<MacBookMockup>
+								<DashboardAppScreen />
+							</MacBookMockup>
+						</div>
+						<div className="absolute -bottom-4 -right-2 md:-right-6 z-20 transform scale-[0.65] md:scale-80 animate-float shadow-2xl hidden md:block">
+							<IPhoneMockup>
+								<CalendarAppScreen />
+							</IPhoneMockup>
+						</div>
+						<div className="md:hidden mt-[-20px] z-20 transform scale-[0.7] shadow-2xl">
+							<IPhoneMockup>
+								<CalendarAppScreen />
+							</IPhoneMockup>
+						</div>
+					</div>
+				</div>
 			</section>
 
-			{/* Problem Section */}
-			<section id="problem" className="py-32 px-6">
-				<div
-					id="problem-content"
-					data-animate
-					className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
-						isVisible("problem-content")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<p className="text-primary text-sm font-medium tracking-widest uppercase mb-6">
-						O Problema
+			{/* --- SEÇÃO DE PROVA SOCIAL (MARQUEE 7 PESSOAS) --- */}
+			<section className="py-12 border-y border-white/5 bg-[#050507] overflow-hidden">
+				<div className="max-w-7xl mx-auto px-6 mb-8 text-center">
+					<p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase opacity-70">
+						Quem usa, não volta para o papel
 					</p>
-					<h2 className="text-3xl md:text-5xl font-black mb-8 leading-tight">
-						Você ainda gerencia sua arena pelo WhatsApp?
-					</h2>
-					<div className="grid md:grid-cols-3 gap-6 text-left mt-12">
-						{[
-							{
-								icon: "📱",
-								title: "Mensagens infinitas",
-								desc: 'Horas perdidas respondendo "tem horário?" pelo WhatsApp',
-							},
-							{
-								icon: "📊",
-								title: "Zero controle",
-								desc: "Sem visibilidade de faturamento, ocupação ou tendências",
-							},
-							{
-								icon: "💸",
-								title: "Dinheiro na mesa",
-								desc: "Horários vagos que poderiam estar gerando receita",
-							},
-						].map((item, i) => (
+				</div>
+
+				<div className="relative w-full overflow-hidden mask-linear-gradient">
+					<div className="flex w-max animate-scroll gap-6">
+						{[...testimonials, ...testimonials].map((t, i) => (
 							<div
 								key={i}
-								className="p-6 bg-white/[0.02] rounded-2xl border border-white/5">
-								<span className="text-3xl mb-4 block">{item.icon}</span>
-								<h3 className="text-lg font-bold mb-2">{item.title}</h3>
-								<p className="text-white/50 text-sm">{item.desc}</p>
+								className="w-[300px] p-6 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col gap-4 hover:bg-white/[0.05] transition-colors">
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
+										{t.initials}
+									</div>
+									<div>
+										<p className="text-white text-sm font-bold">{t.name}</p>
+										<p className="text-gray-500 text-[10px] uppercase tracking-wide">
+											{t.role}
+										</p>
+									</div>
+								</div>
+								<div className="flex gap-0.5 text-emerald-500">
+									{[1, 2, 3, 4, 5].map((star) => (
+										<Star key={star} className="w-3 h-3 fill-current" />
+									))}
+								</div>
+								<p className="text-gray-400 text-xs leading-relaxed italic">
+									"{t.text}"
+								</p>
+							</div>
+						))}
+					</div>
+					<div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-[#02040a] to-transparent z-10" />
+					<div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-[#02040a] to-transparent z-10" />
+				</div>
+			</section>
+
+			{/* --- SEÇÃO TRANSFORMAÇÃO --- */}
+			<section className="py-16 bg-[#03050c]">
+				<div className="max-w-5xl mx-auto px-6">
+					<div className="text-center mb-10">
+						<h2 className="text-2xl md:text-3xl font-black text-white">
+							Não é mágica. É infraestrutura.
+						</h2>
+						<p className="text-gray-400 text-sm mt-2">
+							A diferença entre uma quadra e uma empresa.
+						</p>
+					</div>
+					<div className="grid md:grid-cols-2 gap-4 relative">
+						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#02040a] p-2 rounded-full border border-white/10 hidden md:block">
+							<ArrowRight className="text-gray-500 w-5 h-5" />
+						</div>
+						{/* ANTES */}
+						<div className="p-6 rounded-2xl bg-red-500/5 border border-red-500/10 flex flex-col gap-4">
+							<div className="flex items-center gap-2 text-red-400 font-bold text-sm uppercase tracking-wider">
+								<XCircle className="w-4 h-4" /> Antes do Arena OS
+							</div>
+							<div className="space-y-3">
+								<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
+									<span className="text-gray-400 text-sm">Ocupação Média</span>
+									<span className="text-red-400 font-mono font-bold">~45%</span>
+								</div>
+								<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
+									<span className="text-gray-400 text-sm">
+										Prejuízo Mensal (Vagos)
+									</span>
+									<span className="text-red-400 font-mono font-bold">
+										- R$ 4.800
+									</span>
+								</div>
+								<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
+									<span className="text-gray-400 text-sm">
+										Tempo no WhatsApp
+									</span>
+									<span className="text-red-400 font-mono font-bold">
+										4h / dia
+									</span>
+								</div>
+							</div>
+						</div>
+						{/* DEPOIS */}
+						<div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-4 ring-1 ring-emerald-500/10">
+							<div className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-wider">
+								<CheckCircle2 className="w-4 h-4" /> Com Arena OS
+							</div>
+							<div className="space-y-3">
+								<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+									<span className="text-white text-sm">Ocupação Média</span>
+									<span className="text-emerald-400 font-mono font-bold">
+										+72% 🚀
+									</span>
+								</div>
+								<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+									<span className="text-white text-sm">Receita Recuperada</span>
+									<span className="text-emerald-400 font-mono font-bold">
+										+ R$ 6.400
+									</span>
+								</div>
+								<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+									<span className="text-white text-sm">Tempo de Gestão</span>
+									<span className="text-emerald-400 font-mono font-bold">
+										15 min / dia
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* --- SEÇÃO "POR QUE NÃO WHATSAPP?" --- */}
+			<section id="comparison" className="py-20 px-6">
+				<div className="max-w-4xl mx-auto">
+					<div className="text-center mb-12">
+						<h2 className="text-2xl md:text-4xl font-black text-white">
+							WhatsApp não foi feito para vender horários.
+						</h2>
+						<p className="text-gray-400 text-sm mt-2">
+							A ferramenta que você ama está matando seu crescimento.
+						</p>
+					</div>
+					<div className="border border-white/10 rounded-2xl overflow-hidden">
+						<div className="grid grid-cols-3 bg-white/5 p-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+							<div>Critério</div>
+							<div className="text-center">WhatsApp</div>
+							<div className="text-center text-emerald-400">Arena OS</div>
+						</div>
+						{[
+							{
+								crit: "Tempo de Resposta",
+								bad: "Até 2 horas",
+								good: "Imediato (Automático)",
+							},
+							{
+								crit: "Pagamento",
+								bad: "Manual / Fiado",
+								good: "Pix Antecipado",
+							},
+							{
+								crit: "No-Show (Calote)",
+								bad: "Alto Risco",
+								good: "Zero Risco",
+							},
+							{
+								crit: "Madrugada/Fim de Semana",
+								bad: "Você não atende",
+								good: "Vende 24h",
+							},
+						].map((row, i) => (
+							<div
+								key={i}
+								className="grid grid-cols-3 p-4 border-t border-white/5 items-center hover:bg-white/[0.02]">
+								<div className="text-sm font-medium text-white">{row.crit}</div>
+								<div className="text-center text-red-400 text-xs">
+									{row.bad}
+								</div>
+								<div className="text-center text-emerald-400 text-xs font-bold bg-emerald-500/10 py-1 rounded-full">
+									{row.good}
+								</div>
 							</div>
 						))}
 					</div>
 				</div>
 			</section>
 
-			{/* Solution / Mockups Section */}
-			<section className="py-32 px-6 overflow-hidden">
-				<div
-					id="solution-header"
-					data-animate
-					className={`max-w-4xl mx-auto text-center mb-20 transition-all duration-1000 ${
-						isVisible("solution-header")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<p className="text-primary text-sm font-medium tracking-widest uppercase mb-6">
-						A Solução
+			{/* --- SEÇÃO: COMO FUNCIONA (90 Segundos) --- */}
+			<section
+				id="steps"
+				className="py-20 px-6 bg-white/[0.02] border-y border-white/5">
+				<div className="max-w-5xl mx-auto text-center">
+					<p className="text-emerald-500 font-bold tracking-widest uppercase text-[10px] mb-4">
+						Simples Demais
 					</p>
-					<h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight">
-						Uma experiência premium.
-						<br />
-						Para você e seus jogadores.
+					<h2 className="text-3xl md:text-4xl font-black text-white mb-12">
+						Sua arena online em 90 segundos.
 					</h2>
-					<p className="text-white/50 text-lg max-w-xl mx-auto">
-						Duas interfaces perfeitas. Uma para gerenciar. Outra para converter.
-					</p>
+					<div className="grid md:grid-cols-3 gap-8">
+						{[
+							{
+								step: "1",
+								title: "Crie sua Arena",
+								text: "Defina suas quadras, horários e preço. O sistema cria sua agenda automaticamente.",
+							},
+							{
+								step: "2",
+								title: "Envie o Link",
+				
+								text: "Compartilhe seu link exclusivo no WhatsApp e Instagram. É o seu site oficial.",
+							},
+							{
+								step: "3",
+								title: "Receba o Pix",
+								text: "O cliente reserva e paga. Você recebe a notificação com o dinheiro já garantido.",
+							},
+						].map((item, i) => (
+							<div
+								key={i}
+								className="relative p-6 bg-[#0F1115] rounded-2xl border border-white/10 group hover:border-emerald-500/30 transition-colors">
+								<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl group-hover:bg-emerald-500 group-hover:text-black transition-colors">
+									{item.step}
+								</div>
+								<h3 className="text-white font-bold mb-2">{item.title}</h3>
+								<p className="text-gray-400 text-xs">{item.text}</p>
+							</div>
+						))}
+					</div>
 				</div>
+			</section>
 
-				{/* Mockups Grid */}
-				<div className="max-w-7xl mx-auto">
-					{/* Desktop Mockup */}
-					<div
-						id="mockup-desktop"
-						data-animate
-						className={`flex justify-center mb-20 transition-all duration-1000 delay-200 ${
-							isVisible("mockup-desktop")
-								? "opacity-100 translate-y-0"
-								: "opacity-0 translate-y-20"
-						}`}>
-						<div className="relative">
-							<div className="absolute -inset-20 bg-[hsl(var(--neon)/0.05)] rounded-full blur-[100px]" />
-							<MacBookMockup className="relative z-10 transform hover:scale-[1.02] transition-transform duration-500">
-								<DashboardAppScreen />
-							</MacBookMockup>
-							<div className="text-center mt-8">
-								<p className="text-white/70 font-medium">Painel do Dono</p>
-								<p className="text-white/40 text-sm">
-									Controle total em tempo real
+			{/* --- PRICING --- */}
+			<section
+				id="pricing"
+				className="py-20 px-6 bg-white/[0.01] border-t border-white/5">
+				<div className="max-w-5xl mx-auto">
+					<div className="text-center mb-12">
+						<h2 className="text-2xl md:text-4xl font-black text-white mb-3">
+							Comece pequeno, cresça rápido.
+						</h2>
+						<p className="text-gray-400 text-sm max-w-lg mx-auto">
+							Investimento ridículo:{" "}
+							<span className="text-white font-bold">1 jogo extra no mês</span>{" "}
+							já paga o sistema.
+						</p>
+					</div>
+					<div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+						{/* PLANO START */}
+						<div className="relative group rounded-2xl p-[1px] overflow-hidden transform hover:scale-[1.01] transition-all">
+							<div className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#10b981_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+							<div className="relative h-full bg-[#0F1115] rounded-2xl p-6 md:p-8 border border-white/10 group-hover:border-transparent transition-colors">
+								<div className="absolute top-0 right-0 bg-emerald-500 text-black text-[9px] font-bold px-3 py-1 rounded-bl-lg">
+									MAIS POPULAR
+								</div>
+								<h3 className="text-lg font-bold text-white mb-1">
+									Arena Start
+								</h3>
+								<p className="text-gray-400 text-xs mb-5">
+									Tudo para profissionalizar hoje.
+								</p>
+								<div className="flex items-baseline gap-1 mb-5">
+									<span className="text-4xl font-black text-white">R$ 79</span>
+									<span className="text-gray-500 text-xs">/mês</span>
+								</div>
+								<ul className="space-y-3 mb-8 text-xs md:text-sm">
+									<li className="flex items-center gap-2 text-white">
+										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
+										<strong>Agenda Inteligente</strong>
+									</li>
+									<li className="flex items-center gap-2 text-white">
+										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
+										<strong>Link de Reservas</strong>
+									</li>
+									<li className="flex items-center gap-2 text-white">
+										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
+										<strong>Pagamento via Pix</strong>
+									</li>
+									<li className="flex items-center gap-2 text-white">
+										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
+										<strong>Gestão Financeira</strong>
+									</li>
+								</ul>
+								<Button
+									onClick={() => navigate("/login")}
+									className="w-full h-10 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
+									Começar com R$ 79
+								</Button>
+								<p className="text-center text-[10px] text-gray-500 mt-3 flex justify-center gap-2 items-center">
+									<ShieldCheck className="w-3 h-3" /> 7 dias de garantia.
 								</p>
 							</div>
 						</div>
-					</div>
-
-					{/* Mobile Mockup */}
-					<div
-						id="mockup-mobile"
-						data-animate
-						className={`flex justify-center transition-all duration-1000 delay-300 ${
-							isVisible("mockup-mobile")
-								? "opacity-100 translate-y-0"
-								: "opacity-0 translate-y-20"
-						}`}>
-						<div className="relative">
-							<div className="absolute -inset-20 bg-[hsl(var(--neon)/0.05)] rounded-full blur-[100px]" />
-							<IPhoneMockup className="relative z-10 transform hover:scale-[1.02] transition-transform duration-500">
-								<CalendarAppScreen />
-							</IPhoneMockup>
-							<div className="text-center mt-8">
-								<p className="text-white/70 font-medium">App do Jogador</p>
-								<p className="text-white/40 text-sm">Reserve em 30 segundos</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* Features - Bento Grid */}
-			<section id="features" className="py-32 px-6">
-				<div
-					id="features-header"
-					data-animate
-					className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 ${
-						isVisible("features-header")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<p className="text-[hsl(var(--neon))] text-sm font-medium tracking-widest uppercase mb-6">
-						Funcionalidades
-					</p>
-					<h2 className="text-3xl md:text-5xl font-black leading-tight">
-						Foco no que faz diferença.
-						<br />
-						Simples, eficiente, Arena Sports.
-					</h2>
-				</div>
-
-				{/* Bento Grid */}
-				<div
-					id="bento-grid"
-					data-animate
-					className={`max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-1000 delay-200 ${
-						isVisible("bento-grid")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					{/* Large Card */}
-					<div className="lg:col-span-2 p-8 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl border border-primary/20 group hover:border-primary/40 transition-all">
-						<div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-							<Calendar className="w-7 h-7 text-primary" />
-						</div>
-						<h3 className="text-2xl font-bold mb-3">Agenda Inteligente</h3>
-						<p className="text-white/50 leading-relaxed">
-							Visualize todos os horários em tempo real. Bloqueie, libere e
-							gerencie reservas com um clique. Sem planilhas, sem confusão.
-						</p>
-					</div>
-
-					{/* Regular Cards */}
-					<div className="p-6 bg-white/[0.02] rounded-3xl border border-white/5 hover:border-white/10 transition-all group">
-						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-							<Smartphone className="w-6 h-6 text-white/70" />
-						</div>
-						<h3 className="text-lg font-bold mb-2">Link Público</h3>
-						<p className="text-white/40 text-sm">
-							Compartilhe um único link. Jogadores reservam sozinhos.
-						</p>
-					</div>
-
-					<div className="p-6 bg-white/[0.02] rounded-3xl border border-white/5 hover:border-white/10 transition-all group">
-						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-							<TrendingUp className="w-6 h-6 text-white/70" />
-						</div>
-						<h3 className="text-lg font-bold mb-2">Dashboard Financeiro</h3>
-						<p className="text-white/40 text-sm">
-							Faturamento em tempo real. Gráficos claros. Decisões inteligentes.
-						</p>
-					</div>
-
-					<div className="p-6 bg-white/[0.02] rounded-3xl border border-white/5 hover:border-white/10 transition-all group">
-						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-							<Clock className="w-6 h-6 text-white/70" />
-						</div>
-						<h3 className="text-lg font-bold mb-2">Gestão de Mensalistas</h3>
-						<p className="text-white/40 text-sm">
-							Horários fixos para seus melhores clientes. Fidelização
-							automática.
-						</p>
-					</div>
-
-					<div className="p-6 bg-white/[0.02] rounded-3xl border border-white/5 hover:border-white/10 transition-all group">
-						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-							<Users className="w-6 h-6 text-white/70" />
-						</div>
-						<h3 className="text-lg font-bold mb-2">Multi-Quadras</h3>
-						<p className="text-white/40 text-sm">
-							Gerencie múltiplas quadras em um único painel unificado.
-						</p>
-					</div>
-
-					<div className="p-6 bg-white/[0.02] rounded-3xl border border-white/5 hover:border-white/10 transition-all group">
-						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-							<Zap className="w-6 h-6 text-white/70" />
-						</div>
-						<h3 className="text-lg font-bold mb-2">Pagamento PIX</h3>
-						<p className="text-white/40 text-sm">
-							Receba antecipado. Sem risco de no-show. Fluxo de caixa saudável.
-						</p>
-					</div>
-				</div>
-			</section>
-
-			{/* Stats Section */}
-			<section className="py-32 px-6 border-y border-white/5">
-				<div
-					id="stats"
-					data-animate
-					className={`max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 transition-all duration-1000 ${
-						isVisible("stats")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					{[
-						{ value: "50+", label: "Arenas Ativas" },
-						{ value: "10k+", label: "Reservas/Mês" },
-						{ value: "98%", label: "Satisfação" },
-						{ value: "24h", label: "Suporte" },
-					].map((stat, i) => (
-						<div key={i} className="text-center">
-							<p className="text-4xl md:text-5xl font-black text-primary mb-2">
-								{stat.value}
+						{/* PLANO PRO */}
+						<div className="relative bg-[#0a0c10] border border-white/10 rounded-2xl p-6 md:p-8 opacity-80 hover:opacity-100 transition-opacity">
+							<h3 className="text-lg font-bold text-white mb-1">Arena Pro</h3>
+							<p className="text-gray-400 text-xs mb-5">
+								Para escalar múltiplas unidades.
 							</p>
-							<p className="text-white/40 text-sm">{stat.label}</p>
+							<div className="flex items-baseline gap-1 mb-5">
+								<span className="text-4xl font-black text-white">R$ 197</span>
+								<span className="text-gray-500 text-xs">/mês</span>
+							</div>
+							<ul className="space-y-3 mb-8 text-gray-400 text-xs md:text-sm">
+								<li className="flex items-center gap-2">
+									<Check className="w-4 h-4 text-white shrink-0" /> Tudo do
+									plano Start
+								</li>
+								<li className="flex items-center gap-2">
+									<Check className="w-4 h-4 text-white shrink-0" />{" "}
+									<strong>Múltiplas Quadras</strong>
+								</li>
+								<li className="flex items-center gap-2">
+									<Check className="w-4 h-4 text-white shrink-0" />{" "}
+									<strong>Gestão de Mensalistas</strong>
+								</li>
+								<li className="flex items-center gap-2">
+									<Check className="w-4 h-4 text-white shrink-0" />{" "}
+									<strong>Relatórios Avançados</strong>
+								</li>
+							</ul>
+							<Button
+								onClick={() => navigate("/login")}
+								variant="outline"
+								className="w-full h-10 border-white/20 hover:bg-white/5 text-white font-bold text-sm rounded-lg">
+								Selecionar Pro
+							</Button>
 						</div>
-					))}
+					</div>
 				</div>
 			</section>
 
-			{/* Testimonial */}
-			<section className="py-32 px-6">
-				<div
-					id="testimonial"
-					data-animate
-					className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
-						isVisible("testimonial")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<div className="p-12 bg-white/[0.02] rounded-3xl border border-white/5">
-						<p className="text-2xl md:text-3xl font-medium leading-relaxed mb-8">
-							"Antes eu perdia 3 horas por dia no WhatsApp. Agora os jogadores
-							reservam sozinhos e eu foco no que importa:
-							<span className="text-primary"> fazer minha arena crescer.</span>"
+			{/* --- NOVA SEÇÃO DE FAQ (PERGUNTAS FREQUENTES) --- */}
+			<section id="faq" className="py-20 px-6">
+				<div className="max-w-4xl mx-auto">
+					<div className="text-center mb-12">
+						<h2 className="text-2xl md:text-3xl font-black text-white">
+							Dúvidas Frequentes
+						</h2>
+						<p className="text-gray-400 text-sm mt-2">
+							Tudo o que você precisa saber para começar sem medo.
 						</p>
-						<div className="flex items-center justify-center gap-4">
-							<div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-lg">
-								👤
-							</div>
-							<div className="text-left">
-								<p className="font-semibold">Carlos Silva</p>
-								<p className="text-white/40 text-sm">
-									Arena Gol de Placa • São Paulo
+					</div>
+
+					<div className="grid md:grid-cols-2 gap-6">
+						{faqList.map((item, i) => (
+							<div
+								key={i}
+								className="p-6 bg-[#0F1115] border border-white/10 rounded-2xl hover:border-white/20 transition-colors">
+								<div className="flex gap-3 mb-3">
+									<div className="mt-1">
+										<HelpCircle className="w-5 h-5 text-emerald-500" />
+									</div>
+									<h3 className="text-white font-bold text-sm">
+										{item.question}
+									</h3>
+								</div>
+								<p className="text-gray-400 text-xs leading-relaxed pl-8">
+									{item.answer}
 								</p>
 							</div>
-						</div>
+						))}
 					</div>
 				</div>
 			</section>
 
-			{/* Pricing Section */}
-			<section id="pricing" className="py-32 px-6">
-				<div
-					id="pricing-header"
-					data-animate
-					className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 ${
-						isVisible("pricing-header")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<p className="text-[hsl(var(--neon))] text-sm font-medium tracking-widest uppercase mb-6">
-						Investimento
-					</p>
-					<h2 className="text-3xl md:text-5xl font-black leading-tight">
-						Simples e transparente.
-					</h2>
-				</div>
-
-				<div
-					id="pricing-card"
-					data-animate
-					className={`max-w-md mx-auto transition-all duration-1000 delay-200 ${
-						isVisible("pricing-card")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<div className="p-8 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl border border-primary/30 relative overflow-hidden">
-						<div className="absolute top-4 right-4 px-3 py-1 bg-primary text-black text-xs font-bold rounded-full">
-							POPULAR
-						</div>
-
-						<h3 className="text-2xl font-bold mb-2">Profissional</h3>
-						<p className="text-white/50 mb-6">Para arenas que querem crescer</p>
-
-						<div className="mb-8">
-							<span className="text-5xl font-black">R$ 197</span>
-							<span className="text-white/50">/mês</span>
-						</div>
-
-						<ul className="space-y-4 mb-8">
-							{[
-								"Quadras ilimitadas",
-								"Agendamentos ilimitados",
-								"Dashboard financeiro completo",
-								"Link público personalizado",
-								"Gestão de mensalistas",
-								"Suporte prioritário",
-							].map((feature, i) => (
-								<li key={i} className="flex items-center gap-3 text-white/70">
-									<Check className="w-5 h-5 text-primary" />
-									{feature}
-								</li>
-							))}
-						</ul>
-
-						<button
-							onClick={() => navigate("/login")}
-							className="w-full py-4 bg-neon text-black font-bold rounded-full text-lg hover:bg-neon/90 transition-all hover:shadow-neon">
-							Começar Agora
-						</button>
+			{/* --- ECOSYSTEM TEASER --- */}
+			<section className="py-20 px-6 text-center border-t border-white/5 bg-[#02040a]">
+				<p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-4">
+					O que vem por aí
+				</p>
+				<h2 className="text-2xl font-bold text-white mb-8">
+					Construindo o ecossistema do esporte
+				</h2>
+				<div className="flex flex-wrap justify-center gap-4">
+					<div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs text-gray-400 flex items-center gap-2">
+						<Smartphone className="w-3 h-3" /> App Mobile (Q1 2025)
+					</div>
+					<div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs text-gray-400 flex items-center gap-2">
+						<TrendingUp className="w-3 h-3" /> Torneios (Q2 2025)
+					</div>
+					<div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs text-gray-400 flex items-center gap-2">
+						<Wallet className="w-3 h-3" /> Conta Digital (Em breve)
 					</div>
 				</div>
 			</section>
 
-			{/* Final CTA */}
-			<section className="py-32 px-6">
-				<div
-					id="final-cta"
-					data-animate
-					className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
-						isVisible("final-cta")
-							? "opacity-100 translate-y-0"
-							: "opacity-0 translate-y-10"
-					}`}>
-					<h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
-						Pronto para transformar
-						<br />
-						sua arena?
-					</h2>
-					<p className="text-white/50 text-lg mb-10 max-w-xl mx-auto">
-						Agende uma demonstração gratuita e veja como o Arena Sports pode
-						aumentar seu faturamento.
-					</p>
-					<button
-						onClick={() => navigate("/login")}
-						className="group px-10 py-5 bg-neon text-black font-bold rounded-full text-xl hover:bg-neon/90 transition-all hover:shadow-neon flex items-center gap-3 mx-auto">
-						Agendar Demonstração
-						<ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-					</button>
+			{/* --- CTA FINAL --- */}
+			<section className="py-20 px-6">
+				<div className="max-w-3xl mx-auto relative group">
+					<div className="absolute -inset-[2px] rounded-[2.5rem] overflow-hidden">
+						<div className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#10b981_100%)] opacity-100" />
+					</div>
+					<div className="relative bg-[#050507] rounded-[2.3rem] p-10 md:p-16 text-center overflow-hidden">
+						<div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
+						<h2 className="text-3xl md:text-5xl font-black text-white mb-6 relative z-10 leading-tight">
+							Pare de deixar <br />{" "}
+							<span className="text-emerald-400">dinheiro na mesa.</span>
+						</h2>
+						<div className="flex justify-center relative z-10">
+							<Button
+								onClick={() => navigate("/login")}
+								className="h-14 px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-lg shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-transform hover:scale-105 active:scale-95 flex items-center gap-2">
+								Quero Parar de Perder Dinheiro{" "}
+								<ArrowRight className="w-5 h-5" />
+							</Button>
+						</div>
+					</div>
 				</div>
 			</section>
 
 			{/* Footer */}
-			<footer className="py-12 px-6 border-t border-white/5">
-				<div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-					<div className="flex items-center gap-2">
-						<span className="text-xl">⚽</span>
-						<span className="font-bold">Arena Sports</span>
+			<footer className="py-8 text-center text-gray-600 text-[10px] border-t border-white/5 bg-[#02040a]">
+				<div className="flex justify-center items-center gap-2 mb-2">
+					<div className="w-4 h-4 bg-white/10 rounded flex items-center justify-center">
+						<Zap className="w-2.5 h-2.5 text-white" />
 					</div>
-					<p className="text-white/30 text-sm">
-						© 2025 Arena Sports. Todos os direitos reservados.
-					</p>
-					<div className="flex items-center gap-6 text-sm text-white/40">
-						<a href="#" className="hover:text-white transition-colors">
-							Termos
-						</a>
-						<a href="#" className="hover:text-white transition-colors">
-							Privacidade
-						</a>
-						<a href="#" className="hover:text-white transition-colors">
-							Contato
-						</a>
-					</div>
+					<span className="font-bold text-white text-xs">Arena Sports</span>
+				</div>
+				<p>&copy; 2025 Arena Sports. Infraestrutura financeira para arenas.</p>
+				<div className="flex justify-center gap-3 mt-4 opacity-50">
+					<span className="flex items-center gap-1">
+						<Lock className="w-2.5 h-2.5" /> Dados Criptografados
+					</span>
+					<span>•</span>
+					<span className="flex items-center gap-1">
+						<ShieldCheck className="w-2.5 h-2.5" /> Backups Diários
+					</span>
 				</div>
 			</footer>
 		</div>

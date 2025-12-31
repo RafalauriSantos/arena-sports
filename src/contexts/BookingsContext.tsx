@@ -9,250 +9,277 @@ import {
 } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
-import { TimeSlot, Booking, PaymentStatus } from "@/types/booking";
+import { TimeSlot, Booking } from "@/types/booking";
+import { useToast } from "@/hooks/use-toast";
+
+// Interface para tipar o retorno cru do Supabase (Database Layer)
+interface CourtDB {
+	id: string;
+	name: string;
+	base_price: number;
+	tenant_id: string;
+	active: boolean;
+}
+
+interface BookingDB {
+	id: string;
+	tenant_id: string;
+	court_id: string;
+	customer_name: string;
+	customer_phone: string;
+	start_time: string;
+	end_time: string;
+	total_price: number;
+	status: string;
+	created_at: string;
+	court?: { name: string };
+}
 
 interface BookingsContextType {
 	timeSlots: TimeSlot[];
 	bookings: Booking[];
 	loading: boolean;
-	updateTimeSlot: (slotId: string, updates: Partial<TimeSlot>) => Promise<void>;
-	addBooking: (booking: Booking) => Promise<void>;
-	updateBooking: (
-		bookingId: string,
-		updates: Partial<Booking>
-	) => Promise<void>;
-	deleteBooking: (bookingId: string) => Promise<void>;
-	blockTimeSlot: (slotId: string, reason: string) => Promise<void>;
 	refreshData: () => Promise<void>;
+	addBooking: (booking: Partial<Booking>) => Promise<void>;
+	updateBooking: (id: string, updates: Partial<Booking>) => Promise<void>;
+	deleteBooking: (id: string) => Promise<void>;
 }
 
 const BookingsContext = createContext<BookingsContextType | undefined>(
 	undefined
 );
 
-const toDateString = (value?: string | null) => {
-	if (!value) return undefined;
-	const d = new Date(value);
-	return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
-};
-
-const toTimeString = (value?: string | null) => {
-	if (!value) return undefined;
-	const d = new Date(value);
-	return Number.isNaN(d.getTime()) ? undefined : d.toISOString().slice(11, 16);
-};
-
-const combineDateTime = (date?: string | null, time?: string | null) => {
-	if (!date || !time) return undefined;
-	const dt = new Date(`${date}T${time}:00`);
-	return Number.isNaN(dt.getTime()) ? undefined : dt;
-};
-
-const generateFallbackSlots = (): TimeSlot[] => [];
+// Configurações
+const OPENING_HOUR = 7;
+const CLOSING_HOUR = 23;
 
 export function BookingsProvider({ children }: { children: ReactNode }) {
 	const { tenantId } = useAuth();
+	const { toast } = useToast();
+
 	const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 	const [bookings, setBookings] = useState<Booking[]>([]);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [courts, setCourts] = useState<CourtDB[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 
+	// 1. FUNÇÃO MESTRA DE BUSCA (Core Logic)
 	const fetchData = useCallback(async () => {
-		if (!tenantId) {
-			setTimeSlots([]);
-			setBookings([]);
-			setLoading(false);
-			return;
-		}
-
 		setLoading(true);
-
 		try {
-			const [slotsRes, bookingsRes] = await Promise.all([
+			// A. Resolução do Tenant ID (Fail-safe)
+			let currentTenantId = tenantId;
+
+			if (!currentTenantId) {
+				const {
+					data: { user },
+				} = await supabase.auth.getUser();
+
+				if (user) {
+					const { data: profile } = await supabase
+						.from("profiles")
+						.select("tenant_id")
+						.eq("id", user.id)
+						.single();
+					currentTenantId = profile?.tenant_id;
+				}
+			}
+
+			if (!currentTenantId) {
+				setLoading(false);
+				return;
+			}
+
+			// B. Busca Paralela (Alta Performance)
+			const [courtsRes, bookingsRes] = await Promise.all([
 				supabase
-					.from("arena_time_slots")
-					.select("id, tenant_id, date, time, field_id, status, price_override")
-					.eq("tenant_id", tenantId),
+					.from("courts")
+					.select("*")
+					.eq("tenant_id", currentTenantId)
+					.eq("active", true),
 				supabase
-					.from("arena_reservations")
-					.select(
-						"id, tenant_id, customer_name, customer_phone, court_name, start_time, end_time, total_price, payment_status, slot_id"
-					)
-					.eq("tenant_id", tenantId),
+					.from("bookings")
+					.select("*, court:courts(name)")
+					.eq("tenant_id", currentTenantId),
 			]);
 
-			const mappedSlots: TimeSlot[] = (slotsRes.data ?? []).map((s) => {
-				const start = combineDateTime(
-					s.date as string | null,
-					s.time as string | null
-				);
-				const end = start
-					? new Date(start.getTime() + 60 * 60 * 1000)
-					: undefined;
-				return {
-					id: String(s.id),
-					tenantId: s.tenant_id ? String(s.tenant_id) : undefined,
-					status: (s.status as TimeSlot["status"]) ?? "available",
-					courtName: null,
-					fieldId: (s.field_id as string | null) ?? null,
-					date: (s.date as string | undefined) ?? "",
-					time: (s.time as string | undefined) ?? "",
-					startTime: start,
-					endTime: end,
-					pricePerPlayer: (s as { price_override?: number }).price_override,
-				};
-			});
+			if (courtsRes.error) throw courtsRes.error;
+			if (bookingsRes.error) throw bookingsRes.error;
 
-			const slotMap = new Map<string, TimeSlot>();
-			mappedSlots.forEach((slot) => slotMap.set(slot.id, slot));
+			const fetchedCourts = (courtsRes.data as CourtDB[]) || [];
+			const fetchedBookingsRaw =
+				(bookingsRes.data as unknown as BookingDB[]) || [];
 
-			const mappedBookings: Booking[] = (bookingsRes.data ?? []).map((b) => {
-				const start = b.start_time
-					? new Date(b.start_time)
-					: combineDateTime(
-							slotMap.get(String(b.slot_id))?.date,
-							slotMap.get(String(b.slot_id))?.time
-					  );
-				const end = b.end_time
-					? new Date(b.end_time)
-					: start
-					? new Date(start.getTime() + 60 * 60 * 1000)
-					: undefined;
-				const slot = b.slot_id ? slotMap.get(String(b.slot_id)) : undefined;
-				const paymentStatus =
-					(b.payment_status as PaymentStatus | null) ?? null;
+			// C. Mapeamento (Data Transformation Layer)
+			const mappedBookings: Booking[] = fetchedBookingsRaw.map((b) => ({
+				id: b.id,
+				tenantId: b.tenant_id,
+				slotId: b.id,
+				fieldId: b.court_id,
+				fieldName: b.court?.name || "Quadra",
+				customerName: b.customer_name,
+				customerPhone: b.customer_phone,
+				date: b.start_time.split("T")[0],
+				time: b.start_time.split("T")[1].substring(0, 5), // HH:mm
+				startTime: new Date(b.start_time),
+				endTime: new Date(b.end_time),
+				totalPrice: b.total_price,
+				paymentStatus: b.status === "paid" ? "paid" : "pending",
+				status: b.status === "paid" ? "confirmed" : "pending_approval",
+				bookedBy: b.customer_name,
+				players: [b.customer_name],
+				createdAt: b.created_at,
+			}));
 
-				return {
-					id: String(b.id),
-					slotId: b.slot_id ? String(b.slot_id) : "",
-					tenantId: String(b.tenant_id),
-					customerName: b.customer_name ?? "",
-					customerPhone: b.customer_phone ?? null,
-					courtName: b.court_name ?? null,
-					startTime: start,
-					endTime: end,
-					totalPrice: b.total_price ?? null,
-					paymentStatus,
-					fieldId: slot?.fieldId ?? null,
-					fieldName: slot?.courtName ?? b.court_name ?? null,
-					date: slot?.date ?? toDateString(b.start_time),
-					time: slot?.time ?? toTimeString(b.start_time),
-					status: paymentStatus === "paid" ? "confirmed" : "pending_approval",
-					bookedBy: b.customer_name ?? undefined,
-					players: b.customer_name ? [b.customer_name] : [],
-					createdAt: start?.toISOString(),
-				};
-			});
-
-			setTimeSlots(mappedSlots);
+			setCourts(fetchedCourts);
 			setBookings(mappedBookings);
+
+			// D. Geração Otimizada de Slots (Algoritmo O(n))
+			const generatedSlots: TimeSlot[] = [];
+			const today = new Date().toISOString().split("T")[0];
+
+			// CRÍTICO: Cria um Hash Set para lookup O(1).
+			// Evita o problema de performance do .find() dentro do loop.
+			const bookingLookup = new Set(
+				mappedBookings.map((b) => `${b.fieldId}-${b.date}-${b.time}`)
+			);
+
+			fetchedCourts.forEach((court) => {
+				for (let hour = OPENING_HOUR; hour <= CLOSING_HOUR; hour++) {
+					const timeString = `${hour.toString().padStart(2, "0")}:00`;
+					const lookupKey = `${court.id}-${today}-${timeString}`;
+
+					// Verificação instantânea
+					const isReserved = bookingLookup.has(lookupKey);
+
+					// Recupera dados do booking se existir (apenas para display)
+					const existingBooking = isReserved
+						? mappedBookings.find(
+								(b) =>
+									b.fieldId === court.id &&
+									b.time === timeString &&
+									b.date === today
+						)
+						: undefined;
+
+					generatedSlots.push({
+						id: lookupKey,
+						fieldId: court.id,
+						date: today,
+						time: timeString,
+						status: isReserved ? "reserved" : "available",
+						pricePerPlayer: court.base_price, // <--- CORRIGIDO AQUI
+						courtName: court.name,
+						bookedBy: existingBooking?.customerName,
+					});
+				}
+			});
+
+			setTimeSlots(generatedSlots);
 		} catch (error) {
-			console.error("Erro ao carregar dados de agendamentos", error);
-			setTimeSlots(generateFallbackSlots());
-			setBookings([]);
+			console.error("Erro ao carregar dados:", error);
+			toast({
+				title: "Erro de conexão",
+				description: "Falha ao sincronizar com o servidor.",
+				variant: "destructive",
+			});
 		} finally {
 			setLoading(false);
 		}
-	}, [tenantId]);
+	}, [tenantId, toast]);
 
 	useEffect(() => {
 		fetchData();
 	}, [fetchData]);
 
-	const updateTimeSlot = async (slotId: string, updates: Partial<TimeSlot>) => {
-		if (!tenantId) return;
-		const payload: Record<string, unknown> = {};
+	// 2. ADICIONAR RESERVA (Write Operation)
+	const addBooking = async (booking: Partial<Booking>) => {
+		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) throw new Error("Usuário não autenticado");
 
-		if (updates.status) payload.status = updates.status;
-		if (updates.fieldId) payload.field_id = updates.fieldId;
-		if (updates.date) payload.date = updates.date;
-		if (updates.time) payload.time = updates.time;
+			// Garante tenant_id atualizado
+			const { data: profile } = await supabase
+				.from("profiles")
+				.select("tenant_id")
+				.eq("id", user.id)
+				.single();
 
-		await supabase
-			.from("arena_time_slots")
-			.update(payload)
-			.eq("id", slotId)
-			.eq("tenant_id", tenantId);
-		await fetchData();
-	};
+			if (!profile?.tenant_id) throw new Error("Empresa não encontrada");
 
-	const addBooking = async (booking: Booking) => {
-		if (!tenantId) return;
+			// Construção Segura de Datas ISO
+			const startISO = `${booking.date}T${booking.time}:00`;
+			const startDateObj = new Date(startISO);
+			const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000); // +1 hora
 
-		const startISO = booking.startTime
-			? booking.startTime.toISOString()
-			: booking.date && booking.time
-			? new Date(`${booking.date}T${booking.time}:00`).toISOString()
-			: new Date().toISOString();
-		const endISO = booking.endTime
-			? booking.endTime.toISOString()
-			: booking.date && booking.time
-			? new Date(`${booking.date}T${booking.time}:00`).toISOString()
-			: new Date().toISOString();
-
-		await supabase.from("arena_reservations").insert([
-			{
-				id: booking.id,
-				tenant_id: tenantId,
-				customer_name: booking.customerName,
+			const payload = {
+				tenant_id: profile.tenant_id,
+				court_id: booking.fieldId,
+				customer_name: booking.customerName || "Cliente",
 				customer_phone: booking.customerPhone,
-				court_name: booking.courtName,
-				start_time: startISO,
-				end_time: endISO,
-				total_price: booking.totalPrice,
-				payment_status: booking.paymentStatus,
-				slot_id: booking.slotId,
-			},
-		]);
-		await fetchData();
+				start_time: startDateObj.toISOString(),
+				end_time: endDateObj.toISOString(),
+				total_price: booking.totalPrice || 0,
+				status: booking.paymentStatus === "paid" ? "paid" : "pending",
+			};
+
+			const { error } = await supabase.from("bookings").insert(payload);
+
+			if (error) throw error;
+
+			await fetchData();
+			toast({ title: "Agendamento criado com sucesso!" });
+		} catch (error: any) {
+			console.error(error);
+			toast({
+				title: "Erro ao criar",
+				description: error.message || "Verifique os dados e tente novamente.",
+				variant: "destructive",
+			});
+		}
 	};
 
-	const updateBooking = async (
-		bookingId: string,
-		updates: Partial<Booking>
-	) => {
-		if (!tenantId) return;
+	// 3. ATUALIZAR RESERVA
+	const updateBooking = async (id: string, updates: Partial<Booking>) => {
+		try {
+			const payload: Record<string, any> = {};
 
-		const payload: Record<string, unknown> = {
-			customer_name: updates.customerName,
-			customer_phone: updates.customerPhone,
-			court_name: updates.courtName,
-			total_price: updates.totalPrice,
-			payment_status: updates.paymentStatus,
-		};
+			if (updates.customerName) payload.customer_name = updates.customerName;
+			if (updates.customerPhone) payload.customer_phone = updates.customerPhone;
+			if (updates.paymentStatus) {
+				payload.status = updates.paymentStatus === "paid" ? "paid" : "pending";
+			}
 
-		if (updates.startTime) payload.start_time = updates.startTime.toISOString();
-		if (updates.endTime) payload.end_time = updates.endTime.toISOString();
+			const { error } = await supabase
+				.from("bookings")
+				.update(payload)
+				.eq("id", id);
 
-		await supabase
-			.from("arena_reservations")
-			.update(payload)
-			.eq("id", bookingId)
-			.eq("tenant_id", tenantId);
-		await fetchData();
+			if (error) throw error;
+
+			await fetchData();
+			toast({ title: "Agendamento atualizado" });
+		} catch (error) {
+			console.error(error);
+			toast({ title: "Erro ao atualizar", variant: "destructive" });
+		}
 	};
 
-	const deleteBooking = async (bookingId: string) => {
-		if (!tenantId) return;
-		await supabase
-			.from("arena_reservations")
-			.delete()
-			.eq("id", bookingId)
-			.eq("tenant_id", tenantId);
-		await fetchData();
-	};
+	// 4. DELETAR RESERVA
+	const deleteBooking = async (id: string) => {
+		try {
+			const { error } = await supabase.from("bookings").delete().eq("id", id);
 
-	const blockTimeSlot = async (slotId: string, reason: string) => {
-		if (!tenantId) return;
-		await supabase
-			.from("arena_time_slots")
-			.update({ status: "reserved", court_name: reason })
-			.eq("id", slotId)
-			.eq("tenant_id", tenantId);
-		await fetchData();
-	};
+			if (error) throw error;
 
-	const refreshData = async () => {
-		await fetchData();
+			await fetchData();
+			toast({ title: "Agendamento removido" });
+		} catch (error) {
+			console.error(error);
+			toast({ title: "Erro ao remover", variant: "destructive" });
+		}
 	};
 
 	return (
@@ -261,12 +288,10 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				timeSlots,
 				bookings,
 				loading,
-				updateTimeSlot,
+				refreshData: fetchData,
 				addBooking,
 				updateBooking,
 				deleteBooking,
-				blockTimeSlot,
-				refreshData,
 			}}>
 			{children}
 		</BookingsContext.Provider>
