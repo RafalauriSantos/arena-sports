@@ -17,7 +17,7 @@ const Login = () => {
 	const [mode, setMode] = useState<"signin" | "signup">("signin");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [arenaName, setArenaName] = useState("");
+	const [arenaSportsName, setArenaSportsName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const navigate = useNavigate();
@@ -51,7 +51,7 @@ const Login = () => {
 				if (error) throw error;
 				if (data.session) {
 					await supabase.rpc("fn_onboard_user", {
-						p_business_name: arenaName || "Minha Arena",
+						p_business_name: arenaSportsName || "Minha Arena Sports",
 						p_saas_slug: "arena-sports",
 					});
 				}
@@ -66,7 +66,7 @@ const Login = () => {
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
-			{/* 1. FUNDO IMERSIVO (Imagem de Arena + Overlay) */}
+			{/* 1. FUNDO IMERSIVO (Imagem de Arena Sports + Overlay) */}
 			<div className="absolute inset-0 z-0">
 				{/* Imagem de fundo de alta qualidade (Esportes) */}
 				<div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center" />
@@ -94,8 +94,8 @@ const Login = () => {
 
 					<p className="text-sm sm:text-base text-gray-400 max-w-[16rem] sm:max-w-md leading-relaxed">
 						Pare de perder dinheiro com horários vagos e gestão manual. O{" "}
-						<strong>Arena OS</strong> é o cérebro que automatiza suas reservas,
-						pagamentos e clientes enquanto você dorme.
+						<strong>Arena Sports OS</strong> é o cérebro que automatiza suas
+						reservas, pagamentos e clientes enquanto você dorme.
 					</p>
 
 					<div className="flex flex-col sm:flex-row gap-1 sm:gap-2 pt-2">
@@ -156,15 +156,15 @@ const Login = () => {
 								{mode === "signup" && (
 									<div className="space-y-1 sm:space-y-1.5">
 										<Label className="text-xs uppercase text-gray-500 font-bold">
-											Nome da Arena
+											Nome da Arena Sports
 										</Label>
 										<div className="relative">
 											<Trophy className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
 											<Input
-												value={arenaName}
-												onChange={(e) => setArenaName(e.target.value)}
+												value={arenaSportsName}
+												onChange={(e) => setArenaSportsName(e.target.value)}
 												className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-												placeholder="Ex: Arena Tatuí"
+												placeholder="Ex: Arena Sports Tatuí"
 											/>
 										</div>
 									</div>
@@ -181,7 +181,7 @@ const Login = () => {
 											value={email}
 											onChange={(e) => setEmail(e.target.value)}
 											className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-											placeholder="gestor@arena.com"
+											placeholder="gestor@arenasports.com"
 										/>
 									</div>
 								</div>

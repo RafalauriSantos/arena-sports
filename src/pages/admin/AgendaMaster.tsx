@@ -112,7 +112,7 @@ export default function AgendaMaster() {
 				} else {
 					// Local payment
 					if (b.status === "confirmed") {
-						// Confirmed = paid full at the arena
+						// Confirmed = paid full at the Arena Sports
 						paidAmount = totalAmount;
 						paymentStatus = "paid_full";
 					} else if (b.status === "approved") {

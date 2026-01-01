@@ -15,7 +15,7 @@ import {
 	Ticket,
 } from "lucide-react";
 import { Booking } from "@/types/booking";
-import { ARENA_CONFIG } from "@/config/arena";
+import { ARENA_SPORTS_CONFIG } from "@/config/arena";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -70,7 +70,7 @@ export function SuccessScreen({
 		month: "long",
 	});
 
-	const shareMessage = `🎉 *Jogo Marcado!*\n\n📍 ${ARENA_CONFIG.name}\n⚽ ${booking.fieldName}\n📅 ${displayDate}\n🕐 ${booking.time}\n\nBora galera! 💪`;
+	const shareMessage = `🎉 *Jogo Marcado!*\n\n📍 ${ARENA_SPORTS_CONFIG.name}\n⚽ ${booking.fieldName}\n📅 ${displayDate}\n🕐 ${booking.time}\n\nBora galera! 💪`;
 
 	const handleShareWhatsApp = () => {
 		const message = encodeURIComponent(shareMessage);
@@ -105,7 +105,7 @@ export function SuccessScreen({
 			`Olá! Fiz um agendamento via Arena Sports: ${displayDateShort} às ${booking.time}. Segue o comprovante.`
 		);
 		window.open(
-			`https://wa.me/${ARENA_CONFIG.whatsapp}?text=${message}`,
+			`https://wa.me/${ARENA_SPORTS_CONFIG.whatsapp}?text=${message}`,
 			"_blank"
 		);
 	};
@@ -202,7 +202,7 @@ export function SuccessScreen({
 							</p>
 						</div>
 						<p className="text-xs opacity-60">
-							Validado pelo {ARENA_CONFIG.name}
+							Validado pelo {ARENA_SPORTS_CONFIG.name}
 						</p>
 						<div className="flex gap-2 pt-4">
 							<Button

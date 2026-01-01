@@ -1,5 +1,5 @@
-// Arena configuration - Easy to change
-export const ARENA_CONFIG = {
+// Arena Sports configuration - Easy to change
+export const ARENA_SPORTS_CONFIG = {
   pixKey: "pix@arenasports.com",
   name: "Arena Sports",
   subtitle: "Gestão Inteligente de Quadras Esportivas",
@@ -22,4 +22,4 @@ export const ARENA_CONFIG = {
   ],
 } as const;
 
-export type FieldId = typeof ARENA_CONFIG.fields[number]["id"];
+export type FieldId = typeof ARENA_SPORTS_CONFIG.fields[number]["id"];

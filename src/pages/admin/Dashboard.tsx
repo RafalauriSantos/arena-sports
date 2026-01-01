@@ -77,7 +77,7 @@ const SidebarFixed = ({
 	const handleShare = async () => {
 		const shareData = {
 			title: "Agende na Arena Sports",
-			text: `Venha jogar na ${userProfile?.tenant_id || "minha arena"}!`,
+			text: `Venha jogar na ${userProfile?.tenant_id || "minha Arena Sports"}!`,
 			url: window.location.origin + "/agendar",
 		};
 
@@ -135,7 +135,7 @@ const SidebarFixed = ({
 							</div>
 							<div>
 								<h1 className="text-base font-bold text-white leading-none tracking-tight">
-									Arena OS
+									Arena Sports OS
 								</h1>
 								<p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">
 									Gestão Pro
@@ -170,7 +170,7 @@ const SidebarFixed = ({
 							"bg-gradient-to-r from-emerald-500 to-emerald-700 hover:to-emerald-600 text-white shadow-lg shadow-emerald-500/20 active:scale-95",
 							collapsed ? "justify-center px-0" : ""
 						)}
-						title="Divulgar Arena">
+						title="Divulgar Arena Sports">
 						{collapsed ? (
 							<Share2 className="h-5 w-5" />
 						) : (
@@ -178,7 +178,7 @@ const SidebarFixed = ({
 						)}
 						{!collapsed && (
 							<span className="text-sm font-bold tracking-wide">
-								Divulgar Arena
+								Divulgar Arena Sports
 							</span>
 						)}
 					</button>
@@ -276,7 +276,11 @@ const SidebarFixed = ({
 };
 
 // --- COMPONENTES VISUAIS (Dashboard) ---
-const ArenaStatusHero = ({ revenueToday, occupancyAvg, nextPeak }: any) => {
+const ArenaSportsStatusHero = ({
+	revenueToday,
+	occupancyAvg,
+	nextPeak,
+}: any) => {
 	const statusConfig =
 		occupancyAvg > 80
 			? {
@@ -287,7 +291,7 @@ const ArenaStatusHero = ({ revenueToday, occupancyAvg, nextPeak }: any) => {
 			: occupancyAvg > 20
 			? {
 					color: "bg-emerald-500",
-					text: "Arena Operando Bem",
+					text: "Arena Sports Operando Bem",
 					glow: "shadow-emerald-500/10",
 			  }
 			: {
@@ -428,7 +432,7 @@ export default function DashboardHome() {
 				<div className="flex flex-col items-center gap-4">
 					<Activity className="w-10 h-10 text-emerald-500 animate-spin" />
 					<p className="text-gray-500 text-sm animate-pulse">
-						Carregando Arena OS...
+						Carregando Arena Sports OS...
 					</p>
 				</div>
 			</div>
@@ -461,7 +465,9 @@ export default function DashboardHome() {
 				<div className="md:hidden sticky top-0 z-30 bg-[#02040a]/80 backdrop-blur-lg border-b border-white/5 px-4 py-3 flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<Activity className="h-5 w-5 text-emerald-500" />
-						<span className="font-bold text-lg tracking-tight">Arena OS</span>
+						<span className="font-bold text-lg tracking-tight">
+							Arena Sports OS
+						</span>
 					</div>
 					<Button
 						variant="ghost"
@@ -474,7 +480,7 @@ export default function DashboardHome() {
 				<main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
 					{activeView === "dashboard" && (
 						<div className="space-y-6">
-							<ArenaStatusHero
+							<ArenaSportsStatusHero
 								revenueToday={stats.revenueToday}
 								occupancyAvg={occupancyAvg}
 								nextPeak="19:00 — 21:00"

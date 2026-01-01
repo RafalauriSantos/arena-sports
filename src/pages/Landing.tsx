@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 const testimonials = [
 	{
 		name: "Carlos Silva",
-		role: "Arena Society SP",
+		role: "Arena Sports Society SP",
 		text: "Aumentei meu faturamento em R$ 5.200 no primeiro mês só recuperando horários perdidos.",
 		initials: "CS",
 	},
@@ -49,14 +49,14 @@ const testimonials = [
 	},
 	{
 		name: "Fernanda Costa",
-		role: "Arena Multi",
+		role: "Arena Sports Multi",
 		text: "O suporte é incrível. Qualquer dúvida que tenho, eles resolvem na hora.",
 		initials: "FC",
 	},
 	{
 		name: "Marcos Paulo",
 		role: "Complexo Esportivo",
-		text: "Gerenciar 4 quadras era um caos. Com o Arena OS, virou um jogo de criança.",
+		text: "Gerenciar 4 quadras era um caos. Com o Arena Sports OS, virou um jogo de criança.",
 		initials: "MP",
 	},
 	{
@@ -72,12 +72,12 @@ const faqList = [
 	{
 		question: "Tenho apenas uma quadra, o sistema serve para mim?",
 		answer:
-			"Com certeza. O plano 'Arena Start' foi desenhado exatamente para quem está começando ou tem estrutura enxuta. Você vai profissionalizar sua gestão pelo preço de um aluguel de quadra.",
+			"Com certeza. O plano 'Arena Sports Start' foi desenhado exatamente para quem está começando ou tem estrutura enxuta. Você vai profissionalizar sua gestão pelo preço de um aluguel de quadra.",
 	},
 	{
 		question: "Preciso instalar algum programa no computador?",
 		answer:
-			"Não! O Arena OS é 100% online. Você acessa pelo navegador do celular, tablet ou computador, de qualquer lugar.",
+			"Não! O Arena Sports OS é 100% online. Você acessa pelo navegador do celular, tablet ou computador, de qualquer lugar.",
 	},
 	{
 		question: "É difícil de configurar? Não sou bom com tecnologia.",
@@ -171,7 +171,7 @@ function CalendarAppScreen() {
 		<div className="h-full bg-[#050507] p-3 font-sans flex flex-col">
 			<div className="flex justify-between items-center mb-3">
 				<div>
-					<h3 className="text-white font-bold text-xs">Arena Central</h3>
+					<h3 className="text-white font-bold text-xs">Arena Sports Central</h3>
 					<p className="text-emerald-500 text-[9px] font-medium flex items-center gap-1">
 						<span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />{" "}
 						Online
@@ -413,7 +413,7 @@ export default function LandingPage() {
 							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
 							<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
 						</span>
-						Infraestrutura Financeira para Arenas
+						Infraestrutura Financeira para Arena Sports
 					</div>
 
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
@@ -656,7 +656,7 @@ export default function LandingPage() {
 							{
 								step: "2",
 								title: "Envie o Link",
-				
+
 								text: "Compartilhe seu link exclusivo no WhatsApp e Instagram. É o seu site oficial.",
 							},
 							{

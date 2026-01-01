@@ -168,7 +168,7 @@ export default function FolgasView() {
 						Folgas e Fechamentos
 					</h1>
 					<p className="text-xs md:text-sm text-gray-400 mt-1">
-						Bloqueie dias quando a arena estiver fechada
+						Bloqueie dias quando a Arena Sports estiver fechada
 					</p>
 				</div>
 				<Button
