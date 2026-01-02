@@ -50,6 +50,9 @@ dist-ssr
 # Vercel
 .vercel
 
+# Supabase CLI (artefatos locais)
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

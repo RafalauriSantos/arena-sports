@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { normalizeTenantWhatsApp, isValidTenantWhatsApp } from "@/lib/phone";
 
 // --- Interfaces (Contratos de Dados) ---
 
@@ -40,6 +41,10 @@ interface Subscription {
   plan_name: string;
   status: "trial" | "active" | "past_due" | "canceled";
   monthly_price: number;
+  plan_code?: string | null;
+  billing_interval?: "month" | "year" | null;
+  trial_ends_at?: string | null;
+  grace_ends_at?: string | null;
 }
 
 const DEFAULT_SUBSCRIPTION: Subscription = {
@@ -98,7 +103,12 @@ export function useSettings() {
       try {
         const [tenantRes, courtsRes, promoRes, subRes] = await Promise.all([
           supabase.from("tenants").select("*").eq("id", tenantId).single(),
-          supabase.from("courts").select("*").eq("tenant_id", tenantId).order("created_at"),
+          supabase
+            .from("courts")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .eq("active", true)
+            .order("created_at"),
           supabase.from("promotion_rules").select("*").eq("tenant_id", tenantId).maybeSingle(),
           supabase.from("tenant_subscriptions").select("*").eq("tenant_id", tenantId).maybeSingle()
         ]);
@@ -161,6 +171,11 @@ export function useSettings() {
     setSaving(true);
 
     try {
+      const normalizedWhatsApp = normalizeTenantWhatsApp(formData.tenant.phone || "");
+      if (normalizedWhatsApp && !isValidTenantWhatsApp(normalizedWhatsApp)) {
+        throw new Error("WhatsApp inválido. Use DDD + número (10/11 dígitos) ou 55 + DDD + número.");
+      }
+
       // Prepara o JSON atualizado com as novas regras financeiras
       const currentSettings = formData.tenant.settings || {};
       const updatedSettingsJSON = {
@@ -173,7 +188,7 @@ export function useSettings() {
         .from("tenants")
         .update({
           business_name: formData.tenant.business_name,
-          phone: formData.tenant.phone,
+          phone: normalizedWhatsApp,
           email: formData.tenant.email,
           address: formData.tenant.address,
           description: formData.tenant.description,
@@ -199,8 +214,15 @@ export function useSettings() {
 
       // C. Quadras Delete
       if (deletedCourtIds.length > 0) {
-        await supabase.from("courts").delete().in("id", deletedCourtIds);
-        setDeletedCourtIds([]); // Limpa a lista após deletar
+        // Soft delete: evita conflitos (409) quando existem reservas ligadas à quadra.
+        const { error: disableError } = await supabase
+          .from("courts")
+          .update({ active: false })
+          .in("id", deletedCourtIds);
+
+        if (disableError) throw disableError;
+
+        setDeletedCourtIds([]); // Limpa a lista após desativar
       }
 
       // D. Promo Update (Upsert)
@@ -238,6 +260,15 @@ export function useSettings() {
   };
 
   const updateTenant = (field: keyof TenantData, value: string) => {
+    if (field === "phone") {
+      // Mantém só dígitos e limita tamanho (55 + DDD + número)
+      const digits = value.replace(/\D/g, "").slice(0, 13);
+      setFormData(prev => ({
+        ...prev,
+        tenant: { ...prev.tenant, [field]: digits }
+      }));
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       tenant: { ...prev.tenant, [field]: value }

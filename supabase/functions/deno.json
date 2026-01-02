@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"lib": ["deno.ns", "dom", "dom.iterable", "esnext"],
+		"strict": true
+	},
+	"imports": {
+		"stripe": "npm:stripe@14.25.0",
+		"@supabase/supabase-js": "npm:@supabase/supabase-js@2.89.0"
+	}
+}

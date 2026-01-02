@@ -15,6 +15,8 @@ export interface Booking {
   startTime?: Date;
   endTime?: Date;
   totalPrice: number;
+  paidAmount?: number; // quanto já foi pago (sinal ou total)
+  depositPercent?: number; // percentual do sinal, quando aplicável
   status: BookingStatus;
   paymentStatus: PaymentStatus;
   bookedBy?: string;

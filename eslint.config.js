@@ -4,17 +4,16 @@ import reactHooks from "eslint-plugin-react-hooks";
 import path from "path";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default tseslint.config(
-	{ ignores: ["dist"] },
+	{ ignores: ["dist", "supabase/functions/**"] },
 	{
 		extends: [js.configs.recommended, ...tseslint.configs.recommended],
 		files: ["**/*.{ts,tsx}"],
-		parserOptions: {
-			// Force typescript-eslint to use the nested tsconfig (arena-sports)
-			tsconfigRootDir: path.resolve(__dirname, "arena-sports"),
-			project: [path.resolve(__dirname, "arena-sports/tsconfig.json")],
-		},
 		languageOptions: {
 			ecmaVersion: 2020,
 			globals: globals.browser,

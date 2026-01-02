@@ -30,7 +30,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 	}, []);
 
 	const formatPhone = (value: string) => {
-		const numbers = value.replace(/\D/g, "");
+		const numbers = value.replace(/\D/g, "").slice(0, 11);
 		if (numbers.length <= 2) return numbers;
 		if (numbers.length <= 7)
 			return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
@@ -52,7 +52,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		const numbers = phone.replace(/\D/g, "");
-		if (numbers.length >= 10) {
+		if (numbers.length === 10 || numbers.length === 11) {
 			setIsLoading(true);
 			setShowFlash(true);
 
@@ -79,7 +79,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 		}
 	};
 
-	const isValidPhone = phone.replace(/\D/g, "").length >= 10;
+	const digits = phone.replace(/\D/g, "");
+	const isValidPhone = digits.length === 10 || digits.length === 11;
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden safe-area-top safe-area-bottom">

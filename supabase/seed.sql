@@ -1,0 +1,8 @@
+-- Seed data (dev/staging only)
+--
+-- Use este arquivo para dados mínimos de desenvolvimento (ex.: tenant demo, quadras, regras padrão).
+-- Evite inserir IDs hardcoded que dependam de UUIDs gerados automaticamente em produção.
+--
+-- Exemplo (placeholder):
+-- insert into public.tenants (business_name, subdomain, settings)
+-- values ('Arena Demo', 'arena-demo', '{"booking": {"require_deposit": false}}'::jsonb);

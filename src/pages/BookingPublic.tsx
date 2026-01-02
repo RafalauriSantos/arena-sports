@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { format, addDays, isSameDay, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toWhatsAppLinkPhone } from "@/lib/phone";
 
 // --- Tipos ---
 interface Court {
@@ -32,44 +33,48 @@ interface TimeChip {
 	hasDiscount: boolean;
 }
 
+type OccupiedSlot = {
+	court_id: string;
+	slot_time: string; // HH:mm
+};
+
 // Configuração padrão de segurança (caso o banco falhe)
 const DEFAULT_DEPOSIT_PERCENT = 30;
 
 export default function BookingPublic() {
 	const { subdomain } = useParams();
 
+	const cleanSubdomain = useMemo(() => {
+		if (!subdomain) return null;
+		return subdomain
+			.toLowerCase()
+			.normalize("NFD")
+			.replace(/[\u0300-\u036f]/g, "") // Tira acentos
+			.replace(/[^a-z0-9]+/g, "-") // Troca símbolos por hífen
+			.replace(/^-+|-+$/g, ""); // Tira hifens das pontas
+	}, [subdomain]);
+
 	// Estados de Dados
 	const [loading, setLoading] = useState(true);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [tenant, setTenant] = useState<any>(null);
 	const [courts, setCourts] = useState<Court[]>([]);
-
-	// Estados de Ocupação
-	const [bookings, setBookings] = useState<any[]>([]); // Reservas Avulsas
-	const [recurringSlots, setRecurringSlots] = useState<any[]>([]); // Mensalistas
+	const [occupiedSlots, setOccupiedSlots] = useState<OccupiedSlot[]>([]);
 
 	// Estados de UI
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [selectedSlot, setSelectedSlot] = useState<{
+		courtId: string;
 		courtName: string;
 		slot: TimeChip;
 	} | null>(null);
+	const [reserveError, setReserveError] = useState<string | null>(null);
 
-	// 1. Carregar Dados Iniciais (Empresa, Quadras e Mensalistas)
+	// 1. Carregar Dados Iniciais (Empresa e Quadras)
 	useEffect(() => {
 		async function loadShell() {
-			if (!subdomain) return;
-			// ENGENHARIA REVERSA:
-			// O banco salvou como "sao-paulo-center".
-			// Se a URL vier "São Paulo Center", temos que limpar igual ao banco antes de buscar.
-			const cleanUrl = subdomain
-				.toLowerCase()
-				.normalize("NFD")
-				.replace(/[\u0300-\u036f]/g, "") // Tira acentos
-				.replace(/[^a-z0-9]+/g, "-") // Troca símbolos por hífen
-				.replace(/^-+|-+$/g, ""); // Tira hifens das pontas
-
-			console.log("🔍 Buscando no banco por:", cleanUrl);
+			if (!cleanSubdomain) return;
+			console.log("🔍 Buscando no banco por:", cleanSubdomain);
 			setLoading(true);
 			setErrorMsg(null);
 
@@ -78,7 +83,7 @@ export default function BookingPublic() {
 				let { data: tData, error: tError } = await supabase
 					.from("tenants")
 					.select("*")
-					.eq("subdomain", cleanUrl)
+					.eq("subdomain", cleanSubdomain)
 					.maybeSingle();
 
 				// FALLBACK DE SEGURANÇA (Se a URL antiga ainda estiver cacheada ou indexada)
@@ -87,7 +92,7 @@ export default function BookingPublic() {
 					const { data: retryData } = await supabase
 						.from("tenants")
 						.select("*")
-						.ilike("subdomain", cleanUrl)
+						.ilike("subdomain", cleanSubdomain)
 						.maybeSingle();
 					tData = retryData;
 				}
@@ -112,20 +117,6 @@ export default function BookingPublic() {
 					.order("base_price");
 
 				if (cData) setCourts(cData);
-
-				// C. Busca MENSALISTAS
-				// (Usa try/catch interno para não travar o site se essa tabela der erro)
-				try {
-					const { data: rData } = await supabase
-						.from("recurring_slots")
-						.select("*")
-						.eq("tenant_id", tData.id)
-						.eq("active", true);
-
-					setRecurringSlots(rData || []);
-				} catch (recErr) {
-					console.warn("Erro ao carregar mensalistas (ignorando):", recErr);
-				}
 			} catch (error: any) {
 				console.error("Erro fatal:", error);
 				setErrorMsg(error.message || "Não foi possível carregar a agenda.");
@@ -134,10 +125,55 @@ export default function BookingPublic() {
 			}
 		}
 		loadShell();
-	}, [subdomain]);
+	}, [cleanSubdomain]);
+
+	// 2. Carregar ocupação do dia (avulsos + mensalistas) via RPC pública segura
+	useEffect(() => {
+		let cancelled = false;
+		const OCCUPANCY_REFRESH_MS = 60_000;
+
+		async function loadOccupancy() {
+			if (!cleanSubdomain) return;
+			const dateStr = format(selectedDate, "yyyy-MM-dd");
+			const { data, error } = await supabase.rpc(
+				"fn_public_get_occupied_slots",
+				{
+					p_subdomain: cleanSubdomain,
+					p_date: dateStr,
+				}
+			);
+
+			if (error) {
+				console.warn("Erro ao carregar ocupação pública:", error);
+				if (!cancelled) setOccupiedSlots([]);
+				return;
+			}
+
+			const rows =
+				(data as Array<{ court_id: string; slot_time: string }> | null) ?? [];
+			if (!cancelled) {
+				setOccupiedSlots(
+					rows
+						.filter((r) => !!r.court_id && !!r.slot_time)
+						.map((r) => ({
+							court_id: r.court_id,
+							slot_time: r.slot_time.slice(0, 5),
+						}))
+				);
+			}
+		}
+		loadOccupancy();
+		const interval = window.setInterval(() => {
+			loadOccupancy();
+		}, OCCUPANCY_REFRESH_MS);
+
+		return () => {
+			cancelled = true;
+			window.clearInterval(interval);
+		};
+	}, [cleanSubdomain, selectedDate]);
 
 	// Helpers para data e hora
-	const currentDayOfWeek = getDay(selectedDate); // 0 (domingo) a 6 (sábado)
 	const now = new Date();
 	const isToday = isSameDay(selectedDate, now);
 	const nowHour = now.getHours();
@@ -151,21 +187,9 @@ export default function BookingPublic() {
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 		const applyDiscount = diffDays >= 7;
 
-		// Mapa: Avulsos
 		const occupied = new Set(
-			bookings.map(
-				(b) => `${b.court_id}-${b.start_time.split("T")[1].slice(0, 5)}`
-			)
+			occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`)
 		);
-
-		// Mapa: Mensalistas (Para o dia da semana atual)
-		const recurringOccupied = new Set();
-		recurringSlots.forEach((r) => {
-			if (r.day_of_week === currentDayOfWeek) {
-				const timeShort = r.start_time.slice(0, 5);
-				recurringOccupied.add(`${r.court_id}-${timeShort}`);
-			}
-		});
 
 		return courts.map((court) => {
 			const slots: TimeChip[] = [];
@@ -178,11 +202,8 @@ export default function BookingPublic() {
 				// Bloqueio 1: Passado (se for hoje)
 				if (isToday && h <= nowHour) continue;
 
-				// Bloqueio 2: Avulso
+				// Bloqueio 2: Ocupado (avulso ou mensalista)
 				if (occupied.has(slotKey)) continue;
-
-				// Bloqueio 3: Mensalista
-				if (recurringOccupied.has(slotKey)) continue;
 
 				// Livre
 				slots.push({
@@ -195,11 +216,16 @@ export default function BookingPublic() {
 			}
 			return { ...court, slots };
 		});
-	}, [courts, bookings, recurringSlots, selectedDate, tenant]);
+	}, [courts, occupiedSlots, selectedDate, tenant]);
 
 	// 4. Funções de Ação
-	const handleBooking = (courtName: string, slot: TimeChip) => {
-		setSelectedSlot({ courtName, slot });
+	const handleBooking = (
+		courtId: string,
+		courtName: string,
+		slot: TimeChip
+	) => {
+		setReserveError(null);
+		setSelectedSlot({ courtId, courtName, slot });
 	};
 
 	const sendWhatsapp = (type: "deposit" | "full" | "standard") => {
@@ -236,12 +262,54 @@ export default function BookingPublic() {
 
 		const msg = `Olá! Quero reservar:\n\n🏟 *${courtName}*\n📅 *${dateFmt}*\n⏰ *${slot.time}*\n\n${textoPagamento}\n\nQual a chave PIX?`;
 
-		const link = `https://wa.me/${tenant.phone.replace(
-			/\D/g,
-			""
-		)}?text=${encodeURIComponent(msg)}`;
-		window.open(link, "_blank");
-		setSelectedSlot(null);
+		(async () => {
+			setReserveError(null);
+
+			// Revalidação rápida: evita mandar o jogador pro WhatsApp com horário que acabou de ser ocupado.
+			const dateStr = format(selectedDate, "yyyy-MM-dd");
+			let occupied = new Set(
+				occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`)
+			);
+
+			try {
+				if (cleanSubdomain) {
+					const { data, error } = await supabase.rpc(
+						"fn_public_get_occupied_slots",
+						{
+							p_subdomain: cleanSubdomain,
+							p_date: dateStr,
+						}
+					);
+					if (!error) {
+						const rows =
+							(data as Array<{ court_id: string; slot_time: string }> | null) ??
+							[];
+						occupied = new Set(
+							rows
+								.filter((r) => !!r.court_id && !!r.slot_time)
+								.map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`)
+						);
+					}
+				}
+			} catch {
+				// Se a revalidação falhar, segue o fluxo padrão (WhatsApp).
+			}
+
+			const slotKey = `${selectedSlot.courtId}-${slot.time}`;
+			if (occupied.has(slotKey)) {
+				setReserveError(
+					"Horário indisponível. Esse horário acabou de ser reservado para esta quadra. Escolha outro horário."
+				);
+				return;
+			}
+
+			const phoneDigits = toWhatsAppLinkPhone(tenant.phone || "");
+			const link = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(
+				msg
+			)}`;
+			window.open(link, "_blank");
+			setSelectedSlot(null);
+		})();
 	};
 
 	// 5. Renderização de Estados de Carregamento/Erro
@@ -363,7 +431,7 @@ export default function BookingPublic() {
 									{court.slots.map((slot) => (
 										<button
 											key={slot.time}
-											onClick={() => handleBooking(court.name, slot)}
+											onClick={() => handleBooking(court.id, court.name, slot)}
 											className="relative group flex flex-col items-center justify-center py-3 px-1 rounded-xl border border-gray-100 bg-white hover:border-primary hover:bg-primary/5 transition-all active:scale-95">
 											{/* Badge Promo */}
 											{slot.hasDiscount && (
@@ -421,6 +489,11 @@ export default function BookingPublic() {
 						</div>
 
 						<div className="p-6 space-y-3">
+							{reserveError && (
+								<div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700 text-sm">
+									{reserveError}
+								</div>
+							)}
 							{/* Opção 1: Sinal */}
 							{configs.require_deposit && (
 								<button
@@ -485,7 +558,10 @@ export default function BookingPublic() {
 
 						<div className="p-4 bg-gray-50 text-center border-t border-gray-100">
 							<button
-								onClick={() => setSelectedSlot(null)}
+								onClick={() => {
+									setReserveError(null);
+									setSelectedSlot(null);
+								}}
 								className="text-sm text-gray-500 hover:text-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-200/50 transition-colors">
 								Cancelar
 							</button>

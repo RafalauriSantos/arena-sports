@@ -5,12 +5,14 @@ import {
 	useState,
 	useEffect,
 	useCallback,
+	useRef,
 	ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { TimeSlot, Booking } from "@/types/booking";
 import { useToast } from "@/hooks/use-toast";
+import { normalizeCustomerPhone, isValidCustomerPhone } from "@/lib/phone";
 
 // Interface para tipar o retorno cru do Supabase (Database Layer)
 interface CourtDB {
@@ -30,6 +32,8 @@ interface BookingDB {
 	start_time: string;
 	end_time: string;
 	total_price: number;
+	paid_amount?: number;
+	deposit_percent?: number;
 	status: string;
 	created_at: string;
 	court?: { name: string };
@@ -56,6 +60,19 @@ const CLOSING_HOUR = 23;
 export function BookingsProvider({ children }: { children: ReactNode }) {
 	const { tenantId } = useAuth();
 	const { toast } = useToast();
+	const realtimeChannelRef = useRef<any>(null);
+	const refreshTimerRef = useRef<number | null>(null);
+
+	const isBookingOverlapError = (err: any) => {
+		const code = err?.code;
+		const message = String(err?.message || "");
+		return (
+			code === "23P01" ||
+			/code\s*23P01/i.test(message) ||
+			/exclusion constraint/i.test(message) ||
+			/bookings_no_overlap_active/i.test(message)
+		);
+	};
 
 	const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 	const [bookings, setBookings] = useState<Booking[]>([]);
@@ -124,6 +141,9 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				startTime: new Date(b.start_time),
 				endTime: new Date(b.end_time),
 				totalPrice: b.total_price,
+				paidAmount: typeof b.paid_amount === "number" ? b.paid_amount : 0,
+				depositPercent:
+					typeof b.deposit_percent === "number" ? b.deposit_percent : undefined,
 				paymentStatus: b.status === "paid" ? "paid" : "pending",
 				status: b.status === "paid" ? "confirmed" : "pending_approval",
 				bookedBy: b.customer_name,
@@ -159,7 +179,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 									b.fieldId === court.id &&
 									b.time === timeString &&
 									b.date === today
-						)
+						  )
 						: undefined;
 
 					generatedSlots.push({
@@ -188,9 +208,97 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 		}
 	}, [tenantId, toast]);
 
+	const resolveTenantId = useCallback(async () => {
+		if (tenantId) return tenantId;
+
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user) return null;
+
+		const { data: profile } = await supabase
+			.from("profiles")
+			.select("tenant_id")
+			.eq("id", user.id)
+			.single();
+
+		return profile?.tenant_id ?? null;
+	}, [tenantId]);
+
 	useEffect(() => {
 		fetchData();
 	}, [fetchData]);
+
+	// Realtime (profissional): 1 canal por tenant, filtro por tenant_id,
+	// e refresh com debounce (evita refetch em cascata).
+	useEffect(() => {
+		let isMounted = true;
+
+		const scheduleRefresh = () => {
+			if (!isMounted) return;
+			if (refreshTimerRef.current) {
+				window.clearTimeout(refreshTimerRef.current);
+			}
+			refreshTimerRef.current = window.setTimeout(() => {
+				fetchData();
+			}, 300);
+		};
+
+		const setup = async () => {
+			const currentTenantId = await resolveTenantId();
+			if (!isMounted || !currentTenantId) return;
+
+			// Se já existe canal (troca de tenant, hot reload), remove antes.
+			if (realtimeChannelRef.current) {
+				supabase.removeChannel(realtimeChannelRef.current);
+				realtimeChannelRef.current = null;
+			}
+
+			const channel = supabase
+				.channel(`bookings-ctx-${currentTenantId}`)
+				.on(
+					"postgres_changes",
+					{
+						event: "*",
+						schema: "public",
+						table: "bookings",
+						filter: `tenant_id=eq.${currentTenantId}`,
+					},
+					() => {
+						scheduleRefresh();
+					}
+				)
+				.on(
+					"postgres_changes",
+					{
+						event: "*",
+						schema: "public",
+						table: "courts",
+						filter: `tenant_id=eq.${currentTenantId}`,
+					},
+					() => {
+						scheduleRefresh();
+					}
+				)
+				.subscribe();
+
+			realtimeChannelRef.current = channel;
+		};
+
+		setup();
+
+		return () => {
+			isMounted = false;
+			if (refreshTimerRef.current) {
+				window.clearTimeout(refreshTimerRef.current);
+				refreshTimerRef.current = null;
+			}
+			if (realtimeChannelRef.current) {
+				supabase.removeChannel(realtimeChannelRef.current);
+				realtimeChannelRef.current = null;
+			}
+		};
+	}, [resolveTenantId, fetchData]);
 
 	// 2. ADICIONAR RESERVA (Write Operation)
 	const addBooking = async (booking: Partial<Booking>) => {
@@ -214,11 +322,18 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			const startDateObj = new Date(startISO);
 			const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000); // +1 hora
 
+			const customerPhone = normalizeCustomerPhone(booking.customerPhone || "");
+			if (customerPhone && !isValidCustomerPhone(customerPhone)) {
+				throw new Error(
+					"Telefone inválido (use DDD + número: 10 ou 11 dígitos)."
+				);
+			}
+
 			const payload = {
 				tenant_id: profile.tenant_id,
 				court_id: booking.fieldId,
 				customer_name: booking.customerName || "Cliente",
-				customer_phone: booking.customerPhone,
+				customer_phone: customerPhone,
 				start_time: startDateObj.toISOString(),
 				end_time: endDateObj.toISOString(),
 				total_price: booking.totalPrice || 0,
@@ -233,6 +348,15 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			toast({ title: "Agendamento criado com sucesso!" });
 		} catch (error: any) {
 			console.error(error);
+			if (isBookingOverlapError(error)) {
+				toast({
+					title: "Horário indisponível",
+					description:
+						"Já existe uma reserva para esta quadra nesse horário. Escolha outro horário.",
+					variant: "destructive",
+				});
+				return;
+			}
 			toast({
 				title: "Erro ao criar",
 				description: error.message || "Verifique os dados e tente novamente.",
@@ -247,9 +371,31 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			const payload: Record<string, any> = {};
 
 			if (updates.customerName) payload.customer_name = updates.customerName;
-			if (updates.customerPhone) payload.customer_phone = updates.customerPhone;
+			if (typeof updates.customerPhone === "string") {
+				const customerPhone = normalizeCustomerPhone(updates.customerPhone);
+				if (customerPhone && !isValidCustomerPhone(customerPhone)) {
+					throw new Error(
+						"Telefone inválido (use DDD + número: 10 ou 11 dígitos)."
+					);
+				}
+				payload.customer_phone = customerPhone;
+			}
 			if (updates.paymentStatus) {
 				payload.status = updates.paymentStatus === "paid" ? "paid" : "pending";
+				// When marking as paid, also set paid_amount to total_price
+				if (updates.paymentStatus === "paid") {
+					const existing = bookings.find((b) => b.id === id);
+					if (existing?.totalPrice != null) {
+						payload.paid_amount = existing.totalPrice;
+						payload.deposit_percent = null;
+					}
+				}
+			}
+			if (typeof updates.paidAmount === "number") {
+				payload.paid_amount = updates.paidAmount;
+			}
+			if (typeof updates.depositPercent === "number") {
+				payload.deposit_percent = updates.depositPercent;
 			}
 
 			const { error } = await supabase

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
+import { supabase } from "@/lib/supabaseClient";
 import {
 	Trophy,
 	Sparkles,
@@ -137,6 +138,10 @@ export default function ConfiguracoesView() {
 	const [profileName, setProfileName] = useState("");
 	const [profileJobTitle, setProfileJobTitle] = useState("");
 	const [copied, setCopied] = useState(false);
+	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
+		"month"
+	);
+	const [startingCheckout, setStartingCheckout] = useState(false);
 
 	useEffect(() => {
 		if (userProfile) {
@@ -163,6 +168,36 @@ export default function ConfiguracoesView() {
 				description: "Falha ao atualizar perfil.",
 				variant: "destructive",
 			});
+		}
+	};
+
+	const startCheckout = async () => {
+		try {
+			setStartingCheckout(true);
+			const { data, error } = await supabase.functions.invoke(
+				"stripe-create-checkout",
+				{
+					body: {
+						plan_code: subscription?.plan_name?.toLowerCase().includes("pro")
+							? "pro"
+							: "start",
+						interval: billingInterval,
+					},
+				}
+			);
+
+			if (error) throw error;
+			if (!data?.url) throw new Error("Checkout não retornou URL");
+			window.location.href = data.url;
+		} catch (err: any) {
+			console.error(err);
+			toast({
+				title: "Não foi possível iniciar a assinatura",
+				description: err?.message || "Tente novamente.",
+				variant: "destructive",
+			});
+		} finally {
+			setStartingCheckout(false);
 		}
 	};
 
@@ -389,6 +424,9 @@ export default function ConfiguracoesView() {
 											<Input
 												value={formData.tenant.phone}
 												onChange={(e) => updateTenant("phone", e.target.value)}
+												autoComplete="tel"
+												inputMode="numeric"
+												maxLength={13}
 												className="bg-white/5 border-white/10 text-white"
 											/>
 										</div>
@@ -716,6 +754,60 @@ export default function ConfiguracoesView() {
 											{isTrial ? "Trial" : "Ativo"}
 										</StatusBadge>
 									</div>
+
+									{subscription.status !== "active" && (
+										<div className="space-y-3 p-4 bg-gray-950/30 rounded-xl border border-white/5">
+											<p className="text-sm text-gray-300 font-medium">
+												Ative sua assinatura para continuar usando o sistema.
+											</p>
+											<div className="flex gap-2">
+												<Button
+													type="button"
+													variant={
+														billingInterval === "month" ? "default" : "outline"
+													}
+													onClick={() => setBillingInterval("month")}
+													className={
+														billingInterval === "month"
+															? "bg-primary text-primary-foreground"
+															: "border-white/20 hover:bg-white/5 text-white"
+													}>
+													Mensal
+												</Button>
+												<Button
+													type="button"
+													variant={
+														billingInterval === "year" ? "default" : "outline"
+													}
+													onClick={() => setBillingInterval("year")}
+													className={
+														billingInterval === "year"
+															? "bg-primary text-primary-foreground"
+															: "border-white/20 hover:bg-white/5 text-white"
+													}>
+													Anual (20% OFF)
+												</Button>
+											</div>
+											<Button
+												type="button"
+												onClick={startCheckout}
+												disabled={startingCheckout}
+												className="w-full bg-white text-gray-950 hover:bg-gray-200 font-bold">
+												{startingCheckout ? (
+													<>
+														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+														Redirecionando...
+													</>
+												) : (
+													"Assinar com Stripe"
+												)}
+											</Button>
+											<p className="text-[11px] text-gray-500">
+												Pagamento seguro via Stripe. Você pode cancelar quando
+												quiser.
+											</p>
+										</div>
+									)}
 								</CardContent>
 							</Card>
 							<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">

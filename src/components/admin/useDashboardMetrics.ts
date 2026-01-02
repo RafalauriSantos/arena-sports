@@ -1,11 +1,28 @@
-"use client";
-
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Database } from "@/components/admin/database.types";
 
-type TimeSlotWithCourt = Database["public"]["Tables"]["arena_time_slots"]["Row"] & {
-  courts: Pick<Database["public"]["Tables"]["courts"]["Row"], "name"> | null;
+type CourtRow = {
+  id: string;
+  name: string;
+  tenant_id: string;
+  active: boolean;
+};
+
+type BookingRow = {
+  total_price: number | null;
+  status: string | null;
+  start_time: string;
+  court_id: string | null;
+};
+
+type AgendaSlotWithCourt = {
+  id: string;
+  tenant_id: string;
+  date: string; // YYYY-MM-DD (local)
+  time: string; // HH:mm (local)
+  status: "available" | "reserved";
+  court_id: string;
+  courts: { name: string } | null;
 };
 
 export interface CourtOccupancy {
@@ -16,119 +33,141 @@ export interface CourtOccupancy {
   occupancyRate: number;
 }
 
+const OPENING_HOUR = 7;
+const CLOSING_HOUR = 23;
+
+const toLocalDateStr = (iso: string) => {
+  const d = new Date(iso);
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset).toISOString().split("T")[0];
+};
+
+const toLocalTimeStr = (iso: string) => {
+  const d = new Date(iso);
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset).toISOString().split("T")[1].slice(0, 5);
+};
+
 export function useDashboardMetrics(tenantId?: string) {
   const [revenueToday, setRevenueToday] = useState<number>(0);
   const [scheduledGames, setScheduledGames] = useState<number>(0);
   const [pendingRevenue, setPendingRevenue] = useState<number>(0);
   const [weeklyRevenue, setWeeklyRevenue] = useState<{ date: string; amount: number }[]>([]);
   const [occupancy, setOccupancy] = useState<CourtOccupancy[]>([]);
-  const [agendaSlots, setAgendaSlots] = useState<TimeSlotWithCourt[]>([]);
+  const [agendaSlots, setAgendaSlots] = useState<AgendaSlotWithCourt[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchMetrics = useCallback(async () => {
     if (!tenantId) return;
 
     const now = new Date();
-    // Ajuste para garantir datas locais corretas (YYYY-MM-DD)
     const offset = now.getTimezoneOffset() * 60000;
     const localDate = new Date(now.getTime() - offset);
     const todayDateStr = localDate.toISOString().split("T")[0];
 
-    // Intervalo para timestamptz (UTC)
-    const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-    const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
-    
+    // Intervalo do dia atual em UTC (com base na meia-noite local)
+    const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(new Date().setHours(23, 59, 59, 999)).toISOString();
+
     // Data de 7 dias atrás para o gráfico
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const startOfSevenDays = sevenDaysAgo.toISOString();
 
     try {
-      // 1. Métricas de Reservas (Hoje)
-      const { data: reservations, error: resError } = await supabase
-        .from("arena_reservations")
-        .select("total_price, payment_status, start_time")
+      // 0) Courts (base para ocupação e agenda)
+      const { data: courtsData, error: courtsError } = await supabase
+        .from("courts")
+        .select("id, name, tenant_id, active")
+        .eq("tenant_id", tenantId)
+        .eq("active", true);
+      if (courtsError) throw courtsError;
+
+      // 1) Métricas de Reservas (Hoje)
+      const { data: bookingsToday, error: bookingsTodayError } = await supabase
+        .from("bookings")
+        .select("total_price, status, start_time, court_id")
         .eq("tenant_id", tenantId)
         .gte("start_time", startOfDay)
         .lte("start_time", endOfDay);
+      if (bookingsTodayError) throw bookingsTodayError;
 
-      if (!resError && reservations) {
-        // Faturamento Hoje (payment_status != 'failed')
-        const total = reservations
-          .filter(r => r.payment_status !== 'failed')
-          .reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0);
-        setRevenueToday(total);
+      const today = (bookingsToday as BookingRow[] | null) ?? [];
+      const totalPaidToday = today
+        .filter((b) => b.status === "paid")
+        .reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0);
+      setRevenueToday(totalPaidToday);
+      setScheduledGames(today.length);
 
-        // Jogos Agendados (Count)
-        setScheduledGames(reservations.length);
+      const pending = today
+        .filter((b) => b.status === "pending")
+        .reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0);
+      setPendingRevenue(pending);
 
-        // A Receber (payment_status == 'pending')
-        const pending = reservations
-          .filter(r => r.payment_status === 'pending')
-          .reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0);
-        setPendingRevenue(pending);
-      }
-
-      // 2. Receita dos Últimos 7 Dias (Gráfico)
-      const { data: weeklyData } = await supabase
-        .from("arena_reservations")
-        .select("total_price, start_time")
+      // 2) Receita dos Últimos 7 Dias (Gráfico)
+      const { data: weeklyData, error: weeklyError } = await supabase
+        .from("bookings")
+        .select("total_price, start_time, status")
         .eq("tenant_id", tenantId)
         .gte("start_time", startOfSevenDays)
-        .neq("payment_status", "failed");
+        .eq("status", "paid");
+      if (weeklyError) throw weeklyError;
 
-      if (weeklyData) {
-        const grouped = weeklyData.reduce((acc: any, curr) => {
-          const date = curr.start_time.split('T')[0]; // YYYY-MM-DD
-          acc[date] = (acc[date] || 0) + (Number(curr.total_price) || 0);
-          return acc;
-        }, {});
-        
-        const chartData = Object.keys(grouped).map(date => ({ date, amount: grouped[date] }));
-        setWeeklyRevenue(chartData);
-      }
+      const week = (weeklyData as Array<Pick<BookingRow, "total_price" | "start_time">> | null) ?? [];
+      const grouped = week.reduce((acc: Record<string, number>, curr) => {
+        const date = toLocalDateStr(curr.start_time);
+        acc[date] = (acc[date] || 0) + (Number(curr.total_price) || 0);
+        return acc;
+      }, {});
+      const chartData = Object.keys(grouped)
+        .sort()
+        .map((date) => ({ date, amount: grouped[date] }));
+      setWeeklyRevenue(chartData);
 
-      // 3. Agenda Visual e Ocupação (Baseado em Slots)
-      const { data: slots, error: slotsError } = await supabase
-        .from("arena_time_slots")
-        .select("*, courts(name)")
-        .eq("tenant_id", tenantId)
-        .eq("date", todayDateStr)
-        .order("time");
+      // 3) Agenda Visual e Ocupação (gerada a partir de courts + bookings)
+      const courts = ((courtsData as CourtRow[] | null) ?? []).filter((c) => c.active);
+      const bookedLookup = new Set(
+        today
+          .filter((b) => !!b.court_id)
+          .map((b) => `${b.court_id}-${toLocalTimeStr(b.start_time)}`)
+      );
 
-      if (!slotsError && slots) {
-        const typedSlots = slots as TimeSlotWithCourt[];
-        setAgendaSlots(typedSlots);
+      const generatedAgenda: AgendaSlotWithCourt[] = [];
+      const occupancyData: CourtOccupancy[] = [];
 
-        // Cálculo de Ocupação por Quadra
-        const courtMap = new Map<string, { name: string; total: number; occupied: number }>();
+      courts.forEach((court) => {
+        let total = 0;
+        let occupied = 0;
 
-        typedSlots.forEach((slot) => {
-          const courtId = slot.court_id || "unknown";
-          const courtName = slot.courts?.name || "Quadra";
+        for (let hour = OPENING_HOUR; hour <= CLOSING_HOUR; hour++) {
+          const time = `${hour.toString().padStart(2, "0")}:00`;
+          total += 1;
 
-          if (!courtMap.has(courtId)) {
-            courtMap.set(courtId, { name: courtName, total: 0, occupied: 0 });
-          }
+          const isReserved = bookedLookup.has(`${court.id}-${time}`);
+          if (isReserved) occupied += 1;
 
-          const current = courtMap.get(courtId)!;
-          current.total += 1;
-          // Consideramos ocupado se estiver agendado ou reservado
-          if (slot.status === "booked" || slot.status === "reserved") {
-            current.occupied += 1;
-          }
+          generatedAgenda.push({
+            id: `${court.id}-${todayDateStr}-${time}`,
+            tenant_id: tenantId,
+            date: todayDateStr,
+            time,
+            status: isReserved ? "reserved" : "available",
+            court_id: court.id,
+            courts: { name: court.name },
+          });
+        }
+
+        occupancyData.push({
+          courtId: court.id,
+          courtName: court.name,
+          totalSlots: total,
+          occupiedSlots: occupied,
+          occupancyRate: total > 0 ? Math.round((occupied / total) * 100) : 0,
         });
+      });
 
-        const occupancyData: CourtOccupancy[] = Array.from(courtMap.entries()).map(([id, data]) => ({
-          courtId: id,
-          courtName: data.name,
-          totalSlots: data.total,
-          occupiedSlots: data.occupied,
-          occupancyRate: data.total > 0 ? Math.round((data.occupied / data.total) * 100) : 0,
-        }));
-
-        setOccupancy(occupancyData);
-      }
+      setAgendaSlots(generatedAgenda);
+      setOccupancy(occupancyData);
     } catch (error) {
       console.error("Erro ao buscar métricas:", error);
     } finally {
@@ -149,7 +188,7 @@ export function useDashboardMetrics(tenantId?: string) {
         {
           event: "*", // INSERT, UPDATE, DELETE
           schema: "public",
-          table: "arena_reservations",
+          table: "bookings",
           filter: `tenant_id=eq.${tenantId}`,
         },
         () => {

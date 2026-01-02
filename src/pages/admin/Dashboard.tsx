@@ -20,6 +20,8 @@ import {
 	ChevronRight,
 	Megaphone,
 	Share2,
+	Lock,
+	Loader2,
 } from "lucide-react";
 import {
 	AreaChart,
@@ -35,6 +37,8 @@ import { useBookings } from "@/contexts/BookingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
+import { supabase } from "@/lib/supabaseClient";
 
 // --- HELPERS (Formatadores) ---
 const formatCurrency = (value: number) =>
@@ -359,6 +363,39 @@ export default function DashboardHome() {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [activeView, setActiveView] = useState("dashboard");
+	const { toast } = useToast();
+	const { hasAccess, isLoading: subLoading } = useSubscriptionAccess();
+	const [startingCheckout, setStartingCheckout] = useState(false);
+	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
+		"month"
+	);
+
+	const startCheckout = async () => {
+		try {
+			setStartingCheckout(true);
+			const { data, error } = await supabase.functions.invoke(
+				"stripe-create-checkout",
+				{
+					body: {
+						plan_code: "start",
+						interval: billingInterval,
+					},
+				}
+			);
+			if (error) throw error;
+			if (!data?.url) throw new Error("Checkout não retornou URL");
+			window.location.href = data.url;
+		} catch (err: any) {
+			console.error(err);
+			toast({
+				title: "Não foi possível iniciar a assinatura",
+				description: err?.message || "Tente novamente.",
+				variant: "destructive",
+			});
+		} finally {
+			setStartingCheckout(false);
+		}
+	};
 
 	const stats = useMemo(() => {
 		// Mesma lógica de sempre...
@@ -437,6 +474,79 @@ export default function DashboardHome() {
 				</div>
 			</div>
 		);
+
+	if (subLoading) {
+		return (
+			<div className="min-h-screen bg-gray-950 flex items-center justify-center">
+				<div className="flex items-center gap-2 text-gray-300">
+					<Loader2 className="h-5 w-5 animate-spin" />
+					Carregando assinatura...
+				</div>
+			</div>
+		);
+	}
+
+	// Hard paywall: após expirar trial + carência, bloqueia o painel
+	if (!hasAccess) {
+		return (
+			<div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+				<Card className="w-full max-w-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+					<CardHeader>
+						<CardTitle className="text-white flex items-center gap-2">
+							<Lock className="h-5 w-5" /> Acesso bloqueado
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<p className="text-sm text-gray-400">
+							Seu trial acabou e o sistema foi bloqueado. Ative uma assinatura
+							para continuar.
+						</p>
+						<div className="flex gap-2">
+							<Button
+								type="button"
+								variant={billingInterval === "month" ? "default" : "outline"}
+								onClick={() => setBillingInterval("month")}
+								className={
+									billingInterval === "month"
+										? "bg-primary text-primary-foreground"
+										: "border-white/20 hover:bg-white/5 text-white"
+								}>
+								Mensal
+							</Button>
+							<Button
+								type="button"
+								variant={billingInterval === "year" ? "default" : "outline"}
+								onClick={() => setBillingInterval("year")}
+								className={
+									billingInterval === "year"
+										? "bg-primary text-primary-foreground"
+										: "border-white/20 hover:bg-white/5 text-white"
+								}>
+								Anual (20% OFF)
+							</Button>
+						</div>
+						<Button
+							type="button"
+							onClick={startCheckout}
+							disabled={startingCheckout}
+							className="w-full bg-white text-gray-950 hover:bg-gray-200 font-bold">
+							{startingCheckout ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Redirecionando...
+								</>
+							) : (
+								"Assinar com Stripe"
+							)}
+						</Button>
+						<p className="text-[11px] text-gray-500">
+							Plano Start não inclui funcionários.
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">

@@ -20,6 +20,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { normalizeCustomerPhone, isValidCustomerPhone } from "@/lib/phone";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBookings } from "@/contexts/BookingsContext";
 
 interface NewBookingModalProps {
 	open: boolean;
@@ -45,6 +48,8 @@ export function NewBookingModal({
 	onSuccess,
 }: NewBookingModalProps) {
 	const { toast } = useToast();
+	const { tenantId } = useAuth();
+	const { refreshData } = useBookings();
 	const [loading, setLoading] = useState(false);
 	const [courts, setCourts] = useState<Court[]>([]);
 
@@ -56,9 +61,31 @@ export function NewBookingModal({
 	}, [open]);
 
 	const fetchCourts = async () => {
+		// Resolve tenant_id (evita listar quadras de outras arenas)
+		let currentTenantId = tenantId;
+		if (!currentTenantId) {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (user) {
+				const { data: profile } = await supabase
+					.from("profiles")
+					.select("tenant_id")
+					.eq("id", user.id)
+					.single();
+				currentTenantId = profile?.tenant_id;
+			}
+		}
+
+		if (!currentTenantId) {
+			setCourts([]);
+			return;
+		}
+
 		const { data, error } = await supabase
 			.from("courts")
 			.select("id, name, base_price")
+			.eq("tenant_id", currentTenantId)
 			.eq("active", true);
 
 		if (data) setCourts(data);
@@ -71,8 +98,20 @@ export function NewBookingModal({
 		fieldId: "", // ID da quadra (UUID)
 		customerName: "", // Antigo 'captain'
 		phone: "",
-		paymentStatus: "pending" as "paid" | "pending",
+		paymentStatus: "pending" as "paid" | "pending" | "deposit",
+		depositPercent: 30,
 	});
+
+	const isBookingOverlapError = (err: any) => {
+		const code = err?.code;
+		const message = String(err?.message || "");
+		return (
+			code === "23P01" ||
+			/code\s*23P01/i.test(message) ||
+			/exclusion constraint/i.test(message) ||
+			/bookings_no_overlap_active/i.test(message)
+		);
+	};
 
 	const handleSubmit = async () => {
 		// 1. Validação Básica
@@ -85,6 +124,16 @@ export function NewBookingModal({
 			toast({
 				title: "Campos obrigatórios",
 				description: "Preencha data, horário, quadra e nome do cliente.",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		const phoneDigits = normalizeCustomerPhone(formData.phone);
+		if (phoneDigits && !isValidCustomerPhone(phoneDigits)) {
+			toast({
+				title: "Telefone inválido",
+				description: "Informe um telefone com DDD (10 ou 11 dígitos).",
 				variant: "destructive",
 			});
 			return;
@@ -106,6 +155,17 @@ export function NewBookingModal({
 			const selectedCourt = courts.find((c) => c.id === formData.fieldId);
 			const price = selectedCourt?.base_price || 0;
 
+			const depositPercent = Number(formData.depositPercent);
+			if (formData.paymentStatus === "deposit") {
+				if (
+					!Number.isFinite(depositPercent) ||
+					depositPercent <= 0 ||
+					depositPercent > 100
+				) {
+					throw new Error("Percentual do sinal inválido (1 a 100). ");
+				}
+			}
+
 			// Pegar o ID do Tenant do usuário logado (Segurança)
 			const {
 				data: { user },
@@ -121,18 +181,31 @@ export function NewBookingModal({
 			if (!profile?.tenant_id) throw new Error("Empresa não identificada.");
 
 			// 3. INSERT na tabela 'bookings'
+			const isPaidFull = formData.paymentStatus === "paid";
+			const isDeposit = formData.paymentStatus === "deposit";
+			const paidAmount = isPaidFull
+				? price
+				: isDeposit
+				? (price * depositPercent) / 100
+				: 0;
+
 			const { error } = await supabase.from("bookings").insert({
 				tenant_id: profile.tenant_id,
 				court_id: formData.fieldId,
 				customer_name: formData.customerName,
-				customer_phone: formData.phone,
+				customer_phone: phoneDigits,
 				start_time: new Date(startDateTime).toISOString(), // Garante formato UTC correto
 				end_time: endDateTime,
 				total_price: price,
-				status: formData.paymentStatus, // 'paid' ou 'pending'
+				paid_amount: paidAmount,
+				deposit_percent: isDeposit ? depositPercent : null,
+				status: isPaidFull ? "paid" : "pending",
 			});
 
 			if (error) throw error;
+
+			// Sincroniza o BookingsContext imediatamente (Financeiro/Agenda/etc)
+			await refreshData();
 
 			toast({
 				title: "Agendamento Criado!",
@@ -148,12 +221,22 @@ export function NewBookingModal({
 				customerName: "",
 				phone: "",
 				paymentStatus: "pending",
+				depositPercent: 30,
 			});
 
 			if (onSuccess) onSuccess(); // Atualiza a dashboard/calendário
 			onOpenChange(false);
 		} catch (error: any) {
 			console.error(error);
+			if (isBookingOverlapError(error)) {
+				toast({
+					title: "Horário indisponível",
+					description:
+						"Já existe uma reserva para esta quadra nesse horário. Escolha outro horário.",
+					variant: "destructive",
+				});
+				return;
+			}
 			toast({
 				title: "Erro ao agendar",
 				description: error.message || "Tente novamente.",
@@ -256,10 +339,15 @@ export function NewBookingModal({
 							<Input
 								id="phone"
 								placeholder="11999999999"
+								autoComplete="tel"
+								inputMode="numeric"
+								maxLength={13}
 								value={formData.phone}
-								onChange={(e) =>
-									setFormData({ ...formData, phone: e.target.value })
-								}
+								onChange={(e) => {
+									const digits = normalizeCustomerPhone(e.target.value);
+									// Limite: DDD + número (11)
+									setFormData({ ...formData, phone: digits.slice(0, 11) });
+								}}
 							/>
 						</div>
 
@@ -267,7 +355,7 @@ export function NewBookingModal({
 							<Label htmlFor="payment">Status Pagamento</Label>
 							<Select
 								value={formData.paymentStatus}
-								onValueChange={(value: "paid" | "pending") =>
+								onValueChange={(value: "paid" | "pending" | "deposit") =>
 									setFormData({ ...formData, paymentStatus: value })
 								}>
 								<SelectTrigger>
@@ -275,11 +363,34 @@ export function NewBookingModal({
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="pending">Pagar no Local 🕒</SelectItem>
+									<SelectItem value="deposit">Sinal (%) 💰</SelectItem>
 									<SelectItem value="paid">Pago (Pix/Dinheiro) ✅</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 					</div>
+
+					{formData.paymentStatus === "deposit" && (
+						<div className="space-y-2">
+							<Label htmlFor="depositPercent">Percentual do sinal (%)</Label>
+							<Input
+								id="depositPercent"
+								type="number"
+								min={1}
+								max={100}
+								value={formData.depositPercent}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										depositPercent: Number(e.target.value),
+									})
+								}
+							/>
+							<p className="text-xs text-muted-foreground">
+								Ex: 30 para sinal de 30%.
+							</p>
+						</div>
+					)}
 				</div>
 
 				<DialogFooter>

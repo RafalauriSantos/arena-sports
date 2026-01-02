@@ -113,9 +113,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				}
 
 				setUserProfile(profile ?? null);
-
-				const tenant = await fetchTenant(profile?.tenant_id ?? null);
-				setTenantId(tenant?.id ?? null);
+				// Fonte de verdade do app: tenant_id do profile.
+				// Evita travar o app se a tabela tenants estiver com RLS mais restrita
+				// (ou se o onboarding ainda não preencheu owner_id corretamente).
+				setTenantId(profile?.tenant_id ?? null);
 			} catch (error) {
 				console.error("AuthContext error", error);
 				setTenantId(null);

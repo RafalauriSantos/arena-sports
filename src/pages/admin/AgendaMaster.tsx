@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	Plus,
 	MessageCircle,
@@ -19,28 +19,47 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 import { useBookings } from "@/contexts/BookingsContext";
 import { NewBookingModal } from "@/components/admin/NewBookingModal";
-import { Booking } from "@/types/booking";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
-type PaymentStatus = "paid_full" | "paid_deposit" | "pending" | "blocked";
+type PaymentStatus = "paid" | "pending" | "deposit";
 
 interface AdminBooking {
 	id: string;
 	time: string;
 	date: string;
 	field: string;
-	teamName: string;
-	captain: string;
+	customerName: string;
 	phone: string;
 	totalAmount: number;
 	paidAmount: number;
 	remainingAmount: number;
 	paymentStatus: PaymentStatus;
+	depositPercent?: number;
 	bookingId: string;
 }
+
+type BookingEventAction = "INSERT" | "UPDATE" | "DELETE";
+type BookingEventData = {
+	court_id?: string;
+	start_time?: string;
+	end_time?: string;
+	status?: string;
+	total_price?: number;
+};
+
+type BookingEventRow = {
+	id: string;
+	booking_id: string | null;
+	actor_user_id: string | null;
+	action: BookingEventAction | string;
+	old_data: BookingEventData | null;
+	new_data: BookingEventData | null;
+	created_at: string;
+};
 
 export default function AgendaMaster() {
 	const { bookings, updateBooking, deleteBooking, timeSlots } = useBookings();
@@ -50,24 +69,122 @@ export default function AgendaMaster() {
 	);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
+	const [bookingEvents, setBookingEvents] = useState<BookingEventRow[]>([]);
+	const [bookingEventsLoading, setBookingEventsLoading] = useState(false);
+	const [bookingEventsError, setBookingEventsError] = useState<string | null>(
+		null
+	);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		async function loadBookingEvents(bookingId: string) {
+			setBookingEventsLoading(true);
+			setBookingEventsError(null);
+
+			const { data, error } = await supabase
+				.from("booking_events")
+				.select(
+					"id, booking_id, actor_user_id, action, old_data, new_data, created_at"
+				)
+				.eq("booking_id", bookingId)
+				.order("created_at", { ascending: false })
+				.limit(20);
+
+			if (cancelled) return;
+
+			if (error) {
+				setBookingEvents([]);
+				setBookingEventsError(
+					"Não foi possível carregar o histórico desta reserva."
+				);
+				setBookingEventsLoading(false);
+				return;
+			}
+
+			setBookingEvents((data || []) as BookingEventRow[]);
+			setBookingEventsLoading(false);
+		}
+
+		if (!isModalOpen || !selectedBooking?.bookingId) {
+			setBookingEvents([]);
+			setBookingEventsError(null);
+			setBookingEventsLoading(false);
+			return;
+		}
+
+		loadBookingEvents(selectedBooking.bookingId);
+
+		return () => {
+			cancelled = true;
+		};
+	}, [isModalOpen, selectedBooking?.bookingId]);
+
+	const formatEventAction = (action: string) => {
+		switch (action) {
+			case "INSERT":
+				return "Criada";
+			case "UPDATE":
+				return "Atualizada";
+			case "DELETE":
+				return "Excluída";
+			default:
+				return action;
+		}
+	};
+
+	const formatMaybeTime = (ts?: string) => {
+		if (!ts) return null;
+		const date = new Date(ts);
+		if (Number.isNaN(date.getTime())) return null;
+		return format(date, "HH:mm");
+	};
+
+	const summarizeEvent = (event: BookingEventRow) => {
+		if (event.action === "INSERT") return "Reserva criada";
+		if (event.action === "DELETE") return "Reserva removida";
+
+		const oldStatus = event.old_data?.status;
+		const newStatus = event.new_data?.status;
+		if (oldStatus && newStatus && oldStatus !== newStatus) {
+			return `Status: ${oldStatus} → ${newStatus}`;
+		}
+
+		const oldStart = formatMaybeTime(event.old_data?.start_time);
+		const newStart = formatMaybeTime(event.new_data?.start_time);
+		const oldEnd = formatMaybeTime(event.old_data?.end_time);
+		const newEnd = formatMaybeTime(event.new_data?.end_time);
+		if (
+			(oldStart && newStart && oldStart !== newStart) ||
+			(oldEnd && newEnd && oldEnd !== newEnd)
+		) {
+			return `Horário: ${oldStart || "?"}-${oldEnd || "?"} → ${
+				newStart || "?"
+			}-${newEnd || "?"}`;
+		}
+
+		const oldTotal = event.old_data?.total_price;
+		const newTotal = event.new_data?.total_price;
+		if (
+			typeof oldTotal === "number" &&
+			typeof newTotal === "number" &&
+			oldTotal !== newTotal
+		) {
+			return `Valor: R$ ${oldTotal.toFixed(2)} → R$ ${newTotal.toFixed(2)}`;
+		}
+
+		return "Atualização";
+	};
 
 	const getStatusConfig = (status: PaymentStatus) => {
 		switch (status) {
-			case "paid_full":
+			case "paid":
 				return {
 					icon: CheckCircle,
-					label: "Pago Total",
+					label: "Pago",
 					color:
 						"text-primary bg-primary/10 border-primary/20 hover:bg-primary/20 shadow-[0_0_10px_hsl(var(--primary)/0.1)]",
 					dotColor: "bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.8)]",
-				};
-			case "paid_deposit":
-				return {
-					icon: AlertCircle,
-					label: "Sinal Pago",
-					color:
-						"text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20",
-					dotColor: "bg-amber-500",
 				};
 			case "pending":
 				return {
@@ -77,12 +194,13 @@ export default function AgendaMaster() {
 						"text-rose-400 bg-rose-500/10 border-rose-500/20 hover:bg-rose-500/20",
 					dotColor: "bg-rose-500",
 				};
-			case "blocked":
+			case "deposit":
 				return {
-					icon: Ban,
-					label: "Bloqueado",
-					color: "text-gray-400 bg-gray-800/50 border-white/5",
-					dotColor: "bg-gray-500",
+					icon: AlertCircle,
+					label: "Sinal",
+					color:
+						"text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20",
+					dotColor: "bg-amber-500",
 				};
 		}
 	};
@@ -93,85 +211,37 @@ export default function AgendaMaster() {
 
 		return bookings
 			.filter(
-				(b) =>
-					b.date === today &&
-					(b.status === "confirmed" || b.status === "approved")
+				(b) => b.date === today && b.status !== ("cancelled" as any) // compat
 			)
 			.map((b) => {
-				const slot = timeSlots.find((s) => s.id === b.slotId);
-				const totalAmount = b.pricePerPlayer * b.totalPlayers;
-
-				// Determine payment amounts based on payment type and status
-				let paidAmount = 0;
-				let paymentStatus: PaymentStatus = "pending";
-
-				if (b.paymentType === "pix") {
-					// PIX: payment is immediate and full
-					paidAmount = totalAmount;
-					paymentStatus = "paid_full";
-				} else {
-					// Local payment
-					if (b.status === "confirmed") {
-						// Confirmed = paid full at the Arena Sports
-						paidAmount = totalAmount;
-						paymentStatus = "paid_full";
-					} else if (b.status === "approved") {
-						// Approved but not confirmed = approved to play, pending payment
-						paidAmount = 0;
-						paymentStatus = "pending";
-					}
-				}
-
+				const totalAmount = b.totalPrice;
+				const paidAmount = typeof b.paidAmount === "number" ? b.paidAmount : 0;
 				const remainingAmount = totalAmount - paidAmount;
+				const isPaidFull = b.paymentStatus === "paid";
+				const isDeposit =
+					!isPaidFull && paidAmount > 0 && paidAmount < totalAmount;
+				const paymentStatus: PaymentStatus = isPaidFull
+					? "paid"
+					: isDeposit
+					? "deposit"
+					: "pending";
 
 				return {
 					id: b.id,
 					time: b.time,
 					date: b.date,
 					field: b.fieldName,
-					teamName: b.bookedBy,
-					captain: b.bookedBy,
-					phone: "11999999999", // Mock - in real app would come from user data
+					customerName: b.customerName,
+					phone: b.customerPhone || "",
 					totalAmount,
 					paidAmount,
 					remainingAmount,
-					paymentStatus:
-						slot?.status === "reserved" && slot?.bookedBy?.includes("🔒")
-							? "blocked"
-							: paymentStatus,
+					paymentStatus,
+					depositPercent: b.depositPercent,
 					bookingId: b.id,
 				};
 			});
 	}, [bookings, timeSlots]);
-	const pendingApprovalBookings = useMemo((): AdminBooking[] => {
-		const today = format(new Date(), "yyyy-MM-dd");
-
-		return bookings
-			.filter(
-				(b) =>
-					b.date === today &&
-					b.status === "pending_approval" &&
-					b.paymentType === "local"
-			)
-			.map((b) => {
-				const totalAmount = b.pricePerPlayer * b.totalPlayers;
-
-				return {
-					id: b.id,
-					time: b.time,
-					date: b.date,
-					field: b.fieldName,
-					teamName: b.bookedBy,
-					captain: b.bookedBy,
-					phone: "11999999999",
-					totalAmount,
-					paidAmount: 0,
-					remainingAmount: totalAmount,
-					paymentStatus: "pending" as PaymentStatus,
-					bookingId: b.id,
-				};
-			});
-	}, [bookings]);
 	const handleBookingClick = (booking: AdminBooking) => {
 		setSelectedBooking(booking);
 		setIsModalOpen(true);
@@ -180,11 +250,11 @@ export default function AgendaMaster() {
 	const handleConfirmPayment = () => {
 		if (!selectedBooking) return;
 
-		updateBooking(selectedBooking.bookingId, { status: "confirmed" });
+		updateBooking(selectedBooking.bookingId, { paymentStatus: "paid" });
 
 		toast({
 			title: "Pagamento confirmado!",
-			description: `${selectedBooking.captain} pagou o restante.`,
+			description: `${selectedBooking.customerName} pagou o total.`,
 		});
 
 		setIsModalOpen(false);
@@ -204,36 +274,8 @@ export default function AgendaMaster() {
 		setIsModalOpen(false);
 	};
 
-	const handleApproveBooking = () => {
-		if (!selectedBooking) return;
-
-		updateBooking(selectedBooking.bookingId, { status: "approved" });
-
-		toast({
-			title: "Reserva aprovada!",
-			description: `${selectedBooking.captain} pode jogar no horário ${selectedBooking.time}.`,
-		});
-
-		setIsModalOpen(false);
-	};
-
-	const handleRejectBooking = () => {
-		if (!selectedBooking) return;
-
-		updateBooking(selectedBooking.bookingId, { status: "rejected" });
-		deleteBooking(selectedBooking.bookingId);
-
-		toast({
-			title: "Reserva rejeitada",
-			description: `Solicitação de ${selectedBooking.captain} foi recusada.`,
-			variant: "destructive",
-		});
-
-		setIsModalOpen(false);
-	};
-
 	const handleWhatsApp = () => {
-		if (selectedBooking) {
+		if (selectedBooking?.phone) {
 			window.open(`https://wa.me/55${selectedBooking.phone}`, "_blank");
 		}
 	};
@@ -265,69 +307,7 @@ export default function AgendaMaster() {
 				open={isNewBookingOpen}
 				onOpenChange={setIsNewBookingOpen}
 			/>
-			{/* Pending Approvals - Mobile optimized */}
-			{pendingApprovalBookings.length > 0 && (
-				<Card className="border-amber-500/20 bg-gradient-to-br from-amber-900/10 via-gray-900/40 to-gray-900/40 backdrop-blur-md">
-					<CardHeader className="pb-2 md:pb-4">
-						<CardTitle className="flex items-center gap-2 text-amber-400 text-sm md:text-base">
-							<AlertCircle className="h-4 w-4 md:h-5 md:w-5" />
-							Pendentes ({pendingApprovalBookings.length})
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="pt-0">
-						<div className="space-y-2 md:space-y-3">
-							{pendingApprovalBookings.map((booking) => (
-								<div
-									key={booking.id}
-									className="p-3 md:p-4 border border-amber-500/10 rounded-lg bg-gray-900/40 space-y-2 md:space-y-0 hover:bg-gray-900/60 transition-colors">
-									{/* Mobile: Stack layout / Desktop: Row layout */}
-									<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
-										{/* Info */}
-										<div className="flex items-center justify-between md:flex-1">
-											<div className="flex-1">
-												<p className="font-bold text-sm md:text-base text-white">
-													{booking.time} - {booking.field}
-												</p>
-												<p className="text-xs md:text-sm text-gray-400">
-													{booking.teamName}
-												</p>
-											</div>
-											<p className="font-bold text-sm md:text-base text-primary drop-shadow-[0_0_5px_hsl(var(--primary)/0.4)]">
-												R$ {booking.totalAmount.toFixed(0)}
-											</p>
-										</div>
-										{/* Buttons - Always visible */}
-										<div className="flex gap-2 w-full md:w-auto">
-											<Button
-												size="sm"
-												variant="default"
-												className="flex-1 md:flex-none gap-1 bg-primary hover:bg-primary/90 text-white text-xs md:text-sm border-0 shadow-[0_0_10px_hsl(var(--primary)/0.3)]"
-												onClick={() => {
-													setSelectedBooking(booking);
-													handleApproveBooking();
-												}}>
-												<CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
-												Aprovar
-											</Button>
-											<Button
-												size="sm"
-												variant="destructive"
-												className="flex-1 md:flex-none gap-1 bg-rose-600 hover:bg-rose-700 text-white text-xs md:text-sm border-0"
-												onClick={() => {
-													setSelectedBooking(booking);
-													handleRejectBooking();
-												}}>
-												<XCircle className="h-3 w-3 md:h-4 md:w-4" />
-												Rejeitar
-											</Button>
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</CardContent>
-				</Card>
-			)}
+			{/* Bookings Grid - Compact mobile cards */}
 			{/* Bookings Grid - Compact mobile cards */}
 			<div className="grid gap-2 md:gap-4 md:grid-cols-2">
 				{adminBookingsData.map((booking) => {
@@ -378,11 +358,17 @@ export default function AgendaMaster() {
 								<div className="flex items-center justify-between gap-2">
 									<div className="min-w-0 flex-1">
 										<p className="font-bold text-sm md:text-lg truncate text-white">
-											{booking.teamName}
+											{booking.customerName}
 										</p>
-										<p className="text-xs md:text-sm text-gray-400 truncate">
-											{booking.captain}
-										</p>
+										{booking.phone ? (
+											<p className="text-xs md:text-sm text-gray-400 truncate">
+												{booking.phone}
+											</p>
+										) : (
+											<p className="text-xs md:text-sm text-gray-500 truncate">
+												Sem telefone
+											</p>
+										)}
 									</div>
 									<Button
 										variant="outline"
@@ -390,6 +376,7 @@ export default function AgendaMaster() {
 										className="flex-shrink-0 h-8 w-8 md:h-9 md:w-9 border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white"
 										onClick={(e) => {
 											e.stopPropagation();
+											if (!booking.phone) return;
 											window.open(`https://wa.me/55${booking.phone}`, "_blank");
 										}}>
 										<MessageCircle className="h-3 w-3 md:h-4 md:w-4" />
@@ -430,24 +417,36 @@ export default function AgendaMaster() {
 						<div className="space-y-4 py-4">
 							<div>
 								<h4 className="text-sm font-medium text-muted-foreground mb-1">
-									Time
+									Cliente
 								</h4>
-								<p className="text-lg font-bold">{selectedBooking.teamName}</p>
+								<p className="text-lg font-bold">
+									{selectedBooking.customerName}
+								</p>
 							</div>
 
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<h4 className="text-sm font-medium text-muted-foreground mb-1">
-										Capitão
-									</h4>
-									<p className="font-medium">{selectedBooking.captain}</p>
-								</div>
-								<div>
-									<h4 className="text-sm font-medium text-muted-foreground mb-1">
 										Telefone
 									</h4>
 									<p className="font-medium flex items-center gap-2">
-										{selectedBooking.phone}
+										{selectedBooking.phone || "-"}
+									</p>
+								</div>
+								<div>
+									<h4 className="text-sm font-medium text-muted-foreground mb-1">
+										Pagamento
+									</h4>
+									<p className="font-medium">
+										{selectedBooking.paymentStatus === "paid"
+											? "Pago"
+											: selectedBooking.paymentStatus === "deposit"
+											? `Sinal${
+													selectedBooking.depositPercent
+														? ` (${selectedBooking.depositPercent}%)`
+														: ""
+											  }`
+											: "Pendente"}
 									</p>
 								</div>
 							</div>
@@ -461,6 +460,14 @@ export default function AgendaMaster() {
 										R$ {selectedBooking.totalAmount.toFixed(2)}
 									</p>
 								</div>
+								<div>
+									<h4 className="text-sm font-medium text-muted-foreground mb-1">
+										Já Pago
+									</h4>
+									<p className="text-xl font-bold">
+										R$ {selectedBooking.paidAmount.toFixed(2)}
+									</p>
+								</div>
 								{selectedBooking.remainingAmount > 0 && (
 									<div>
 										<h4 className="text-sm font-medium text-muted-foreground mb-1">
@@ -472,10 +479,59 @@ export default function AgendaMaster() {
 									</div>
 								)}
 							</div>
+
+							<div className="space-y-2 pt-2 border-t">
+								<div className="flex items-center justify-between">
+									<h4 className="text-sm font-medium text-muted-foreground">
+										Histórico
+									</h4>
+									{bookingEventsLoading && (
+										<span className="text-xs text-muted-foreground">
+											Carregando...
+										</span>
+									)}
+								</div>
+
+								{bookingEventsError && (
+									<p className="text-sm text-destructive">
+										{bookingEventsError}
+									</p>
+								)}
+
+								{!bookingEventsLoading &&
+									!bookingEventsError &&
+									bookingEvents.length === 0 && (
+										<p className="text-sm text-muted-foreground">
+											Nenhum evento registrado.
+										</p>
+									)}
+
+								{bookingEvents.length > 0 && (
+									<div className="space-y-2">
+										{bookingEvents.map((event) => (
+											<div
+												key={event.id}
+												className="flex items-start justify-between gap-3 rounded-md border bg-background/50 px-3 py-2">
+												<div className="min-w-0">
+													<p className="text-sm font-medium truncate">
+														{summarizeEvent(event)}
+													</p>
+													<p className="text-xs text-muted-foreground">
+														{format(new Date(event.created_at), "dd/MM HH:mm")}
+													</p>
+												</div>
+												<Badge variant="outline" className="shrink-0">
+													{formatEventAction(String(event.action))}
+												</Badge>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
 						</div>
 
 						<DialogFooter className="flex-col gap-2 sm:flex-col">
-							{selectedBooking.paymentStatus === "pending" &&
+							{selectedBooking.paymentStatus !== "paid" &&
 								selectedBooking.remainingAmount > 0 && (
 									<Button
 										size="lg"
@@ -491,6 +547,7 @@ export default function AgendaMaster() {
 								<Button
 									variant="outline"
 									className="gap-2"
+									disabled={!selectedBooking.phone}
 									onClick={handleWhatsApp}>
 									<MessageCircle className="h-4 w-4" />
 									WhatsApp
