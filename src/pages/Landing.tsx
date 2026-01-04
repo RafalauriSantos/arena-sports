@@ -435,7 +435,7 @@ export default function LandingPage() {
 						<Button
 							onClick={() => navigate("/login")}
 							className="h-11 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
-							Começar Agora (R$ 79)
+							Começar com Pro (R$ 169)
 						</Button>
 						<button className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-xs">
 							<Play className="w-3 h-3 fill-current" /> Ver em ação
@@ -695,84 +695,82 @@ export default function LandingPage() {
 						</p>
 					</div>
 					<div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-						{/* PLANO START */}
+						{/* PLANO PRO */}
 						<div className="relative group rounded-2xl p-[1px] overflow-hidden transform hover:scale-[1.01] transition-all">
 							<div className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#10b981_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 							<div className="relative h-full bg-[#0F1115] rounded-2xl p-6 md:p-8 border border-white/10 group-hover:border-transparent transition-colors">
 								<div className="absolute top-0 right-0 bg-emerald-500 text-black text-[9px] font-bold px-3 py-1 rounded-bl-lg">
-									MAIS POPULAR
+									RECOMENDADO
 								</div>
-								<h3 className="text-lg font-bold text-white mb-1">
-									Arena Start
-								</h3>
+								<h3 className="text-lg font-bold text-white mb-1">Arena Pro</h3>
 								<p className="text-gray-400 text-xs mb-5">
-									Tudo para profissionalizar hoje.
+									Para escalar múltiplas unidades.
 								</p>
 								<div className="flex items-baseline gap-1 mb-5">
-									<span className="text-4xl font-black text-white">R$ 79</span>
+									<span className="text-4xl font-black text-white">R$ 169</span>
 									<span className="text-gray-500 text-xs">/mês</span>
 								</div>
 								<ul className="space-y-3 mb-8 text-xs md:text-sm">
 									<li className="flex items-center gap-2 text-white">
-										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-										<strong>Agenda Inteligente</strong>
+										<Check className="w-4 h-4 text-emerald-500 shrink-0" /> Tudo
+										do plano Start
 									</li>
 									<li className="flex items-center gap-2 text-white">
 										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-										<strong>Link de Reservas</strong>
+										<strong>Múltiplas Quadras</strong>
 									</li>
 									<li className="flex items-center gap-2 text-white">
 										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-										<strong>Pagamento via Pix</strong>
+										<strong>Gestão de Mensalistas</strong>
 									</li>
 									<li className="flex items-center gap-2 text-white">
 										<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-										<strong>Gestão Financeira</strong>
+										<strong>Relatórios Avançados</strong>
 									</li>
 								</ul>
 								<Button
 									onClick={() => navigate("/login")}
 									className="w-full h-10 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
-									Começar com R$ 79
+									Começar com Pro (R$ 169)
 								</Button>
 								<p className="text-center text-[10px] text-gray-500 mt-3 flex justify-center gap-2 items-center">
 									<ShieldCheck className="w-3 h-3" /> 7 dias de garantia.
 								</p>
 							</div>
 						</div>
-						{/* PLANO PRO */}
+						{/* PLANO START */}
 						<div className="relative bg-[#0a0c10] border border-white/10 rounded-2xl p-6 md:p-8 opacity-80 hover:opacity-100 transition-opacity">
-							<h3 className="text-lg font-bold text-white mb-1">Arena Pro</h3>
+							<h3 className="text-lg font-bold text-white mb-1">Arena Start</h3>
 							<p className="text-gray-400 text-xs mb-5">
-								Para escalar múltiplas unidades.
+								Tudo para profissionalizar hoje.
 							</p>
 							<div className="flex items-baseline gap-1 mb-5">
-								<span className="text-4xl font-black text-white">R$ 197</span>
+								<span className="text-4xl font-black text-white">R$ 89</span>
 								<span className="text-gray-500 text-xs">/mês</span>
 							</div>
 							<ul className="space-y-3 mb-8 text-gray-400 text-xs md:text-sm">
 								<li className="flex items-center gap-2">
-									<Check className="w-4 h-4 text-white shrink-0" /> Tudo do
-									plano Start
+									<Check className="w-4 h-4 text-white shrink-0" />{" "}
+									<strong>Agenda Inteligente</strong>
 								</li>
 								<li className="flex items-center gap-2">
 									<Check className="w-4 h-4 text-white shrink-0" />{" "}
-									<strong>Múltiplas Quadras</strong>
+									<strong>Link de Reservas</strong>
 								</li>
 								<li className="flex items-center gap-2">
 									<Check className="w-4 h-4 text-white shrink-0" />{" "}
-									<strong>Gestão de Mensalistas</strong>
+									<strong>Pagamento via Pix</strong>
 								</li>
 								<li className="flex items-center gap-2">
 									<Check className="w-4 h-4 text-white shrink-0" />{" "}
-									<strong>Relatórios Avançados</strong>
+									<strong>Gestão Financeira</strong>
 								</li>
 							</ul>
 							<Button
 								onClick={() => navigate("/login")}
 								variant="outline"
 								className="w-full h-10 border-white/20 hover:bg-white/5 text-white font-bold text-sm rounded-lg">
-								Selecionar Pro
+								Selecionar Start
 							</Button>
 						</div>
 					</div>

@@ -211,7 +211,7 @@ export default function AgendaMaster() {
 
 		return bookings
 			.filter(
-				(b) => b.date === today && b.status !== ("cancelled" as any) // compat
+				(b) => b.date === today && b.status !== "cancelled" // compat
 			)
 			.map((b) => {
 				const totalAmount = b.totalPrice;
@@ -241,7 +241,7 @@ export default function AgendaMaster() {
 					bookingId: b.id,
 				};
 			});
-	}, [bookings, timeSlots]);
+	}, [bookings]);
 	const handleBookingClick = (booking: AdminBooking) => {
 		setSelectedBooking(booking);
 		setIsModalOpen(true);

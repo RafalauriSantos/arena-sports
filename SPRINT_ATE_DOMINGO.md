@@ -9,6 +9,7 @@ Entregar o **Arena Sports rodando e vendável** (MVP estável), com:
 - **Login/Signup** funcionando
 - **Dashboard admin** funcionando (ver, criar, editar, apagar reservas)
 - **Agenda pública** funcionando (listar quadras/horários e gerar WhatsApp)
+- **Paywall/Assinatura (Stripe)** funcionando (trial com consentimento + compra Start/Pro)
 - **Banco protegido com RLS** sem quebrar o app
 
 ## Critérios de pronto (Definition of Done)
@@ -30,7 +31,14 @@ Considero “pronto” quando:
    - ver quadras ativas
    - ver horários livres (sem mostrar horários ocupados)
    - gerar link WhatsApp
-5. Não existe “tela branca” nem erro recorrente de RLS no console.
+5. No `/dashboard` / Configurações, assinatura funciona:
+
+- escolher Start ou Pro e ir pro Checkout
+- ao voltar do Stripe, status vira **Ativo** e mostra o plano/valor corretos (ex.: Pro R$169)
+- usuário pago **não** vê CTA de trial/assinar
+- portal do Stripe abre (gerenciar assinatura)
+
+6. Não existe “tela branca” nem erro recorrente de RLS no console.
 
 ## Estado atual (já feito)
 
@@ -45,11 +53,30 @@ Atualizações desta sprint (2026-01-02):
 - ✅ Bypass de admin do SaaS (VIP) para o criador não cair no paywall
 - ✅ `db push` via CLI aplicado e remoto está up-to-date
 
+Atualizações desta sprint (2026-01-03):
+
+- ✅ Fluxo de assinatura completo (Start/Pro) com UI Pro-first e fallback para Start
+- ✅ Pós-checkout resiliente: sincroniza assinatura no retorno do Stripe (cobre atraso de webhook)
+- ✅ Trial corrigido para iniciar **após consentimento** (usa `trial_started_at`), evitando “trial infinito”
+- ✅ Onboarding blindado: garante `tenant_id` no profile (RPC `fn_onboard_user` + constraints/grants)
+- ✅ Edge Functions endurecidas (não estouram 500 com JSON vazio; validações e inferência de plano por `price_id`)
+- ✅ Landing alinhada para guiar compra do Pro (sem esconder Start)
+- ✅ Páginas de política/termos/suporte adicionadas
+
 Arquivos relacionados:
 
 - `supabase/migrations/20260101090000_mvp_rls_owner_only.sql`
 - `supabase/migrations/20260101130000_public_courts_read.sql`
 - `src/contexts/AuthContext.tsx`
+- `src/pages/admin/Dashboard.tsx`
+- `src/pages/admin/ConfiguracoesView.tsx`
+- `src/pages/Landing.tsx`
+- `src/hooks/useSubscriptionAccess.ts`
+- `supabase/functions/stripe-create-checkout/index.ts`
+- `supabase/functions/stripe-webhook/index.ts`
+- `supabase/functions/stripe-sync-checkout/index.ts`
+- `supabase/functions/ensure-tenant-subscription/index.ts`
+- `supabase/migrations/20260103*_fn_onboard_user*.sql`
 
 ## Plano de execução (de agora até domingo)
 
@@ -71,6 +98,9 @@ Checklist de teste (marque com ✅):
 - [ ] Deletar reserva funciona (delete em `bookings`)
 - [ ] Página pública lista quadras (select em `courts` como anon)
 - [ ] Página pública carrega ocupação (via RPC; bloqueia horários ocupados)
+- [ ] Assinatura: clicar Pro → Checkout → pagar → voltar e ver **Ativo / Pro R$169**
+- [ ] Assinatura: usuário pago não vê trial/CTA de assinar
+- [ ] Portal Stripe abre em Configurações (gerenciar assinatura)
 
 ### 2) Consertar inconsistências de tabelas (admin metrics)
 
@@ -107,6 +137,9 @@ Observação de segurança:
 - Variáveis de ambiente:
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
+- Stripe (produção):
+  - secrets configurados no Supabase (webhook + API key)
+  - Price IDs do Start/Pro configurados (env das Edge Functions)
 - Validar build + deploy
 - Validar 3 fluxos pós-deploy
 
@@ -116,11 +149,15 @@ Checklist:
 - [x] Abrir `/login` e entrar
 - [ ] Abrir `/dashboard` e listar dados
 - [ ] Abrir `/agendar/:subdomain` e listar quadras/horários
+- [ ] Rodar `npx supabase@latest db push` (aplicar migrations novas)
+- [ ] Deploy das Edge Functions do Stripe (webhook/checkout/portal/sync)
+- [ ] Teste real de pagamento (cartão) e retorno com status Ativo
 
 ## Atenções (P0)
 
 - O app chama `fn_onboard_user` no AuthContext; se essa RPC não existir no Supabase remoto, o fluxo de signup pode falhar.
 - Para o criador do SaaS não cair no paywall, usar a allowlist `saas_admin_users` (VIP) no banco.
+- Assinatura depende de Edge Functions + webhooks: se webhook atrasar, o fallback de retorno via `session_id` deve resolver (validar em produção).
 
 ## Comandos úteis
 

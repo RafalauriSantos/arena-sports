@@ -41,6 +41,23 @@ type OccupiedSlot = {
 // Configuração padrão de segurança (caso o banco falhe)
 const DEFAULT_DEPOSIT_PERCENT = 30;
 
+type TenantPublic = {
+	id: string;
+	business_name?: string | null;
+	phone?: string | null;
+	address?: string | null;
+	settings?: Record<string, unknown> | null;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null;
+
+const getStringProp = (value: unknown, key: string): string | undefined => {
+	if (!isRecord(value)) return undefined;
+	const v = value[key];
+	return typeof v === "string" ? v : undefined;
+};
+
 export default function BookingPublic() {
 	const { subdomain } = useParams();
 
@@ -57,7 +74,7 @@ export default function BookingPublic() {
 	// Estados de Dados
 	const [loading, setLoading] = useState(true);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
-	const [tenant, setTenant] = useState<any>(null);
+	const [tenant, setTenant] = useState<TenantPublic | null>(null);
 	const [courts, setCourts] = useState<Court[]>([]);
 	const [occupiedSlots, setOccupiedSlots] = useState<OccupiedSlot[]>([]);
 
@@ -69,6 +86,7 @@ export default function BookingPublic() {
 		slot: TimeChip;
 	} | null>(null);
 	const [reserveError, setReserveError] = useState<string | null>(null);
+	const [tenantId, setTenantId] = useState<string | null>(null);
 
 	// 1. Carregar Dados Iniciais (Empresa e Quadras)
 	useEffect(() => {
@@ -80,11 +98,12 @@ export default function BookingPublic() {
 
 			try {
 				// Tenta buscar pelo subdomain exato (já limpo)
-				let { data: tData, error: tError } = await supabase
+				const { data: tData0, error: tError } = await supabase
 					.from("tenants")
 					.select("*")
 					.eq("subdomain", cleanSubdomain)
 					.maybeSingle();
+				let tData = tData0;
 
 				// FALLBACK DE SEGURANÇA (Se a URL antiga ainda estiver cacheada ou indexada)
 				if (!tData) {
@@ -107,6 +126,7 @@ export default function BookingPublic() {
 				}
 
 				setTenant(tData);
+				setTenantId(tData.id);
 
 				// B. Busca Quadras Ativas
 				const { data: cData } = await supabase
@@ -117,15 +137,99 @@ export default function BookingPublic() {
 					.order("base_price");
 
 				if (cData) setCourts(cData);
-			} catch (error: any) {
+			} catch (error: unknown) {
 				console.error("Erro fatal:", error);
-				setErrorMsg(error.message || "Não foi possível carregar a agenda.");
+				const message =
+					getStringProp(error, "message") ||
+					"Não foi possível carregar a agenda.";
+				setErrorMsg(message);
 			} finally {
 				setLoading(false);
 			}
 		}
 		loadShell();
 	}, [cleanSubdomain]);
+
+	// 1b. Realtime: manter preços/quadras atualizados sem refresh
+	useEffect(() => {
+		if (!tenantId) return;
+
+		const channel = supabase
+			.channel(`public-courts-${tenantId}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "*",
+					schema: "public",
+					table: "courts",
+					filter: `tenant_id=eq.${tenantId}`,
+				},
+				(payload) => {
+					const eventType = payload.eventType as "INSERT" | "UPDATE" | "DELETE";
+
+					if (eventType === "DELETE") {
+						const oldRow = payload.old as { id?: string };
+						const removedId = oldRow?.id;
+						if (!removedId) return;
+						setCourts((prev) => prev.filter((c) => c.id !== removedId));
+						setSelectedSlot((prev) =>
+							prev?.courtId === removedId ? null : prev
+						);
+						return;
+					}
+
+					const row = payload.new as Partial<
+						Court & { active?: boolean; tenant_id?: string }
+					>;
+					if (!row?.id) return;
+
+					// Se desativar, some da agenda pública
+					if (row.active === false) {
+						setCourts((prev) => prev.filter((c) => c.id !== row.id));
+						setSelectedSlot((prev) => (prev?.courtId === row.id ? null : prev));
+						return;
+					}
+
+					// Upsert local
+					setCourts((prev) => {
+						const next = [...prev];
+						const index = next.findIndex((c) => c.id === row.id);
+						const normalized: Court = {
+							id: row.id,
+							name: String(row.name ?? ""),
+							base_price: Number(row.base_price ?? 0),
+						};
+
+						if (index >= 0) {
+							next[index] = { ...next[index], ...normalized };
+						} else {
+							next.push(normalized);
+						}
+
+						next.sort((a, b) => a.base_price - b.base_price);
+						return next;
+					});
+
+					// Se o usuário já selecionou um horário dessa quadra, manter preço atualizado
+					setSelectedSlot((prev) => {
+						if (!prev || prev.courtId !== row.id) return prev;
+						const newPrice = Number(row.base_price ?? prev.slot.price);
+						return {
+							...prev,
+							slot: {
+								...prev.slot,
+								price: newPrice,
+							},
+						};
+					});
+				}
+			)
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	}, [tenantId]);
 
 	// 2. Carregar ocupação do dia (avulsos + mensalistas) via RPC pública segura
 	useEffect(() => {
@@ -173,13 +277,13 @@ export default function BookingPublic() {
 		};
 	}, [cleanSubdomain, selectedDate]);
 
-	// Helpers para data e hora
-	const now = new Date();
-	const isToday = isSameDay(selectedDate, now);
-	const nowHour = now.getHours();
-
 	// 2. Carregar slots disponíveis (com descontos e bloqueios)
-	const courtsWithSlots = useMemo(() => {
+	const courtsWithSlots = (() => {
+		// Helpers para data e hora
+		const now = new Date();
+		const isToday = isSameDay(selectedDate, now);
+		const nowHour = now.getHours();
+
 		const bookingConfigs = tenant?.settings?.booking || {};
 
 		// Regra de Desconto por Antecedência (7 dias)
@@ -216,7 +320,7 @@ export default function BookingPublic() {
 			}
 			return { ...court, slots };
 		});
-	}, [courts, occupiedSlots, selectedDate, tenant]);
+	})();
 
 	// 4. Funções de Ação
 	const handleBooking = (

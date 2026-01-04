@@ -30,6 +30,21 @@ interface Folga {
 	createdAt: string;
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null;
+
+const isFolgaArray = (value: unknown): value is Folga[] =>
+	Array.isArray(value) &&
+	value.every(
+		(item) =>
+			isRecord(item) &&
+			typeof item.id === "string" &&
+			typeof item.startDate === "string" &&
+			typeof item.endDate === "string" &&
+			typeof item.reason === "string" &&
+			typeof item.createdAt === "string"
+	);
+
 export default function FolgasView() {
 	const { tenantId } = useAuth();
 	const { timeSlots, blockTimeSlot } = useBookings();
@@ -50,10 +65,10 @@ export default function FolgasView() {
 				.eq("id", tenantId)
 				.single();
 
-			// @ts-ignore
-			if (data?.settings?.folgas) {
-				// @ts-ignore
-				setFolgas(data.settings.folgas);
+			const settings = isRecord(data) ? data.settings : undefined;
+			const folgasValue = isRecord(settings) ? settings.folgas : undefined;
+			if (isFolgaArray(folgasValue)) {
+				setFolgas(folgasValue);
 			}
 		};
 		fetchFolgas();

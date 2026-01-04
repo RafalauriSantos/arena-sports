@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AgendaMaster from "./AgendaMaster";
 import FinanceiroView from "./FinanceiroView";
 import ConfiguracoesView from "./ConfiguracoesView";
@@ -39,10 +39,20 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { supabase } from "@/lib/supabaseClient";
+import { invokeEdgeFunction } from "@/lib/edgeFunctions";
 
 // --- HELPERS (Formatadores) ---
 const formatCurrency = (value: number) =>
 	value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null;
+
+const getStringProp = (value: unknown, key: string): string | undefined => {
+	if (!isRecord(value)) return undefined;
+	const v = value[key];
+	return typeof v === "string" ? v : undefined;
+};
 
 const formatDateShort = (dateStr: string) => {
 	const date = new Date(dateStr);
@@ -67,6 +77,15 @@ const getLast7Days = () => {
 };
 
 // --- COMPONENTE: SIDEBAR PROFISSIONAL (A "Alma" do Layout) ---
+type SidebarFixedProps = {
+	mobileOpen: boolean;
+	setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	collapsed: boolean;
+	setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+	activeView: string;
+	setActiveView: React.Dispatch<React.SetStateAction<string>>;
+};
+
 const SidebarFixed = ({
 	mobileOpen,
 	setMobileOpen,
@@ -74,7 +93,7 @@ const SidebarFixed = ({
 	setCollapsed,
 	activeView,
 	setActiveView,
-}: any) => {
+}: SidebarFixedProps) => {
 	const { userProfile, signOut } = useAuth();
 	const { toast } = useToast();
 
@@ -280,11 +299,17 @@ const SidebarFixed = ({
 };
 
 // --- COMPONENTES VISUAIS (Dashboard) ---
+type ArenaSportsStatusHeroProps = {
+	revenueToday: number;
+	occupancyAvg: number;
+	nextPeak: string;
+};
+
 const ArenaSportsStatusHero = ({
 	revenueToday,
 	occupancyAvg,
 	nextPeak,
-}: any) => {
+}: ArenaSportsStatusHeroProps) => {
 	const statusConfig =
 		occupancyAvg > 80
 			? {
@@ -343,7 +368,13 @@ const ArenaSportsStatusHero = ({
 	);
 };
 
-const MetricPill = ({ label, value, icon: Icon }: any) => (
+type MetricPillProps = {
+	label: string;
+	value: React.ReactNode;
+	icon?: React.ComponentType<{ className?: string }>;
+};
+
+const MetricPill = ({ label, value, icon: Icon }: MetricPillProps) => (
 	<div className="flex flex-col p-4 rounded-2xl bg-[#0F1115]/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all backdrop-blur-md group">
 		<div className="flex justify-between items-start mb-2">
 			<span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
@@ -364,32 +395,330 @@ export default function DashboardHome() {
 	const [collapsed, setCollapsed] = useState(false);
 	const [activeView, setActiveView] = useState("dashboard");
 	const { toast } = useToast();
-	const { hasAccess, isLoading: subLoading } = useSubscriptionAccess();
+	const { tenantId } = useAuth();
+	const {
+		subscription,
+		isTrial,
+		hasAccess,
+		isLoading: subLoading,
+		isFetching: subFetching,
+		refetch: refetchSubscription,
+	} = useSubscriptionAccess();
 	const [startingCheckout, setStartingCheckout] = useState(false);
+	const [startingTrial, setStartingTrial] = useState(false);
+	const [syncingCheckout, setSyncingCheckout] = useState(false);
+	const [selectedPlan, setSelectedPlan] = useState<"start" | "pro">("pro");
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
 		"month"
 	);
 
+	useEffect(() => {
+		const planCode = (subscription?.plan_code ?? "").toLowerCase();
+		if (planCode === "start" || planCode === "pro") {
+			setSelectedPlan(planCode);
+			return;
+		}
+		const name = (subscription?.plan_name ?? "").toLowerCase();
+		setSelectedPlan(name.includes("pro") ? "pro" : "start");
+	}, [subscription?.plan_code, subscription?.plan_name]);
+
+	const hasAccessRef = useRef(hasAccess);
+	useEffect(() => {
+		hasAccessRef.current = hasAccess;
+	}, [hasAccess]);
+
+	const subscriptionStatusRef = useRef(subscription?.status);
+	useEffect(() => {
+		subscriptionStatusRef.current = subscription?.status;
+	}, [subscription?.status]);
+
+	useEffect(() => {
+		if (!tenantId) return;
+		if (!hasAccess || !isTrial) return;
+		if (!subscription?.trial_started_at) return;
+		const key = `trial_notice_seen_${tenantId}`;
+		if (localStorage.getItem(key) === "1") return;
+		localStorage.setItem(key, "1");
+
+		const endsAt = subscription?.trial_ends_at
+			? new Date(subscription.trial_ends_at)
+			: null;
+		const daysLeft = endsAt
+			? Math.max(
+					0,
+					Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+			  )
+			: null;
+
+		toast({
+			title: "Trial do Plano Pro (21 dias) iniciado",
+			description:
+				daysLeft != null
+					? `Tudo liberado no Plano Pro. Restam ${daysLeft} dia(s) de trial.`
+					: "Tudo liberado no Plano Pro durante o trial de 21 dias.",
+		});
+	}, [
+		hasAccess,
+		isTrial,
+		subscription?.trial_ends_at,
+		subscription?.trial_started_at,
+		tenantId,
+		toast,
+	]);
+
+	const needsTrialConsent =
+		isTrial && !subscription?.trial_started_at && Boolean(tenantId);
+
+	const startTrial = async () => {
+		try {
+			setStartingTrial(true);
+			const {
+				data: { session },
+				error: sessionError,
+			} = await supabase.auth.getSession();
+			if (sessionError) throw sessionError;
+			if (!session?.access_token) {
+				throw new Error("Sessão inválida. Faça login novamente.");
+			}
+
+			await invokeEdgeFunction("ensure-tenant-subscription", {
+				accessToken: session.access_token,
+				body: { start_trial: true },
+			});
+			await refetchSubscription();
+			toast({
+				title: "Trial do Plano Pro iniciado",
+				description: "Tudo liberado por 21 dias.",
+			});
+		} catch (err: unknown) {
+			const message = getStringProp(err, "message") || "Tente novamente.";
+			toast({
+				title: "Não foi possível iniciar o teste",
+				description: message,
+				variant: "destructive",
+			});
+		} finally {
+			setStartingTrial(false);
+		}
+	};
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		const isStripeReturn =
+			params.get("stripe") === "success" ||
+			params.get("stripe") === "cancel" ||
+			Boolean(params.get("session_id"));
+		const stripeSessionId = params.get("session_id");
+		const stripeResult = params.get("stripe");
+		const pending = localStorage.getItem("stripe_checkout_pending") === "1";
+		const isStripeSuccessReturn =
+			stripeResult === "success" && Boolean(stripeSessionId);
+
+		if (!pending && !isStripeReturn) return;
+		// If we only have a pending flag (no Stripe return params) and access is already granted,
+		// there is nothing to do.
+		if (!isStripeReturn && hasAccessRef.current) {
+			localStorage.removeItem("stripe_checkout_pending");
+			return;
+		}
+
+		let cancelled = false;
+		setSyncingCheckout(true);
+
+		(async () => {
+			// If we have a successful return with a checkout session id,
+			// attempt to sync subscription status immediately (fallback when webhook is slow/misconfigured).
+			// IMPORTANT: do this even if the tenant already has access via trial.
+			if (isStripeSuccessReturn && stripeSessionId) {
+				try {
+					const {
+						data: { session },
+					} = await supabase.auth.getSession();
+					const accessToken = session?.access_token;
+					if (accessToken) {
+						await invokeEdgeFunction("stripe-sync-checkout", {
+							accessToken,
+							body: { session_id: stripeSessionId },
+						});
+					}
+				} catch {
+					// non-fatal: keep polling refetchSubscription below
+				}
+			}
+
+			const startedAt = Date.now();
+			while (!cancelled && Date.now() - startedAt < 30_000) {
+				try {
+					await refetchSubscription();
+				} catch {
+					// ignore and keep retrying briefly
+				}
+
+				if (isStripeSuccessReturn) {
+					const status = subscriptionStatusRef.current;
+					if (status === "active" || status === "past_due") break;
+				} else {
+					if (hasAccessRef.current) break;
+				}
+				await new Promise((r) => setTimeout(r, 1500));
+			}
+
+			localStorage.removeItem("stripe_checkout_pending");
+			setSyncingCheckout(false);
+
+			// Clean query params so we don't keep retrying on refresh.
+			if (isStripeReturn) {
+				const url = new URL(window.location.href);
+				url.searchParams.delete("stripe");
+				url.searchParams.delete("session_id");
+				window.history.replaceState({}, "", url.toString());
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [refetchSubscription, subscription?.status]);
+
 	const startCheckout = async () => {
 		try {
 			setStartingCheckout(true);
-			const { data, error } = await supabase.functions.invoke(
+			const {
+				data: { session },
+				error: sessionError,
+			} = await supabase.auth.getSession();
+			if (sessionError) throw sessionError;
+			if (!session?.access_token) {
+				throw new Error("Sessão inválida. Faça login novamente.");
+			}
+
+			// Guarantee onboarding before checkout (prevents 400: missing tenant_id).
+			// If tenantId is missing, try to run the onboarding RPC and re-fetch the profile.
+			if (!tenantId) {
+				const profileSeed: Record<string, unknown> = {
+					id: session.user.id,
+					...(session.user.email ? { email: session.user.email } : {}),
+				};
+				const { error: seedError } = await supabase
+					.from("profiles")
+					.insert(profileSeed);
+				if (seedError) {
+					const message = getStringProp(seedError, "message") || "";
+					const code = getStringProp(seedError, "code") || "";
+					if (!(code === "23505" || /duplicate key|unique/i.test(message))) {
+						throw seedError;
+					}
+				}
+
+				const userMetadata = session.user.user_metadata as unknown as Record<
+					string,
+					unknown
+				>;
+				const businessNameFromMetadata =
+					(typeof userMetadata.business_name === "string"
+						? userMetadata.business_name
+						: undefined) ||
+					(typeof userMetadata.arena_name === "string"
+						? userMetadata.arena_name
+						: undefined);
+				const desiredBusinessName =
+					typeof businessNameFromMetadata === "string" &&
+					businessNameFromMetadata.trim()
+						? businessNameFromMetadata.trim()
+						: "Minha Arena";
+
+				const { error: onboardError } = await supabase.rpc("fn_onboard_user", {
+					p_business_name: desiredBusinessName,
+					p_saas_slug: "arena-sports",
+				});
+				if (onboardError) throw onboardError;
+
+				const { data: profileCheck, error: profileCheckError } = await supabase
+					.from("profiles")
+					.select("tenant_id")
+					.eq("id", session.user.id)
+					.maybeSingle();
+				if (profileCheckError) throw profileCheckError;
+				if (!profileCheck?.tenant_id) {
+					throw new Error(
+						"Seu perfil ainda está sem tenant_id. Faça logout/login e tente novamente."
+					);
+				}
+			}
+
+			const { data: refreshed, error: refreshError } =
+				await supabase.auth.refreshSession();
+			if (refreshError || !refreshed?.session?.access_token) {
+				await supabase.auth.signOut();
+				throw new Error("Sua sessão expirou. Faça login novamente.");
+			}
+			const accessToken = refreshed.session.access_token;
+
+			const data = await invokeEdgeFunction<{ url?: string }>(
 				"stripe-create-checkout",
 				{
+					accessToken,
 					body: {
-						plan_code: "start",
+						plan_code: selectedPlan,
 						interval: billingInterval,
 					},
 				}
 			);
-			if (error) throw error;
 			if (!data?.url) throw new Error("Checkout não retornou URL");
+			localStorage.setItem("stripe_checkout_pending", "1");
 			window.location.href = data.url;
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error(err);
+			const message = getStringProp(err, "message") || "";
+			const isMissingProPrice =
+				selectedPlan === "pro" &&
+				(message.includes("Missing Stripe price env") ||
+					message.includes("STRIPE_PRICE_PRO"));
+			if (isMissingProPrice) {
+				try {
+					setSelectedPlan("start");
+					toast({
+						title: "Plano Pro indisponível",
+						description: "Indo com o plano Start por enquanto.",
+						variant: "destructive",
+					});
+
+					const {
+						data: { session: retrySession },
+					} = await supabase.auth.getSession();
+					const retryAccessToken = retrySession?.access_token;
+					if (!retryAccessToken) throw new Error("Sessão inválida.");
+
+					const retryData = await invokeEdgeFunction<{ url?: string }>(
+						"stripe-create-checkout",
+						{
+							accessToken: retryAccessToken,
+							body: {
+								plan_code: "start",
+								interval: billingInterval,
+							},
+						}
+					);
+					if (!retryData?.url) throw new Error("Checkout não retornou URL");
+					localStorage.setItem("stripe_checkout_pending", "1");
+					window.location.href = retryData.url;
+					return;
+				} catch {
+					// Fall through to default error toast below
+				}
+			}
+			if (message.includes("Invalid JWT") || message.startsWith("401 ")) {
+				await supabase.auth.signOut();
+				toast({
+					title: "Sessão expirada",
+					description: "Faça login novamente para assinar.",
+					variant: "destructive",
+				});
+				return;
+			}
 			toast({
 				title: "Não foi possível iniciar a assinatura",
-				description: err?.message || "Tente novamente.",
+				description: message || "Tente novamente.",
 				variant: "destructive",
 			});
 		} finally {
@@ -475,13 +804,59 @@ export default function DashboardHome() {
 			</div>
 		);
 
-	if (subLoading) {
+	if (
+		subLoading ||
+		syncingCheckout ||
+		(subFetching && localStorage.getItem("stripe_checkout_pending") === "1")
+	) {
 		return (
 			<div className="min-h-screen bg-gray-950 flex items-center justify-center">
 				<div className="flex items-center gap-2 text-gray-300">
 					<Loader2 className="h-5 w-5 animate-spin" />
-					Carregando assinatura...
+					{syncingCheckout
+						? "Confirmando pagamento..."
+						: "Carregando assinatura..."}
 				</div>
+			</div>
+		);
+	}
+
+	// New signup flow: show trial notice first; start trial only after consent.
+	if (needsTrialConsent) {
+		return (
+			<div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+				<Card className="w-full max-w-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+					<CardHeader>
+						<CardTitle className="text-white flex items-center gap-2">
+							<Trophy className="h-5 w-5" /> Trial do Plano Pro (21 dias) — tudo
+							liberado
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<p className="text-sm text-gray-300">
+							Seu cadastro foi criado. Você tem direito a um trial de 21 dias do
+							Plano Pro, com tudo liberado.
+						</p>
+						<p className="text-xs text-gray-500">
+							Ao clicar em “Começar trial”, ele é iniciado agora e termina em 21
+							dias. Ao expirar, o sistema cai na tela de assinatura.
+						</p>
+						<Button
+							type="button"
+							onClick={startTrial}
+							disabled={startingTrial}
+							className="w-full bg-white text-gray-950 hover:bg-gray-200 font-bold">
+							{startingTrial ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Iniciando...
+								</>
+							) : (
+								"Começar trial do Plano Pro (21 dias)"
+							)}
+						</Button>
+					</CardContent>
+				</Card>
 			</div>
 		);
 	}
@@ -501,6 +876,30 @@ export default function DashboardHome() {
 							Seu trial acabou e o sistema foi bloqueado. Ative uma assinatura
 							para continuar.
 						</p>
+						<div className="flex gap-2">
+							<Button
+								type="button"
+								variant={selectedPlan === "pro" ? "default" : "outline"}
+								onClick={() => setSelectedPlan("pro")}
+								className={
+									selectedPlan === "pro"
+										? "bg-primary text-primary-foreground"
+										: "border-white/20 hover:bg-white/5 text-white"
+								}>
+								Pro (recomendado) — R$ 169
+							</Button>
+							<Button
+								type="button"
+								variant={selectedPlan === "start" ? "default" : "outline"}
+								onClick={() => setSelectedPlan("start")}
+								className={
+									selectedPlan === "start"
+										? "bg-primary text-primary-foreground"
+										: "border-white/20 hover:bg-white/5 text-white"
+								}>
+								Start (básico) — R$ 89
+							</Button>
+						</div>
 						<div className="flex gap-2">
 							<Button
 								type="button"
@@ -540,7 +939,8 @@ export default function DashboardHome() {
 							)}
 						</Button>
 						<p className="text-[11px] text-gray-500">
-							Plano Start não inclui funcionários.
+							Recomendamos o Pro para usar tudo liberado. Pagamento seguro via
+							Stripe. Você pode cancelar quando quiser.
 						</p>
 					</CardContent>
 				</Card>
@@ -662,7 +1062,14 @@ export default function DashboardHome() {
 														border: "1px solid #333",
 													}}
 													itemStyle={{ color: "#fff" }}
-													formatter={(v: any) => [formatCurrency(v), "Receita"]}
+													formatter={(value: number | string) => {
+														const n =
+															typeof value === "number" ? value : Number(value);
+														return [
+															formatCurrency(Number.isFinite(n) ? n : 0),
+															"Receita",
+														];
+													}}
 												/>
 												<Area
 													type="monotone"

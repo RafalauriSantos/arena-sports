@@ -8,11 +8,21 @@ import {
 	useRef,
 	ReactNode,
 } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { TimeSlot, Booking } from "@/types/booking";
 import { useToast } from "@/hooks/use-toast";
 import { normalizeCustomerPhone, isValidCustomerPhone } from "@/lib/phone";
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null;
+
+const getStringProp = (value: unknown, key: string): string | undefined => {
+	if (!isRecord(value)) return undefined;
+	const v = value[key];
+	return typeof v === "string" ? v : undefined;
+};
 
 // Interface para tipar o retorno cru do Supabase (Database Layer)
 interface CourtDB {
@@ -60,12 +70,12 @@ const CLOSING_HOUR = 23;
 export function BookingsProvider({ children }: { children: ReactNode }) {
 	const { tenantId } = useAuth();
 	const { toast } = useToast();
-	const realtimeChannelRef = useRef<any>(null);
+	const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
 	const refreshTimerRef = useRef<number | null>(null);
 
-	const isBookingOverlapError = (err: any) => {
-		const code = err?.code;
-		const message = String(err?.message || "");
+	const isBookingOverlapError = (err: unknown) => {
+		const code = getStringProp(err, "code");
+		const message = getStringProp(err, "message") ?? "";
 		return (
 			code === "23P01" ||
 			/code\s*23P01/i.test(message) ||
@@ -76,7 +86,6 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 
 	const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 	const [bookings, setBookings] = useState<Booking[]>([]);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [courts, setCourts] = useState<CourtDB[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 
@@ -346,7 +355,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 
 			await fetchData();
 			toast({ title: "Agendamento criado com sucesso!" });
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error(error);
 			if (isBookingOverlapError(error)) {
 				toast({
@@ -357,9 +366,12 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				});
 				return;
 			}
+			const message =
+				getStringProp(error, "message") ||
+				"Verifique os dados e tente novamente.";
 			toast({
 				title: "Erro ao criar",
-				description: error.message || "Verifique os dados e tente novamente.",
+				description: message,
 				variant: "destructive",
 			});
 		}
@@ -368,7 +380,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 	// 3. ATUALIZAR RESERVA
 	const updateBooking = async (id: string, updates: Partial<Booking>) => {
 		try {
-			const payload: Record<string, any> = {};
+			const payload: Record<string, unknown> = {};
 
 			if (updates.customerName) payload.customer_name = updates.customerName;
 			if (typeof updates.customerPhone === "string") {

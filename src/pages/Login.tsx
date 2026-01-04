@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
-	CheckCircle2,
 	Lock,
 	Zap,
 	Trophy,
 	ShieldCheck,
+	CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ const Login = () => {
 		const checkSession = async () => {
 			const { data } = await supabase.auth.getSession();
 			if (data?.session) {
-				// Se já estiver logado, joga direto pro dashboard (Zero Fricção)
-				navigate("/dashboard");
+				// Se já estiver logado, passa pela tela obrigatória de boas-vindas
+				navigate("/welcome", { replace: true });
 			}
 		};
 		checkSession();
@@ -46,19 +46,28 @@ const Login = () => {
 					password,
 				});
 				if (error) throw error;
-			} else {
-				const { data, error } = await supabase.auth.signUp({ email, password });
-				if (error) throw error;
-				if (data.session) {
-					await supabase.rpc("fn_onboard_user", {
-						p_business_name: arenaSportsName || "Minha Arena Sports",
-						p_saas_slug: "arena-sports",
-					});
-				}
+				navigate("/welcome", { replace: true });
+				return;
 			}
-			navigate("/dashboard");
-		} catch (err: any) {
-			setError(err.message || "Erro de autenticação");
+
+			const businessName = arenaSportsName || "Minha Arena Sports";
+			const { error } = await supabase.auth.signUp({
+				email,
+				password,
+				options: {
+					data: {
+						business_name: businessName,
+						app_slug: "arena-sports",
+					},
+				},
+			});
+			if (error) throw error;
+			navigate("/welcome", { replace: true });
+			return;
+		} catch (err: unknown) {
+			const message =
+				err instanceof Error ? err.message : "Erro de autenticação";
+			setError(message);
 		} finally {
 			setIsLoading(false);
 		}
@@ -163,6 +172,7 @@ const Login = () => {
 											<Input
 												value={arenaSportsName}
 												onChange={(e) => setArenaSportsName(e.target.value)}
+												autoComplete="organization"
 												className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
 												placeholder="Ex: Arena Sports Tatuí"
 											/>
@@ -180,6 +190,7 @@ const Login = () => {
 											type="email"
 											value={email}
 											onChange={(e) => setEmail(e.target.value)}
+											autoComplete="email"
 											className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
 											placeholder="gestor@arenasports.com"
 										/>
@@ -196,6 +207,9 @@ const Login = () => {
 											type="password"
 											value={password}
 											onChange={(e) => setPassword(e.target.value)}
+											autoComplete={
+												mode === "signin" ? "current-password" : "new-password"
+											}
 											className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
 											placeholder="••••••••"
 										/>

@@ -4,6 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { normalizeTenantWhatsApp, isValidTenantWhatsApp } from "@/lib/phone";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const getStringProp = (value: unknown, key: string): string | undefined => {
+  if (!isRecord(value)) return undefined;
+  const v = value[key];
+  return typeof v === "string" ? v : undefined;
+};
+
 // --- Interfaces (Contratos de Dados) ---
 
 export interface BookingSettings {
@@ -34,7 +43,7 @@ interface TenantData {
   address: string;
   description: string;
   subdomain: string;
-  settings: Record<string, any>;
+  settings: Record<string, unknown>;
 }
 
 interface Subscription {
@@ -48,7 +57,7 @@ interface Subscription {
 }
 
 const DEFAULT_SUBSCRIPTION: Subscription = {
-  plan_name: "Trial Gratuito",
+  plan_name: "Trial do Plano Pro (21 dias) — tudo liberado",
   status: "trial",
   monthly_price: 0,
 };
@@ -135,12 +144,16 @@ export function useSettings() {
             subdomain: tenantRes.data.subdomain || "",
             settings: tenantRes.data.settings || {},
           },
-          courts: courtsRes.data ? courtsRes.data.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            base_price: Number(c.base_price),
-            active: c.active
-          })) : [],
+          courts: Array.isArray(courtsRes.data)
+            ? courtsRes.data
+              .filter(isRecord)
+              .map((c): Court => ({
+                id: typeof c.id === "string" ? c.id : undefined,
+                name: typeof c.name === "string" ? c.name : "",
+                base_price: Number(c.base_price ?? 0),
+                active: typeof c.active === "boolean" ? c.active : true,
+              }))
+            : [],
           promo: {
             active: promoRes.data?.active ?? false,
             discount_percentage: Number(promoRes.data?.discount_percentage ?? 20),
@@ -188,6 +201,7 @@ export function useSettings() {
         .from("tenants")
         .update({
           business_name: formData.tenant.business_name,
+          subdomain: formData.tenant.subdomain,
           phone: normalizedWhatsApp,
           email: formData.tenant.email,
           address: formData.tenant.address,
@@ -241,11 +255,12 @@ export function useSettings() {
         className: "bg-green-600 text-white border-none",
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
+      const message = getStringProp(error, "message") || "Erro ao salvar";
       toast({
         title: "Erro ao salvar",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -255,7 +270,10 @@ export function useSettings() {
 
   // --- Helpers de Estado ---
 
-  const updateBookingSettings = (field: keyof BookingSettings, value: any) => {
+  const updateBookingSettings = <K extends keyof BookingSettings>(
+    field: K,
+    value: BookingSettings[K]
+  ) => {
     setBookingSettings(prev => ({ ...prev, [field]: value }));
   };
 
@@ -275,17 +293,23 @@ export function useSettings() {
     }));
   };
 
-  const updatePromo = (field: keyof PromoSettings, value: any) => {
+  const updatePromo = <K extends keyof PromoSettings>(
+    field: K,
+    value: PromoSettings[K]
+  ) => {
     setFormData(prev => ({
       ...prev,
       promo: { ...prev.promo, [field]: value }
     }));
   };
 
-  const updateCourt = (index: number, field: keyof Court, value: any) => {
+  const updateCourt = <K extends keyof Court>(
+    index: number,
+    field: K,
+    value: Court[K]
+  ) => {
     const newCourts = [...formData.courts];
-    // @ts-ignore
-    newCourts[index] = { ...newCourts[index], [field]: value };
+    newCourts[index] = { ...newCourts[index], [field]: value } as Court;
     setFormData(prev => ({ ...prev, courts: newCourts }));
   };
 

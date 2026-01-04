@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient"; // Certifique-se que o caminho está certo
 import {
@@ -23,6 +23,15 @@ import { useToast } from "@/hooks/use-toast";
 import { normalizeCustomerPhone, isValidCustomerPhone } from "@/lib/phone";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookings } from "@/contexts/BookingsContext";
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null;
+
+const getStringProp = (value: unknown, key: string): string | undefined => {
+	if (!isRecord(value)) return undefined;
+	const v = value[key];
+	return typeof v === "string" ? v : undefined;
+};
 
 interface NewBookingModalProps {
 	open: boolean;
@@ -53,14 +62,7 @@ export function NewBookingModal({
 	const [loading, setLoading] = useState(false);
 	const [courts, setCourts] = useState<Court[]>([]);
 
-	// Carrega as quadras reais do banco ao abrir o modal
-	useEffect(() => {
-		if (open) {
-			fetchCourts();
-		}
-	}, [open]);
-
-	const fetchCourts = async () => {
+	const fetchCourts = useCallback(async () => {
 		// Resolve tenant_id (evita listar quadras de outras arenas)
 		let currentTenantId = tenantId;
 		if (!currentTenantId) {
@@ -90,7 +92,14 @@ export function NewBookingModal({
 
 		if (data) setCourts(data);
 		if (error) console.error("Erro ao buscar quadras:", error);
-	};
+	}, [tenantId]);
+
+	// Carrega as quadras reais do banco ao abrir o modal
+	useEffect(() => {
+		if (open) {
+			fetchCourts();
+		}
+	}, [open, fetchCourts]);
 
 	const [formData, setFormData] = useState({
 		date: "",
@@ -102,9 +111,9 @@ export function NewBookingModal({
 		depositPercent: 30,
 	});
 
-	const isBookingOverlapError = (err: any) => {
-		const code = err?.code;
-		const message = String(err?.message || "");
+	const isBookingOverlapError = (err: unknown) => {
+		const code = getStringProp(err, "code");
+		const message = getStringProp(err, "message") ?? "";
 		return (
 			code === "23P01" ||
 			/code\s*23P01/i.test(message) ||
@@ -226,7 +235,7 @@ export function NewBookingModal({
 
 			if (onSuccess) onSuccess(); // Atualiza a dashboard/calendário
 			onOpenChange(false);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error(error);
 			if (isBookingOverlapError(error)) {
 				toast({
@@ -237,9 +246,10 @@ export function NewBookingModal({
 				});
 				return;
 			}
+			const message = getStringProp(error, "message") || "Tente novamente.";
 			toast({
 				title: "Erro ao agendar",
-				description: error.message || "Tente novamente.",
+				description: message,
 				variant: "destructive",
 			});
 		} finally {

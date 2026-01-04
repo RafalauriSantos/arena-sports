@@ -10,6 +10,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 // Lazy load pages
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
+const Welcome = lazy(() => import("./pages/Welcome"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Support = lazy(() => import("./pages/Support"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
 const BookingPublic = lazy(() => import("./pages/BookingPublic"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -48,6 +52,10 @@ const App = () => (
 								{/* Rotas Públicas Gerais */}
 								<Route path="/" element={<Landing />} />
 								<Route path="/login" element={<Login />} />
+								<Route path="/welcome" element={<Welcome />} />
+								<Route path="/privacy" element={<PrivacyPolicy />} />
+								<Route path="/terms" element={<TermsOfService />} />
+								<Route path="/support" element={<Support />} />
 
 								{/* Redirecionamento de Admin */}
 								<Route

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type * as React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
@@ -20,6 +21,7 @@ import {
 	Wallet,
 	Globe,
 	Lock, // Ícone de cadeado
+	type LucideIcon,
 } from "lucide-react";
 import {
 	Card,
@@ -63,7 +65,7 @@ function TabTrigger({
 	label,
 }: {
 	value: string;
-	icon: any;
+	icon: LucideIcon;
 	label: string;
 }) {
 	return (
@@ -138,10 +140,21 @@ export default function ConfiguracoesView() {
 	const [profileName, setProfileName] = useState("");
 	const [profileJobTitle, setProfileJobTitle] = useState("");
 	const [copied, setCopied] = useState(false);
+	const [selectedPlan, setSelectedPlan] = useState<"start" | "pro">("pro");
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
 		"month"
 	);
 	const [startingCheckout, setStartingCheckout] = useState(false);
+
+	useEffect(() => {
+		const planCode = (subscription?.plan_code ?? "").toLowerCase();
+		if (planCode === "start" || planCode === "pro") {
+			setSelectedPlan(planCode);
+			return;
+		}
+		const name = (subscription?.plan_name ?? "").toLowerCase();
+		setSelectedPlan(name.includes("pro") ? "pro" : "start");
+	}, [subscription?.plan_code, subscription?.plan_name]);
 
 	useEffect(() => {
 		if (userProfile) {
@@ -174,26 +187,48 @@ export default function ConfiguracoesView() {
 	const startCheckout = async () => {
 		try {
 			setStartingCheckout(true);
-			const { data, error } = await supabase.functions.invoke(
-				"stripe-create-checkout",
-				{
-					body: {
-						plan_code: subscription?.plan_name?.toLowerCase().includes("pro")
-							? "pro"
-							: "start",
-						interval: billingInterval,
-					},
-				}
-			);
+			const tryCreateCheckout = async (planCode: "start" | "pro") => {
+				const { data, error } = await supabase.functions.invoke(
+					"stripe-create-checkout",
+					{
+						body: {
+							plan_code: planCode,
+							interval: billingInterval,
+						},
+					}
+				);
+				if (error) throw error;
+				if (!data?.url) throw new Error("Checkout não retornou URL");
+				return data.url as string;
+			};
 
-			if (error) throw error;
-			if (!data?.url) throw new Error("Checkout não retornou URL");
-			window.location.href = data.url;
-		} catch (err: any) {
+			try {
+				const url = await tryCreateCheckout(selectedPlan);
+				window.location.href = url;
+			} catch (err: unknown) {
+				const message = err instanceof Error ? err.message : String(err);
+				const isMissingProPrice =
+					selectedPlan === "pro" &&
+					(message.includes("Missing Stripe price env") ||
+						message.includes("STRIPE_PRICE_PRO"));
+				if (!isMissingProPrice) throw err;
+
+				setSelectedPlan("start");
+				toast({
+					title: "Plano Pro indisponível",
+					description: "Indo com o plano Start por enquanto.",
+					variant: "destructive",
+				});
+
+				const url = await tryCreateCheckout("start");
+				window.location.href = url;
+			}
+		} catch (err: unknown) {
 			console.error(err);
+			const message = err instanceof Error ? err.message : "Tente novamente.";
 			toast({
 				title: "Não foi possível iniciar a assinatura",
-				description: err?.message || "Tente novamente.",
+				description: message,
 				variant: "destructive",
 			});
 		} finally {
@@ -750,16 +785,61 @@ export default function ConfiguracoesView() {
 												{subscription.plan_name}
 											</p>
 										</div>
-										<StatusBadge status={isTrial ? "warning" : "success"}>
-											{isTrial ? "Trial" : "Ativo"}
+										<StatusBadge
+											status={
+												subscription.status === "active"
+													? "success"
+													: subscription.status === "trial" ||
+													  subscription.status === "past_due"
+													? "warning"
+													: "warning"
+											}>
+											{subscription.status === "active"
+												? "Ativo"
+												: subscription.status === "trial"
+												? "Trial"
+												: subscription.status === "past_due"
+												? "Pagamento pendente"
+												: "Cancelado"}
 										</StatusBadge>
 									</div>
 
-									{subscription.status !== "active" && (
+									{(subscription.status === "trial" ||
+										subscription.status === "canceled") && (
 										<div className="space-y-3 p-4 bg-gray-950/30 rounded-xl border border-white/5">
 											<p className="text-sm text-gray-300 font-medium">
-												Ative sua assinatura para continuar usando o sistema.
+												{subscription.status === "trial"
+													? "Tudo liberado durante o trial. Assine quando quiser para não interromper o acesso."
+													: "Assine um plano para voltar a usar o sistema."}
 											</p>
+											<div className="flex gap-2">
+												<Button
+													type="button"
+													variant={
+														selectedPlan === "pro" ? "default" : "outline"
+													}
+													onClick={() => setSelectedPlan("pro")}
+													className={
+														selectedPlan === "pro"
+															? "bg-primary text-primary-foreground"
+															: "border-white/20 hover:bg-white/5 text-white"
+													}>
+													Pro (recomendado) — R$ 169
+												</Button>
+												<Button
+													type="button"
+													variant={
+														selectedPlan === "start" ? "default" : "outline"
+													}
+													onClick={() => setSelectedPlan("start")}
+													className={
+														selectedPlan === "start"
+															? "bg-primary text-primary-foreground"
+															: "border-white/20 hover:bg-white/5 text-white"
+													}>
+													Start (básico) — R$ 89
+												</Button>
+											</div>
 											<div className="flex gap-2">
 												<Button
 													type="button"
@@ -803,8 +883,8 @@ export default function ConfiguracoesView() {
 												)}
 											</Button>
 											<p className="text-[11px] text-gray-500">
-												Pagamento seguro via Stripe. Você pode cancelar quando
-												quiser.
+												Recomendamos o Pro para usar tudo liberado. Pagamento
+												seguro via Stripe. Você pode cancelar quando quiser.
 											</p>
 										</div>
 									)}

@@ -13,33 +13,35 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: null,
-      manifest: {
-        name: 'Arena Sports',
-        short_name: 'ArenaSports',
-        description: 'Gestão inteligente de quadras esportivas.',
-        start_url: '.',
-        display: 'standalone',
-        background_color: '#0F1115',
-        theme_color: '#10b981',
-        orientation: 'portrait',
-        icons: [
-          {
-            src: '/favicon.ico',
-            sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon',
-          },
-        ],
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-      },
-    })
+    mode === 'production'
+      ? VitePWA({
+        registerType: 'autoUpdate',
+        injectRegister: null,
+        manifest: {
+          name: 'Arena Sports',
+          short_name: 'ArenaSports',
+          description: 'Gestão inteligente de quadras esportivas.',
+          start_url: '.',
+          display: 'standalone',
+          background_color: '#0F1115',
+          theme_color: '#10b981',
+          orientation: 'portrait',
+          icons: [
+            {
+              src: '/favicon.ico',
+              sizes: '64x64 32x32 24x24 16x16',
+              type: 'image/x-icon',
+            },
+          ],
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+        },
+      })
+      : null,
   ].filter(Boolean),
   resolve: {
     alias: {

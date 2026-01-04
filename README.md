@@ -67,6 +67,10 @@ $ cd arena-sports
 # Instale dependências (Bun é recomendado)
 $ bun install
 
+# Configure variáveis de ambiente
+# - Copie .env.example -> .env.local
+# - Preencha pelo menos VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
+
 # Desenvolvimento (HMR) — testes rápidos e debug
 $ bun run dev
 # Abra a URL que o Vite imprimir no terminal (ex.: http://localhost:5173)
@@ -79,7 +83,112 @@ $ bun run preview
 # Abra a URL que o Vite/preview imprimir no terminal (ex.: http://localhost:4173)
 ```
 
+### 🔐 Variáveis de ambiente (Supabase)
+
+O frontend usa variáveis do Vite (prefixo `VITE_`). O mínimo para rodar localmente é:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Importante:
+
+- A `SUPABASE_SERVICE_ROLE_KEY` **não pode** ir para o browser (não use `VITE_`).
+- Se suas Edge Functions precisam dela, configure como secret no Supabase (ou no seu servidor).
+- Se você compartilhou a service role key em algum lugar, trate como vazamento e **rotacione** a chave no painel do Supabase.
+
 Dica: use `bun run dev` para interatividade rápida com hot reload; para testar o comportamento de produção, rode `bun run build` e `bun run preview`.
+
+## 💳 Billing (Stripe)
+
+O billing roda via **Stripe Checkout (assinatura)** + **Stripe Webhooks** + **Supabase Edge Functions**.
+
+### Variáveis do Frontend (`.env.local`)
+
+Além das variáveis do Supabase, o app usa IDs de preços do Stripe (para exibir/selecionar plano):
+
+- `VITE_STRIPE_PRICE_START_MONTHLY`
+- `VITE_STRIPE_PRICE_START_YEARLY`
+- `VITE_STRIPE_PRICE_PRO_MONTHLY`
+- `VITE_STRIPE_PRICE_PRO_YEARLY`
+
+Importante:
+
+- Esses IDs **não são segredo** (podem ficar no browser). Segredos do Stripe ficam apenas nas Edge Functions.
+
+### Secrets das Edge Functions (Supabase)
+
+Configure como secrets no Supabase (Dashboard → Edge Functions → Secrets, ou via CLI):
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (segredo)
+- `STRIPE_SECRET_KEY` (segredo)
+- `STRIPE_WEBHOOK_SECRET` (segredo; usado no webhook)
+
+IDs de preços para inferência no backend (aceita duas grafias por compatibilidade):
+
+- `STRIPE_PRICE_START_MONTH` ou `STRIPE_PRICE_START_MONTHLY`
+- `STRIPE_PRICE_START_YEAR` ou `STRIPE_PRICE_START_YEARLY`
+- `STRIPE_PRICE_PRO_MONTH` ou `STRIPE_PRICE_PRO_MONTHLY`
+- `STRIPE_PRICE_PRO_YEAR` ou `STRIPE_PRICE_PRO_YEARLY`
+
+### Edge Functions usadas
+
+- `stripe-create-checkout`: cria sessão do Stripe Checkout.
+- `stripe-sync-checkout`: sincroniza a assinatura ao voltar do Checkout (fallback contra atraso de webhook).
+- `stripe-webhook`: recebe eventos do Stripe e atualiza `tenant_subscriptions`.
+- `stripe-create-portal-session`: abre o Billing Portal (gerenciar assinatura).
+- `ensure-tenant-subscription`: garante que existe linha em `tenant_subscriptions` (e que trial só começa após consentimento).
+
+Obs.: no [supabase/config.toml](supabase/config.toml) estas funções estão com `verify_jwt = false` (o webhook precisa disso). As funções acionadas pelo app validam o usuário/tenant na própria lógica.
+
+### Setup rápido (produção)
+
+1. Aplicar migrations no Supabase remoto:
+
+```bash
+npx supabase@latest db push
+```
+
+2. Configurar secrets (exemplo via CLI — não cole segredos em histórico público):
+
+```bash
+npx supabase@latest secrets set \
+	SUPABASE_URL=... \
+	SUPABASE_ANON_KEY=... \
+	SUPABASE_SERVICE_ROLE_KEY=... \
+	STRIPE_SECRET_KEY=... \
+	STRIPE_WEBHOOK_SECRET=... \
+	STRIPE_PRICE_START_MONTHLY=... \
+	STRIPE_PRICE_PRO_MONTHLY=...
+```
+
+3. Deploy das funções (se necessário no seu fluxo):
+
+```bash
+npx supabase@latest functions deploy stripe-webhook
+npx supabase@latest functions deploy stripe-create-checkout
+npx supabase@latest functions deploy stripe-sync-checkout
+npx supabase@latest functions deploy stripe-create-portal-session
+npx supabase@latest functions deploy ensure-tenant-subscription
+```
+
+4. Configurar webhook no Stripe:
+
+- Endpoint: `https://<PROJECT_REF>.functions.supabase.co/stripe-webhook`
+- Eventos esperados: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
+
+### Validação (o que precisa acontecer)
+
+- Selecionar **Pro** (recomendado) ou **Start** no app → ir pro Checkout
+- Pagar → voltar para o app → status vira **Ativo** e mostra plano/valor corretos (ex.: **Pro R$169**)
+- Usuário pago **não** vê CTA de trial/assinar
+- Portal abre em Configurações (gerenciar assinatura)
+
+### Troubleshooting
+
+- Se pagou e não atualizou na hora: o app chama `stripe-sync-checkout` no retorno usando `session_id`. Verifique se o `session_id` está presente na URL e se a função responde 200.
+- Se webhook estiver falhando: confira `STRIPE_WEBHOOK_SECRET` e os logs da função `stripe-webhook`.
 
 ## ⚙️ Funcionalidades Atuais (MVP)
 
@@ -91,7 +200,7 @@ Dica: use `bun run dev` para interatividade rápida com hot reload; para testar 
 
 ## 🔜 Próximos Passos (Roadmap)
 
-- [ ] Integração com Gateway de Pagamento.
+- [x] Integração com Gateway de Pagamento (Stripe).
 - [ ] Notificações via WhatsApp para confirmação de jogos.
 - [ ] Implementação de IA (Python) para análise preditiva de horários de pico.
 
