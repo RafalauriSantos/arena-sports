@@ -1,9 +1,56 @@
 // Supabase Edge Function: stripe-webhook
 // Receives Stripe webhook events and updates tenant_subscriptions.
 
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+// @ts-nocheck
+
+import Stripe from "npm:stripe@14.25.0";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { corsHeaders } from "../_shared/cors.ts";
+
+type Interval = "month" | "year";
+type PlanCode = "start" | "pro";
+
+function getEnvFirst(keys: string[]) {
+    for (const key of keys) {
+        const value = Deno.env.get(key);
+        if (value) return { key, value };
+    }
+    return null;
+}
+
+function inferPlanFromPriceId(priceId: string | null): { plan_code: PlanCode; interval: Interval | null } | null {
+    if (!priceId) return null;
+
+    const startMonth = getEnvFirst(["STRIPE_PRICE_START_MONTH", "STRIPE_PRICE_START_MONTHLY"]);
+    const startYear = getEnvFirst(["STRIPE_PRICE_START_YEAR", "STRIPE_PRICE_START_YEARLY"]);
+    const proMonth = getEnvFirst(["STRIPE_PRICE_PRO_MONTH", "STRIPE_PRICE_PRO_MONTHLY"]);
+    const proYear = getEnvFirst(["STRIPE_PRICE_PRO_YEAR", "STRIPE_PRICE_PRO_YEARLY"]);
+
+    if (startMonth?.value === priceId) return { plan_code: "start", interval: "month" };
+    if (startYear?.value === priceId) return { plan_code: "start", interval: "year" };
+    if (proMonth?.value === priceId) return { plan_code: "pro", interval: "month" };
+    if (proYear?.value === priceId) return { plan_code: "pro", interval: "year" };
+
+    return null;
+}
+
+function normalizePlanCode(value: unknown): PlanCode | null {
+    if (value === "start" || value === "pro") return value;
+    if (typeof value === "string") {
+        const v = value.toLowerCase();
+        if (v === "start" || v === "pro") return v as PlanCode;
+    }
+    return null;
+}
+
+function normalizeInterval(value: unknown): Interval | null {
+    if (value === "month" || value === "year") return value;
+    if (typeof value === "string") {
+        const v = value.toLowerCase();
+        if (v === "month" || v === "year") return v as Interval;
+    }
+    return null;
+}
 
 function mapStripeStatus(status: string): "active" | "past_due" | "canceled" {
     if (status === "active" || status === "trialing") return "active";
@@ -56,8 +103,14 @@ Deno.serve(async (req: Request) => {
 
         const handleSubscription = async (sub: Stripe.Subscription) => {
             const tenantId = (sub.metadata?.tenant_id as string | undefined) ?? null;
-            const planCode = (sub.metadata?.plan_code as string | undefined) ?? null;
-            const interval = (sub.metadata?.interval as string | undefined) ?? null;
+            const priceId = sub.items?.data?.[0]?.price?.id ?? null;
+            const inferred = inferPlanFromPriceId(priceId);
+            const planCode = normalizePlanCode(sub.metadata?.plan_code) ?? inferred?.plan_code ?? "start";
+            const interval =
+                normalizeInterval(sub.metadata?.interval) ??
+                inferred?.interval ??
+                normalizeInterval(sub.items?.data?.[0]?.price?.recurring?.interval) ??
+                null;
 
             const mappedStatus = mapStripeStatus(sub.status);
             const currentPeriodEnd = sub.current_period_end
@@ -78,17 +131,18 @@ Deno.serve(async (req: Request) => {
             if (!effectiveTenantId) return;
 
             const planName = planCode === "pro" ? "Arena Pro" : "Arena Start";
+            const monthlyPrice = planCode === "pro" ? 169 : 89;
 
             await supabaseAdmin.from("tenant_subscriptions").upsert({
                 tenant_id: effectiveTenantId,
                 plan_code: planCode ?? "start",
                 plan_name: planName,
+                monthly_price: monthlyPrice,
                 status: mappedStatus,
                 billing_interval: interval === "year" ? "year" : interval === "month" ? "month" : null,
                 stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer.id,
                 stripe_subscription_id: sub.id,
-                stripe_price_id:
-                    sub.items?.data?.[0]?.price?.id ?? null,
+                stripe_price_id: priceId,
                 current_period_end: currentPeriodEnd,
                 cancel_at_period_end: Boolean(sub.cancel_at_period_end),
             });
@@ -103,7 +157,17 @@ Deno.serve(async (req: Request) => {
                 break;
             }
             case "checkout.session.completed": {
-                // nothing required; subscription events will follow
+                // Some setups only send checkout events, or subscription events may arrive later.
+                // Sync from the session subscription as a best-effort update.
+                const session = event.data.object as Stripe.Checkout.Session;
+                const subId =
+                    typeof session.subscription === "string"
+                        ? session.subscription
+                        : (session.subscription as any)?.id;
+                if (subId) {
+                    const sub = await stripe.subscriptions.retrieve(String(subId));
+                    await handleSubscription(sub);
+                }
                 break;
             }
             case "invoice.payment_failed": {

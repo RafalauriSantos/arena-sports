@@ -198,6 +198,7 @@ web3 = 30
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
+
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = false
@@ -209,6 +210,21 @@ max_frequency = "1s"
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-create-checkout]
+verify_jwt = false
+
+[functions.stripe-create-portal-session]
+verify_jwt = false
+
+[functions.ensure-tenant-subscription]
+verify_jwt = false
+
+[functions.stripe-sync-checkout]
+verify_jwt = false
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]

@@ -1,8 +1,10 @@
 // Supabase Edge Function: stripe-create-checkout
 // Creates a Stripe Checkout Session for subscriptions.
 
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+// @ts-nocheck
+
+import Stripe from "npm:stripe@14.25.0";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 type Interval = "month" | "year";
@@ -12,21 +14,82 @@ type Body = {
     interval: Interval;
 };
 
+function getEnvFirst(keys: string[]) {
+    for (const key of keys) {
+        const value = Deno.env.get(key);
+        if (value) return { key, value };
+    }
+    return null;
+}
+
 function getPriceId(planCode: Body["plan_code"], interval: Interval) {
-    const envKey =
+    const keys =
         planCode === "start"
             ? interval === "month"
-                ? "STRIPE_PRICE_START_MONTH"
-                : "STRIPE_PRICE_START_YEAR"
+                ? [
+                    "STRIPE_PRICE_START_MONTH",
+                    "STRIPE_PRICE_START_MONTHLY",
+                    "VITE_STRIPE_PRICE_START_MONTHLY",
+                ]
+                : [
+                    "STRIPE_PRICE_START_YEAR",
+                    "STRIPE_PRICE_START_YEARLY",
+                    "VITE_STRIPE_PRICE_START_YEARLY",
+                ]
             : interval === "month"
-                ? "STRIPE_PRICE_PRO_MONTH"
-                : "STRIPE_PRICE_PRO_YEAR";
+                ? [
+                    "STRIPE_PRICE_PRO_MONTH",
+                    "STRIPE_PRICE_PRO_MONTHLY",
+                    "VITE_STRIPE_PRICE_PRO_MONTHLY",
+                ]
+                : [
+                    "STRIPE_PRICE_PRO_YEAR",
+                    "STRIPE_PRICE_PRO_YEARLY",
+                    "VITE_STRIPE_PRICE_PRO_YEARLY",
+                ];
 
-    const priceId = Deno.env.get(envKey);
-    if (!priceId) {
-        throw new Error(`Missing env ${envKey}`);
+    const found = getEnvFirst(keys);
+    if (!found) {
+        throw new Error(`Missing Stripe price env. Tried: ${keys.join(", ")}`);
     }
-    return priceId;
+
+    return found.value;
+}
+
+function getRequestOrigin(req: Request): string | null {
+    const originHeader = req.headers.get("origin");
+    if (originHeader && originHeader.trim()) return originHeader.trim();
+
+    const referer = req.headers.get("referer");
+    if (referer && referer.trim()) {
+        try {
+            return new URL(referer).origin;
+        } catch {
+            // ignore
+        }
+    }
+
+    const siteUrl = Deno.env.get("SITE_URL");
+    if (siteUrl && siteUrl.trim()) return siteUrl.trim();
+
+    return null;
+}
+
+function formatUnknownError(err: unknown): string {
+    if (err == null) return "Unknown error";
+    if (err instanceof Error) return err.message;
+    if (typeof err === "string") return err;
+    if (typeof err === "object") {
+        const anyErr = err as Record<string, unknown>;
+        const message = anyErr["message"];
+        if (typeof message === "string" && message) return message;
+        try {
+            return JSON.stringify(err);
+        } catch {
+            return String(err);
+        }
+    }
+    return String(err);
 }
 
 Deno.serve(async (req: Request) => {
@@ -47,6 +110,13 @@ Deno.serve(async (req: Request) => {
 
         const authHeader = req.headers.get("Authorization") ?? "";
 
+        if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                status: 401,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
+
         const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
             global: { headers: { Authorization: authHeader } },
         });
@@ -56,7 +126,15 @@ Deno.serve(async (req: Request) => {
             error: userError,
         } = await supabaseAuth.auth.getUser();
 
-        if (userError) throw userError;
+        if (userError) {
+            return new Response(
+                JSON.stringify({ error: userError.message || "Unauthorized" }),
+                {
+                    status: 401,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                }
+            );
+        }
         if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -73,28 +151,41 @@ Deno.serve(async (req: Request) => {
         const priceId = getPriceId(body.plan_code, body.interval);
 
         // Look up tenant_id from profile
-        const { data: profile, error: profileError } = await supabaseAuth
+        // NOTE: Avoid `.single()`/`.maybeSingle()` here because PostgREST can throw
+        // "JSON object requested, multiple (or no) rows returned" if the profile row
+        // doesn't exist (or if duplicates somehow exist). We just need one row.
+        const { data: profiles, error: profileError } = await supabaseAuth
             .from("profiles")
-            .select("tenant_id")
+            .select("tenant_id, updated_at, created_at")
             .eq("id", user.id)
-            .maybeSingle();
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false, nullsFirst: false })
+            .limit(1);
 
         if (profileError) throw profileError;
-        const tenantId = profile?.tenant_id;
+        const tenantId = profiles?.[0]?.tenant_id;
         if (!tenantId) {
-            return new Response(JSON.stringify({ error: "No tenant" }), {
-                status: 400,
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
+            return new Response(
+                JSON.stringify({
+                    error:
+                        "Perfil do usuário não encontrado (profiles) ou sem tenant_id. Faça logout/login e tente novamente.",
+                }),
+                {
+                    status: 400,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                }
+            );
         }
 
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const { data: subRow, error: subError } = await supabaseAdmin
+        const { data: subs, error: subError } = await supabaseAdmin
             .from("tenant_subscriptions")
-            .select("stripe_customer_id")
+            .select("stripe_customer_id, updated_at, created_at")
             .eq("tenant_id", tenantId)
-            .maybeSingle();
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false, nullsFirst: false })
+            .limit(1);
 
         if (subError) throw subError;
 
@@ -102,7 +193,7 @@ Deno.serve(async (req: Request) => {
             apiVersion: "2023-10-16",
         });
 
-        let customerId = subRow?.stripe_customer_id ?? null;
+        let customerId = subs?.[0]?.stripe_customer_id ?? null;
         if (!customerId) {
             const customer = await stripe.customers.create({
                 email: user.email ?? undefined,
@@ -121,9 +212,21 @@ Deno.serve(async (req: Request) => {
                 });
         }
 
-        const origin = req.headers.get("origin") ?? "";
-        const successUrl = `${origin}/dashboard`;
-        const cancelUrl = `${origin}/dashboard`;
+        const origin = getRequestOrigin(req);
+        if (!origin) {
+            return new Response(
+                JSON.stringify({
+                    error:
+                        "Missing Origin/Referer. Abra o checkout a partir do app (navegador) para gerar URLs de retorno.",
+                }),
+                {
+                    status: 400,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                }
+            );
+        }
+        const successUrl = `${origin}/dashboard?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
+        const cancelUrl = `${origin}/dashboard?stripe=cancel`;
 
         const session = await stripe.checkout.sessions.create({
             mode: "subscription",
@@ -153,7 +256,7 @@ Deno.serve(async (req: Request) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = formatUnknownError(err);
         return new Response(JSON.stringify({ error: message }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
