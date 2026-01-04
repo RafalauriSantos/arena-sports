@@ -32,10 +32,12 @@ Considero “pronto” quando:
    - ver horários livres (sem mostrar horários ocupados)
    - gerar link WhatsApp
 5. No `/dashboard` / Configurações, assinatura funciona:
-  - escolher Start ou Pro e ir pro Checkout
-  - ao voltar do Stripe, status vira **Ativo** e mostra o plano/valor corretos (ex.: Pro R$169)
-  - usuário pago **não** vê CTA de trial/assinar
-  - portal do Stripe abre (gerenciar assinatura)
+
+- escolher Start ou Pro e ir pro Checkout
+- ao voltar do Stripe, status vira **Ativo** e mostra o plano/valor corretos (ex.: Pro R$169)
+- usuário pago **não** vê CTA de trial/assinar
+- portal do Stripe abre (gerenciar assinatura)
+
 6. Não existe “tela branca” nem erro recorrente de RLS no console.
 
 ## Estado atual (já feito)
@@ -100,6 +102,43 @@ Checklist de teste (marque com ✅):
 - [ ] Assinatura: usuário pago não vê trial/CTA de assinar
 - [ ] Portal Stripe abre em Configurações (gerenciar assinatura)
 
+### 1.1) QA de responsividade + PWA (fazer amanhã)
+
+Objetivo: garantir **mobile-first**, **desktop** e **PWA** sem regressões visuais ou de fluxo.
+
+Preparação:
+
+- [ ] Rodar `bun run dev` (para fluxo rápido)
+- [ ] Rodar `bun run build` + `bun run preview` (para validar PWA em modo produção)
+
+Responsividade (Chrome DevTools → Toggle device toolbar):
+
+- [ ] Mobile (360×800): `/login` não corta inputs/botões; teclado não esconde CTA
+- [ ] Mobile (390×844): `/dashboard` não estoura largura; tabelas/cards quebram corretamente
+- [ ] Tablet (768×1024): navegação e cards ficam legíveis (sem overflow horizontal)
+- [ ] Desktop (1366×768): layout usa bem o espaço (sem “coluna vazia” gigante)
+- [ ] Desktop (1440×900): sidebar/header não sobrepõem conteúdo; modais centralizam
+
+Fluxos críticos em telas diferentes (mobile + desktop):
+
+- [ ] Login: entrar/sair sem “tela branca”
+- [ ] Dashboard: lista quadras e reservas sem erro de RLS
+- [ ] Reservas: abrir modal e criar reserva (validações ok)
+- [ ] Público: `/agendar/:subdomain` lista quadras e bloqueia horários ocupados
+- [ ] Billing: escolher Pro → Checkout (redireciona) → voltar e ver **Ativo / Pro R$169**
+
+PWA (validar em `bun run preview`):
+
+- [ ] Abrir DevTools → Application → Manifest: ícones/cores ok e sem erros
+- [ ] Instalar (Install app / Add to Home Screen) e abrir em modo “app”
+- [ ] Offline: simular offline e confirmar que não dá tela branca (pode mostrar erro controlado)
+- [ ] Update: após build nova, recarregar e confirmar que SW atualiza sem travar
+
+Critério de aceitação:
+
+- [ ] Sem overflow horizontal, sem texto cortado e sem CTA inacessível nos fluxos acima
+- [ ] PWA instala e abre; offline não quebra com erro fatal
+
 ### 2) Consertar inconsistências de tabelas (admin metrics)
 
 Existe código que usa tabelas antigas/alternativas (`arena_reservations`, `arena_time_slots`).
@@ -150,6 +189,21 @@ Checklist:
 - [ ] Rodar `npx supabase@latest db push` (aplicar migrations novas)
 - [ ] Deploy das Edge Functions do Stripe (webhook/checkout/portal/sync)
 - [ ] Teste real de pagamento (cartão) e retorno com status Ativo
+
+### 5) Testes (antes de dar como pronto)
+
+Objetivo: fechar a sprint com **checagens automáticas + sanity check em produção local**.
+
+Automáticos:
+
+- [ ] `bun run lint` (eslint) sem erros
+- [ ] `bun run build` sem erros
+
+Sanity check (modo produção local):
+
+- [ ] `bun run preview` e validar os fluxos principais sem console spam/erros
+- [ ] `/login` → entrar → `/dashboard` carrega
+- [ ] `/agendar/:subdomain` abre e lista quadras/horários
 
 ## Atenções (P0)
 
