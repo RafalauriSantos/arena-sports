@@ -280,6 +280,7 @@ export default function LandingPage() {
 	const visibleElements = useScrollAnimation();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
+	const showBrandTextMobile = !scrolled || mobileMenuOpen;
 
 	const isVisible = (id: string) => visibleElements.has(id);
 
@@ -341,7 +342,19 @@ export default function LandingPage() {
 						<span
 							className={cn(
 								"font-bold tracking-tight text-white transition-all",
-								scrolled ? "text-sm" : "text-base"
+								scrolled ? "text-sm" : "text-base",
+								"hidden md:inline"
+							)}>
+							Arena Sports
+						</span>
+						<span
+							className={cn(
+								"md:hidden font-bold tracking-tight text-white",
+								"overflow-hidden whitespace-nowrap",
+								"transition-[max-width,opacity,transform] duration-300 ease-out",
+								showBrandTextMobile
+									? "max-w-[140px] opacity-100 translate-x-0"
+									: "max-w-0 opacity-0 -translate-x-2"
 							)}>
 							Arena Sports
 						</span>
@@ -357,7 +370,7 @@ export default function LandingPage() {
 							<a
 								key={item.name}
 								href={item.href}
-								className="px-3 py-1 text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+								className="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
 								{item.name}
 							</a>
 						))}
@@ -366,16 +379,16 @@ export default function LandingPage() {
 					<div className="hidden md:flex items-center gap-2">
 						<button
 							onClick={() => navigate("/login")}
-							className="text-xs font-medium text-gray-400 hover:text-white transition-colors px-2">
+							className="text-sm font-medium text-gray-400 hover:text-white transition-colors px-2">
 							Login
 						</button>
 						<Button
-							onClick={() => navigate("/login")}
+							onClick={() => navigate("/login?mode=signup")}
 							className={cn(
 								"rounded-full font-bold transition-all shadow-lg shadow-emerald-500/10",
 								scrolled
-									? "h-8 px-4 text-[10px] bg-white text-black hover:bg-gray-200"
-									: "h-9 px-5 text-xs bg-emerald-500 text-black hover:bg-emerald-400"
+									? "h-8 px-4 text-xs bg-white text-black hover:bg-gray-200"
+									: "h-9 px-5 text-sm bg-emerald-500 text-black hover:bg-emerald-400"
 							)}>
 							Criar Conta
 						</Button>
@@ -388,17 +401,37 @@ export default function LandingPage() {
 					</button>
 
 					{mobileMenuOpen && (
-						<div className="absolute top-full left-0 right-0 mt-2 p-4 bg-[#0F1115] border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 md:hidden">
-							<a
-								href="#pricing"
-								onClick={() => setMobileMenuOpen(false)}
-								className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-sm">
-								Ver Planos
-							</a>
+						<div className="absolute top-full left-0 right-0 mt-2 p-4 bg-[#0F1115] border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 md:hidden">
+							{[
+								{ name: "Comparativo", href: "#comparison" },
+								{ name: "Passo a Passo", href: "#steps" },
+								{ name: "Planos", href: "#pricing" },
+								{ name: "FAQ", href: "#faq" },
+							].map((item) => (
+								<a
+									key={item.name}
+									href={item.href}
+									onClick={() => setMobileMenuOpen(false)}
+									className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-sm">
+									{item.name}
+								</a>
+							))}
+							<div className="h-px bg-white/10 my-2" />
+							<button
+								onClick={() => {
+									setMobileMenuOpen(false);
+									navigate("/login");
+								}}
+								className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-sm text-left">
+								Login
+							</button>
 							<Button
-								onClick={() => navigate("/login")}
-								className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-10 text-sm">
-								Acessar Agora
+								onClick={() => {
+									setMobileMenuOpen(false);
+									navigate("/login?mode=signup");
+								}}
+								className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-10 text-sm mt-1">
+								Criar Conta
 							</Button>
 						</div>
 					)}
@@ -446,18 +479,13 @@ export default function LandingPage() {
 				{/* MOCKUPS */}
 				<div className="relative w-full max-w-4xl mx-auto perspective-1000 group">
 					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[40%] bg-emerald-500/10 rounded-full blur-[80px] group-hover:bg-emerald-500/20 transition duration-1000" />
-					<div className="relative flex justify-center items-end transform transition-transform duration-700 hover:scale-[1.01]">
+					<div className="relative flex flex-col items-center md:flex-row md:items-end md:justify-center transform transition-transform duration-700 hover:scale-[1.01]">
 						<div className="relative z-10 shadow-2xl">
 							<MacBookMockup>
 								<DashboardAppScreen />
 							</MacBookMockup>
 						</div>
-						<div className="absolute -bottom-4 -right-2 md:-right-6 z-20 transform scale-[0.65] md:scale-80 animate-float shadow-2xl hidden md:block">
-							<IPhoneMockup>
-								<CalendarAppScreen />
-							</IPhoneMockup>
-						</div>
-						<div className="md:hidden mt-[-20px] z-20 transform scale-[0.7] shadow-2xl">
+						<div className="relative z-20 transform scale-[0.7] md:scale-[0.8] animate-float shadow-2xl mt-[-36px] sm:mt-[-44px] md:mt-0 md:ml-[-56px] lg:ml-[-72px] md:mb-6">
 							<IPhoneMockup>
 								<CalendarAppScreen />
 							</IPhoneMockup>
@@ -847,7 +875,7 @@ export default function LandingPage() {
 						<div className="flex justify-center relative z-10">
 							<Button
 								onClick={() => navigate("/login")}
-								className="h-14 px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-lg shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-transform hover:scale-105 active:scale-95 flex items-center gap-2">
+								className="h-12 sm:h-14 w-full sm:w-auto px-6 sm:px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-base sm:text-lg shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-transform sm:hover:scale-105 active:scale-95 flex items-center justify-center gap-2 whitespace-normal text-center">
 								Quero Parar de Perder Dinheiro{" "}
 								<ArrowRight className="w-5 h-5" />
 							</Button>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
 	Lock,
@@ -20,7 +20,15 @@ const Login = () => {
 	const [arenaSportsName, setArenaSportsName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const location = useLocation();
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		const params = new URLSearchParams(location.search);
+		const qMode = params.get("mode");
+		if (qMode === "signup") setMode("signup");
+		if (qMode === "signin") setMode("signin");
+	}, [location.search]);
 
 	// --- LÓGICA DE SESSÃO MANTIDA ---
 	useEffect(() => {

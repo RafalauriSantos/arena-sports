@@ -21,6 +21,19 @@ const getStringProp = (value: unknown, key: string): string | undefined => {
 	return typeof v === "string" ? v : undefined;
 };
 
+const isNetworkOfflineError = (err: unknown) => {
+	// Chrome/Edge commonly throws TypeError('Failed to fetch') when offline,
+	// and Supabase may wrap it into a plain object.
+	const message =
+		err instanceof Error ? err.message : getStringProp(err, "message") ?? "";
+	const details = getStringProp(err, "details") ?? "";
+	return (
+		(typeof navigator !== "undefined" && navigator.onLine === false) ||
+		/failed to fetch|internet_disconnected|networkerror/i.test(message) ||
+		/failed to fetch|internet_disconnected|networkerror/i.test(details)
+	);
+};
+
 interface UserProfile {
 	id?: string;
 	tenant_id?: string | null;
@@ -271,6 +284,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 					hint: errorRecord?.hint,
 					status: errorRecord?.status,
 				});
+
+				// Offline / network issues are transient: keep the last known profile/tenant
+				// to avoid bouncing the user into paywall or logout loops.
+				if (isNetworkOfflineError(error)) {
+					return;
+				}
 				// If something smells like auth/session problems, sign out to stop loops.
 				if (
 					/invalid jwt|jwt expired|not authenticated|unauthorized/i.test(

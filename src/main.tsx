@@ -5,7 +5,7 @@ import "./index.css";
 import { registerSW } from "virtual:pwa-register";
 
 // Auto-refresh on new deployments (PWA): apply update and reload.
-if ("serviceWorker" in navigator) {
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
 	const updateSW = registerSW({
 		immediate: true,
 		onNeedRefresh() {
