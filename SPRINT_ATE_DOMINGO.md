@@ -32,12 +32,10 @@ Considero “pronto” quando:
    - ver horários livres (sem mostrar horários ocupados)
    - gerar link WhatsApp
 5. No `/dashboard` / Configurações, assinatura funciona:
-
-- escolher Start ou Pro e ir pro Checkout
-- ao voltar do Stripe, status vira **Ativo** e mostra o plano/valor corretos (ex.: Pro R$169)
-- usuário pago **não** vê CTA de trial/assinar
-- portal do Stripe abre (gerenciar assinatura)
-
+  - escolher Start ou Pro e ir pro Checkout
+  - ao voltar do Stripe, status vira **Ativo** e mostra o plano/valor corretos (ex.: Pro R$169)
+  - usuário pago **não** vê CTA de trial/assinar
+  - portal do Stripe abre (gerenciar assinatura)
 6. Não existe “tela branca” nem erro recorrente de RLS no console.
 
 ## Estado atual (já feito)
