@@ -24,6 +24,14 @@ const getStringProp = (value: unknown, key: string): string | undefined => {
 	return typeof v === "string" ? v : undefined;
 };
 
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+const formatLocalDate = (date: Date) =>
+	`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+
+const formatLocalTime = (date: Date) =>
+	`${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+
 // Interface para tipar o retorno cru do Supabase (Database Layer)
 interface CourtDB {
 	id: string;
@@ -137,35 +145,44 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				(bookingsRes.data as unknown as BookingDB[]) || [];
 
 			// C. Mapeamento (Data Transformation Layer)
-			const mappedBookings: Booking[] = fetchedBookingsRaw.map((b) => ({
-				id: b.id,
-				tenantId: b.tenant_id,
-				slotId: b.id,
-				fieldId: b.court_id,
-				fieldName: b.court?.name || "Quadra",
-				customerName: b.customer_name,
-				customerPhone: b.customer_phone,
-				date: b.start_time.split("T")[0],
-				time: b.start_time.split("T")[1].substring(0, 5), // HH:mm
-				startTime: new Date(b.start_time),
-				endTime: new Date(b.end_time),
-				totalPrice: b.total_price,
-				paidAmount: typeof b.paid_amount === "number" ? b.paid_amount : 0,
-				depositPercent:
-					typeof b.deposit_percent === "number" ? b.deposit_percent : undefined,
-				paymentStatus: b.status === "paid" ? "paid" : "pending",
-				status: b.status === "paid" ? "confirmed" : "pending_approval",
-				bookedBy: b.customer_name,
-				players: [b.customer_name],
-				createdAt: b.created_at,
-			}));
+			const mappedBookings: Booking[] = fetchedBookingsRaw.map((b) => {
+				const startTime = new Date(b.start_time);
+				const endTime = new Date(b.end_time);
+
+				return {
+					id: b.id,
+					tenantId: b.tenant_id,
+					slotId: b.id,
+					fieldId: b.court_id,
+					fieldName: b.court?.name || "Quadra",
+					customerName: b.customer_name,
+					customerPhone: b.customer_phone,
+					// IMPORTANTE: `start_time` vem em ISO (UTC). Para exibir corretamente
+					// no Brasil, formatamos a data/hora a partir do Date (timezone local).
+					date: formatLocalDate(startTime),
+					time: formatLocalTime(startTime),
+					startTime,
+					endTime,
+					totalPrice: b.total_price,
+					paidAmount: typeof b.paid_amount === "number" ? b.paid_amount : 0,
+					depositPercent:
+						typeof b.deposit_percent === "number"
+							? b.deposit_percent
+							: undefined,
+					paymentStatus: b.status === "paid" ? "paid" : "pending",
+					status: b.status === "paid" ? "confirmed" : "pending_approval",
+					bookedBy: b.customer_name,
+					players: [b.customer_name],
+					createdAt: b.created_at,
+				};
+			});
 
 			setCourts(fetchedCourts);
 			setBookings(mappedBookings);
 
 			// D. Geração Otimizada de Slots (Algoritmo O(n))
 			const generatedSlots: TimeSlot[] = [];
-			const today = new Date().toISOString().split("T")[0];
+			const today = formatLocalDate(new Date());
 
 			// CRÍTICO: Cria um Hash Set para lookup O(1).
 			// Evita o problema de performance do .find() dentro do loop.
@@ -332,7 +349,10 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000); // +1 hora
 
 			const customerPhone = normalizeCustomerPhone(booking.customerPhone || "");
-			if (customerPhone && !isValidCustomerPhone(customerPhone)) {
+			if (!customerPhone) {
+				throw new Error("Telefone é obrigatório para criar a reserva.");
+			}
+			if (!isValidCustomerPhone(customerPhone)) {
 				throw new Error(
 					"Telefone inválido (use DDD + número: 10 ou 11 dígitos)."
 				);
@@ -385,7 +405,10 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			if (updates.customerName) payload.customer_name = updates.customerName;
 			if (typeof updates.customerPhone === "string") {
 				const customerPhone = normalizeCustomerPhone(updates.customerPhone);
-				if (customerPhone && !isValidCustomerPhone(customerPhone)) {
+				if (!customerPhone) {
+					throw new Error("Telefone é obrigatório para a reserva.");
+				}
+				if (!isValidCustomerPhone(customerPhone)) {
 					throw new Error(
 						"Telefone inválido (use DDD + número: 10 ou 11 dígitos)."
 					);

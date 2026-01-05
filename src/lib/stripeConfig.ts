@@ -27,13 +27,13 @@ export const stripeConfig: { plans: Record<"start" | "pro", StripePlan> } = {
             price: {
                 month: {
                     id: requiredEnv("VITE_STRIPE_PRICE_START_MONTHLY"),
-                    amount: 89,
-                    label: "R$ 89/mês",
+                    amount: 149,
+                    label: "R$ 149/mês",
                 },
                 year: {
                     id: requiredEnv("VITE_STRIPE_PRICE_START_YEARLY"),
-                    amount: 890,
-                    label: "R$ 890/ano",
+                    amount: 1788,
+                    label: "R$ 1.788/ano",
                 },
             },
             features: [
@@ -48,13 +48,13 @@ export const stripeConfig: { plans: Record<"start" | "pro", StripePlan> } = {
             price: {
                 month: {
                     id: requiredEnv("VITE_STRIPE_PRICE_PRO_MONTHLY"),
-                    amount: 169,
-                    label: "R$ 169/mês",
+                    amount: 249,
+                    label: "R$ 249/mês",
                 },
                 year: {
                     id: requiredEnv("VITE_STRIPE_PRICE_PRO_YEARLY"),
-                    amount: 1690,
-                    label: "R$ 1.690/ano",
+                    amount: 1164,
+                    label: "R$ 1.164/ano",
                 },
             },
             features: [

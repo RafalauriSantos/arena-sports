@@ -116,6 +116,8 @@ Deno.serve(async (req: Request) => {
                 "tenant_id, status, plan_code, plan_name, monthly_price, billing_interval, trial_started_at, trial_ends_at, grace_ends_at, created_at, updated_at"
             )
             .eq("tenant_id", tenantId)
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false, nullsFirst: false })
             .limit(1);
 
         if (subError) throw subError;
@@ -132,7 +134,7 @@ Deno.serve(async (req: Request) => {
                     tenant_id: tenantId,
                     plan_code: "start",
                     plan_name: "Arena Start",
-                    monthly_price: 79,
+                    monthly_price: 149,
                     status: "trial",
                     billing_interval: "month",
                     // Trial starts only after user consent.

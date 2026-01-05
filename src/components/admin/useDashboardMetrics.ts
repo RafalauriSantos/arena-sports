@@ -36,16 +36,16 @@ export interface CourtOccupancy {
 const OPENING_HOUR = 7;
 const CLOSING_HOUR = 23;
 
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
 const toLocalDateStr = (iso: string) => {
   const d = new Date(iso);
-  const offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString().split("T")[0];
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 };
 
 const toLocalTimeStr = (iso: string) => {
   const d = new Date(iso);
-  const offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString().split("T")[1].slice(0, 5);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 };
 
 export function useDashboardMetrics(tenantId?: string) {
@@ -61,9 +61,7 @@ export function useDashboardMetrics(tenantId?: string) {
     if (!tenantId) return;
 
     const now = new Date();
-    const offset = now.getTimezoneOffset() * 60000;
-    const localDate = new Date(now.getTime() - offset);
-    const todayDateStr = localDate.toISOString().split("T")[0];
+    const todayDateStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
 
     // Intervalo do dia atual em UTC (com base na meia-noite local)
     const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();

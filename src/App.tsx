@@ -3,7 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+	createBrowserRouter,
+	RouterProvider,
+	Navigate,
+} from "react-router-dom";
 import { BookingsProvider } from "@/contexts/BookingsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -39,6 +43,29 @@ const PageLoader = () => (
 	</div>
 );
 
+const router = createBrowserRouter(
+	[
+		{ path: "/", element: <Landing /> },
+		{ path: "/login", element: <Login /> },
+		{ path: "/welcome", element: <Welcome /> },
+		{ path: "/privacy", element: <PrivacyPolicy /> },
+		{ path: "/terms", element: <TermsOfService /> },
+		{ path: "/support", element: <Support /> },
+
+		{ path: "/admin", element: <Navigate to="/dashboard" replace /> },
+		{ path: "/dashboard/*", element: <AdminIndex /> },
+		{ path: "/agendar/:subdomain", element: <BookingPublic /> },
+
+		{ path: "*", element: <NotFound /> },
+	],
+	{
+		future: {
+			v7_startTransition: true,
+			v7_relativeSplatPath: true,
+		},
+	}
+);
+
 const App = () => (
 	<QueryClientProvider client={queryClient}>
 		<AuthProvider>
@@ -46,35 +73,9 @@ const App = () => (
 				<TooltipProvider>
 					<Toaster />
 					<Sonner />
-					<BrowserRouter>
-						<Suspense fallback={<PageLoader />}>
-							<Routes>
-								{/* Rotas Públicas Gerais */}
-								<Route path="/" element={<Landing />} />
-								<Route path="/login" element={<Login />} />
-								<Route path="/welcome" element={<Welcome />} />
-								<Route path="/privacy" element={<PrivacyPolicy />} />
-								<Route path="/terms" element={<TermsOfService />} />
-								<Route path="/support" element={<Support />} />
-
-								{/* Redirecionamento de Admin */}
-								<Route
-									path="/admin"
-									element={<Navigate to="/dashboard" replace />}
-								/>
-
-								{/* Painel Administrativo */}
-								<Route path="/dashboard/*" element={<AdminIndex />} />
-
-								{/* 👇 ROTA DA AGENDA PÚBLICA (COM PREFIXO FIXO) 👇 */}
-								{/* Ex: arena.app/agendar/saopaulocenter */}
-								<Route path="/agendar/:subdomain" element={<BookingPublic />} />
-
-								{/* 404 Not Found */}
-								<Route path="*" element={<NotFound />} />
-							</Routes>
-						</Suspense>
-					</BrowserRouter>
+					<Suspense fallback={<PageLoader />}>
+						<RouterProvider router={router} />
+					</Suspense>
 				</TooltipProvider>
 			</BookingsProvider>
 		</AuthProvider>

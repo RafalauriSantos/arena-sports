@@ -52,6 +52,7 @@ interface Subscription {
   monthly_price: number;
   plan_code?: string | null;
   billing_interval?: "month" | "year" | null;
+  trial_started_at?: string | null;
   trial_ends_at?: string | null;
   grace_ends_at?: string | null;
 }
@@ -74,6 +75,19 @@ export function useSettings() {
 
   // Estado de Leitura (Assinatura)
   const [subscription, setSubscription] = useState<Subscription>(DEFAULT_SUBSCRIPTION);
+
+  const refetchSubscription = async () => {
+    if (!tenantId) return;
+    const { data, error } = await supabase
+      .from("tenant_subscriptions")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .order("updated_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false, nullsFirst: false })
+      .limit(1);
+    if (error) throw error;
+    if (data?.[0]) setSubscription(data[0] as unknown as Subscription);
+  };
 
   // Estado das Regras Financeiras (Novo)
   const [bookingSettings, setBookingSettings] = useState<BookingSettings>({
@@ -119,10 +133,17 @@ export function useSettings() {
             .eq("active", true)
             .order("created_at"),
           supabase.from("promotion_rules").select("*").eq("tenant_id", tenantId).maybeSingle(),
-          supabase.from("tenant_subscriptions").select("*").eq("tenant_id", tenantId).maybeSingle()
+          supabase
+            .from("tenant_subscriptions")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false, nullsFirst: false })
+            .limit(1)
         ]);
 
         if (tenantRes.error) throw tenantRes.error;
+        if (subRes.error) throw subRes.error;
 
         // --- AQUI ESTÁ A MÁGICA DO MULTI-TENANT ---
         // Lemos as configurações salvas no JSON 'settings' do banco
@@ -131,7 +152,9 @@ export function useSettings() {
         }
 
         // Atualiza Subscription
-        if (subRes.data) setSubscription(subRes.data);
+        if (Array.isArray(subRes.data) && subRes.data[0]) {
+          setSubscription(subRes.data[0] as unknown as Subscription);
+        }
 
         // Atualiza Form Data
         setFormData({
@@ -335,6 +358,7 @@ export function useSettings() {
     formData,
     subscription,
     isTrial: subscription.status === "trial",
+    refetchSubscription,
     updateTenant,
     updatePromo,
     updateCourt,

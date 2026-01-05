@@ -2,8 +2,10 @@ import { TimeSlot, Booking } from "@/types/booking";
 
 const today = new Date();
 
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
 const formatDate = (date: Date): string => {
-  return date.toISOString().split("T")[0];
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 };
 
 // Generate time slots for the entire month

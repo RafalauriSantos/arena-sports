@@ -26,10 +26,26 @@ function getEnvFirst(keys: string[]) {
 function inferPlanFromPriceId(priceId: string | null): { plan_code: PlanCode; interval: Interval | null } | null {
     if (!priceId) return null;
 
-    const startMonth = getEnvFirst(["STRIPE_PRICE_START_MONTH", "STRIPE_PRICE_START_MONTHLY"]);
-    const startYear = getEnvFirst(["STRIPE_PRICE_START_YEAR", "STRIPE_PRICE_START_YEARLY"]);
-    const proMonth = getEnvFirst(["STRIPE_PRICE_PRO_MONTH", "STRIPE_PRICE_PRO_MONTHLY"]);
-    const proYear = getEnvFirst(["STRIPE_PRICE_PRO_YEAR", "STRIPE_PRICE_PRO_YEARLY"]);
+    const startMonth = getEnvFirst([
+        "STRIPE_PRICE_START_MONTH",
+        "STRIPE_PRICE_START_MONTHLY",
+        "VITE_STRIPE_PRICE_START_MONTHLY",
+    ]);
+    const startYear = getEnvFirst([
+        "STRIPE_PRICE_START_YEAR",
+        "STRIPE_PRICE_START_YEARLY",
+        "VITE_STRIPE_PRICE_START_YEARLY",
+    ]);
+    const proMonth = getEnvFirst([
+        "STRIPE_PRICE_PRO_MONTH",
+        "STRIPE_PRICE_PRO_MONTHLY",
+        "VITE_STRIPE_PRICE_PRO_MONTHLY",
+    ]);
+    const proYear = getEnvFirst([
+        "STRIPE_PRICE_PRO_YEAR",
+        "STRIPE_PRICE_PRO_YEARLY",
+        "VITE_STRIPE_PRICE_PRO_YEARLY",
+    ]);
 
     if (startMonth?.value === priceId) return { plan_code: "start", interval: "month" };
     if (startYear?.value === priceId) return { plan_code: "start", interval: "year" };
@@ -74,6 +90,30 @@ function formatUnknownError(err: unknown): string {
     } catch {
         return String(err);
     }
+}
+
+function getErrorStatusCode(err: unknown): number | null {
+    if (!err || typeof err !== "object") return null;
+    const anyErr = err as Record<string, unknown>;
+    const statusCode = anyErr["statusCode"];
+    if (typeof statusCode === "number" && Number.isFinite(statusCode)) return statusCode;
+    const status = anyErr["status"];
+    if (typeof status === "number" && Number.isFinite(status)) return status;
+    return null;
+}
+
+function getStripeHintedStatus(message: string): number | null {
+    const m = message.toLowerCase();
+    if (m.includes("no such checkout.session") || m.includes("no such checkout session")) {
+        return 404;
+    }
+    if (m.includes("invalid api key") || m.includes("api key provided is invalid")) {
+        return 500;
+    }
+    if (m.includes("permission") || m.includes("unauthorized")) {
+        return 401;
+    }
+    return null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -213,7 +253,12 @@ Deno.serve(async (req: Request) => {
         // Keep same pricing mapping used by the webhook to avoid UI drift.
         const normalizedPlanCode = planCode === "pro" ? "pro" : "start";
         const planName = normalizedPlanCode === "pro" ? "Arena Pro" : "Arena Start";
-        const monthlyPrice = normalizedPlanCode === "pro" ? 169 : 89;
+        const monthlyPrice =
+            normalizedPlanCode === "pro"
+                ? interval === "year"
+                    ? 97
+                    : 249
+                : 149;
 
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
@@ -253,8 +298,17 @@ Deno.serve(async (req: Request) => {
         );
     } catch (err) {
         const message = formatUnknownError(err);
+        const explicitStatus = getErrorStatusCode(err);
+        const hintedStatus = getStripeHintedStatus(message);
+        const status =
+            (explicitStatus && explicitStatus >= 400 && explicitStatus < 600
+                ? explicitStatus
+                : null) ??
+            hintedStatus ??
+            500;
+
         return new Response(JSON.stringify({ error: message }), {
-            status: 500,
+            status,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
     }

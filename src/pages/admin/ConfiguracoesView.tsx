@@ -124,6 +124,7 @@ export default function ConfiguracoesView() {
 		formData,
 		subscription,
 		isTrial,
+		refetchSubscription,
 		updateTenant,
 		updatePromo,
 		updateCourt,
@@ -145,6 +146,94 @@ export default function ConfiguracoesView() {
 		"month"
 	);
 	const [startingCheckout, setStartingCheckout] = useState(false);
+	const [syncingCheckout, setSyncingCheckout] = useState(false);
+
+	const computeTrialDaysLeft = () => {
+		if (subscription.status !== "trial") return null;
+		const startedAt = subscription.trial_started_at
+			? new Date(subscription.trial_started_at)
+			: null;
+		const endsAt = subscription.trial_ends_at
+			? new Date(subscription.trial_ends_at)
+			: startedAt
+			? new Date(new Date(startedAt).setDate(startedAt.getDate() + 21))
+			: null;
+		if (!endsAt) return null;
+		return Math.max(
+			0,
+			Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+		);
+	};
+
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		const stripeSessionId = params.get("session_id");
+		const stripeResult = params.get("stripe");
+		const pending = localStorage.getItem("stripe_checkout_pending") === "1";
+		const isStripeSuccessReturn =
+			stripeResult === "success" && Boolean(stripeSessionId);
+
+		if (!pending && !isStripeSuccessReturn) return;
+
+		let cancelled = false;
+		setSyncingCheckout(true);
+		(async () => {
+			try {
+				if (isStripeSuccessReturn && stripeSessionId) {
+					const { data, error } = await supabase.functions.invoke(
+						"stripe-sync-checkout",
+						{
+							body: { session_id: stripeSessionId },
+						}
+					);
+					if (error) {
+						const msg =
+							(error as any)?.message ||
+							(error as any)?.error_description ||
+							"Não foi possível sincronizar a assinatura.";
+						console.error("stripe-sync-checkout error", error, data);
+						toast({
+							title: "Falha ao sincronizar assinatura",
+							description: msg,
+							variant: "destructive",
+						});
+					}
+				}
+			} catch (err) {
+				const msg =
+					err instanceof Error
+						? err.message
+						: "Não foi possível sincronizar a assinatura.";
+				console.error("stripe-sync-checkout invoke failed", err);
+				toast({
+					title: "Falha ao sincronizar assinatura",
+					description: msg,
+					variant: "destructive",
+				});
+			}
+
+			try {
+				await refetchSubscription();
+			} catch {
+				// ignore
+			}
+
+			if (cancelled) return;
+			localStorage.removeItem("stripe_checkout_pending");
+			setSyncingCheckout(false);
+
+			if (isStripeSuccessReturn) {
+				const url = new URL(window.location.href);
+				url.searchParams.delete("stripe");
+				url.searchParams.delete("session_id");
+				window.history.replaceState({}, "", url.toString());
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [refetchSubscription]);
 
 	useEffect(() => {
 		const planCode = (subscription?.plan_code ?? "").toLowerCase();
@@ -204,6 +293,7 @@ export default function ConfiguracoesView() {
 
 			try {
 				const url = await tryCreateCheckout(selectedPlan);
+				localStorage.setItem("stripe_checkout_pending", "1");
 				window.location.href = url;
 			} catch (err: unknown) {
 				const message = err instanceof Error ? err.message : String(err);
@@ -221,6 +311,7 @@ export default function ConfiguracoesView() {
 				});
 
 				const url = await tryCreateCheckout("start");
+				localStorage.setItem("stripe_checkout_pending", "1");
 				window.location.href = url;
 			}
 		} catch (err: unknown) {
@@ -784,6 +875,12 @@ export default function ConfiguracoesView() {
 											<p className="text-xl font-bold text-white mt-1">
 												{subscription.plan_name}
 											</p>
+											{subscription.status === "trial" &&
+												subscription.trial_started_at && (
+													<p className="text-sm text-gray-400 mt-1">
+														Restam {computeTrialDaysLeft()} dia(s) de trial.
+													</p>
+												)}
 										</div>
 										<StatusBadge
 											status={
@@ -812,7 +909,7 @@ export default function ConfiguracoesView() {
 													? "Tudo liberado durante o trial. Assine quando quiser para não interromper o acesso."
 													: "Assine um plano para voltar a usar o sistema."}
 											</p>
-											<div className="flex gap-2">
+											<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 												<Button
 													type="button"
 													variant={
@@ -821,10 +918,12 @@ export default function ConfiguracoesView() {
 													onClick={() => setSelectedPlan("pro")}
 													className={
 														selectedPlan === "pro"
-															? "bg-primary text-primary-foreground"
-															: "border-white/20 hover:bg-white/5 text-white"
+															? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
+															: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 													}>
-													Pro (recomendado) — R$ 169
+													{billingInterval === "year"
+														? "Pro (recomendado) — R$ 97/mês* (R$ 1.164/ano)"
+														: "Pro (recomendado) — R$ 249/mês"}
 												</Button>
 												<Button
 													type="button"
@@ -834,13 +933,15 @@ export default function ConfiguracoesView() {
 													onClick={() => setSelectedPlan("start")}
 													className={
 														selectedPlan === "start"
-															? "bg-primary text-primary-foreground"
-															: "border-white/20 hover:bg-white/5 text-white"
+															? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
+															: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 													}>
-													Start (básico) — R$ 89
+													{billingInterval === "year"
+														? "Start (básico) — R$ 149/mês (R$ 1.788/ano)"
+														: "Start (básico) — R$ 149/mês"}
 												</Button>
 											</div>
-											<div className="flex gap-2">
+											<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 												<Button
 													type="button"
 													variant={
@@ -849,8 +950,8 @@ export default function ConfiguracoesView() {
 													onClick={() => setBillingInterval("month")}
 													className={
 														billingInterval === "month"
-															? "bg-primary text-primary-foreground"
-															: "border-white/20 hover:bg-white/5 text-white"
+															? "bg-primary text-primary-foreground w-full"
+															: "border-white/20 hover:bg-white/5 text-white w-full"
 													}>
 													Mensal
 												</Button>
@@ -862,10 +963,10 @@ export default function ConfiguracoesView() {
 													onClick={() => setBillingInterval("year")}
 													className={
 														billingInterval === "year"
-															? "bg-primary text-primary-foreground"
-															: "border-white/20 hover:bg-white/5 text-white"
+															? "bg-primary text-primary-foreground w-full"
+															: "border-white/20 hover:bg-white/5 text-white w-full"
 													}>
-													Anual (20% OFF)
+													Anual
 												</Button>
 											</div>
 											<Button

@@ -139,7 +139,16 @@ export function NewBookingModal({
 		}
 
 		const phoneDigits = normalizeCustomerPhone(formData.phone);
-		if (phoneDigits && !isValidCustomerPhone(phoneDigits)) {
+		if (!phoneDigits) {
+			toast({
+				title: "Telefone obrigatório",
+				description:
+					"Informe um telefone com DDD para poder avisar o cliente no WhatsApp.",
+				variant: "destructive",
+			});
+			return;
+		}
+		if (!isValidCustomerPhone(phoneDigits)) {
 			toast({
 				title: "Telefone inválido",
 				description: "Informe um telefone com DDD (10 ou 11 dígitos).",
@@ -221,6 +230,25 @@ export function NewBookingModal({
 				description: `${formData.customerName} - ${formData.time}`,
 				className: "bg-green-600 text-white border-none",
 			});
+
+			// Diferencial: abre WhatsApp com mensagem pronta para o cliente.
+			const paymentLabel =
+				formData.paymentStatus === "paid"
+					? "Pago"
+					: formData.paymentStatus === "deposit"
+					? `Sinal (${Number(formData.depositPercent) || 0}%)`
+					: "Pagar no local";
+			const msg = `Olá ${
+				formData.customerName
+			}! Sua reserva foi registrada.\n\nQuadra: ${
+				selectedCourt?.name || "Quadra"
+			}\nData: ${formData.date}\nHorário: ${
+				formData.time
+			}\nPagamento: ${paymentLabel}\n\nQualquer ajuste é só responder por aqui.`;
+			window.open(
+				`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(msg)}`,
+				"_blank"
+			);
 
 			// 4. Limpar e Fechar
 			setFormData({
@@ -345,13 +373,14 @@ export function NewBookingModal({
 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="phone">Telefone</Label>
+							<Label htmlFor="phone">Telefone *</Label>
 							<Input
 								id="phone"
 								placeholder="11999999999"
 								autoComplete="tel"
 								inputMode="numeric"
 								maxLength={13}
+								required
 								value={formData.phone}
 								onChange={(e) => {
 									const digits = normalizeCustomerPhone(e.target.value);

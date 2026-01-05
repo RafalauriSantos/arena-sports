@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 
 // --- DADOS DOS DEPOIMENTOS (7 PROVAS SOCIAIS) ---
 const testimonials = [
@@ -72,7 +73,7 @@ const faqList = [
 	{
 		question: "Tenho apenas uma quadra, o sistema serve para mim?",
 		answer:
-			"Com certeza. O plano 'Arena Sports Start' foi desenhado exatamente para quem está começando ou tem estrutura enxuta. Você vai profissionalizar sua gestão pelo preço de um aluguel de quadra.",
+			"Com certeza. O plano 'Arena Start' foi desenhado para quem está começando ou tem estrutura enxuta. Você profissionaliza sua gesto e comea a receber com mais previsibilidade sem depender do WhatsApp.",
 	},
 	{
 		question: "Preciso instalar algum programa no computador?",
@@ -280,6 +281,11 @@ export default function LandingPage() {
 	const visibleElements = useScrollAnimation();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
+	const [foundersProgress, setFoundersProgress] = useState<{
+		cap: number;
+		sold: number;
+		remaining: number;
+	} | null>(null);
 	const showBrandTextMobile = !scrolled || mobileMenuOpen;
 
 	const isVisible = (id: string) => visibleElements.has(id);
@@ -288,6 +294,26 @@ export default function LandingPage() {
 		const handleScroll = () => setScrolled(window.scrollY > 20);
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	useEffect(() => {
+		let mounted = true;
+		(async () => {
+			const { data, error } = await supabase.rpc("get_founders_progress");
+			if (!mounted) return;
+			if (error || !data) {
+				setFoundersProgress(null);
+				return;
+			}
+			const row = Array.isArray(data) ? data[0] : data;
+			const cap = Number(row?.cap ?? 100);
+			const sold = Number(row?.sold ?? 0);
+			const remaining = Number(row?.remaining ?? Math.max(0, cap - sold));
+			setFoundersProgress({ cap, sold, remaining });
+		})();
+		return () => {
+			mounted = false;
+		};
 	}, []);
 
 	return (
@@ -468,7 +494,7 @@ export default function LandingPage() {
 						<Button
 							onClick={() => navigate("/login")}
 							className="h-11 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
-							Começar com Pro (R$ 169)
+							Começar com Pro (R$ 97/mês*)
 						</Button>
 						<button className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-xs">
 							<Play className="w-3 h-3 fill-current" /> Ver em ação
@@ -732,12 +758,15 @@ export default function LandingPage() {
 								</div>
 								<h3 className="text-lg font-bold text-white mb-1">Arena Pro</h3>
 								<p className="text-gray-400 text-xs mb-5">
-									Para escalar múltiplas unidades.
+									O melhor custo-benefício (cobrança anual).
 								</p>
-								<div className="flex items-baseline gap-1 mb-5">
-									<span className="text-4xl font-black text-white">R$ 169</span>
-									<span className="text-gray-500 text-xs">/mês</span>
+								<div className="flex items-baseline gap-1 mb-2">
+									<span className="text-4xl font-black text-white">R$ 97</span>
+									<span className="text-gray-500 text-xs">/mês*</span>
 								</div>
+								<p className="text-[10px] text-gray-500 mb-5">
+									*cobrado R$ 1.164/ano.
+								</p>
 								<ul className="space-y-3 mb-8 text-xs md:text-sm">
 									<li className="flex items-center gap-2 text-white">
 										<Check className="w-4 h-4 text-emerald-500 shrink-0" /> Tudo
@@ -759,8 +788,29 @@ export default function LandingPage() {
 								<Button
 									onClick={() => navigate("/login")}
 									className="w-full h-10 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
-									Começar com Pro (R$ 169)
+									Começar com Pro (R$ 97/mês*)
 								</Button>
+								{foundersProgress && (
+									<div className="mt-3 space-y-2">
+										<div className="flex items-center justify-between text-[10px] text-gray-500">
+											<span>Founders 100</span>
+											<span>
+												{Math.max(0, foundersProgress.remaining)} vagas
+											</span>
+										</div>
+										<div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+											<div
+												className="h-full bg-emerald-500"
+												style={{
+													width: `${Math.min(
+														100,
+														(foundersProgress.sold / foundersProgress.cap) * 100
+													)}%`,
+												}}
+											/>
+										</div>
+									</div>
+								)}
 								<p className="text-center text-[10px] text-gray-500 mt-3 flex justify-center gap-2 items-center">
 									<ShieldCheck className="w-3 h-3" /> 7 dias de garantia.
 								</p>
@@ -770,10 +820,10 @@ export default function LandingPage() {
 						<div className="relative bg-[#0a0c10] border border-white/10 rounded-2xl p-6 md:p-8 opacity-80 hover:opacity-100 transition-opacity">
 							<h3 className="text-lg font-bold text-white mb-1">Arena Start</h3>
 							<p className="text-gray-400 text-xs mb-5">
-								Tudo para profissionalizar hoje.
+								Para operar o básico sem escala.
 							</p>
 							<div className="flex items-baseline gap-1 mb-5">
-								<span className="text-4xl font-black text-white">R$ 89</span>
+								<span className="text-4xl font-black text-white">R$ 149</span>
 								<span className="text-gray-500 text-xs">/mês</span>
 							</div>
 							<ul className="space-y-3 mb-8 text-gray-400 text-xs md:text-sm">

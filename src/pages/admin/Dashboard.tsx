@@ -54,6 +54,11 @@ const getStringProp = (value: unknown, key: string): string | undefined => {
 	return typeof v === "string" ? v : undefined;
 };
 
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+const formatLocalDate = (date: Date) =>
+	`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+
 const formatDateShort = (dateStr: string) => {
 	const date = new Date(dateStr);
 	const utcDate = new Date(
@@ -71,7 +76,7 @@ const getLast7Days = () => {
 	for (let i = 6; i >= 0; i--) {
 		const d = new Date();
 		d.setDate(d.getDate() - i);
-		days.push(d.toISOString().split("T")[0]);
+		days.push(formatLocalDate(d));
 	}
 	return days;
 };
@@ -121,7 +126,7 @@ const SidebarFixed = ({
 
 	const menuItems = [
 		{ id: "dashboard", icon: Home, label: "Visão Geral" },
-		{ id: "agenda", icon: Calendar, label: "Agenda Master" },
+		{ id: "agenda", icon: Calendar, label: "Reservas" },
 		{ id: "financeiro", icon: BarChart, label: "Financeiro" },
 		{ id: "folgas", icon: Clock, label: "Gerenciar Folgas" },
 	];
@@ -303,12 +308,16 @@ type ArenaSportsStatusHeroProps = {
 	revenueToday: number;
 	occupancyAvg: number;
 	nextPeak: string;
+	planLabel: string;
+	planPill: { color: string; text: string };
 };
 
 const ArenaSportsStatusHero = ({
 	revenueToday,
 	occupancyAvg,
 	nextPeak,
+	planLabel,
+	planPill,
 }: ArenaSportsStatusHeroProps) => {
 	const statusConfig =
 		occupancyAvg > 80
@@ -343,6 +352,12 @@ const ArenaSportsStatusHero = ({
 					<h2 className="text-sm font-medium text-white">
 						{statusConfig.text}
 					</h2>
+				</div>
+				<div className="inline-flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+					<span className={`h-2 w-2 rounded-full ${planPill.color}`} />
+					<h3 className="text-xs font-medium text-white">
+						{planPill.text}: <span className="text-gray-300">{planLabel}</span>
+					</h3>
 				</div>
 				<div className="flex gap-8 text-sm text-gray-400 mt-1">
 					<div className="flex flex-col">
@@ -402,15 +417,34 @@ export default function DashboardHome() {
 		hasAccess,
 		isLoading: subLoading,
 		isFetching: subFetching,
+		hasSubscriptionError,
 		refetch: refetchSubscription,
 	} = useSubscriptionAccess();
 	const [startingCheckout, setStartingCheckout] = useState(false);
 	const [startingTrial, setStartingTrial] = useState(false);
 	const [syncingCheckout, setSyncingCheckout] = useState(false);
+	const syncErrorShownRef = useRef(false);
 	const [selectedPlan, setSelectedPlan] = useState<"start" | "pro">("pro");
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
 		"month"
 	);
+
+	const planLabel = useMemo(() => {
+		return (subscription?.plan_name || "").trim() || "Plano";
+	}, [subscription?.plan_name]);
+
+	const planPill = useMemo(() => {
+		if (subscription?.status === "active") {
+			return { color: "bg-emerald-500", text: "Plano ativo" };
+		}
+		if (subscription?.status === "past_due") {
+			return { color: "bg-yellow-500", text: "Pagamento pendente" };
+		}
+		if (subscription?.status === "trial") {
+			return { color: "bg-yellow-500", text: "Trial" };
+		}
+		return { color: "bg-gray-500", text: "Plano" };
+	}, [subscription?.status]);
 
 	useEffect(() => {
 		const planCode = (subscription?.plan_code ?? "").toLowerCase();
@@ -511,13 +545,25 @@ export default function DashboardHome() {
 		const stripeSessionId = params.get("session_id");
 		const stripeResult = params.get("stripe");
 		const pending = localStorage.getItem("stripe_checkout_pending") === "1";
+		const storedSessionKey = "stripe_checkout_session_id";
+		if (stripeSessionId) {
+			localStorage.setItem(storedSessionKey, stripeSessionId);
+		}
+		const storedSessionId = localStorage.getItem(storedSessionKey);
+		const effectiveSessionId = stripeSessionId || storedSessionId;
 		const isStripeSuccessReturn =
-			stripeResult === "success" && Boolean(stripeSessionId);
+			stripeResult === "success" && Boolean(effectiveSessionId);
+		const isStripeCancelReturn = stripeResult === "cancel";
 
-		if (!pending && !isStripeReturn) return;
+		if (!pending && !isStripeReturn && !effectiveSessionId) return;
+		if (isStripeCancelReturn) {
+			localStorage.removeItem("stripe_checkout_pending");
+			localStorage.removeItem(storedSessionKey);
+			return;
+		}
 		// If we only have a pending flag (no Stripe return params) and access is already granted,
 		// there is nothing to do.
-		if (!isStripeReturn && hasAccessRef.current) {
+		if (!isStripeReturn && hasAccessRef.current && !effectiveSessionId) {
 			localStorage.removeItem("stripe_checkout_pending");
 			return;
 		}
@@ -526,28 +572,53 @@ export default function DashboardHome() {
 		setSyncingCheckout(true);
 
 		(async () => {
-			// If we have a successful return with a checkout session id,
-			// attempt to sync subscription status immediately (fallback when webhook is slow/misconfigured).
-			// IMPORTANT: do this even if the tenant already has access via trial.
-			if (isStripeSuccessReturn && stripeSessionId) {
-				try {
-					const {
-						data: { session },
-					} = await supabase.auth.getSession();
-					const accessToken = session?.access_token;
-					if (accessToken) {
-						await invokeEdgeFunction("stripe-sync-checkout", {
-							accessToken,
-							body: { session_id: stripeSessionId },
-						});
-					}
-				} catch {
-					// non-fatal: keep polling refetchSubscription below
-				}
-			}
-
+			let lastSyncError: string | null = null;
+			let didAttemptSync = false;
 			const startedAt = Date.now();
-			while (!cancelled && Date.now() - startedAt < 30_000) {
+			const maxBlockingMs = 12_000;
+			while (!cancelled && Date.now() - startedAt < maxBlockingMs) {
+				// If we have a successful return with a checkout session id,
+				// try to sync subscription status. IMPORTANT: retry because auth session
+				// may still be restoring right after the redirect.
+				if (isStripeSuccessReturn && effectiveSessionId) {
+					try {
+						const {
+							data: { session },
+						} = await supabase.auth.getSession();
+						const accessToken = session?.access_token;
+						if (accessToken) {
+							didAttemptSync = true;
+							try {
+								const syncRes = await invokeEdgeFunction<{
+									synced?: boolean;
+									subscription?: { status?: string; plan_code?: string } | null;
+								}>("stripe-sync-checkout", {
+									accessToken,
+									body: { session_id: effectiveSessionId },
+								});
+
+								const s = syncRes?.subscription;
+								if (s?.status === "active" || s?.status === "past_due") {
+									try {
+										await refetchSubscription();
+									} catch {
+										// ignore
+									}
+									break;
+								}
+							} catch (err: unknown) {
+								const msg =
+									getStringProp(err, "message") ||
+									"Não foi possível sincronizar a assinatura.";
+								lastSyncError = msg;
+								console.error("stripe-sync-checkout failed", err);
+							}
+						}
+					} catch {
+						// non-fatal: keep polling refetchSubscription below
+					}
+				}
+
 				try {
 					await refetchSubscription();
 				} catch {
@@ -560,11 +631,35 @@ export default function DashboardHome() {
 				} else {
 					if (hasAccessRef.current) break;
 				}
-				await new Promise((r) => setTimeout(r, 1500));
+				await new Promise((r) => setTimeout(r, 800));
 			}
 
-			localStorage.removeItem("stripe_checkout_pending");
+			// Only clear the pending marker when we actually observe the subscription updated.
+			const finalStatus = subscriptionStatusRef.current;
+			const isUpdated = finalStatus === "active" || finalStatus === "past_due";
+			if (isUpdated) {
+				localStorage.removeItem("stripe_checkout_pending");
+				localStorage.removeItem(storedSessionKey);
+			}
 			setSyncingCheckout(false);
+			if (
+				isStripeSuccessReturn &&
+				!cancelled &&
+				!isUpdated &&
+				lastSyncError &&
+				!syncErrorShownRef.current
+			) {
+				syncErrorShownRef.current = true;
+				toast({
+					title: "Falha ao sincronizar assinatura",
+					description: lastSyncError,
+					variant: "destructive",
+				});
+			}
+			if (isStripeSuccessReturn && !cancelled && !didAttemptSync) {
+				// We returned from Stripe before the auth session was restored.
+				// Keep pending/session_id so a reload can retry syncing.
+			}
 
 			// Clean query params so we don't keep retrying on refresh.
 			if (isStripeReturn) {
@@ -728,7 +823,7 @@ export default function DashboardHome() {
 
 	const stats = useMemo(() => {
 		// Mesma lógica de sempre...
-		const todayStr = new Date().toISOString().split("T")[0];
+		const todayStr = formatLocalDate(new Date());
 		const todayBookings = bookings.filter((b) => b.date === todayStr);
 		const monthBookings = bookings.filter((b) => {
 			const d = new Date(b.date + "T00:00:00");
@@ -804,11 +899,7 @@ export default function DashboardHome() {
 			</div>
 		);
 
-	if (
-		subLoading ||
-		syncingCheckout ||
-		(subFetching && localStorage.getItem("stripe_checkout_pending") === "1")
-	) {
+	if (subLoading || syncingCheckout) {
 		return (
 			<div className="min-h-screen bg-gray-950 flex items-center justify-center">
 				<div className="flex items-center gap-2 text-gray-300">
@@ -817,6 +908,32 @@ export default function DashboardHome() {
 						? "Confirmando pagamento..."
 						: "Carregando assinatura..."}
 				</div>
+			</div>
+		);
+	}
+
+	if (hasSubscriptionError) {
+		return (
+			<div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+				<Card className="w-full max-w-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
+					<CardHeader>
+						<CardTitle className="text-white flex items-center gap-2">
+							<Lock className="h-5 w-5" /> Falha ao carregar assinatura
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<p className="text-sm text-gray-400">
+							Não foi possível ler o status do plano agora. Isso pode acontecer
+							por instabilidade de rede ou policy/RLS.
+						</p>
+						<Button
+							type="button"
+							onClick={() => window.location.reload()}
+							className="w-full">
+							Recarregar
+						</Button>
+					</CardContent>
+				</Card>
 			</div>
 		);
 	}
@@ -876,17 +993,19 @@ export default function DashboardHome() {
 							Seu trial acabou e o sistema foi bloqueado. Ative uma assinatura
 							para continuar.
 						</p>
-						<div className="flex gap-2">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 							<Button
 								type="button"
 								variant={selectedPlan === "pro" ? "default" : "outline"}
 								onClick={() => setSelectedPlan("pro")}
 								className={
 									selectedPlan === "pro"
-										? "bg-primary text-primary-foreground"
-										: "border-white/20 hover:bg-white/5 text-white"
+										? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
+										: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 								}>
-								Pro (recomendado) — R$ 169
+								{billingInterval === "year"
+									? "Pro (recomendado) — R$ 97/mês* (R$ 1.164/ano)"
+									: "Pro (recomendado) — R$ 249/mês"}
 							</Button>
 							<Button
 								type="button"
@@ -894,21 +1013,23 @@ export default function DashboardHome() {
 								onClick={() => setSelectedPlan("start")}
 								className={
 									selectedPlan === "start"
-										? "bg-primary text-primary-foreground"
-										: "border-white/20 hover:bg-white/5 text-white"
+										? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
+										: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 								}>
-								Start (básico) — R$ 89
+								{billingInterval === "year"
+									? "Start (básico) — R$ 149/mês (R$ 1.788/ano)"
+									: "Start (básico) — R$ 149/mês"}
 							</Button>
 						</div>
-						<div className="flex gap-2">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 							<Button
 								type="button"
 								variant={billingInterval === "month" ? "default" : "outline"}
 								onClick={() => setBillingInterval("month")}
 								className={
 									billingInterval === "month"
-										? "bg-primary text-primary-foreground"
-										: "border-white/20 hover:bg-white/5 text-white"
+										? "bg-primary text-primary-foreground w-full"
+										: "border-white/20 hover:bg-white/5 text-white w-full"
 								}>
 								Mensal
 							</Button>
@@ -918,10 +1039,10 @@ export default function DashboardHome() {
 								onClick={() => setBillingInterval("year")}
 								className={
 									billingInterval === "year"
-										? "bg-primary text-primary-foreground"
-										: "border-white/20 hover:bg-white/5 text-white"
+										? "bg-primary text-primary-foreground w-full"
+										: "border-white/20 hover:bg-white/5 text-white w-full"
 								}>
-								Anual (20% OFF)
+								Anual
 							</Button>
 						</div>
 						<Button
@@ -994,6 +1115,8 @@ export default function DashboardHome() {
 								revenueToday={stats.revenueToday}
 								occupancyAvg={occupancyAvg}
 								nextPeak="19:00 — 21:00"
+								planLabel={planLabel}
+								planPill={planPill}
 							/>
 
 							<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

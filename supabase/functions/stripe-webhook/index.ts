@@ -21,10 +21,26 @@ function getEnvFirst(keys: string[]) {
 function inferPlanFromPriceId(priceId: string | null): { plan_code: PlanCode; interval: Interval | null } | null {
     if (!priceId) return null;
 
-    const startMonth = getEnvFirst(["STRIPE_PRICE_START_MONTH", "STRIPE_PRICE_START_MONTHLY"]);
-    const startYear = getEnvFirst(["STRIPE_PRICE_START_YEAR", "STRIPE_PRICE_START_YEARLY"]);
-    const proMonth = getEnvFirst(["STRIPE_PRICE_PRO_MONTH", "STRIPE_PRICE_PRO_MONTHLY"]);
-    const proYear = getEnvFirst(["STRIPE_PRICE_PRO_YEAR", "STRIPE_PRICE_PRO_YEARLY"]);
+    const startMonth = getEnvFirst([
+        "STRIPE_PRICE_START_MONTH",
+        "STRIPE_PRICE_START_MONTHLY",
+        "VITE_STRIPE_PRICE_START_MONTHLY",
+    ]);
+    const startYear = getEnvFirst([
+        "STRIPE_PRICE_START_YEAR",
+        "STRIPE_PRICE_START_YEARLY",
+        "VITE_STRIPE_PRICE_START_YEARLY",
+    ]);
+    const proMonth = getEnvFirst([
+        "STRIPE_PRICE_PRO_MONTH",
+        "STRIPE_PRICE_PRO_MONTHLY",
+        "VITE_STRIPE_PRICE_PRO_MONTHLY",
+    ]);
+    const proYear = getEnvFirst([
+        "STRIPE_PRICE_PRO_YEAR",
+        "STRIPE_PRICE_PRO_YEARLY",
+        "VITE_STRIPE_PRICE_PRO_YEARLY",
+    ]);
 
     if (startMonth?.value === priceId) return { plan_code: "start", interval: "month" };
     if (startYear?.value === priceId) return { plan_code: "start", interval: "year" };
@@ -131,7 +147,8 @@ Deno.serve(async (req: Request) => {
             if (!effectiveTenantId) return;
 
             const planName = planCode === "pro" ? "Arena Pro" : "Arena Start";
-            const monthlyPrice = planCode === "pro" ? 169 : 89;
+            const monthlyPrice =
+                planCode === "pro" ? (interval === "year" ? 97 : 249) : 149;
 
             await supabaseAdmin.from("tenant_subscriptions").upsert({
                 tenant_id: effectiveTenantId,

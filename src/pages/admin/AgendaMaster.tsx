@@ -5,7 +5,6 @@ import {
 	CheckCircle,
 	AlertCircle,
 	XCircle,
-	Ban,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,10 @@ import { supabase } from "@/lib/supabaseClient";
 import { useBookings } from "@/contexts/BookingsContext";
 import { NewBookingModal } from "@/components/admin/NewBookingModal";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { normalizeCustomerPhone } from "@/lib/phone";
 
 type PaymentStatus = "paid" | "pending" | "deposit";
 
@@ -62,7 +64,7 @@ type BookingEventRow = {
 };
 
 export default function AgendaMaster() {
-	const { bookings, updateBooking, deleteBooking, timeSlots } = useBookings();
+	const { bookings, updateBooking, deleteBooking } = useBookings();
 	const { toast } = useToast();
 	const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(
 		null
@@ -74,6 +76,13 @@ export default function AgendaMaster() {
 	const [bookingEventsError, setBookingEventsError] = useState<string | null>(
 		null
 	);
+	const [editedPhone, setEditedPhone] = useState("");
+	const [savingPhone, setSavingPhone] = useState(false);
+
+	useEffect(() => {
+		if (!isModalOpen || !selectedBooking) return;
+		setEditedPhone(selectedBooking.phone || "");
+	}, [isModalOpen, selectedBooking]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -207,12 +216,8 @@ export default function AgendaMaster() {
 
 	// Convert bookings to admin format
 	const adminBookingsData = useMemo((): AdminBooking[] => {
-		const today = format(new Date(), "yyyy-MM-dd");
-
 		return bookings
-			.filter(
-				(b) => b.date === today && b.status !== "cancelled" // compat
-			)
+			.filter((b) => b.status !== "cancelled") // compat
 			.map((b) => {
 				const totalAmount = b.totalPrice;
 				const paidAmount = typeof b.paidAmount === "number" ? b.paidAmount : 0;
@@ -242,6 +247,139 @@ export default function AgendaMaster() {
 				};
 			});
 	}, [bookings]);
+
+	const { pastBookings, todayBookings, tomorrowBookings } = useMemo(() => {
+		const today = format(new Date(), "yyyy-MM-dd");
+		const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+
+		const sortTimeAsc = (a: AdminBooking, b: AdminBooking) =>
+			a.time.localeCompare(b.time);
+
+		const sortDateDescTimeDesc = (a: AdminBooking, b: AdminBooking) => {
+			if (a.date !== b.date) return b.date.localeCompare(a.date);
+			return b.time.localeCompare(a.time);
+		};
+
+		const past = adminBookingsData
+			.filter((b) => b.date < today)
+			.sort(sortDateDescTimeDesc);
+		const todayList = adminBookingsData
+			.filter((b) => b.date === today)
+			.sort(sortTimeAsc);
+		const tomorrowList = adminBookingsData
+			.filter((b) => b.date === tomorrow)
+			.sort(sortTimeAsc);
+
+		return {
+			pastBookings: past,
+			todayBookings: todayList,
+			tomorrowBookings: tomorrowList,
+		};
+	}, [adminBookingsData]);
+
+	const renderBookingCard = (booking: AdminBooking) => {
+		const statusConfig = getStatusConfig(booking.paymentStatus);
+		const StatusIcon = statusConfig.icon;
+
+		return (
+			<Card
+				key={booking.id}
+				className={cn(
+					"cursor-pointer transition-all hover:scale-[1.01] border backdrop-blur-md bg-gradient-to-br from-gray-900/50 to-gray-900/30 border-white/5 hover:border-white/10",
+					statusConfig.color
+				)}
+				onClick={() => handleBookingClick(booking)}>
+				<CardHeader className="p-3 md:p-4 pb-2 md:pb-3">
+					<div className="flex items-center justify-between gap-2">
+						<div className="flex items-center gap-2 md:gap-3">
+							<div
+								className={cn(
+									"h-2 w-2 md:h-3 md:w-3 rounded-full animate-pulse flex-shrink-0",
+									statusConfig.dotColor
+								)}
+							/>
+							<div>
+								<CardTitle className="text-base md:text-lg text-white">
+									{booking.time}
+								</CardTitle>
+								<p className="text-xs md:text-sm text-gray-400">
+									{booking.field}
+								</p>
+							</div>
+						</div>
+						<Badge
+							variant="outline"
+							className={cn(
+								"gap-1 text-xs border-white/10 bg-black/20",
+								statusConfig.color
+							)}>
+							<StatusIcon className="h-3 w-3" />
+							<span className="hidden md:inline">{statusConfig.label}</span>
+						</Badge>
+					</div>
+				</CardHeader>
+
+				<CardContent className="p-3 md:p-4 pt-0 space-y-2 md:space-y-3">
+					<div className="flex items-center justify-between gap-2">
+						<div className="min-w-0 flex-1">
+							<p className="font-bold text-sm md:text-lg truncate text-white">
+								{booking.customerName}
+							</p>
+							{booking.phone ? (
+								<p className="text-xs md:text-sm text-gray-400 truncate">
+									{booking.phone}
+								</p>
+							) : (
+								<p className="text-xs md:text-sm text-gray-500 truncate">
+									Sem telefone
+								</p>
+							)}
+						</div>
+						<Button
+							variant="outline"
+							size="icon"
+							className="flex-shrink-0 h-8 w-8 md:h-9 md:w-9 border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white"
+							onClick={(e) => {
+								e.stopPropagation();
+								if (!booking.phone) return;
+								const paymentLabel =
+									booking.paymentStatus === "paid"
+										? "Pago"
+										: booking.paymentStatus === "deposit"
+										? `Sinal${
+												booking.depositPercent
+													? ` (${booking.depositPercent}%)`
+													: ""
+										  }`
+										: "Pagar no local";
+								const msg = `Olá ${booking.customerName}! Sua reserva foi registrada.\n\nQuadra: ${booking.field}\nData: ${booking.date}\nHorário: ${booking.time}\nPagamento: ${paymentLabel}\n\nQualquer ajuste é só responder por aqui.`;
+								window.open(
+									`https://wa.me/55${booking.phone}?text=${encodeURIComponent(
+										msg
+									)}`,
+									"_blank"
+								);
+							}}>
+							<MessageCircle className="h-3 w-3 md:h-4 md:w-4" />
+						</Button>
+					</div>
+
+					<div className="flex items-center justify-between pt-2 border-t border-white/10 gap-2">
+						<div className="text-xs md:text-sm text-gray-300">
+							<span className="font-bold text-white">
+								R$ {booking.totalAmount.toFixed(0)}
+							</span>
+						</div>
+						{booking.remainingAmount > 0 && (
+							<div className="text-xs md:text-sm text-amber-400 font-bold">
+								Receber: R$ {booking.remainingAmount.toFixed(0)}
+							</div>
+						)}
+					</div>
+				</CardContent>
+			</Card>
+		);
+	};
 	const handleBookingClick = (booking: AdminBooking) => {
 		setSelectedBooking(booking);
 		setIsModalOpen(true);
@@ -276,7 +414,40 @@ export default function AgendaMaster() {
 
 	const handleWhatsApp = () => {
 		if (selectedBooking?.phone) {
-			window.open(`https://wa.me/55${selectedBooking.phone}`, "_blank");
+			const paymentLabel =
+				selectedBooking.paymentStatus === "paid"
+					? "Pago"
+					: selectedBooking.paymentStatus === "deposit"
+					? `Sinal${
+							selectedBooking.depositPercent
+								? ` (${selectedBooking.depositPercent}%)`
+								: ""
+					  }`
+					: "Pagar no local";
+			const msg = `Olá ${selectedBooking.customerName}! Sua reserva foi registrada.\n\nQuadra: ${selectedBooking.field}\nData: ${selectedBooking.date}\nHorário: ${selectedBooking.time}\nPagamento: ${paymentLabel}\n\nQualquer ajuste é só responder por aqui.`;
+			window.open(
+				`https://wa.me/55${selectedBooking.phone}?text=${encodeURIComponent(
+					msg
+				)}`,
+				"_blank"
+			);
+		}
+	};
+
+	const handleSavePhone = async () => {
+		if (!selectedBooking) return;
+		setSavingPhone(true);
+		try {
+			await updateBooking(selectedBooking.bookingId, {
+				customerPhone: editedPhone,
+			});
+			toast({
+				title: "Telefone atualizado",
+				description: "Telefone salvo para contato via WhatsApp.",
+			});
+			setIsModalOpen(false);
+		} finally {
+			setSavingPhone(false);
 		}
 	};
 
@@ -286,10 +457,10 @@ export default function AgendaMaster() {
 			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 				<div>
 					<h1 className="text-xl md:text-3xl font-bold text-white tracking-tight">
-						Agenda Master
+						Reservas
 					</h1>
 					<p className="text-xs md:text-sm text-gray-400 mt-1">
-						Torre de controle - Agendamentos de hoje
+						Torre de controle - Anteriores / Hoje / Amanhã
 					</p>
 				</div>
 				<Button
@@ -307,98 +478,72 @@ export default function AgendaMaster() {
 				open={isNewBookingOpen}
 				onOpenChange={setIsNewBookingOpen}
 			/>
-			{/* Bookings Grid - Compact mobile cards */}
-			{/* Bookings Grid - Compact mobile cards */}
-			<div className="grid gap-2 md:gap-4 md:grid-cols-2">
-				{adminBookingsData.map((booking) => {
-					const statusConfig = getStatusConfig(booking.paymentStatus);
-					const StatusIcon = statusConfig.icon;
+			<div className="grid gap-3 md:gap-4">
+				<Card className="border border-white/10 bg-black/20">
+					<CardHeader className="p-3 md:p-4">
+						<div className="flex items-center justify-between gap-2">
+							<CardTitle className="text-white text-base md:text-lg">
+								Jogos anteriores
+							</CardTitle>
+							<Badge variant="outline" className="border-white/10 bg-white/5">
+								{pastBookings.length}
+							</Badge>
+						</div>
+					</CardHeader>
+					<CardContent className="p-3 md:p-4 pt-0">
+						{pastBookings.length === 0 ? (
+							<p className="text-sm text-gray-400">Nenhum jogo anterior.</p>
+						) : (
+							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
+								{pastBookings.map(renderBookingCard)}
+							</div>
+						)}
+					</CardContent>
+				</Card>
 
-					return (
-						<Card
-							key={booking.id}
-							className={cn(
-								"cursor-pointer transition-all hover:scale-[1.01] border backdrop-blur-md bg-gradient-to-br from-gray-900/50 to-gray-900/30 border-white/5 hover:border-white/10",
-								statusConfig.color
-							)}
-							onClick={() => handleBookingClick(booking)}>
-							<CardHeader className="p-3 md:p-4 pb-2 md:pb-3">
-								<div className="flex items-center justify-between gap-2">
-									<div className="flex items-center gap-2 md:gap-3">
-										<div
-											className={cn(
-												"h-2 w-2 md:h-3 md:w-3 rounded-full animate-pulse flex-shrink-0",
-												statusConfig.dotColor
-											)}
-										/>
-										<div>
-											<CardTitle className="text-base md:text-lg text-white">
-												{booking.time}
-											</CardTitle>
-											<p className="text-xs md:text-sm text-gray-400">
-												{booking.field}
-											</p>
-										</div>
-									</div>
-									<Badge
-										variant="outline"
-										className={cn(
-											"gap-1 text-xs border-white/10 bg-black/20",
-											statusConfig.color
-										)}>
-										<StatusIcon className="h-3 w-3" />
-										<span className="hidden md:inline">
-											{statusConfig.label}
-										</span>
-									</Badge>
-								</div>
-							</CardHeader>
+				<Card className="border border-white/10 bg-black/20">
+					<CardHeader className="p-3 md:p-4">
+						<div className="flex items-center justify-between gap-2">
+							<CardTitle className="text-white text-base md:text-lg">
+								Jogos do dia
+							</CardTitle>
+							<Badge variant="outline" className="border-white/10 bg-white/5">
+								{todayBookings.length}
+							</Badge>
+						</div>
+					</CardHeader>
+					<CardContent className="p-3 md:p-4 pt-0">
+						{todayBookings.length === 0 ? (
+							<p className="text-sm text-gray-400">Nenhum jogo hoje.</p>
+						) : (
+							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
+								{todayBookings.map(renderBookingCard)}
+							</div>
+						)}
+					</CardContent>
+				</Card>
 
-							<CardContent className="p-3 md:p-4 pt-0 space-y-2 md:space-y-3">
-								<div className="flex items-center justify-between gap-2">
-									<div className="min-w-0 flex-1">
-										<p className="font-bold text-sm md:text-lg truncate text-white">
-											{booking.customerName}
-										</p>
-										{booking.phone ? (
-											<p className="text-xs md:text-sm text-gray-400 truncate">
-												{booking.phone}
-											</p>
-										) : (
-											<p className="text-xs md:text-sm text-gray-500 truncate">
-												Sem telefone
-											</p>
-										)}
-									</div>
-									<Button
-										variant="outline"
-										size="icon"
-										className="flex-shrink-0 h-8 w-8 md:h-9 md:w-9 border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white"
-										onClick={(e) => {
-											e.stopPropagation();
-											if (!booking.phone) return;
-											window.open(`https://wa.me/55${booking.phone}`, "_blank");
-										}}>
-										<MessageCircle className="h-3 w-3 md:h-4 md:w-4" />
-									</Button>
-								</div>
-
-								<div className="flex items-center justify-between pt-2 border-t border-white/10 gap-2">
-									<div className="text-xs md:text-sm text-gray-300">
-										<span className="font-bold text-white">
-											R$ {booking.totalAmount.toFixed(0)}
-										</span>
-									</div>
-									{booking.remainingAmount > 0 && (
-										<div className="text-xs md:text-sm text-amber-400 font-bold">
-											Receber: R$ {booking.remainingAmount.toFixed(0)}
-										</div>
-									)}
-								</div>
-							</CardContent>
-						</Card>
-					);
-				})}
+				<Card className="border border-white/10 bg-black/20">
+					<CardHeader className="p-3 md:p-4">
+						<div className="flex items-center justify-between gap-2">
+							<CardTitle className="text-white text-base md:text-lg">
+								Jogos de amanhã
+							</CardTitle>
+							<Badge variant="outline" className="border-white/10 bg-white/5">
+								{tomorrowBookings.length}
+							</Badge>
+						</div>
+					</CardHeader>
+					<CardContent className="p-3 md:p-4 pt-0">
+						{tomorrowBookings.length === 0 ? (
+							<p className="text-sm text-gray-400">Nenhum jogo amanhã.</p>
+						) : (
+							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
+								{tomorrowBookings.map(renderBookingCard)}
+							</div>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 
 			{/* Detail Modal */}
@@ -429,9 +574,24 @@ export default function AgendaMaster() {
 									<h4 className="text-sm font-medium text-muted-foreground mb-1">
 										Telefone
 									</h4>
-									<p className="font-medium flex items-center gap-2">
-										{selectedBooking.phone || "-"}
-									</p>
+									<div className="space-y-2">
+										<Label htmlFor="editPhone" className="sr-only">
+											Telefone
+										</Label>
+										<Input
+											id="editPhone"
+											placeholder="11999999999"
+											autoComplete="tel"
+											inputMode="numeric"
+											maxLength={13}
+											required
+											value={editedPhone}
+											onChange={(e) => {
+												const digits = normalizeCustomerPhone(e.target.value);
+												setEditedPhone(digits.slice(0, 11));
+											}}
+										/>
+									</div>
 								</div>
 								<div>
 									<h4 className="text-sm font-medium text-muted-foreground mb-1">
@@ -531,6 +691,14 @@ export default function AgendaMaster() {
 						</div>
 
 						<DialogFooter className="flex-col gap-2 sm:flex-col">
+							<Button
+								size="lg"
+								className="w-full"
+								disabled={savingPhone}
+								onClick={handleSavePhone}>
+								{savingPhone ? "Salvando..." : "Salvar telefone"}
+							</Button>
+
 							{selectedBooking.paymentStatus !== "paid" &&
 								selectedBooking.remainingAmount > 0 && (
 									<Button

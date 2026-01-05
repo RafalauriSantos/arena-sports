@@ -12,6 +12,20 @@ Entregar o **Arena Sports rodando e vendável** (MVP estável), com:
 - **Paywall/Assinatura (Stripe)** funcionando (trial com consentimento + compra Start/Pro)
 - **Banco protegido com RLS** sem quebrar o app
 
+## Escopo do produto (Raio-X)
+
+Documento de produto (inventário do que existe vs roadmap): **RAIO_X_FUNCIONALIDADES.md**
+
+Para este sprint, o escopo mínimo “vendável” é:
+
+- **START (✅)**: agenda admin + link público + WhatsApp + gestão de quadras + folgas + PWA.
+- **PRO (✅)**: relatórios/indicadores (ocupação/receita).
+- **Billing/Stripe (✅)**: paywall + checkout + retorno do Stripe com status correto.
+
+Fora do escopo deste sprint (deixa para roadmap):
+
+- Itens marcados como **⚠️**/**🚀** no Raio-X (ex.: Pix automatizado, sinal com confirmação automática, multi-usuários, lista de espera, comanda).
+
 ## Critérios de pronto (Definition of Done)
 
 Considero “pronto” quando:
@@ -63,6 +77,14 @@ Atualizações desta sprint (2026-01-03):
 - ✅ Landing alinhada para guiar compra do Pro (sem esconder Start)
 - ✅ Páginas de política/termos/suporte adicionadas
 
+Atualizações desta sprint (2026-01-04):
+
+- ✅ PWA em dev estabilizado: `virtual:pwa-register` não quebra mais o HMR; SW só registra em produção
+- ✅ Landing responsiva refinada (mockups MacBook + iPhone sem sobrepor no desktop e com espaçamento melhor no mobile)
+- ✅ Header da Landing: links completos (Comparativo/Passo a Passo/Planos/FAQ/Login/Criar Conta) e tipografia desktop mais legível
+- ✅ Deep-link de cadastro: `/login?mode=signup` abre direto no modo Criar Conta
+- ✅ Resiliência offline: erro de rede/"Failed to fetch" não zera sessão/tenant nem derruba para paywall
+
 Arquivos relacionados:
 
 - `supabase/migrations/20260101090000_mvp_rls_owner_only.sql`
@@ -90,14 +112,14 @@ Rodar e validar os 3 fluxos principais:
 
 Checklist de teste (marque com ✅):
 
-- [ ] Signup cria tenant e abre dashboard
+- [x] Signup cria tenant e abre dashboard
 - [x] Signin abre dashboard
-- [ ] Dashboard carrega quadras e reservas (sem permission denied)
-- [ ] Criar reserva funciona (insert em `bookings`)
-- [ ] Alterar status funciona (update em `bookings`)
-- [ ] Deletar reserva funciona (delete em `bookings`)
-- [ ] Página pública lista quadras (select em `courts` como anon)
-- [ ] Página pública carrega ocupação (via RPC; bloqueia horários ocupados)
+- [x] Dashboard carrega quadras e reservas (sem permission denied)
+- [x] Criar reserva funciona (insert em `bookings`)
+- [x] Alterar status funciona (update em `bookings`)
+- [x] Deletar reserva funciona (delete em `bookings`)
+- [x] Página pública lista quadras (select em `courts` como anon)
+- [x] Página pública carrega ocupação (via RPC; bloqueia horários ocupados)
 - [ ] Assinatura: clicar Pro → Checkout → pagar → voltar e ver **Ativo / Pro R$169**
 - [ ] Assinatura: usuário pago não vê trial/CTA de assinar
 - [ ] Portal Stripe abre em Configurações (gerenciar assinatura)
@@ -108,35 +130,37 @@ Objetivo: garantir **mobile-first**, **desktop** e **PWA** sem regressões visua
 
 Preparação:
 
-- [ ] Rodar `bun run dev` (para fluxo rápido)
+- [x] Rodar `bun run dev` (para fluxo rápido)
 - [ ] Rodar `bun run build` + `bun run preview` (para validar PWA em modo produção)
 
 Responsividade (Chrome DevTools → Toggle device toolbar):
 
-- [ ] Mobile (360×800): `/login` não corta inputs/botões; teclado não esconde CTA
-- [ ] Mobile (390×844): `/dashboard` não estoura largura; tabelas/cards quebram corretamente
-- [ ] Tablet (768×1024): navegação e cards ficam legíveis (sem overflow horizontal)
-- [ ] Desktop (1366×768): layout usa bem o espaço (sem “coluna vazia” gigante)
-- [ ] Desktop (1440×900): sidebar/header não sobrepõem conteúdo; modais centralizam
+- [x] QA de responsividade (teste manual — OK)
+- [x] Mobile: botões/CTAs responsivos (teste manual — OK)
+- [x] Mobile (360×800): `/login` não corta inputs/botões; teclado não esconde CTA
+- [x] Mobile (390×844): `/dashboard` não estoura largura; tabelas/cards quebram corretamente
+- [x] Tablet (768×1024): navegação e cards ficam legíveis (sem overflow horizontal)
+- [x] Desktop (1366×768): layout usa bem o espaço (sem “coluna vazia” gigante)
+- [x] Desktop (1440×900): sidebar/header não sobrepõem conteúdo; modais centralizam
 
 Fluxos críticos em telas diferentes (mobile + desktop):
 
-- [ ] Login: entrar/sair sem “tela branca”
-- [ ] Dashboard: lista quadras e reservas sem erro de RLS
-- [ ] Reservas: abrir modal e criar reserva (validações ok)
-- [ ] Público: `/agendar/:subdomain` lista quadras e bloqueia horários ocupados
-- [ ] Billing: escolher Pro → Checkout (redireciona) → voltar e ver **Ativo / Pro R$169**
+- [x] Login: entrar/sair sem “tela branca”
+- [x] Dashboard: lista quadras e reservas sem erro de RLS
+- [x] Reservas: abrir modal e criar reserva (validações ok)
+- [x] Público: `/agendar/:subdomain` lista quadras e bloqueia horários ocupados
+- [x] Billing: escolher Pro → Checkout (redireciona) → voltar e ver **Ativo / Pro R$169**
 
 PWA (validar em `bun run preview`):
 
 - [ ] Abrir DevTools → Application → Manifest: ícones/cores ok e sem erros
-- [ ] Instalar (Install app / Add to Home Screen) e abrir em modo “app”
+- [x] Instalar (Install app / Add to Home Screen) e abrir em modo “app”
 - [ ] Offline: simular offline e confirmar que não dá tela branca (pode mostrar erro controlado)
 - [ ] Update: após build nova, recarregar e confirmar que SW atualiza sem travar
 
 Critério de aceitação:
 
-- [ ] Sem overflow horizontal, sem texto cortado e sem CTA inacessível nos fluxos acima
+- [x] Sem overflow horizontal, sem texto cortado e sem CTA inacessível nos fluxos acima
 - [ ] PWA instala e abre; offline não quebra com erro fatal
 
 ### 2) Consertar inconsistências de tabelas (admin metrics)
@@ -180,13 +204,22 @@ Observação de segurança:
 - Validar build + deploy
 - Validar 3 fluxos pós-deploy
 
+Checklist (novo):
+
+- [ ] Atualizar preços reais na Stripe (Start/Pro mensal e anual)
+- [ ] Atualizar Price IDs nas variáveis de ambiente (Vercel + Supabase Edge Functions)
+  - `VITE_STRIPE_PRICE_START_MONTHLY` / `VITE_STRIPE_PRICE_START_YEARLY`
+  - `VITE_STRIPE_PRICE_PRO_MONTHLY` / `VITE_STRIPE_PRICE_PRO_YEARLY`
+  - `STRIPE_PRICE_START_MONTH(LY)` / `STRIPE_PRICE_START_YEAR(LY)`
+  - `STRIPE_PRICE_PRO_MONTH(LY)` / `STRIPE_PRICE_PRO_YEAR(LY)`
+
 Checklist:
 
 - [x] `bun run build`
 - [x] Abrir `/login` e entrar
-- [ ] Abrir `/dashboard` e listar dados
-- [ ] Abrir `/agendar/:subdomain` e listar quadras/horários
-- [ ] Rodar `npx supabase@latest db push` (aplicar migrations novas)
+- [x] Abrir `/dashboard` e listar dados
+- [x] Abrir `/agendar/:subdomain` e listar quadras/horários
+- [x] Rodar `npx supabase@latest db push` (aplicar migrations novas)
 - [ ] Deploy das Edge Functions do Stripe (webhook/checkout/portal/sync)
 - [ ] Teste real de pagamento (cartão) e retorno com status Ativo
 
@@ -197,7 +230,7 @@ Objetivo: fechar a sprint com **checagens automáticas + sanity check em produç
 Automáticos:
 
 - [ ] `bun run lint` (eslint) sem erros
-- [ ] `bun run build` sem erros
+- [x] `bun run build` sem erros
 
 Sanity check (modo produção local):
 
