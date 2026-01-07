@@ -211,19 +211,7 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-[functions.stripe-webhook]
-verify_jwt = false
-
-[functions.stripe-create-checkout]
-verify_jwt = false
-
-[functions.stripe-create-portal-session]
-verify_jwt = false
-
 [functions.ensure-tenant-subscription]
-verify_jwt = false
-
-[functions.stripe-sync-checkout]
 verify_jwt = false
 
 [functions.asaas-create-checkout]

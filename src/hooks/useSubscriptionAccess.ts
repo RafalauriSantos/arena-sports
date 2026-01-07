@@ -12,7 +12,6 @@ export type TenantSubscription = {
     plan_name?: string;
     monthly_price?: number;
     billing_interval?: "month" | "year" | null;
-    stripe_price_id?: string | null;
     status: SubscriptionStatus;
     trial_started_at?: string | null;
     trial_ends_at?: string | null;
@@ -97,7 +96,7 @@ export function useSubscriptionAccess() {
                 supabase
                     .from("tenant_subscriptions")
                     .select(
-                        "plan_code, plan_name, monthly_price, billing_interval, stripe_price_id, status, trial_started_at, trial_ends_at, grace_ends_at"
+                        "plan_code, plan_name, monthly_price, billing_interval, status, trial_started_at, trial_ends_at, grace_ends_at"
                     )
                     .eq("tenant_id", validTenantId)
                     .order("updated_at", { ascending: false, nullsFirst: false })

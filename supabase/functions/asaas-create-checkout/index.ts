@@ -275,17 +275,11 @@ Deno.serve(async (req: Request) => {
             expiredUrl: `${callbackBase}?asaas=expired&${planQuery}`,
         };
 
-        const customerData: Record<string, unknown> = {};
-        if (profile?.full_name) {
-            customerData.name = profile.full_name;
-        }
-        if (user.email) {
-            customerData.email = user.email;
-        }
-
         const checkoutBody: Record<string, unknown> = {
             billingType: "CREDIT_CARD",
             chargeTypes: ["RECURRENT"],
+            // Asaas: only one of `customer` OR `customerData` must be sent.
+            // We always have a `customerId` at this point, so send ONLY `customer`.
             customer: customerId,
             description: planCode,
             callback,
@@ -304,10 +298,6 @@ Deno.serve(async (req: Request) => {
             ],
             externalReference: tenantId,
         };
-
-        if (Object.keys(customerData).length > 0) {
-            checkoutBody.customerData = customerData;
-        }
 
         const checkout = await callAsaas("/checkouts", "POST", checkoutBody);
         const checkoutUrl =
