@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type * as React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { supabase } from "@/lib/supabaseClient";
+import { invokeEdgeFunction } from "@/lib/edgeFunctions";
 import {
 	Trophy,
 	Sparkles,
@@ -147,6 +148,11 @@ export default function ConfiguracoesView() {
 	);
 	const [startingCheckout, setStartingCheckout] = useState(false);
 	const [syncingCheckout, setSyncingCheckout] = useState(false);
+	const subscriptionStatusRef = useRef(subscription?.status);
+
+	useEffect(() => {
+		subscriptionStatusRef.current = subscription?.status;
+	}, [subscription?.status]);
 
 	const computeTrialDaysLeft = () => {
 		if (subscription.status !== "trial") return null;
@@ -167,65 +173,75 @@ export default function ConfiguracoesView() {
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const stripeSessionId = params.get("session_id");
-		const stripeResult = params.get("stripe");
-		const pending = localStorage.getItem("stripe_checkout_pending") === "1";
-		const isStripeSuccessReturn =
-			stripeResult === "success" && Boolean(stripeSessionId);
+		const asaasStatus = params.get("asaas");
+		const isAsaasReturn =
+			asaasStatus === "success" ||
+			asaasStatus === "cancel" ||
+			asaasStatus === "expired";
+		const isAsaasSuccessReturn = asaasStatus === "success";
+		const isAsaasCancelReturn =
+			asaasStatus === "cancel" || asaasStatus === "expired";
+		const pending = localStorage.getItem("asaas_checkout_pending") === "1";
 
-		if (!pending && !isStripeSuccessReturn) return;
+		if (!pending && !isAsaasReturn) return;
+		if (isAsaasCancelReturn) {
+			localStorage.removeItem("asaas_checkout_pending");
+			return;
+		}
+		const currentStatus = subscriptionStatusRef.current;
+		if (
+			!isAsaasReturn &&
+			(currentStatus === "active" || currentStatus === "trial")
+		) {
+			localStorage.removeItem("asaas_checkout_pending");
+			return;
+		}
 
 		let cancelled = false;
 		setSyncingCheckout(true);
 		(async () => {
-			try {
-				if (isStripeSuccessReturn && stripeSessionId) {
-					const { data, error } = await supabase.functions.invoke(
-						"stripe-sync-checkout",
-						{
-							body: { session_id: stripeSessionId },
-						}
-					);
-					if (error) {
-						const msg =
-							(error as any)?.message ||
-							(error as any)?.error_description ||
-							"Não foi possível sincronizar a assinatura.";
-						console.error("stripe-sync-checkout error", error, data);
-						toast({
-							title: "Falha ao sincronizar assinatura",
-							description: msg,
-							variant: "destructive",
-						});
-					}
+			const startedAt = Date.now();
+			const maxBlockingMs = 12_000;
+			while (!cancelled && Date.now() - startedAt < maxBlockingMs) {
+				try {
+					await refetchSubscription();
+				} catch {
+					// ignore and keep retrying
 				}
-			} catch (err) {
-				const msg =
-					err instanceof Error
-						? err.message
-						: "Não foi possível sincronizar a assinatura.";
-				console.error("stripe-sync-checkout invoke failed", err);
+
+				const status = subscriptionStatusRef.current;
+				if (
+					status === "active" ||
+					status === "trial" ||
+					status === "past_due"
+				) {
+					break;
+				}
+				await new Promise((r) => setTimeout(r, 800));
+			}
+
+			const status = subscriptionStatusRef.current;
+			const isUpdated =
+				status === "active" || status === "trial" || status === "past_due";
+			if (isUpdated) {
+				localStorage.removeItem("asaas_checkout_pending");
+			}
+
+			setSyncingCheckout(false);
+			if (isAsaasSuccessReturn && !cancelled && !isUpdated) {
 				toast({
-					title: "Falha ao sincronizar assinatura",
-					description: msg,
+					title: "Ainda não confirmamos o pagamento",
+					description:
+						"Dê alguns segundos e recarregue a página se a assinatura não aparecer.",
 					variant: "destructive",
 				});
 			}
 
-			try {
-				await refetchSubscription();
-			} catch {
-				// ignore
-			}
-
-			if (cancelled) return;
-			localStorage.removeItem("stripe_checkout_pending");
-			setSyncingCheckout(false);
-
-			if (isStripeSuccessReturn) {
+			if (isAsaasReturn) {
 				const url = new URL(window.location.href);
-				url.searchParams.delete("stripe");
-				url.searchParams.delete("session_id");
+				url.searchParams.delete("asaas");
+				url.searchParams.delete("plan");
+				url.searchParams.delete("interval");
 				window.history.replaceState({}, "", url.toString());
 			}
 		})();
@@ -233,7 +249,7 @@ export default function ConfiguracoesView() {
 		return () => {
 			cancelled = true;
 		};
-	}, [refetchSubscription]);
+	}, [refetchSubscription, subscription?.status]);
 
 	useEffect(() => {
 		const planCode = (subscription?.plan_code ?? "").toLowerCase();
@@ -276,50 +292,38 @@ export default function ConfiguracoesView() {
 	const startCheckout = async () => {
 		try {
 			setStartingCheckout(true);
-			const tryCreateCheckout = async (planCode: "start" | "pro") => {
-				const { data, error } = await supabase.functions.invoke(
-					"stripe-create-checkout",
-					{
-						body: {
-							plan_code: planCode,
-							interval: billingInterval,
-						},
-					}
-				);
-				if (error) throw error;
-				if (!data?.url) throw new Error("Checkout não retornou URL");
-				return data.url as string;
-			};
-
-			try {
-				const url = await tryCreateCheckout(selectedPlan);
-				localStorage.setItem("stripe_checkout_pending", "1");
-				window.location.href = url;
-			} catch (err: unknown) {
-				const message = err instanceof Error ? err.message : String(err);
-				const isMissingProPrice =
-					selectedPlan === "pro" &&
-					(message.includes("Missing Stripe price env") ||
-						message.includes("STRIPE_PRICE_PRO"));
-				if (!isMissingProPrice) throw err;
-
-				setSelectedPlan("start");
-				toast({
-					title: "Plano Pro indisponível",
-					description: "Indo com o plano Start por enquanto.",
-					variant: "destructive",
-				});
-
-				const url = await tryCreateCheckout("start");
-				localStorage.setItem("stripe_checkout_pending", "1");
-				window.location.href = url;
+			const { data: refreshed, error: refreshError } =
+				await supabase.auth.refreshSession();
+			if (refreshError || !refreshed?.session?.access_token) {
+				await supabase.auth.signOut();
+				throw new Error("Sua sessão expirou. Faça login novamente.");
 			}
+			const accessToken = refreshed.session.access_token;
+
+			const data = await invokeEdgeFunction<{ url?: string }>(
+				"asaas-create-checkout",
+				{
+					accessToken,
+					body: {
+						plan_code: selectedPlan,
+						interval: billingInterval,
+					},
+				}
+			);
+			if (!data?.url) throw new Error("Checkout não retornou URL");
+			localStorage.setItem("asaas_checkout_pending", "1");
+			window.location.href = data.url as string;
 		} catch (err: unknown) {
 			console.error(err);
 			const message = err instanceof Error ? err.message : "Tente novamente.";
+			const isNetworkError =
+				err instanceof TypeError &&
+				/failed to fetch|networkerror|load failed/i.test(message);
 			toast({
 				title: "Não foi possível iniciar a assinatura",
-				description: message,
+				description: isNetworkError
+					? "Falha de conexão com a Edge Function. Verifique se a função 'asaas-create-checkout' está deployada e se VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY estão corretas no ambiente."
+					: message,
 				variant: "destructive",
 			});
 		} finally {
@@ -922,8 +926,8 @@ export default function ConfiguracoesView() {
 															: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 													}>
 													{billingInterval === "year"
-														? "Pro (recomendado) — R$ 97/mês* (R$ 1.164/ano)"
-														: "Pro (recomendado) — R$ 249/mês"}
+														? "Pro (recomendado) — R$ 1.164/ano (≈ R$ 97/mês + taxas)"
+														: "Pro (recomendado) — R$ 149,90/mês"}
 												</Button>
 												<Button
 													type="button"
@@ -937,8 +941,8 @@ export default function ConfiguracoesView() {
 															: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 													}>
 													{billingInterval === "year"
-														? "Start (básico) — R$ 149/mês (R$ 1.788/ano)"
-														: "Start (básico) — R$ 149/mês"}
+														? "Start (básico) — R$ 699/ano (≈ R$ 58/mês)"
+														: "Start (básico) — R$ 69,90/mês"}
 												</Button>
 											</div>
 											<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -980,12 +984,12 @@ export default function ConfiguracoesView() {
 														Redirecionando...
 													</>
 												) : (
-													"Assinar com Stripe"
+													"Assinar com Asaas"
 												)}
 											</Button>
 											<p className="text-[11px] text-gray-500">
 												Recomendamos o Pro para usar tudo liberado. Pagamento
-												seguro via Stripe. Você pode cancelar quando quiser.
+												seguro pelo Asaas. Você pode cancelar quando quiser.
 											</p>
 										</div>
 									)}

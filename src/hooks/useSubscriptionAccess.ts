@@ -125,44 +125,29 @@ export function useSubscriptionAccess() {
         const rawSub = query.data?.subscription ?? DEFAULT_SUB;
         const isSaasAdmin = query.data?.isSaasAdmin ?? false;
 
-        // Defensive: if plan_code/plan_name were written wrong, but Stripe price id is correct,
-        // prefer deriving the plan from the price id to avoid showing START for a PRO purchase.
-        const stripePriceId = (rawSub as TenantSubscription).stripe_price_id ?? null;
-        const priceStartMonth = (import.meta.env as any)
-            .VITE_STRIPE_PRICE_START_MONTHLY as string | undefined;
-        const priceStartYear = (import.meta.env as any)
-            .VITE_STRIPE_PRICE_START_YEARLY as string | undefined;
-        const priceProMonth = (import.meta.env as any)
-            .VITE_STRIPE_PRICE_PRO_MONTHLY as string | undefined;
-        const priceProYear = (import.meta.env as any)
-            .VITE_STRIPE_PRICE_PRO_YEARLY as string | undefined;
-
-        const inferredFromPriceId = (() => {
-            if (!stripePriceId) return null;
-            if (priceStartMonth && stripePriceId === priceStartMonth) {
-                return { plan_code: "start" as const, plan_name: "Arena Start", interval: "month" as const };
-            }
-            if (priceStartYear && stripePriceId === priceStartYear) {
-                return { plan_code: "start" as const, plan_name: "Arena Start", interval: "year" as const };
-            }
-            if (priceProMonth && stripePriceId === priceProMonth) {
-                return { plan_code: "pro" as const, plan_name: "Arena Pro", interval: "month" as const };
-            }
-            if (priceProYear && stripePriceId === priceProYear) {
-                return { plan_code: "pro" as const, plan_name: "Arena Pro", interval: "year" as const };
-            }
-            return null;
+        // Defensive (provider-agnostic): normalize plan_code/interval to avoid UI showing
+        // the wrong plan if the database row was written inconsistently.
+        const normalizedPlanCode = (() => {
+            const planCode = (rawSub.plan_code ?? "").toLowerCase();
+            if (planCode === "start" || planCode === "pro") return planCode;
+            const name = (rawSub.plan_name ?? "").toLowerCase();
+            if (name.includes("pro")) return "pro";
+            if (name.includes("start")) return "start";
+            return "start";
         })();
 
-        const sub: TenantSubscription = inferredFromPriceId
-            ? {
-                ...rawSub,
-                plan_code: inferredFromPriceId.plan_code,
-                plan_name: inferredFromPriceId.plan_name,
-                billing_interval:
-                    rawSub.billing_interval ?? inferredFromPriceId.interval,
-            }
-            : rawSub;
+        const normalizedInterval = (() => {
+            const interval = (rawSub.billing_interval ?? null) as unknown;
+            return interval === "month" || interval === "year" ? interval : null;
+        })();
+
+        const sub: TenantSubscription = {
+            ...rawSub,
+            plan_code: normalizedPlanCode,
+            billing_interval: normalizedInterval,
+            plan_name:
+                rawSub.plan_name ?? (normalizedPlanCode === "pro" ? "Arena Pro" : "Arena Start"),
+        };
 
         const isTrial = sub.status === "trial";
         const isActive = sub.status === "active";

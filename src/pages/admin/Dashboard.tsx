@@ -112,15 +112,15 @@ const SidebarFixed = ({
 		try {
 			if (navigator.share) {
 				await navigator.share(shareData);
-			} else {
-				await navigator.clipboard.writeText(shareData.url);
-				toast({
-					title: "Link copiado!",
-					description: "Cole no WhatsApp para divulgar.",
-				});
+				return;
 			}
-		} catch (err) {
-			console.log("Compartilhamento cancelado");
+			await navigator.clipboard.writeText(shareData.url);
+			toast({
+				title: "Link copiado",
+				description: "Cole e compartilhe com seus clientes.",
+			});
+		} catch {
+			// user canceled or unsupported
 		}
 	};
 
@@ -133,16 +133,6 @@ const SidebarFixed = ({
 
 	return (
 		<>
-			<div
-				className={cn(
-					"fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-opacity duration-300 md:hidden",
-					mobileOpen
-						? "opacity-100 pointer-events-auto"
-						: "opacity-0 pointer-events-none"
-				)}
-				onClick={() => setMobileOpen(false)}
-			/>
-
 			<aside
 				className={cn(
 					"fixed top-0 left-0 z-50 h-full bg-[#050507]/95 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out shadow-2xl flex flex-col",
@@ -538,33 +528,23 @@ export default function DashboardHome() {
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const isStripeReturn =
-			params.get("stripe") === "success" ||
-			params.get("stripe") === "cancel" ||
-			Boolean(params.get("session_id"));
-		const stripeSessionId = params.get("session_id");
-		const stripeResult = params.get("stripe");
-		const pending = localStorage.getItem("stripe_checkout_pending") === "1";
-		const storedSessionKey = "stripe_checkout_session_id";
-		if (stripeSessionId) {
-			localStorage.setItem(storedSessionKey, stripeSessionId);
-		}
-		const storedSessionId = localStorage.getItem(storedSessionKey);
-		const effectiveSessionId = stripeSessionId || storedSessionId;
-		const isStripeSuccessReturn =
-			stripeResult === "success" && Boolean(effectiveSessionId);
-		const isStripeCancelReturn = stripeResult === "cancel";
+		const asaasStatus = params.get("asaas");
+		const isAsaasReturn =
+			asaasStatus === "success" ||
+			asaasStatus === "cancel" ||
+			asaasStatus === "expired";
+		const isAsaasSuccessReturn = asaasStatus === "success";
+		const isAsaasCancelReturn =
+			asaasStatus === "cancel" || asaasStatus === "expired";
+		const pending = localStorage.getItem("asaas_checkout_pending") === "1";
 
-		if (!pending && !isStripeReturn && !effectiveSessionId) return;
-		if (isStripeCancelReturn) {
-			localStorage.removeItem("stripe_checkout_pending");
-			localStorage.removeItem(storedSessionKey);
+		if (!pending && !isAsaasReturn) return;
+		if (isAsaasCancelReturn) {
+			localStorage.removeItem("asaas_checkout_pending");
 			return;
 		}
-		// If we only have a pending flag (no Stripe return params) and access is already granted,
-		// there is nothing to do.
-		if (!isStripeReturn && hasAccessRef.current && !effectiveSessionId) {
-			localStorage.removeItem("stripe_checkout_pending");
+		if (!isAsaasReturn && hasAccessRef.current) {
+			localStorage.removeItem("asaas_checkout_pending");
 			return;
 		}
 
@@ -572,100 +552,44 @@ export default function DashboardHome() {
 		setSyncingCheckout(true);
 
 		(async () => {
-			let lastSyncError: string | null = null;
-			let didAttemptSync = false;
 			const startedAt = Date.now();
 			const maxBlockingMs = 12_000;
 			while (!cancelled && Date.now() - startedAt < maxBlockingMs) {
-				// If we have a successful return with a checkout session id,
-				// try to sync subscription status. IMPORTANT: retry because auth session
-				// may still be restoring right after the redirect.
-				if (isStripeSuccessReturn && effectiveSessionId) {
-					try {
-						const {
-							data: { session },
-						} = await supabase.auth.getSession();
-						const accessToken = session?.access_token;
-						if (accessToken) {
-							didAttemptSync = true;
-							try {
-								const syncRes = await invokeEdgeFunction<{
-									synced?: boolean;
-									subscription?: { status?: string; plan_code?: string } | null;
-								}>("stripe-sync-checkout", {
-									accessToken,
-									body: { session_id: effectiveSessionId },
-								});
-
-								const s = syncRes?.subscription;
-								if (s?.status === "active" || s?.status === "past_due") {
-									try {
-										await refetchSubscription();
-									} catch {
-										// ignore
-									}
-									break;
-								}
-							} catch (err: unknown) {
-								const msg =
-									getStringProp(err, "message") ||
-									"Não foi possível sincronizar a assinatura.";
-								lastSyncError = msg;
-								console.error("stripe-sync-checkout failed", err);
-							}
-						}
-					} catch {
-						// non-fatal: keep polling refetchSubscription below
-					}
-				}
-
 				try {
 					await refetchSubscription();
 				} catch {
-					// ignore and keep retrying briefly
+					// ignore and keep retrying
 				}
 
-				if (isStripeSuccessReturn) {
-					const status = subscriptionStatusRef.current;
-					if (status === "active" || status === "past_due") break;
-				} else {
-					if (hasAccessRef.current) break;
-				}
+				if (hasAccessRef.current) break;
 				await new Promise((r) => setTimeout(r, 800));
 			}
 
-			// Only clear the pending marker when we actually observe the subscription updated.
-			const finalStatus = subscriptionStatusRef.current;
-			const isUpdated = finalStatus === "active" || finalStatus === "past_due";
+			const isUpdated = hasAccessRef.current;
 			if (isUpdated) {
-				localStorage.removeItem("stripe_checkout_pending");
-				localStorage.removeItem(storedSessionKey);
+				localStorage.removeItem("asaas_checkout_pending");
 			}
 			setSyncingCheckout(false);
 			if (
-				isStripeSuccessReturn &&
+				isAsaasSuccessReturn &&
 				!cancelled &&
 				!isUpdated &&
-				lastSyncError &&
 				!syncErrorShownRef.current
 			) {
 				syncErrorShownRef.current = true;
 				toast({
-					title: "Falha ao sincronizar assinatura",
-					description: lastSyncError,
+					title: "Ainda não confirmamos o pagamento",
+					description:
+						"Dê alguns segundos e recarregue a página se o acesso ainda não aparecer.",
 					variant: "destructive",
 				});
 			}
-			if (isStripeSuccessReturn && !cancelled && !didAttemptSync) {
-				// We returned from Stripe before the auth session was restored.
-				// Keep pending/session_id so a reload can retry syncing.
-			}
 
-			// Clean query params so we don't keep retrying on refresh.
-			if (isStripeReturn) {
+			if (isAsaasReturn) {
 				const url = new URL(window.location.href);
-				url.searchParams.delete("stripe");
-				url.searchParams.delete("session_id");
+				url.searchParams.delete("asaas");
+				url.searchParams.delete("plan");
+				url.searchParams.delete("interval");
 				window.history.replaceState({}, "", url.toString());
 			}
 		})();
@@ -750,7 +674,7 @@ export default function DashboardHome() {
 			const accessToken = refreshed.session.access_token;
 
 			const data = await invokeEdgeFunction<{ url?: string }>(
-				"stripe-create-checkout",
+				"asaas-create-checkout",
 				{
 					accessToken,
 					body: {
@@ -760,48 +684,11 @@ export default function DashboardHome() {
 				}
 			);
 			if (!data?.url) throw new Error("Checkout não retornou URL");
-			localStorage.setItem("stripe_checkout_pending", "1");
+			localStorage.setItem("asaas_checkout_pending", "1");
 			window.location.href = data.url;
 		} catch (err: unknown) {
 			console.error(err);
 			const message = getStringProp(err, "message") || "";
-			const isMissingProPrice =
-				selectedPlan === "pro" &&
-				(message.includes("Missing Stripe price env") ||
-					message.includes("STRIPE_PRICE_PRO"));
-			if (isMissingProPrice) {
-				try {
-					setSelectedPlan("start");
-					toast({
-						title: "Plano Pro indisponível",
-						description: "Indo com o plano Start por enquanto.",
-						variant: "destructive",
-					});
-
-					const {
-						data: { session: retrySession },
-					} = await supabase.auth.getSession();
-					const retryAccessToken = retrySession?.access_token;
-					if (!retryAccessToken) throw new Error("Sessão inválida.");
-
-					const retryData = await invokeEdgeFunction<{ url?: string }>(
-						"stripe-create-checkout",
-						{
-							accessToken: retryAccessToken,
-							body: {
-								plan_code: "start",
-								interval: billingInterval,
-							},
-						}
-					);
-					if (!retryData?.url) throw new Error("Checkout não retornou URL");
-					localStorage.setItem("stripe_checkout_pending", "1");
-					window.location.href = retryData.url;
-					return;
-				} catch {
-					// Fall through to default error toast below
-				}
-			}
 			if (message.includes("Invalid JWT") || message.startsWith("401 ")) {
 				await supabase.auth.signOut();
 				toast({
@@ -980,6 +867,52 @@ export default function DashboardHome() {
 
 	// Hard paywall: após expirar trial + carência, bloqueia o painel
 	if (!hasAccess) {
+		const planMatrix = [
+			{
+				plan: "pro",
+				label: "Plano Pro",
+				tagline: "Tudo liberado para gerenciar reservas e receita",
+				badge: "Mais vendido",
+				monthly: "R$ 149,90/mês",
+				annual: "R$ 1.164/ano (≈ R$ 97/mês + taxas)",
+				highlights: [
+					"Quadras, turmas e pagamentos ilimitados",
+					"Relatórios e alertas inteligentes",
+					"Suporte priorizado e integrações",
+				],
+			},
+			{
+				plan: "start",
+				label: "Plano Start",
+				tagline: "Operação enxuta com tudo que precisa para começar",
+				badge: "Essencial",
+				monthly: "R$ 69,90/mês",
+				annual: "R$ 699/ano (≈ R$ 58/mês)",
+				highlights: [
+					"Dashboard de reservas e relatórios básicos",
+					"Central de contatos e notificações",
+					"Upgrade para o Pro sempre que precisar",
+				],
+			},
+		];
+		const checkoutSteps = [
+			{
+				number: "01",
+				title: "Escolha o plano",
+				description: "Selecione Pro ou Start e decida se quer mensal ou anual.",
+			},
+			{
+				number: "02",
+				title: "Checkout oficial Asaas",
+				description:
+					"Abrimos a página segura do Asaas com parcelamento em até 12x.",
+			},
+			{
+				number: "03",
+				title: "Confirme e volte",
+				description: "Assim que o pagamento é confirmado, liberamos o acesso.",
+			},
+		];
 		return (
 			<div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
 				<Card className="w-full max-w-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
@@ -988,11 +921,123 @@ export default function DashboardHome() {
 							<Lock className="h-5 w-5" /> Acesso bloqueado
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="space-y-4">
-						<p className="text-sm text-gray-400">
-							Seu trial acabou e o sistema foi bloqueado. Ative uma assinatura
-							para continuar.
-						</p>
+					<CardContent className="space-y-6">
+						<section className="rounded-3xl bg-gradient-to-r from-emerald-500/20 to-blue-500/10 border border-white/20 p-6 space-y-3 shadow-[0_20px_50px_rgba(5,150,105,0.25)]">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70">
+										Checkout transparente
+									</p>
+									<h3 className="text-xl font-bold text-white">
+										Planos Arena Sports
+									</h3>
+								</div>
+								<span className="rounded-full bg-white/[0.08] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white">
+									Asaas
+								</span>
+							</div>
+							<p className="text-sm text-white/80">
+								Nosso processo de assinatura mostra exatamente o valor, o
+								parcelamento e cada etapa antes de ir para o Asaas.
+							</p>
+							<div className="grid grid-cols-2 gap-4 text-[11px] text-white/70">
+								<div className="flex flex-col">
+									<span className="uppercase tracking-[0.4em] text-emerald-200">
+										Parcelamento
+									</span>
+									<strong className="text-lg text-white">até 12x*</strong>
+								</div>
+								<div className="flex flex-col">
+									<span className="uppercase tracking-[0.4em] text-emerald-200">
+										Suporte
+									</span>
+									<strong className="text-lg text-white">Prioritário</strong>
+								</div>
+							</div>
+						</section>
+						<section className="space-y-3">
+							<div className="flex items-center justify-between">
+								<p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/70">
+									Escolha uma base
+								</p>
+								<p className="text-xs text-gray-400">
+									Toque no cartão para ver o preço mensal e anual.
+								</p>
+							</div>
+							<div className="grid gap-4 md:grid-cols-2">
+								{planMatrix.map((plan) => {
+									const isActive = selectedPlan === plan.plan;
+									return (
+										<div
+											key={plan.plan}
+											className={cn(
+												"rounded-3xl border p-5 space-y-4 transition-all",
+												isActive
+													? "border-emerald-400 bg-emerald-500/10 shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
+													: "border-white/10 bg-white/5"
+											)}>
+											<div className="flex items-start justify-between">
+												<div>
+													<p className="text-base font-semibold text-white">
+														{plan.label}
+													</p>
+													<p className="text-xs text-gray-400">
+														{plan.tagline}
+													</p>
+												</div>
+												{plan.badge && (
+													<span className="rounded-full bg-emerald-500/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-200">
+														{plan.badge}
+													</span>
+												)}
+											</div>
+											<div className="grid grid-cols-2 gap-3">
+												{[
+													{
+														label: "Mensal",
+														price: plan.monthly,
+														active:
+															selectedPlan === plan.plan &&
+															billingInterval === "month",
+													},
+													{
+														label: "Anual",
+														price: plan.annual,
+														active:
+															selectedPlan === plan.plan &&
+															billingInterval === "year",
+													},
+												].map((priceOption) => (
+													<div
+														key={priceOption.label}
+														className={cn(
+															"rounded-2xl border p-3 text-sm",
+															priceOption.active
+																? "border-emerald-400 bg-emerald-500/10 text-white"
+																: "border-white/10 bg-white/5 text-gray-200"
+														)}>
+														<p className="uppercase tracking-[0.3em] text-[10px]">
+															{priceOption.label}
+														</p>
+														<p className="text-lg font-bold">
+															{priceOption.price}
+														</p>
+													</div>
+												))}
+											</div>
+											<ul className="space-y-1 text-[12px] text-gray-300">
+												{plan.highlights.map((item) => (
+													<li key={item} className="flex items-start gap-2">
+														<span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
+														<span>{item}</span>
+													</li>
+												))}
+											</ul>
+										</div>
+									);
+								})}
+							</div>
+						</section>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 							<Button
 								type="button"
@@ -1004,8 +1049,8 @@ export default function DashboardHome() {
 										: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 								}>
 								{billingInterval === "year"
-									? "Pro (recomendado) — R$ 97/mês* (R$ 1.164/ano)"
-									: "Pro (recomendado) — R$ 249/mês"}
+									? "Pro (recomendado) — R$ 1.164/ano (≈ R$ 97/mês + taxas)"
+									: "Pro (recomendado) — R$ 149,90/mês"}
 							</Button>
 							<Button
 								type="button"
@@ -1017,8 +1062,8 @@ export default function DashboardHome() {
 										: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
 								}>
 								{billingInterval === "year"
-									? "Start (básico) — R$ 149/mês (R$ 1.788/ano)"
-									: "Start (básico) — R$ 149/mês"}
+									? "Start (básico) — R$ 699/ano (≈ R$ 58/mês)"
+									: "Start (básico) — R$ 69,90/mês"}
 							</Button>
 						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1056,13 +1101,31 @@ export default function DashboardHome() {
 									Redirecionando...
 								</>
 							) : (
-								"Assinar com Stripe"
+								"Assinar com Asaas"
 							)}
 						</Button>
-						<p className="text-[11px] text-gray-500">
-							Recomendamos o Pro para usar tudo liberado. Pagamento seguro via
-							Stripe. Você pode cancelar quando quiser.
+						<p className="text-[11px] text-gray-400">
+							Recomendamos o Pro para usar tudo liberado. Pagamento seguro pelo
+							Asaas com transparência total.
 						</p>
+						<div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3 text-sm text-gray-200">
+							<p className="text-[11px] uppercase tracking-[0.3em] text-gray-400">
+								Fluxo do checkout
+							</p>
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+								{checkoutSteps.map((step) => (
+									<div key={step.title} className="space-y-1">
+										<p className="text-2xl font-bold text-white">
+											{step.number}
+										</p>
+										<p className="text-xs uppercase tracking-[0.4em] text-emerald-300">
+											{step.title}
+										</p>
+										<p className="text-sm text-white/70">{step.description}</p>
+									</div>
+								))}
+							</div>
+						</div>
 					</CardContent>
 				</Card>
 			</div>

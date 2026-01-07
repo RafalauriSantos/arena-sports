@@ -226,6 +226,12 @@ verify_jwt = false
 [functions.stripe-sync-checkout]
 verify_jwt = false
 
+[functions.asaas-create-checkout]
+verify_jwt = false
+
+[functions.asaas-webhook]
+verify_jwt = false
+
 # Use a production-ready SMTP server
 # [auth.email.smtp]
 # enabled = true
