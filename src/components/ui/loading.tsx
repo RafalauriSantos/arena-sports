@@ -52,8 +52,7 @@ export function ButtonLoading({
 	children: React.ReactNode;
 	loading: boolean;
 	className?: string;
-	[key: string]: any;
-}) {
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
 	return (
 		<button
 			className={cn(
