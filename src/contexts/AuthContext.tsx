@@ -48,6 +48,7 @@ interface AuthContextValue {
 	userProfile?: UserProfile | null;
 	tenantId: string | null;
 	loading: boolean;
+	authOperationLoading: boolean;
 	updateProfile?: (
 		updates: Partial<UserProfile>
 	) => Promise<UserProfile | null>;
@@ -218,6 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 	const [tenantId, setTenantId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [authOperationLoading, setAuthOperationLoading] = useState(false);
 	const onboardingState = useRef<{ userId: string | null; attempts: number }>({
 		userId: null,
 		attempts: 0,
@@ -370,10 +372,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			userProfile,
 			tenantId,
 			loading,
+			authOperationLoading,
 			updateProfile: doUpdateProfile,
 			signOut,
 		}),
-		[doUpdateProfile, loading, signOut, tenantId, user, userProfile]
+		[
+			doUpdateProfile,
+			loading,
+			authOperationLoading,
+			signOut,
+			tenantId,
+			user,
+			userProfile,
+		]
 	);
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

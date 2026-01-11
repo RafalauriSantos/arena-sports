@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Sparkles, Calendar, Users, ArrowRight, Trophy } from "lucide-react";
+import {
+	CheckCircle2,
+	Sparkles,
+	Calendar,
+	Users,
+	ArrowRight,
+	Trophy,
+} from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
@@ -27,8 +34,7 @@ function Confetti() {
 						left: `${Math.random() * 100}%`,
 						animationDelay: `${Math.random() * 2}s`,
 						animationDuration: `${2 + Math.random() * 2}s`,
-					}}
-				>
+					}}>
 					{["🎉", "✨", "⭐", "🎊"][Math.floor(Math.random() * 4)]}
 				</div>
 			))}
@@ -65,17 +71,21 @@ export default function Welcome() {
 	const navigate = useNavigate();
 	const { userProfile, tenantId } = useAuth();
 	const { subscription } = useSubscriptionAccess();
-	
+
 	const [loading, setLoading] = useState(true);
 	const [businessName, setBusinessName] = useState<string>("");
 	const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
-	const [trialDays, setTrialDays] = useState<{ current: number; total: number }>({ current: 1, total: 21 });
+	const [trialDays, setTrialDays] = useState<{
+		current: number;
+		total: number;
+	}>({ current: 1, total: 21 });
 	const [showConfetti, setShowConfetti] = useState(true);
+	const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
 	const timerRef = useRef<number | null>(null);
 
 	// Nome do usuário (fallback para email se não tiver full_name)
-	const userName = userProfile?.full_name 
-		? userProfile.full_name.split(" ")[0] 
+	const userName = userProfile?.full_name
+		? userProfile.full_name.split(" ")[0]
 		: userProfile?.email?.split("@")[0] || "Arena";
 
 	useEffect(() => {
@@ -125,9 +135,14 @@ export default function Welcome() {
 				const started = new Date(subscription.trial_started_at);
 				const ends = new Date(subscription.trial_ends_at);
 				const now = new Date();
-				const totalDays = Math.ceil((ends.getTime() - started.getTime()) / (1000 * 60 * 60 * 24));
-				const currentDay = Math.ceil((now.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-				
+				const totalDays = Math.ceil(
+					(ends.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)
+				);
+				const currentDay =
+					Math.ceil(
+						(now.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)
+					) + 1;
+
 				setTrialDays({
 					current: Math.max(1, Math.min(currentDay, totalDays)),
 					total: totalDays,
@@ -203,7 +218,9 @@ export default function Welcome() {
 
 	const progressPercentage = (trialDays.current / trialDays.total) * 100;
 	const completedCount = checklist.filter((item) => item.completed).length;
-	const totalChecklistItems = checklist.filter((item) => item.id !== "invite-team").length; // Não conta "em breve"
+	const totalChecklistItems = checklist.filter(
+		(item) => item.id !== "invite-team"
+	).length; // Não conta "em breve"
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
@@ -228,7 +245,10 @@ export default function Welcome() {
 						</div>
 
 						<h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1.1]">
-							Bem-vindo ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Arena Sports</span>
+							Bem-vindo ao{" "}
+							<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+								Arena Sports
+							</span>
 							{userName && `, ${userName}!`}
 						</h1>
 
@@ -250,21 +270,27 @@ export default function Welcome() {
 									21 dias gratuitos
 								</div>
 								<p className="text-gray-300 text-sm">
-									Você tem <strong className="text-white">21 dias gratuitos</strong> para testar tudo sem compromisso.
+									Você tem{" "}
+									<strong className="text-white">21 dias gratuitos</strong> para
+									testar tudo sem compromisso.
 								</p>
 							</div>
 
 							{/* Barra de Progresso do Trial */}
 							<div className="space-y-2">
 								<div className="flex items-center justify-between text-xs text-gray-400">
-									<span>Dia {trialDays.current} de {trialDays.total} do seu teste grátis</span>
-									<span className="font-bold text-emerald-400">{trialDays.total - trialDays.current} dias restantes</span>
+									<span>
+										Dia {trialDays.current} de {trialDays.total} do seu teste
+										grátis
+									</span>
+									<span className="font-bold text-emerald-400">
+										{trialDays.total - trialDays.current} dias restantes
+									</span>
 								</div>
 								<div className="h-3 w-full rounded-full bg-white/5 overflow-hidden border border-white/10">
 									<div
 										className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
-										style={{ width: `${progressPercentage}%` }}
-									>
+										style={{ width: `${progressPercentage}%` }}>
 										<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
 									</div>
 								</div>
@@ -295,24 +321,30 @@ export default function Welcome() {
 											disabled={!item.onClick}
 											className={`
 												w-full flex items-center gap-3 p-3 rounded-lg border transition-all
-												${item.completed
-													? "bg-emerald-500/10 border-emerald-500/30 text-white"
-													: item.onClick
-													? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-emerald-500/30 text-gray-300 hover:text-white cursor-pointer"
-													: "bg-white/5 border-white/10 text-gray-500 cursor-not-allowed opacity-60"
+												${
+													item.completed
+														? "bg-emerald-500/10 border-emerald-500/30 text-white"
+														: item.onClick
+														? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-emerald-500/30 text-gray-300 hover:text-white cursor-pointer"
+														: "bg-white/5 border-white/10 text-gray-500 cursor-not-allowed opacity-60"
 												}
-											`}
-										>
-											<div className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
-												item.completed
-													? "bg-emerald-500 border-emerald-500"
-													: "border-gray-500"
-											}`}>
-												{item.completed && <CheckCircle2 className="w-3 h-3 text-black" />}
+											`}>
+											<div
+												className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
+													item.completed
+														? "bg-emerald-500 border-emerald-500"
+														: "border-gray-500"
+												}`}>
+												{item.completed && (
+													<CheckCircle2 className="w-3 h-3 text-black" />
+												)}
 											</div>
 											<div className="flex-1 flex items-center gap-2">
 												{item.icon}
-												<span className={`text-sm font-medium ${item.completed ? "line-through opacity-70" : ""}`}>
+												<span
+													className={`text-sm font-medium ${
+														item.completed ? "line-through opacity-70" : ""
+													}`}>
 													{item.label}
 												</span>
 											</div>
@@ -322,7 +354,7 @@ export default function Welcome() {
 										</button>
 									))}
 								</div>
-								
+
 								{/* Progresso do Checklist */}
 								<div className="pt-2 text-center">
 									<p className="text-xs text-gray-500">
@@ -331,7 +363,11 @@ export default function Welcome() {
 									<div className="h-1.5 w-full rounded-full bg-white/5 mt-2 overflow-hidden">
 										<div
 											className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-500"
-											style={{ width: `${(completedCount / totalChecklistItems) * 100}%` }}
+											style={{
+												width: `${
+													(completedCount / totalChecklistItems) * 100
+												}%`,
+											}}
 										/>
 									</div>
 								</div>
@@ -341,21 +377,42 @@ export default function Welcome() {
 							<div className="pt-4">
 								<Button
 									onClick={async () => {
-										// Marcar onboarding como completo no banco
-										const { data: { user } } = await supabase.auth.getUser();
-										if (user) {
-											await supabase
-												.from("profiles")
-												.update({ onboarding_completed_at: new Date().toISOString() })
-												.eq("id", user.id);
+										setIsCompletingOnboarding(true);
+										try {
+											// Marcar onboarding como completo no banco
+											const {
+												data: { user },
+											} = await supabase.auth.getUser();
+											if (user) {
+												await supabase
+													.from("profiles")
+													.update({
+														onboarding_completed_at: new Date().toISOString(),
+													})
+													.eq("id", user.id);
+											}
+											// Pequeno delay para feedback visual
+											await new Promise((resolve) => setTimeout(resolve, 1000));
+											// Ir para dashboard
+											navigate("/dashboard");
+										} catch (error) {
+											console.error("Erro ao completar onboarding:", error);
+											setIsCompletingOnboarding(false);
 										}
-										// Ir para dashboard
-										navigate("/dashboard");
 									}}
-									className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-								>
-									Começar Agora
-									<ArrowRight className="w-4 h-4" />
+									disabled={isCompletingOnboarding}
+									className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+									{isCompletingOnboarding ? (
+										<>
+											<div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+											Configurando sua arena...
+										</>
+									) : (
+										<>
+											Começar Agora
+											<ArrowRight className="w-4 h-4" />
+										</>
+									)}
 								</Button>
 								<p className="text-center text-xs text-gray-500 mt-3">
 									Pequenos extras que marcam muito 💚
@@ -367,8 +424,9 @@ export default function Welcome() {
 					{/* Mensagem Final */}
 					<div className="text-center">
 						<p className="text-gray-500 text-xs">
-							Seu trial termina em {trialDays.total - trialDays.current} dias. 
-							Durante este período, você tem acesso completo a todas as funcionalidades.
+							Seu trial termina em {trialDays.total - trialDays.current} dias.
+							Durante este período, você tem acesso completo a todas as
+							funcionalidades.
 						</p>
 					</div>
 				</div>

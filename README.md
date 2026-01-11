@@ -37,17 +37,140 @@ bun dev
 
 A build de produção também foi verificada usando Bun (`bun run build`) e completou com sucesso. Se o servidor de desenvolvimento usar outra porta, utilize a URL exibida pelo Vite no terminal.
 
-## 🛠 Tecnologias Utilizadas
+## � Guia de Desenvolvimento
 
-O projeto foi construído com foco em **performance** e **DX (Developer Experience)**, utilizando o que há de mais moderno no ecossistema JavaScript:
+### Pré-requisitos
 
-- **[React 19](https://react.dev/):** Biblioteca principal para construção da interface.
-- **[Vite](https://vitejs.dev/):** Build tool de próxima geração (extremamente rápido).
-- **[Bun](https://bun.sh/):** Runtime e gerenciador de pacotes (substituindo o Node.js para maior velocidade).
-- **[TypeScript](https://www.typescriptlang.org/):** Tipagem estática para maior segurança e escalabilidade.
-- **[Tailwind CSS](https://tailwindcss.com/) & [Shadcn/UI](https://ui.shadcn.com/):** Para estilização moderna, responsiva e acessível.
-- **React Router DOM:** Gerenciamento de rotas e navegação SPA.
-- **React Helmet Async:** Otimização de SEO e metadados.
+- **Bun** (recomendado) ou Node.js 18+
+- **Git**
+- Conta no **Supabase**
+- Conta no **Asaas** (para pagamentos)
+
+### Instalação
+
+```bash
+# Clone o repositório
+git clone https://github.com/RafalauriSantos/arena-sports.git
+cd arena-sports
+
+# Instale as dependências
+bun install
+
+# Copie o arquivo de variáveis de ambiente
+cp .env.example .env.local
+
+# Configure as variáveis de ambiente (veja seção abaixo)
+```
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto:
+
+```env
+# Supabase
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Asaas (pagamentos)
+ASAAS_API_KEY=your_asaas_api_key
+ASAAS_WEBHOOK_SECRET=your_webhook_secret
+```
+
+### Desenvolvimento Local
+
+```bash
+# Iniciar servidor de desenvolvimento
+bun dev
+
+# Build para produção
+bun run build
+
+# Preview da build
+bun run preview
+```
+
+### Testes
+
+O projeto inclui scripts de teste automatizados:
+
+```bash
+# Teste completo da suite
+bun run scripts/test-suite-complete.ts
+
+# Teste de fluxo completo (cadastro → onboarding → billing)
+bun run scripts/test-fluxo-completo.ts
+
+# Testes individuais
+bun run scripts/testAsaasCreateCheckout.ts
+bun run scripts/testAsaasWebhook.ts
+bun run scripts/testTenantIsolation.sql
+```
+
+### Banco de Dados
+
+```bash
+# Aplicar migrations
+npx supabase@latest db push
+
+# Reset do banco local (desenvolvimento)
+npx supabase@latest db reset
+
+# Ver status das migrations
+npx supabase@latest migration list
+```
+
+## 🧪 Testes e Qualidade
+
+### Testes Automatizados
+
+Execute a suite completa de testes antes de fazer deploy:
+
+```bash
+# Teste de conectividade e isolamento
+✅ Conectividade do Banco
+✅ Sistema de Autenticação
+✅ Isolamento Multi-Tenant
+✅ Integração Asaas
+✅ Performance Básica
+
+# Teste de fluxo completo
+✅ Cadastro → Onboarding → Checkout → Webhook
+```
+
+### Checklist de Produção
+
+- [ ] Todos os testes passando
+- [ ] Migrations aplicadas no banco remoto
+- [ ] Secrets do Asaas configuradas
+- [ ] Build de produção funcionando
+- [ ] PWA testado em dispositivos móveis
+- [ ] Isolamento de tenants validado
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+
+1. Conecte seu repositório no Vercel
+2. Configure as variáveis de ambiente
+3. Deploy automático a cada push na main
+
+### Configuração de Produção
+
+```bash
+# Build otimizado
+bun run build
+
+# Preview antes do deploy
+bun run preview
+```
+
+### Pós-Deploy
+
+1. **Configurar domínio personalizado** no Vercel
+2. **Configurar webhooks do Asaas** apontando para produção
+3. **Testar fluxo completo** em produção
+4. **Monitorar logs** das Edge Functions
 
 ## 🚀 Como Rodar o Projeto
 

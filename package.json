@@ -11,7 +11,16 @@
 		"lint": "eslint .",
 		"preview": "vite preview",
 		"clean": "rm -rf node_modules/.vite dist .vite",
-		"clean:cache": "rm -rf node_modules/.vite .vite"
+		"clean:cache": "rm -rf node_modules/.vite .vite",
+		"test": "bun run scripts/test-suite-complete.ts",
+		"test:flow": "bun run scripts/test-fluxo-completo.ts",
+		"test:asaas": "bun run scripts/testAsaasCreateCheckout.ts && bun run scripts/testAsaasWebhook.ts",
+		"test:tenant": "bun run scripts/testTenantIsolation.sql",
+		"audit:perf": "bun run scripts/performance-audit.ts",
+		"check:deploy": "bun run scripts/pre-flight-checklist.ts",
+		"db:push": "npx supabase@latest db push",
+		"db:reset": "npx supabase@latest db reset",
+		"db:status": "npx supabase@latest migration list"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.10.0",
