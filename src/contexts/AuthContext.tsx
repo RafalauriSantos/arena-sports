@@ -74,23 +74,34 @@ const isUniqueViolation = (err: unknown) => {
 };
 
 const ensureProfileRowById = async (userId: string, email?: string | null) => {
+	// Verificar se o perfil já existe antes de tentar inserir
+	const existing = await fetchProfile(userId);
+	if (existing) return;
+
+	// Se não existe, criar usando upsert (mais seguro que insert)
 	try {
 		const payload: Record<string, unknown> = { id: userId };
 		if (email) payload.email = email;
-		const { error } = await supabase.from("profiles").insert(payload);
+		const { error } = await supabase
+			.from("profiles")
+			.upsert(payload, { onConflict: "id" });
 		if (error) {
+			// Se ainda assim der erro de violação única, significa que foi criado em outra thread
 			if (isUniqueViolation(error)) return;
 			throw error;
 		}
 	} catch (err) {
+		// Ignorar apenas erros de violação única (registro já existe)
 		if (isUniqueViolation(err)) return;
 		throw err;
 	}
 };
 
 const updateProfile = async (userId: string, updates: Partial<UserProfile>) => {
+	// Garantir que o perfil existe (se não existir, será criado)
 	await ensureProfileRowById(userId);
 
+	// Atualizar o perfil usando .update() (assume que já existe)
 	const { data, error } = await supabase
 		.from("profiles")
 		.update(updates)
@@ -98,7 +109,23 @@ const updateProfile = async (userId: string, updates: Partial<UserProfile>) => {
 		.select("id, tenant_id, full_name, email, avatar_url, job_title")
 		.maybeSingle();
 
-	if (error) throw error;
+	if (error) {
+		// Se o erro for "not found" ou similar, tentar upsert como fallback
+		const message = getStringProp(error, "message") ?? "";
+		if (/not found|does not exist|no rows/i.test(message)) {
+			// Fallback: usar upsert se o registro não foi encontrado
+			const payload = { id: userId, ...updates };
+			const { data: upsertData, error: upsertError } = await supabase
+				.from("profiles")
+				.upsert(payload, { onConflict: "id" })
+				.select("id, tenant_id, full_name, email, avatar_url, job_title")
+				.maybeSingle();
+			if (upsertError) throw upsertError;
+			return (upsertData ?? (await fetchProfile(userId))) as UserProfile;
+		}
+		throw error;
+	}
+
 	return (data ?? (await fetchProfile(userId))) as UserProfile;
 };
 
@@ -292,7 +319,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				}
 				// If something smells like auth/session problems, sign out to stop loops.
 				if (
-					/invalid jwt|jwt expired|not authenticated|unauthorized/i.test(
+					/invalid jwt|jwt expired|not authenticated|unauthorized|invalid refresh token/i.test(
 						message
 					)
 				) {

@@ -43,6 +43,7 @@ interface TenantData {
   address: string;
   description: string;
   subdomain: string;
+  cpf_cnpj: string;
   settings: Record<string, unknown>;
 }
 
@@ -107,6 +108,7 @@ export function useSettings() {
       address: "",
       description: "",
       subdomain: "",
+      cpf_cnpj: "",
       settings: {},
     } as TenantData,
     courts: [] as Court[],
@@ -165,6 +167,7 @@ export function useSettings() {
             address: tenantRes.data.address || "",
             description: tenantRes.data.description || "",
             subdomain: tenantRes.data.subdomain || "",
+            cpf_cnpj: tenantRes.data.document || "", // Map from DB column 'document'
             settings: tenantRes.data.settings || {},
           },
           courts: Array.isArray(courtsRes.data)
@@ -212,6 +215,12 @@ export function useSettings() {
         throw new Error("WhatsApp inválido. Use DDD + número (10/11 dígitos) ou 55 + DDD + número.");
       }
 
+      // Validate CPF/CNPJ
+      const cpfCnpj = formData.tenant.cpf_cnpj?.replace(/\D/g, "") || "";
+      if (cpfCnpj && cpfCnpj.length !== 11 && cpfCnpj.length !== 14) {
+        throw new Error("CPF/CNPJ inválido. CPF deve ter 11 dígitos, CNPJ 14 dígitos.");
+      }
+
       // Prepara o JSON atualizado com as novas regras financeiras
       const currentSettings = formData.tenant.settings || {};
       const updatedSettingsJSON = {
@@ -229,6 +238,7 @@ export function useSettings() {
           email: formData.tenant.email,
           address: formData.tenant.address,
           description: formData.tenant.description,
+          document: formData.tenant.cpf_cnpj, // Map to DB column 'document'
           settings: updatedSettingsJSON, // <--- SALVA O JSON COM AS REGRAS FINANCEIRAS
         })
         .eq("id", tenantId);

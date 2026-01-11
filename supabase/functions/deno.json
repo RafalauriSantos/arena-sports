@@ -1,7 +1,8 @@
 {
 	"compilerOptions": {
 		"lib": ["deno.ns", "dom", "dom.iterable", "esnext"],
-		"strict": true
+		"strict": true,
+		"noCheck": true
 	},
 	"imports": {
 		"@supabase/supabase-js": "npm:@supabase/supabase-js@2.89.0"

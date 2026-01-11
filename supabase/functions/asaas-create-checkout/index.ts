@@ -1,330 +1,576 @@
 // Supabase Edge Function: asaas-create-checkout
-// Creates an Asaas Checkout for the requested plan and returns the redirect URL.
-
-// @ts-nocheck
+// Fluxo correto: Cliente → Subscription → Fatura
+// Implementação seguindo o padrão Asaas oficial
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-type PlanCode = "start" | "pro";
-type Interval = "month" | "year";
+const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
+const ASAAS_URL =
+	Deno.env.get("ASAAS_API_URL") || "https://sandbox.asaas.com/api/v3";
 
-type Body = {
-    plan_code?: PlanCode;
-    interval?: Interval;
-};
+Deno.serve(async (req) => {
+	if (req.method === "OPTIONS") {
+		return new Response("ok", { headers: corsHeaders });
+	}
 
-const planDefaults: Record<PlanCode, { name: string; values: Record<Interval, number> }> = {
-    start: {
-        name: "Arena Start",
-        values: {
-            month: 149,
-            year: 1788,
-        },
-    },
-    pro: {
-        name: "Arena Pro",
-        values: {
-            month: 249,
-            year: 1164,
-        },
-    },
-};
+	try {
+		const supabaseClient = createClient(
+			Deno.env.get("SUPABASE_URL") ?? "",
+			Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+			{
+				global: {
+					headers: {
+						Authorization: req.headers.get("Authorization")!,
+					},
+				},
+			}
+		);
 
-const asaasBaseUrl = (Deno.env.get("ASAAS_BASE_URL") ?? "https://www.asaas.com/api/v3").replace(/\/+$/, "");
-const asaasAccessToken = Deno.env.get("ASAAS_ACCESS_TOKEN");
-const asaasUserAgent = Deno.env.get("ASAAS_USER_AGENT") ?? "arena-sports-asaas/1.0";
+		// Cliente admin para operações que precisam bypassar RLS
+		const supabaseAdmin = createClient(
+			Deno.env.get("SUPABASE_URL") ?? "",
+			Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+		);
 
-function parseEnvNumber(key: string, fallback: number): number {
-    const raw = Deno.env.get(key);
-    if (!raw) return fallback;
-    const normalized = raw.replace(",", ".").trim();
-    if (!normalized) return fallback;
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : fallback;
-}
+		const {
+			plan_code,
+			interval,
+			// Dados do cliente para criação no Asaas (opcionais - serão buscados do banco se não enviados)
+			customer: customerDataFromRequest,
+		} = await req.json();
 
-function getPlanAmount(planCode: PlanCode, interval: Interval): number {
-    const envKey = `ASAAS_PLAN_${planCode.toUpperCase()}_${interval === "month" ? "MONTHLY" : "YEARLY"}_VALUE`;
-    const fallback = planDefaults[planCode].values[interval];
-    return parseEnvNumber(envKey, fallback);
-}
+		if (!plan_code) {
+			throw new Error("Plan code is required");
+		}
 
-function getMonthlyPrice(planCode: PlanCode, interval: Interval): number {
-    if (planCode === "pro") {
-        return interval === "year" ? 97 : 249;
-    }
-    return 149;
-}
+		// Verificar autenticação
+		const { data, error: authError } = await supabaseClient.auth.getUser();
+		const user = data?.user || null;
+		if (authError || !user) {
+			return new Response(
+				JSON.stringify({ error: "Unauthorized - Invalid token" }),
+				{
+					status: 401,
+					headers: { ...corsHeaders, "Content-Type": "application/json" },
+				}
+			);
+		}
 
-function getPlanName(planCode: PlanCode): string {
-    return planCode === "pro" ? "Arena Pro" : "Arena Start";
-}
+		// 1. Buscar profile do usuário para obter tenant_id
+		const { data: profile, error: profileError } = await supabaseClient
+			.from("profiles")
+			.select("tenant_id")
+			.eq("id", user.id)
+			.single();
 
-function formatUnknownError(err: unknown): string {
-    if (err == null) return "Unknown error";
-    if (err instanceof Error) return err.message;
-    if (typeof err === "string") return err;
-    try {
-        return JSON.stringify(err);
-    } catch {
-        return String(err);
-    }
-}
+		if (profileError || !profile?.tenant_id) {
+			throw new Error(
+				"Profile não encontrado ou sem tenant_id. Complete o onboarding primeiro."
+			);
+		}
 
-function getRequestOrigin(req: Request): string | null {
-    const originHeader = req.headers.get("origin");
-    if (originHeader && originHeader.trim()) return originHeader.trim();
+		const tenant_id = profile.tenant_id;
 
-    const referer = req.headers.get("referer");
-    if (referer && referer.trim()) {
-        try {
-            return new URL(referer).origin;
-        } catch {
-            // ignore
-        }
-    }
+		// 2. Buscar dados do Tenant
+		const { data: tenant, error: tenantError } = await supabaseClient
+			.from("tenants")
+			.select("*")
+			.eq("id", tenant_id)
+			.single();
 
-    const siteUrl = Deno.env.get("SITE_URL");
-    if (siteUrl && siteUrl.trim()) return siteUrl.trim();
+		if (tenantError || !tenant) {
+			throw new Error("Tenant not found");
+		}
 
-    return null;
-}
+		// Verificar se o usuário tem permissão (deve ser owner do tenant)
+		if (tenant.owner_id !== user.id) {
+			return new Response(
+				JSON.stringify({
+					error: "Forbidden - You are not the owner of this tenant",
+				}),
+				{
+					status: 403,
+					headers: { ...corsHeaders, "Content-Type": "application/json" },
+				}
+			);
+		}
 
-async function callAsaas(endpoint: string, method: string, body?: Record<string, unknown>) {
-    if (!asaasAccessToken) {
-        throw new Error("Missing ASAAS_ACCESS_TOKEN");
-    }
-    const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        access_token: asaasAccessToken,
-        "User-Agent": asaasUserAgent,
-    };
-    const response = await fetch(`${asaasBaseUrl}${endpoint}`, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-    });
-    let payload: Record<string, unknown> = {};
-    try {
-        payload = (await response.json()) as Record<string, unknown>;
-    } catch {
-        payload = {};
-    }
-    if (!response.ok) {
-        const message = (payload?.message as string) ?? JSON.stringify(payload) ?? response.statusText;
-        throw new Error(`${method} ${endpoint} failed: ${response.status} ${message}`);
-    }
-    return payload;
-}
+		// 3. Buscar profile do owner (para usar como fallback nos dados do cliente)
+		const { data: owner, error: ownerError } = await supabaseClient
+			.from("profiles")
+			.select("*")
+			.eq("id", tenant.owner_id)
+			.single();
 
-Deno.serve(async (req: Request) => {
-    if (req.method === "OPTIONS") {
-        return new Response("ok", { headers: corsHeaders });
-    }
+		if (ownerError || !owner) {
+			throw new Error("Owner profile not found");
+		}
 
-    try {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-        const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+		// 4. Preparar dados do cliente para o Asaas
+		// Prioridade: dados do request > dados do banco > erro
+		const customerName =
+			customerDataFromRequest?.name ||
+			tenant.business_name ||
+			owner.full_name ||
+			user.email ||
+			"Cliente";
 
-        if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-            throw new Error("Missing Supabase env (URL/ANON/SERVICE_ROLE)");
-        }
-        if (!asaasAccessToken) {
-            throw new Error("Missing ASAAS_ACCESS_TOKEN");
-        }
+		const customerEmail =
+			customerDataFromRequest?.email || owner.email || user.email || "";
 
-        const authHeader = req.headers.get("Authorization") ?? "";
-        if (!authHeader.toLowerCase().startsWith("bearer ")) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), {
-                status: 401,
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-        }
+		// CPF/CNPJ é OBRIGATÓRIO para criar Subscription no Asaas
+		// Prioridade: dados do request > tenant.document > owner.cpf_cnpj
+		const customerCpfCnpj =
+			customerDataFromRequest?.cpfCnpj ||
+			(tenant as any).document || // Se existir no tenant (campo pode ser 'document')
+			(owner as any).cpf_cnpj || // Se existir no profile
+			null;
 
-        const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-            global: { headers: { Authorization: authHeader } },
-        });
+		if (!customerCpfCnpj) {
+			return new Response(
+				JSON.stringify({
+					error: "CPF_CNPJ_REQUIRED",
+					message:
+						"CPF ou CNPJ é obrigatório para realizar a assinatura. Por favor, preencha seus dados cadastrais antes de continuar.",
+					requiredFields: ["cpfCnpj", "phone"],
+				}),
+				{
+					status: 400,
+					headers: { ...corsHeaders, "Content-Type": "application/json" },
+				}
+			);
+		}
 
-        const {
-            data: { user },
-            error: userError,
-        } = await supabaseAuth.auth.getUser();
+		// Telefone é OBRIGATÓRIO para criar Subscription no Asaas
+		const customerPhone =
+			customerDataFromRequest?.phone || tenant.phone || owner.whatsapp || null;
 
-        if (userError || !user) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), {
-                status: 401,
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-        }
+		if (!customerPhone) {
+			return new Response(
+				JSON.stringify({
+					error: "PHONE_REQUIRED",
+					message:
+						"Telefone é obrigatório para realizar a assinatura. Por favor, preencha seus dados cadastrais antes de continuar.",
+					requiredFields: ["cpfCnpj", "phone"],
+				}),
+				{
+					status: 400,
+					headers: { ...corsHeaders, "Content-Type": "application/json" },
+				}
+			);
+		}
 
-        let body: Body = {};
-        try {
-            body = (await req.json()) as Body;
-        } catch {
-            body = {};
-        }
+		// 4. Garantir que existe um Cliente no Asaas (Customer)
+		// Nota: asaas_customer_id está em tenant_subscriptions
+		let asaasCustomerId: string | null = null;
 
-        const planCodeRaw = body.plan_code;
-        if (planCodeRaw !== "start" && planCodeRaw !== "pro") {
-            return new Response(
-                JSON.stringify({ error: "plan_code inválido. Use start ou pro." }),
-                {
-                    status: 400,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" },
-                }
-            );
-        }
-        const intervalRaw = body.interval;
-        if (intervalRaw !== "month" && intervalRaw !== "year") {
-            return new Response(
-                JSON.stringify({ error: "interval inválido. Use month ou year." }),
-                {
-                    status: 400,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" },
-                }
-            );
-        }
-        const planCode: PlanCode = planCodeRaw;
-        const interval: Interval = intervalRaw;
+		// Buscar customer_id existente em tenant_subscriptions
+		const { data: existingSubscription } = await supabaseClient
+			.from("tenant_subscriptions")
+			.select("asaas_customer_id")
+			.eq("tenant_id", tenant_id)
+			.maybeSingle();
 
-        const { data: profiles, error: profileError } = await supabaseAuth
-            .from("profiles")
-            .select("tenant_id, full_name, updated_at, created_at")
-            .eq("id", user.id)
-            .order("updated_at", { ascending: false, nullsFirst: false })
-            .order("created_at", { ascending: false, nullsFirst: false })
-            .limit(1);
+		asaasCustomerId = existingSubscription?.asaas_customer_id || null;
 
-        if (profileError) throw profileError;
-        const profile = profiles?.[0];
-        const tenantId = profile?.tenant_id ?? null;
-        if (!tenantId) {
-            return new Response(
-                JSON.stringify({
-                    error:
-                        "Seu perfil precisa de um tenant_id. Complete o onboarding (logout/login) e tente novamente.",
-                }),
-                {
-                    status: 400,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" },
-                }
-            );
-        }
+		// Função auxiliar para formatar telefone no padrão esperado pelo Asaas
+		// O Asaas espera telefone no formato brasileiro: DDD + número (apenas números)
+		// Formato válido: 10 dígitos (2 DDD + 8 número fixo) ou 11 dígitos (2 DDD + 9 número celular)
+		// IMPORTANTE: O telefone deve ter DDD válido (11-99) e número válido
+		const formatPhone = (phone: string | null | undefined): string | null => {
+			if (!phone) {
+				return null;
+			}
 
-        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+			// Remove tudo que não é número
+			let numbers = phone.replace(/\D/g, "");
 
-        const { data: subs, error: subError } = await supabaseAdmin
-            .from("tenant_subscriptions")
-            .select("asaas_customer_id")
-            .eq("tenant_id", tenantId)
-            .order("updated_at", { ascending: false, nullsFirst: false })
-            .order("created_at", { ascending: false, nullsFirst: false })
-            .limit(1);
+			// Se tiver prefixo 55 (código do país), remove
+			if (numbers.startsWith("55") && numbers.length > 11) {
+				numbers = numbers.slice(2);
+			}
 
-        if (subError) throw subError;
-        let customerId = subs?.[0]?.asaas_customer_id ?? null;
+			// Se não tiver números válidos, retorna null
+			if (numbers.length === 0) {
+				return null;
+			}
 
-        if (!customerId) {
-            const customerBody: Record<string, unknown> = {
-                externalReference: tenantId,
-            };
-            if (profile?.full_name) {
-                customerBody.name = profile.full_name;
-            } else if (user.email) {
-                customerBody.name = user.email;
-            }
-            if (user.email) {
-                customerBody.email = user.email;
-            }
+			// Telefone brasileiro: 10 dígitos (fixo) ou 11 dígitos (celular)
+			// DDD (2 dígitos, válido entre 11-99) + número (8 ou 9 dígitos)
 
-            const customer = await callAsaas("/customers", "POST", customerBody);
-            customerId = String(customer["id"] ?? "");
-            if (!customerId) {
-                throw new Error("Asaas customer response missing id");
-            }
+			// Se tiver menos de 10 dígitos, não é válido
+			if (numbers.length < 10) {
+				return null;
+			}
 
-            await supabaseAdmin.from("tenant_subscriptions").upsert({
-                tenant_id: tenantId,
-                asaas_customer_id: customerId,
-            });
-        }
+			// Se tiver exatamente 10 dígitos, está válido (DDD + 8 dígitos fixo)
+			if (numbers.length === 10) {
+				// Valida DDD (deve estar entre 11-99)
+				const ddd = parseInt(numbers.substring(0, 2));
+				if (ddd >= 11 && ddd <= 99) {
+					return numbers;
+				}
+				return null;
+			}
 
-        const planAmount = getPlanAmount(planCode, interval);
-        const planName = getPlanName(planCode);
-        const origin = getRequestOrigin(req);
-        if (!origin) {
-            return new Response(
-                JSON.stringify({
-                    error:
-                        "Não foi possível determinar a origem. Abra o app a partir do site correto.",
-                }),
-                {
-                    status: 400,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" },
-                }
-            );
-        }
+			// Se tiver 11 dígitos, está válido (DDD + 9 dígitos celular)
+			if (numbers.length === 11) {
+				// Valida DDD (deve estar entre 11-99)
+				const ddd = parseInt(numbers.substring(0, 2));
+				if (ddd >= 11 && ddd <= 99) {
+					return numbers;
+				}
+				return null;
+			}
 
-        const planQuery = `plan=${planCode}&interval=${interval}`;
-        const callbackBase = `${origin}/dashboard`;
-        const callback = {
-            successUrl: `${callbackBase}?asaas=success&${planQuery}`,
-            cancelUrl: `${callbackBase}?asaas=cancel&${planQuery}`,
-            expiredUrl: `${callbackBase}?asaas=expired&${planQuery}`,
-        };
+			// Se tiver mais de 11, pega os últimos 11 e valida
+			if (numbers.length > 11) {
+				const last11 = numbers.slice(-11);
+				const ddd = parseInt(last11.substring(0, 2));
+				if (ddd >= 11 && ddd <= 99) {
+					return last11;
+				}
+			}
 
-        const checkoutBody: Record<string, unknown> = {
-            billingType: "CREDIT_CARD",
-            chargeTypes: ["RECURRENT"],
-            // Asaas: only one of `customer` OR `customerData` must be sent.
-            // We always have a `customerId` at this point, so send ONLY `customer`.
-            customer: customerId,
-            description: planCode,
-            callback,
-            subscription: {
-                cycle: interval === "year" ? "YEARLY" : "MONTHLY",
-                value: planAmount,
-                description: planCode,
-            },
-            items: [
-                {
-                    name: planName,
-                    description: planCode,
-                    quantity: 1,
-                    value: planAmount,
-                },
-            ],
-            externalReference: tenantId,
-        };
+			return null;
+		};
 
-        const checkout = await callAsaas("/checkouts", "POST", checkoutBody);
-        const checkoutUrl =
-            String(checkout["link"] ?? checkout["url"] ?? checkout["paymentLink"] ?? "");
+		// Formatar telefone do cliente
+		const formattedPhone = formatPhone(customerPhone);
+		if (!formattedPhone) {
+			return new Response(
+				JSON.stringify({
+					error: "INVALID_PHONE",
+					message:
+						"Telefone inválido. Use DDD + número (10 ou 11 dígitos). Exemplo: 11987654321",
+					requiredFields: ["cpfCnpj", "phone"],
+				}),
+				{
+					status: 400,
+					headers: { ...corsHeaders, "Content-Type": "application/json" },
+				}
+			);
+		}
 
-        if (!checkoutUrl) {
-            throw new Error("Asaas checkout response missing URL");
-        }
+		// 5. Garantir que existe um Cliente no Asaas (Customer) COM CPF/CNPJ
+		// IMPORTANTE: O Asaas exige CPF/CNPJ para criar Subscriptions
+		if (!asaasCustomerId) {
+			console.log("Criando cliente no Asaas...");
 
-        await supabaseAdmin.from("tenant_subscriptions").upsert({
-            tenant_id: tenantId,
-            plan_code: planCode,
-            plan_name: planName,
-            billing_interval: interval,
-            monthly_price: getMonthlyPrice(planCode, interval),
-            asaas_customer_id: customerId,
-            asaas_checkout_id: checkout["id"],
-        });
+			// Preparar dados do cliente usando dados reais coletados
+			const customerPayload: Record<string, string> = {
+				name: customerName,
+				email: customerEmail,
+				externalReference: tenant_id,
+				cpfCnpj: customerCpfCnpj.replace(/\D/g, ""), // Remove formatação (apenas números)
+				phone: formattedPhone,
+			};
 
-        return new Response(JSON.stringify({ url: checkoutUrl }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-    } catch (err) {
-        const message = formatUnknownError(err);
-        return new Response(JSON.stringify({ error: message }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-    }
+			// Adicionar campos opcionais se disponíveis
+			if (customerDataFromRequest?.address) {
+				customerPayload.address = customerDataFromRequest.address;
+			}
+			if (customerDataFromRequest?.addressNumber) {
+				customerPayload.addressNumber = customerDataFromRequest.addressNumber;
+			}
+			if (customerDataFromRequest?.postalCode) {
+				customerPayload.postalCode = customerDataFromRequest.postalCode.replace(
+					/\D/g,
+					""
+				);
+			}
+			if (customerDataFromRequest?.province) {
+				customerPayload.province = customerDataFromRequest.province;
+			}
+			if (customerDataFromRequest?.city) {
+				customerPayload.city = customerDataFromRequest.city;
+			}
+
+			console.log("Dados do cliente para Asaas:", {
+				name: customerPayload.name,
+				email: customerPayload.email,
+				cpfCnpj: customerPayload.cpfCnpj
+					? `${customerPayload.cpfCnpj.substring(0, 3)}***`
+					: null, // Log parcial por segurança
+				phone: customerPayload.phone
+					? `${customerPayload.phone.substring(0, 5)}***`
+					: null,
+			});
+
+			const customerRes = await fetch(`${ASAAS_URL}/customers`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					access_token: ASAAS_API_KEY!,
+				},
+				body: JSON.stringify(customerPayload),
+			});
+
+			const customerResponse = await customerRes.json();
+			if (customerResponse.errors) {
+				throw new Error(
+					`Erro Asaas Customer: ${
+						customerResponse.errors[0]?.description ||
+						customerResponse.errors[0]?.message ||
+						"Erro desconhecido"
+					}`
+				);
+			}
+
+			asaasCustomerId = customerResponse.id;
+
+			// Salvar customer_id em tenant_subscriptions
+			const { error: updateError } = await supabaseClient
+				.from("tenant_subscriptions")
+				.upsert(
+					{
+						tenant_id: tenant_id,
+						asaas_customer_id: asaasCustomerId,
+					},
+					{
+						onConflict: "tenant_id",
+					}
+				);
+
+			if (updateError) {
+				console.error("Erro ao salvar asaas_customer_id:", updateError);
+			}
+		} else {
+			// Se o customer já existe, verificar se tem CPF/CNPJ
+			// Se não tiver, atualizar com CPF de teste (para sandbox)
+			try {
+				const customerCheckRes = await fetch(
+					`${ASAAS_URL}/customers/${asaasCustomerId}`,
+					{
+						headers: { access_token: ASAAS_API_KEY! },
+					}
+				);
+
+				if (customerCheckRes.ok) {
+					const customerData = await customerCheckRes.json();
+					// Se não tiver CPF/CNPJ ou telefone, atualizar com dados reais
+					if (!customerData.cpfCnpj || !customerData.phone) {
+						console.log(
+							"Atualizando customer existente com dados cadastrais..."
+						);
+
+						const updatePayload: Record<string, string> = {};
+						if (!customerData.cpfCnpj && customerCpfCnpj) {
+							updatePayload.cpfCnpj = customerCpfCnpj.replace(/\D/g, "");
+						}
+						if (!customerData.phone && formattedPhone) {
+							updatePayload.phone = formattedPhone;
+						}
+
+						if (Object.keys(updatePayload).length > 0) {
+							const updateRes = await fetch(
+								`${ASAAS_URL}/customers/${asaasCustomerId}`,
+								{
+									method: "PUT",
+									headers: {
+										"Content-Type": "application/json",
+										access_token: ASAAS_API_KEY!,
+									},
+									body: JSON.stringify(updatePayload),
+								}
+							);
+							const updateData = await updateRes.json();
+							if (updateData.errors) {
+								console.warn(
+									"Aviso: não foi possível atualizar dados do customer:",
+									updateData.errors
+								);
+							}
+						}
+					}
+				}
+			} catch (error) {
+				console.warn(
+					"Aviso: não foi possível verificar/atualizar customer:",
+					error
+				);
+				// Não falhar - tentar continuar mesmo assim
+			}
+		}
+
+		// 6. Criar a Assinatura (Subscription)
+		console.log("Criando assinatura...");
+
+		// Valores dos planos (em reais)
+		let value = 79.0; // R$ 79,00 (Start)
+		if (plan_code === "pro") {
+			value = 149.0; // R$ 149,00 (Pro)
+		}
+
+		// Se tiver interval, ajustar valor para anual (se necessário)
+		// Por enquanto, mantemos mensal
+		const cycle = interval === "year" ? "YEARLY" : "MONTHLY";
+
+		const subscriptionRes = await fetch(`${ASAAS_URL}/subscriptions`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				access_token: ASAAS_API_KEY!,
+			},
+			body: JSON.stringify({
+				customer: asaasCustomerId,
+				billingType: "UNDEFINED", // UNDEFINED permite pagamento via boleto, PIX ou cartão
+				value: value,
+				nextDueDate: new Date(Date.now() + 86400000)
+					.toISOString()
+					.split("T")[0], // Cobrar amanhã
+				cycle: cycle === "YEARLY" ? "YEARLY" : "MONTHLY",
+				description: `Assinatura Arena System - Plano ${
+					plan_code || "Start"
+				} - ${interval === "year" ? "Anual" : "Mensal"}`,
+			}),
+		});
+
+		const subscriptionData = await subscriptionRes.json();
+		if (subscriptionData.errors) {
+			throw new Error(
+				`Erro Asaas Subscription: ${subscriptionData.errors[0].description}`
+			);
+		}
+
+		const subscriptionId = subscriptionData.id;
+		console.log('ID do Asaas recebido:', subscriptionId);
+
+		// Atualizar tabela tenant_subscriptions (usando admin para bypassar RLS)
+		const { error: subscriptionUpdateError } = await supabaseAdmin
+			.from("tenant_subscriptions")
+			.upsert(
+				{
+					tenant_id: tenant_id,
+					asaas_subscription_id: subscriptionId,
+					asaas_customer_id: asaasCustomerId,
+					plan_code: plan_code || "start",
+					plan_name: `Arena ${plan_code === "pro" ? "Pro" : "Start"}`,
+					status: "trial", // Status inicial - será atualizado pelo webhook quando pagar
+					billing_interval: interval || "month",
+					monthly_price: Math.round(value * 100), // Converter para centavos (integer)
+				},
+				{
+					onConflict: "tenant_id",
+				}
+			);
+
+		if (subscriptionUpdateError) {
+			console.error(
+				"Erro ao atualizar tenant_subscriptions:",
+				subscriptionUpdateError
+			);
+			// Não falhar se não conseguir salvar - o webhook pode atualizar depois
+		}
+
+		// 7. Criar Payment (Cobrança) para gerar URL de Checkout
+		// IMPORTANTE: No Asaas, você precisa criar um Payment para obter a invoiceUrl (URL do checkout)
+		console.log("Criando cobrança/payment para gerar URL de checkout...");
+
+		// Criar payment vinculado à subscription com data de vencimento imediata (hoje ou amanhã)
+		const dueDate = new Date(Date.now() + 86400000).toISOString().split("T")[0]; // Amanhã
+
+		const paymentRes = await fetch(`${ASAAS_URL}/payments`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				access_token: ASAAS_API_KEY!,
+			},
+			body: JSON.stringify({
+				customer: asaasCustomerId,
+				billingType: "UNDEFINED", // Permite PIX, boleto ou cartão
+				value: value,
+				dueDate: dueDate,
+				description: `Assinatura Arena System - Plano ${
+					plan_code || "Start"
+				} - ${interval === "year" ? "Anual" : "Mensal"}`,
+				subscription: subscriptionId, // Vincular à subscription criada
+			}),
+		});
+
+		const paymentData = await paymentRes.json();
+
+		if (paymentData.errors) {
+			console.error("Erro ao criar payment:", paymentData.errors);
+			throw new Error(
+				`Erro ao criar cobrança: ${
+					paymentData.errors[0]?.description ||
+					paymentData.errors[0]?.message ||
+					"Erro desconhecido"
+				}`
+			);
+		}
+
+		// A invoiceUrl é a URL do checkout do Asaas
+		let checkoutUrl = paymentData.invoiceUrl;
+
+		// Se não tiver invoiceUrl diretamente, tentar buscar em outros campos ou construir
+		if (!checkoutUrl) {
+			// No Asaas, a URL do checkout pode estar em diferentes campos
+			// Tentar invoiceUrl primeiro, depois construir manualmente
+			if (paymentData.id) {
+				// Determinar base URL baseado no ambiente (sandbox vs produção)
+				const baseUrl = ASAAS_URL.includes("sandbox")
+					? "https://sandbox.asaas.com"
+					: "https://www.asaas.com";
+
+				// URL padrão do Asaas para checkout de pagamento
+				checkoutUrl = `${baseUrl}/c/${paymentData.id}`;
+				console.log("Usando URL construída do payment ID:", checkoutUrl);
+			} else if (paymentData.invoiceNumber) {
+				// Fallback: tentar construir com invoiceNumber
+				const baseUrl = ASAAS_URL.includes("sandbox")
+					? "https://sandbox.asaas.com"
+					: "https://www.asaas.com";
+				checkoutUrl = `${baseUrl}/c/${paymentData.invoiceNumber}`;
+				console.log("Usando URL construída do invoiceNumber:", checkoutUrl);
+			}
+		} else {
+			// Se tiver invoiceUrl, garantir que está usando o domínio correto para sandbox
+			if (
+				ASAAS_URL.includes("sandbox") &&
+				checkoutUrl.includes("asaas.com") &&
+				!checkoutUrl.includes("sandbox")
+			) {
+				checkoutUrl = checkoutUrl.replace("www.asaas.com", "sandbox.asaas.com");
+				console.log("Ajustando URL para sandbox:", checkoutUrl);
+			}
+		}
+
+		// Log para debug
+		console.log("Payment criado:", {
+			id: paymentData.id,
+			invoiceUrl: paymentData.invoiceUrl,
+			invoiceNumber: paymentData.invoiceNumber,
+			status: paymentData.status,
+			checkoutUrlFinal: checkoutUrl,
+		});
+
+		if (!checkoutUrl) {
+			throw new Error(
+				"Assinatura criada, mas não foi possível gerar link de pagamento. Entre em contato com o suporte."
+			);
+		}
+
+		return new Response(
+			JSON.stringify({
+				url: checkoutUrl,
+				subscriptionId: subscriptionId,
+			}),
+			{ headers: { ...corsHeaders, "Content-Type": "application/json" } }
+		);
+	} catch (error) {
+		console.error("[ASAAS CHECKOUT ERROR]:", error);
+		return new Response(
+			JSON.stringify({
+				error:
+					error instanceof Error ? error.message : "Erro interno do servidor",
+			}),
+			{
+				status: 500,
+				headers: { ...corsHeaders, "Content-Type": "application/json" },
+			}
+		);
+	}
 });

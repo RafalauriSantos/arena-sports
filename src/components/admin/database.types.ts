@@ -416,6 +416,7 @@ export interface Database {
           email: string | null
           tenant_id: string | null
           updated_at: string | null
+          onboarding_completed_at: string | null
         }
         Insert: {
           id: string
@@ -426,6 +427,7 @@ export interface Database {
           email?: string | null
           tenant_id?: string | null
           updated_at?: string | null
+          onboarding_completed_at?: string | null
         }
         Update: {
           id?: string
@@ -436,6 +438,7 @@ export interface Database {
           email?: string | null
           tenant_id?: string | null
           updated_at?: string | null
+          onboarding_completed_at?: string | null
         }
         Relationships: [
           {

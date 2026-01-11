@@ -300,18 +300,44 @@ export default function ConfiguracoesView() {
 			}
 			const accessToken = refreshed.session.access_token;
 
-			const data = await invokeEdgeFunction<{ url?: string }>(
-				"asaas-create-checkout",
-				{
-					accessToken,
-					body: {
-						plan_code: selectedPlan,
-						interval: billingInterval,
-					},
-				}
-			);
-			if (!data?.url) throw new Error("Checkout não retornou URL");
+			// Check if CPF/CNPJ is filled
+			const cpfCnpj = formData.tenant.cpf_cnpj?.replace(/\D/g, "") || "";
+			if (!cpfCnpj || (cpfCnpj.length !== 11 && cpfCnpj.length !== 14)) {
+				throw new Error(
+					"CPF/CNPJ é obrigatório para realizar a assinatura. Preencha seus dados cadastrais antes de continuar."
+				);
+			}
+
+			const data = await invokeEdgeFunction<{
+				url?: string;
+				subscriptionId?: string;
+			}>("asaas-create-checkout", {
+				accessToken,
+				body: {
+					plan_code: selectedPlan,
+					interval: billingInterval,
+				},
+			});
+
+			console.log("✅ Resposta da Edge Function:", data);
+
+			if (!data?.url) {
+				console.error("❌ Checkout não retornou URL. Resposta completa:", data);
+				throw new Error(
+					"Checkout não retornou URL. Verifique os logs da Edge Function."
+				);
+			}
+
+			// Validar que a URL parece válida
+			if (!data.url.startsWith("http://") && !data.url.startsWith("https://")) {
+				console.error("❌ URL inválida retornada:", data.url);
+				throw new Error(`URL de checkout inválida: ${data.url}`);
+			}
+
+			console.log("🔄 Redirecionando para checkout:", data.url);
 			localStorage.setItem("asaas_checkout_pending", "1");
+
+			// Redirecionar para o checkout do Asaas
 			window.location.href = data.url as string;
 		} catch (err: unknown) {
 			console.error(err);
@@ -567,6 +593,26 @@ export default function ConfiguracoesView() {
 												onChange={(e) => updateTenant("email", e.target.value)}
 												className="bg-white/5 border-white/10 text-white"
 											/>
+										</div>
+										<div className="space-y-2 md:col-span-2">
+											<Label>CPF/CNPJ</Label>
+											<Input
+												value={formData.tenant.cpf_cnpj}
+												onChange={(e) =>
+													updateTenant(
+														"cpf_cnpj",
+														e.target.value.replace(/\D/g, "")
+													)
+												}
+												placeholder="Digite seu CPF (11 dígitos) ou CNPJ (14 dígitos)"
+												autoComplete="off"
+												inputMode="numeric"
+												maxLength={14}
+												className="bg-white/5 border-white/10 text-white"
+											/>
+											<p className="text-xs text-gray-500">
+												Obrigatório para processar pagamentos via Asaas.
+											</p>
 										</div>
 									</div>
 								</PremiumCard>

@@ -74,7 +74,9 @@ begin
   where tenant_id = p_tenant_id;
 
   if not found then
-    return false;
+    -- No subscription found - grant automatic 21-day trial for new tenants
+    -- This ensures backward compatibility for tenants created before subscription system
+    return (select created_at + interval '21 days' > now() from public.tenants where id = p_tenant_id);
   end if;
 
   if s.status = 'active' then

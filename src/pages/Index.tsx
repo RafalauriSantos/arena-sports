@@ -35,11 +35,6 @@ const BookingHistory = lazy(() =>
 		default: module.BookingHistory,
 	}))
 );
-const PixPaymentModal = lazy(() =>
-	import("@/components/PixPaymentModal").then((module) => ({
-		default: module.PixPaymentModal,
-	}))
-);
 
 type View = "login" | "player" | "success" | "confirmation" | "history";
 
@@ -59,11 +54,6 @@ const Index = () => {
 	const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
 	const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-	const [isPixModalOpen, setIsPixModalOpen] = useState(false);
-	const [pendingPixBooking, setPendingPixBooking] = useState<{
-		slot: TimeSlot;
-		name: string;
-	} | null>(null);
 	const { toast } = useToast();
 
 	const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
@@ -155,28 +145,10 @@ const Index = () => {
 
 	const handlePaymentSelection = useCallback(
 		(slot: TimeSlot, paymentType: PaymentType, name: string) => {
-			if (paymentType === "pix") {
-				setPendingPixBooking({ slot, name });
-				setIsDrawerOpen(false);
-				setIsPixModalOpen(true);
-			} else {
-				handleBookingConfirm(slot, paymentType, name);
-			}
+			handleBookingConfirm(slot, paymentType, name);
 		},
 		[handleBookingConfirm]
 	);
-
-	const handlePixPaymentConfirmed = useCallback(() => {
-		if (pendingPixBooking) {
-			handleBookingConfirm(
-				pendingPixBooking.slot,
-				"pix",
-				pendingPixBooking.name
-			);
-			setPendingPixBooking(null);
-			setIsPixModalOpen(false);
-		}
-	}, [pendingPixBooking, handleBookingConfirm]);
 
 	const handleUpdatePlayers = useCallback(
 		(players: string[]) => {
@@ -210,14 +182,6 @@ const Index = () => {
 		setCurrentBooking(booking);
 		setActiveView("success");
 	}, []);
-
-	const getPixAmount = () => {
-		if (!pendingPixBooking) return 0;
-		const field = ARENA_CONFIG.fields.find(
-			(f) => f.id === pendingPixBooking.slot.fieldId
-		);
-		return field?.priceOnline || 150;
-	};
 
 	// Login Screen
 	if (activeView === "login") {
@@ -327,19 +291,6 @@ const Index = () => {
 						isOpen={isDrawerOpen}
 						onClose={() => setIsDrawerOpen(false)}
 						onConfirm={handlePaymentSelection}
-					/>
-				</Suspense>
-			)}
-
-			{/* Pix Payment Modal */}
-			{isPixModalOpen && (
-				<Suspense fallback={null}>
-					<PixPaymentModal
-						open={isPixModalOpen}
-						onOpenChange={setIsPixModalOpen}
-						amount={getPixAmount()}
-						bookingCode={`B${Date.now().toString().slice(-6)}`}
-						onPaymentConfirmed={handlePixPaymentConfirmed}
 					/>
 				</Suspense>
 			)}
