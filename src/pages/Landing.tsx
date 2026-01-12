@@ -579,7 +579,7 @@ export default function LandingPage() {
 						{/* ANTES */}
 						<div className="p-6 rounded-2xl bg-red-500/5 border border-red-500/10 flex flex-col gap-4">
 							<div className="flex items-center gap-2 text-red-400 font-bold text-sm uppercase tracking-wider">
-								<XCircle className="w-4 h-4" /> Antes do Arena OS
+								<XCircle className="w-4 h-4" /> Antes do ArenaSys
 							</div>
 							<div className="space-y-3">
 								<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
@@ -607,7 +607,7 @@ export default function LandingPage() {
 						{/* DEPOIS */}
 						<div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-4 ring-1 ring-emerald-500/10">
 							<div className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-wider">
-								<CheckCircle2 className="w-4 h-4" /> Com Arena OS
+								<CheckCircle2 className="w-4 h-4" /> Com ArenaSys
 							</div>
 							<div className="space-y-3">
 								<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
@@ -649,7 +649,7 @@ export default function LandingPage() {
 						<div className="grid grid-cols-3 bg-white/5 p-4 text-xs font-bold uppercase tracking-wider text-gray-500">
 							<div>Critério</div>
 							<div className="text-center">WhatsApp</div>
-							<div className="text-center text-emerald-400">Arena OS</div>
+							<div className="text-center text-emerald-400">ArenaSys</div>
 						</div>
 						{[
 							{
