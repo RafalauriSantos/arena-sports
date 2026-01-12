@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Users } from "lucide-react";
-import { ARENA_SPORTS_CONFIG, FieldId } from "@/config/arena";
+import { ARENA_CONFIG, FieldId } from "@/config/arena";
 import { cn } from "@/lib/utils";
 
 interface FieldSelectorProps {
@@ -14,7 +14,7 @@ export const FieldSelector = memo(function FieldSelector({
 }: FieldSelectorProps) {
 	return (
 		<div className="flex gap-1.5 md:gap-2 p-1 bg-card rounded-2xl border border-border">
-			{ARENA_SPORTS_CONFIG.fields.map((field) => {
+			{ARENA_CONFIG.fields.map((field) => {
 				const isSelected = selectedField === field.id;
 				return (
 					<button

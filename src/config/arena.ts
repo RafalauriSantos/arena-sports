@@ -1,8 +1,8 @@
-// Arena Sports configuration - Easy to change
-export const ARENA_SPORTS_CONFIG = {
-  pixKey: "pix@arenasports.com",
-  name: "Arena Sports",
-  subtitle: "Gestão Inteligente de Quadras Esportivas",
+// ArenaSys configuration - Easy to change
+export const ARENA_CONFIG = {
+  pixKey: "pix@arenasys.com",
+  name: "ArenaSys",
+  subtitle: "ArenaSys - Gestão Inteligente de Quadras Esportivas",
   whatsapp: "5511999999999", // WhatsApp do dono (com código do país)
   fields: [
     {
@@ -22,4 +22,4 @@ export const ARENA_SPORTS_CONFIG = {
   ],
 } as const;
 
-export type FieldId = typeof ARENA_SPORTS_CONFIG.fields[number]["id"];
+export type FieldId = typeof ARENA_CONFIG.fields[number]["id"];

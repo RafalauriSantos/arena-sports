@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ARENA_SPORTS_CONFIG } from "@/config/arena";
+import { ARENA_CONFIG } from "@/config/arena";
 
 export const Header = memo(function Header() {
 	return (
@@ -11,10 +11,10 @@ export const Header = memo(function Header() {
 					</div>
 					<div>
 						<h1 className="text-xl font-black text-foreground tracking-tight">
-							{ARENA_SPORTS_CONFIG.name}
+							{ARENA_CONFIG.name}
 						</h1>
 						<p className="text-xs text-muted-foreground">
-							{ARENA_SPORTS_CONFIG.subtitle}
+							{ARENA_CONFIG.subtitle}
 						</p>
 					</div>
 				</div>

@@ -1,4 +1,4 @@
-import { ARENA_SPORTS_CONFIG } from "@/config/arena";
+import { ARENA_CONFIG } from "@/config/arena";
 
 export default function PrivacyPolicy() {
 	return (
@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
 					<section className="space-y-2">
 						<h2 className="text-xl font-semibold">1) Quem somos</h2>
 						<p>
-							Este site/aplicativo ("{ARENA_SPORTS_CONFIG.name}") permite a
+							Este site/aplicativo ("{ARENA_CONFIG.name}") permite a
 							gestão e agendamento de quadras esportivas.
 						</p>
 						<p>

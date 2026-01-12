@@ -50,8 +50,8 @@ A build de produção também foi verificada usando Bun (`bun run build`) e comp
 
 ```bash
 # Clone o repositório
-git clone https://github.com/RafalauriSantos/arena-sports.git
-cd arena-sports
+git clone https://github.com/RafalauriSantos/arena-sys.git
+cd arena-sys
 
 # Instale as dependências
 bun install
@@ -182,7 +182,7 @@ Você precisa ter o **[Bun](https://bun.sh/)** instalado em sua máquina.
 
 ```bash
 # Clone este repositório
-$ git clone https://github.com/RafalauriSantos/arena-sports.git
+$ git clone https://github.com/RafalauriSantos/arena-sys.git
 
 # Vá para a pasta do projeto
 $ cd arena-sports

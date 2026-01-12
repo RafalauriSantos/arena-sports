@@ -15,10 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const Login = () => {
-	const [mode, setMode] = useState<"signin" | "signup" | "email-confirmation">("signin");
+	const [mode, setMode] = useState<"signin" | "signup" | "email-confirmation">(
+		"signin"
+	);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [arenaSportsName, setArenaSportsName] = useState("");
+	const [arenaName, setArenaName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [signupEmail, setSignupEmail] = useState<string>(""); // Email usado no signup (para mostrar na confirmação)
@@ -78,7 +80,9 @@ const Login = () => {
 				if (error) throw error;
 
 				// Após signin, verificar se já completou onboarding
-				const { data: { user } } = await supabase.auth.getUser();
+				const {
+					data: { user },
+				} = await supabase.auth.getUser();
 				if (user) {
 					const { data: profile } = await supabase
 						.from("profiles")
@@ -100,23 +104,23 @@ const Login = () => {
 			}
 
 			// SIGNUP: Cria conta e mostra mensagem de confirmação
-			const businessName = arenaSportsName || "Minha Arena Sports";
+			const businessName = arenaName || "Minha ArenaSys";
 			const { data: signUpData, error } = await supabase.auth.signUp({
 				email,
 				password,
 				options: {
 					data: {
 						business_name: businessName,
-						app_slug: "arena-sports",
+						app_slug: "arena-sys",
 					},
 					emailRedirectTo: `${window.location.origin}/welcome`,
 				},
 			});
 			if (error) throw error;
-			
+
 			// Salvar email para mostrar na tela de confirmação
 			setSignupEmail(email);
-			
+
 			// Verificar se precisa confirmar email
 			// Se user for null ou session for null, significa que precisa confirmar email
 			if (!signUpData?.user || !signUpData?.session) {
@@ -126,7 +130,7 @@ const Login = () => {
 				setMode("email-confirmation");
 				return;
 			}
-			
+
 			// Se sessão foi criada imediatamente (email confirmations desabilitado),
 			// vai direto para welcome
 			navigate("/welcome", { replace: true });
@@ -170,8 +174,8 @@ const Login = () => {
 
 					<p className="text-sm sm:text-base text-gray-400 max-w-[16rem] sm:max-w-md leading-relaxed">
 						Pare de perder dinheiro com horários vagos e gestão manual. O{" "}
-						<strong>Arena Sports OS</strong> é o cérebro que automatiza suas
-						reservas, pagamentos e clientes enquanto você dorme.
+						<strong>ArenaSys</strong> é o cérebro que automatiza suas reservas,
+						pagamentos e clientes enquanto você dorme.
 					</p>
 
 					<div className="flex flex-col sm:flex-row gap-1 sm:gap-2 pt-2">
@@ -221,7 +225,7 @@ const Login = () => {
 									<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-2">
 										<Mail className="w-8 h-8 text-emerald-400" />
 									</div>
-									
+
 									<div>
 										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
 											Conta Criada com Sucesso! 🎉
@@ -238,13 +242,15 @@ const Login = () => {
 										<div className="flex items-start gap-3">
 											<CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
 											<p className="text-gray-300 text-sm">
-												Verifique sua caixa de entrada e clique no link de confirmação
+												Verifique sua caixa de entrada e clique no link de
+												confirmação
 											</p>
 										</div>
 										<div className="flex items-start gap-3">
 											<CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
 											<p className="text-gray-300 text-sm">
-												Não recebeu? Verifique a pasta de <strong>Spam</strong> ou lixo eletrônico
+												Não recebeu? Verifique a pasta de <strong>Spam</strong>{" "}
+												ou lixo eletrônico
 											</p>
 										</div>
 										<div className="flex items-start gap-3">
@@ -260,25 +266,27 @@ const Login = () => {
 											onClick={async () => {
 												// Reenviar email de confirmação
 												setIsLoading(true);
-												const { error: resendError } = await supabase.auth.resend({
-													type: "signup",
-													email: signupEmail || email,
-													options: {
-														emailRedirectTo: `${window.location.origin}/welcome`,
-													},
-												});
+												const { error: resendError } =
+													await supabase.auth.resend({
+														type: "signup",
+														email: signupEmail || email,
+														options: {
+															emailRedirectTo: `${window.location.origin}/welcome`,
+														},
+													});
 												setIsLoading(false);
 												if (resendError) {
 													setError(resendError.message);
 												} else {
 													setError(null);
-													alert("Email reenviado com sucesso! Verifique sua caixa de entrada.");
+													alert(
+														"Email reenviado com sucesso! Verifique sua caixa de entrada."
+													);
 												}
 											}}
 											disabled={isLoading}
 											variant="outline"
-											className="flex-1 border-white/20 hover:bg-white/5 text-white"
-										>
+											className="flex-1 border-white/20 hover:bg-white/5 text-white">
 											{isLoading ? "Enviando..." : "Reenviar Email"}
 										</Button>
 										<Button
@@ -287,14 +295,18 @@ const Login = () => {
 												setEmail(signupEmail || email);
 												setSignupEmail("");
 											}}
-											className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold"
-										>
+											className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold">
 											Fazer Login
 										</Button>
 									</div>
 
 									<p className="text-xs text-gray-500 pt-2">
-										Já confirmou? <button onClick={() => setMode("signin")} className="text-emerald-400 hover:text-emerald-300 underline">Fazer login aqui</button>
+										Já confirmou?{" "}
+										<button
+											onClick={() => setMode("signin")}
+											className="text-emerald-400 hover:text-emerald-300 underline">
+											Fazer login aqui
+										</button>
 									</p>
 								</div>
 							) : (
@@ -316,16 +328,16 @@ const Login = () => {
 										{mode === "signup" && (
 											<div className="space-y-1 sm:space-y-1.5">
 												<Label className="text-xs uppercase text-gray-500 font-bold">
-													Nome da Arena Sports
+													Nome da Arena
 												</Label>
 												<div className="relative">
 													<Trophy className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
 													<Input
-														value={arenaSportsName}
-														onChange={(e) => setArenaSportsName(e.target.value)}
+														value={arenaName}
+														onChange={(e) => setArenaName(e.target.value)}
 														autoComplete="organization"
 														className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-														placeholder="Ex: Arena Sports Tatuí"
+														placeholder="Ex: ArenaSys Tatuí"
 													/>
 												</div>
 											</div>
@@ -343,7 +355,7 @@ const Login = () => {
 													onChange={(e) => setEmail(e.target.value)}
 													autoComplete="email"
 													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-													placeholder="gestor@arenasports.com"
+													placeholder="gestor@arenasys.com"
 												/>
 											</div>
 										</div>
@@ -359,7 +371,9 @@ const Login = () => {
 													value={password}
 													onChange={(e) => setPassword(e.target.value)}
 													autoComplete={
-														mode === "signin" ? "current-password" : "new-password"
+														mode === "signin"
+															? "current-password"
+															: "new-password"
 													}
 													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
 													placeholder="••••••••"

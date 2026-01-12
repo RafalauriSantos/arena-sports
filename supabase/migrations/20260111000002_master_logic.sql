@@ -51,7 +51,7 @@ $$;
 -- Helper para produto padrão
 create or replace function public.fn_default_saas_product_id()
 returns uuid language sql stable security definer set search_path = public as $$
-  select id from public.saas_products where slug = 'arena-sports' order by active desc nulls last, created_at desc nulls last limit 1;
+  select id from public.saas_products where slug = 'arena-sys' order by active desc nulls last, created_at desc nulls last limit 1;
 $$;
 
 -- Helper para criar perfis faltantes (Manutenção)

@@ -26,7 +26,7 @@ import { supabase } from "@/lib/supabaseClient";
 const testimonials = [
 	{
 		name: "Carlos Silva",
-		role: "Arena Sports Society SP",
+		role: "ArenaSys Society SP",
 		text: "Aumentei meu faturamento em R$ 5.200 no primeiro mês só recuperando horários perdidos.",
 		initials: "CS",
 	},
@@ -50,14 +50,14 @@ const testimonials = [
 	},
 	{
 		name: "Fernanda Costa",
-		role: "Arena Sports Multi",
+		role: "ArenaSys Multi",
 		text: "O suporte é incrível. Qualquer dúvida que tenho, eles resolvem na hora.",
 		initials: "FC",
 	},
 	{
 		name: "Marcos Paulo",
 		role: "Complexo Esportivo",
-		text: "Gerenciar 4 quadras era um caos. Com o Arena Sports OS, virou um jogo de criança.",
+		text: "Gerenciar 4 quadras era um caos. Com o ArenaSys, virou um jogo de criança.",
 		initials: "MP",
 	},
 	{
@@ -78,7 +78,7 @@ const faqList = [
 	{
 		question: "Preciso instalar algum programa no computador?",
 		answer:
-			"Não! O Arena Sports OS é 100% online. Você acessa pelo navegador do celular, tablet ou computador, de qualquer lugar.",
+			"Não! O ArenaSys é 100% online. Você acessa pelo navegador do celular, tablet ou computador, de qualquer lugar.",
 	},
 	{
 		question: "É difícil de configurar? Não sou bom com tecnologia.",
@@ -172,7 +172,7 @@ function CalendarAppScreen() {
 		<div className="h-full bg-[#050507] p-3 font-sans flex flex-col">
 			<div className="flex justify-between items-center mb-3">
 				<div>
-					<h3 className="text-white font-bold text-xs">Arena Sports Central</h3>
+					<h3 className="text-white font-bold text-xs">ArenaSys Central</h3>
 					<p className="text-emerald-500 text-[9px] font-medium flex items-center gap-1">
 						<span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />{" "}
 						Online
@@ -371,7 +371,7 @@ export default function LandingPage() {
 								scrolled ? "text-sm" : "text-base",
 								"hidden md:inline"
 							)}>
-							Arena Sports
+							ArenaSys
 						</span>
 						<span
 							className={cn(
@@ -382,7 +382,7 @@ export default function LandingPage() {
 									? "max-w-[140px] opacity-100 translate-x-0"
 									: "max-w-0 opacity-0 -translate-x-2"
 							)}>
-							Arena Sports
+							ArenaSys
 						</span>
 					</div>
 
@@ -472,7 +472,7 @@ export default function LandingPage() {
 							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
 							<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
 						</span>
-						Infraestrutura Financeira para Arena Sports
+						Infraestrutura Financeira para ArenaSys
 					</div>
 
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
@@ -940,9 +940,9 @@ export default function LandingPage() {
 					<div className="w-4 h-4 bg-white/10 rounded flex items-center justify-center">
 						<Zap className="w-2.5 h-2.5 text-white" />
 					</div>
-					<span className="font-bold text-white text-xs">Arena Sports</span>
+					<span className="font-bold text-white text-xs">ArenaSys</span>
 				</div>
-				<p>&copy; 2025 Arena Sports. Infraestrutura financeira para arenas.</p>
+				<p>&copy; 2025 ArenaSys. Infraestrutura financeira para arenas.</p>
 				<div className="flex justify-center gap-3 mt-4 opacity-50">
 					<span className="flex items-center gap-1">
 						<Lock className="w-2.5 h-2.5" /> Dados Criptografados

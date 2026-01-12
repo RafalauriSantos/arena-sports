@@ -9,7 +9,7 @@ import {
 	AlertTriangle,
 } from "lucide-react";
 import { TimeSlot, PaymentType } from "@/types/booking";
-import { ARENA_SPORTS_CONFIG } from "@/config/arena";
+import { ARENA_CONFIG } from "@/config/arena";
 import { cn } from "@/lib/utils";
 import {
 	Drawer,
@@ -39,7 +39,7 @@ export function PaymentDrawer({
 
 	if (!slot) return null;
 
-	const field = ARENA_SPORTS_CONFIG.fields.find((f) => f.id === slot.fieldId);
+	const field = ARENA_CONFIG.fields.find((f) => f.id === slot.fieldId);
 	const priceLocal = field?.priceLocal || 160;
 	const priceOnline = field?.priceOnline || 150;
 	const signalAmount = 50;

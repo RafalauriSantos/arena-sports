@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, MessageCircle } from "lucide-react";
-import { ARENA_SPORTS_CONFIG } from "@/config/arena";
+import { ARENA_CONFIG } from "@/config/arena";
 import { cn } from "@/lib/utils";
 
 interface LoginScreenProps {
@@ -100,7 +100,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 						<span className="text-4xl">⚽</span>
 					</div>
 					<h1 className="text-3xl font-black text-foreground tracking-tight">
-						{ARENA_SPORTS_CONFIG.name}
+						{ARENA_CONFIG.name}
 					</h1>
 					<p className="text-muted-foreground">
 						Reserve seu horário em segundos

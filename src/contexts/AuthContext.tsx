@@ -209,7 +209,7 @@ const fallbackOnboardUser = async (user: User, businessName: string) => {
 const onboardUser = async (businessName: string) => {
 	const { error } = await supabase.rpc("fn_onboard_user", {
 		p_business_name: businessName,
-		p_saas_slug: "arena-sports",
+		p_saas_slug: "arena-sys",
 	});
 	if (error) throw error;
 };

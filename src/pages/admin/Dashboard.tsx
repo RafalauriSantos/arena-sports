@@ -104,8 +104,8 @@ const SidebarFixed = ({
 
 	const handleShare = async () => {
 		const shareData = {
-			title: "Agende na Arena Sports",
-			text: `Venha jogar na ${userProfile?.tenant_id || "minha Arena Sports"}!`,
+			title: "Agende na ArenaSys",
+			text: `Venha jogar na ${userProfile?.tenant_id || "minha ArenaSys"}!`,
 			url: window.location.origin + "/agendar",
 		};
 
@@ -153,7 +153,7 @@ const SidebarFixed = ({
 							</div>
 							<div>
 								<h1 className="text-base font-bold text-white leading-none tracking-tight">
-									Arena Sports OS
+									ArenaSys
 								</h1>
 								<p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">
 									Gestão Pro
@@ -188,7 +188,7 @@ const SidebarFixed = ({
 							"bg-gradient-to-r from-emerald-500 to-emerald-700 hover:to-emerald-600 text-white shadow-lg shadow-emerald-500/20 active:scale-95",
 							collapsed ? "justify-center px-0" : ""
 						)}
-						title="Divulgar Arena Sports">
+						title="Divulgar ArenaSys">
 						{collapsed ? (
 							<Share2 className="h-5 w-5" />
 						) : (
@@ -196,7 +196,7 @@ const SidebarFixed = ({
 						)}
 						{!collapsed && (
 							<span className="text-sm font-bold tracking-wide">
-								Divulgar Arena Sports
+								Divulgar ArenaSys
 							</span>
 						)}
 					</button>
@@ -294,7 +294,7 @@ const SidebarFixed = ({
 };
 
 // --- COMPONENTES VISUAIS (Dashboard) ---
-type ArenaSportsStatusHeroProps = {
+type ArenaSysStatusHeroProps = {
 	revenueToday: number;
 	occupancyAvg: number;
 	nextPeak: string;
@@ -302,13 +302,13 @@ type ArenaSportsStatusHeroProps = {
 	planPill: { color: string; text: string };
 };
 
-const ArenaSportsStatusHero = ({
+const ArenaSysStatusHero = ({
 	revenueToday,
 	occupancyAvg,
 	nextPeak,
 	planLabel,
 	planPill,
-}: ArenaSportsStatusHeroProps) => {
+}: ArenaSysStatusHeroProps) => {
 	const statusConfig =
 		occupancyAvg > 80
 			? {
@@ -319,7 +319,7 @@ const ArenaSportsStatusHero = ({
 			: occupancyAvg > 20
 			? {
 					color: "bg-emerald-500",
-					text: "Arena Sports Operando Bem",
+					text: "ArenaSys Operando Bem",
 					glow: "shadow-emerald-500/10",
 			  }
 			: {
@@ -648,7 +648,7 @@ export default function DashboardHome() {
 
 				const { error: onboardError } = await supabase.rpc("fn_onboard_user", {
 					p_business_name: desiredBusinessName,
-					p_saas_slug: "arena-sports",
+					p_saas_slug: "arena-sys",
 				});
 				if (onboardError) throw onboardError;
 
@@ -780,7 +780,7 @@ export default function DashboardHome() {
 				<div className="flex flex-col items-center gap-4">
 					<Activity className="w-10 h-10 text-emerald-500 animate-spin" />
 					<p className="text-gray-500 text-sm animate-pulse">
-						Carregando Arena Sports OS...
+						Carregando ArenaSys...
 					</p>
 				</div>
 			</div>
@@ -929,7 +929,7 @@ export default function DashboardHome() {
 										Checkout transparente
 									</p>
 									<h3 className="text-xl font-bold text-white">
-										Planos Arena Sports
+										Planos ArenaSys
 									</h3>
 								</div>
 								<span className="rounded-full bg-white/[0.08] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white">
@@ -1160,7 +1160,7 @@ export default function DashboardHome() {
 					<div className="flex items-center gap-2">
 						<Activity className="h-5 w-5 text-emerald-500" />
 						<span className="font-bold text-lg tracking-tight">
-							Arena Sports OS
+							ArenaSys
 						</span>
 					</div>
 					<Button
@@ -1174,7 +1174,7 @@ export default function DashboardHome() {
 				<main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
 					{activeView === "dashboard" && (
 						<div className="space-y-6">
-							<ArenaSportsStatusHero
+							<ArenaSysStatusHero
 								revenueToday={stats.revenueToday}
 								occupancyAvg={occupancyAvg}
 								nextPeak="19:00 — 21:00"

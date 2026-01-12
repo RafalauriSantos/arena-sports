@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => ({
         enabled: true,
       },
       manifest: {
-        name: 'Arena Sports',
-        short_name: 'ArenaSports',
+        name: 'ArenaSys',
+        short_name: 'ArenaSys',
         description: 'Gestão inteligente de quadras esportivas.',
         start_url: '.',
         display: 'standalone',

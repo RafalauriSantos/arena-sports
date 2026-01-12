@@ -377,7 +377,7 @@ export default function ConfiguracoesView() {
 
 	const getPublicLink = () => {
 		const origin = window.location.origin;
-		const slug = formData.tenant.subdomain || "sua-arenasports";
+		const slug = formData.tenant.subdomain || "sua-arenasys";
 		return `${origin}/agendar/${slug}`;
 	};
 
@@ -433,7 +433,7 @@ export default function ConfiguracoesView() {
 							Configurações
 						</h1>
 						<p className="text-gray-400 mt-1">
-							Gerencie sua Arena Sports, preços e automações.
+							Gerencie sua ArenaSys, preços e automações.
 						</p>
 					</div>
 					<Button
@@ -453,10 +453,10 @@ export default function ConfiguracoesView() {
 				</div>
 
 				{/* TABS */}
-				<Tabs defaultValue="arena-sports" className="space-y-8">
+				<Tabs defaultValue="arena-sys" className="space-y-8">
 					<TabsList className="w-full h-auto bg-white/5 p-1 rounded-2xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
 						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
-						<TabTrigger value="arena-sports" icon={Store} label="Identidade" />
+						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
 						<TabTrigger value="quadras" icon={Trophy} label="Quadras" />
 						<TabTrigger value="cobranca" icon={Wallet} label="Cobrança" />
 						<TabTrigger value="marketing" icon={Sparkles} label="Marketing" />
@@ -515,12 +515,12 @@ export default function ConfiguracoesView() {
 
 					{/* IDENTIDADE (TRAVADA) */}
 					<TabsContent
-						value="arena-sports"
+						value="arena-sys"
 						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 							<div className="md:col-span-2 space-y-6">
 								<PremiumCard
-									title="Identidade da Arena Sports"
+									title="Identidade da ArenaSys"
 									description="Dados visíveis para seu cliente.">
 									<div className="space-y-4">
 										{/* CAMPO NOME - ÚNICO EDITÁVEL */}
@@ -530,7 +530,7 @@ export default function ConfiguracoesView() {
 												value={formData.tenant.business_name}
 												onChange={handleNameChange} // <--- GERA O LINK AUTOMÁTICO
 												className="bg-white/5 border-white/10 text-white font-medium text-lg"
-												placeholder="Ex: Arena Sports Champions"
+												placeholder="Ex: ArenaSys Champions"
 											/>
 											<p className="text-xs text-gray-500">
 												O link da agenda será gerado a partir deste nome.
@@ -545,7 +545,7 @@ export default function ConfiguracoesView() {
 											</Label>
 											<div className="flex items-center group opacity-80 cursor-not-allowed">
 												<span className="bg-white/5 border border-white/10 border-r-0 rounded-l-md px-3 h-10 flex items-center text-gray-500 text-sm">
-													arenasports.app/agendar/
+													arenasys.app/agendar/
 												</span>
 												<div className="relative w-full">
 													<Input

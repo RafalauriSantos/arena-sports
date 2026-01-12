@@ -45,7 +45,7 @@ export function AdminLayout({
 		<div className="min-h-screen bg-gray-950 text-gray-50 font-sans selection:bg-primary/30">
 			{/* Mobile Header - Always visible and compact */}
 			<div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5 px-3 py-2 flex items-center justify-between">
-				<h1 className="text-base font-bold text-white">Arena Sports</h1>
+				<h1 className="text-base font-bold text-white">ArenaSys</h1>
 				<Button
 					variant="ghost"
 					size="icon"

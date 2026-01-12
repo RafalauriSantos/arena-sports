@@ -1,15 +1,15 @@
 import { memo, useCallback } from "react";
 import { Crown, MessageCircle, ArrowRight } from "lucide-react";
-import { ARENA_SPORTS_CONFIG } from "@/config/arena";
+import { ARENA_CONFIG } from "@/config/arena";
 import { cn } from "@/lib/utils";
 
 export const MensalistaCard = memo(function MensalistaCard() {
 	const handleClick = useCallback(() => {
 		const message = encodeURIComponent(
-			`Olá! Tenho interesse em ser *Mensalista* na ${ARENA_SPORTS_CONFIG.name}. Gostaria de saber mais sobre os horários fixos disponíveis.`
+			`Olá! Tenho interesse em ser *Mensalista* na ${ARENA_CONFIG.name}. Gostaria de saber mais sobre os horários fixos disponíveis.`
 		);
 		window.open(
-			`https://wa.me/${ARENA_SPORTS_CONFIG.whatsapp}?text=${message}`,
+			`https://wa.me/${ARENA_CONFIG.whatsapp}?text=${message}`,
 			"_blank"
 		);
 	}, []);

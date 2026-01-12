@@ -58,7 +58,7 @@ async function asaasRequest(
         headers: new Headers({
             "Content-Type": "application/json",
             "access_token": ASAAS_TOKEN!,
-            "User-Agent": "arena-sports-asaas/1.0",
+            "User-Agent": "arena-sys-asaas/1.0",
         }),
         body: body ? JSON.stringify(body) : undefined,
     });

@@ -1,7 +1,7 @@
-import { ARENA_SPORTS_CONFIG } from "@/config/arena";
+import { ARENA_CONFIG } from "@/config/arena";
 
 export default function Support() {
-	const whatsapp = ARENA_SPORTS_CONFIG.whatsapp;
+	const whatsapp = ARENA_CONFIG.whatsapp;
 	const whatsappLink = whatsapp ? `https://wa.me/${whatsapp}` : null;
 
 	return (
@@ -9,7 +9,7 @@ export default function Support() {
 			<div className="mx-auto w-full max-w-3xl px-4 py-10">
 				<h1 className="text-3xl font-bold tracking-tight">Suporte</h1>
 				<p className="mt-2 text-muted-foreground">
-					Canais de atendimento do {ARENA_SPORTS_CONFIG.name} (RS VERSALITYS).
+					Canais de atendimento do {ARENA_CONFIG.name} (RS VERSALITYS).
 				</p>
 
 				<div className="mt-8 space-y-5 leading-relaxed">

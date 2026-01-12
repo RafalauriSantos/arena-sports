@@ -247,7 +247,7 @@ export default function Welcome() {
 						<h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1.1]">
 							Bem-vindo ao{" "}
 							<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-								Arena Sports
+								ArenaSys
 							</span>
 							{userName && `, ${userName}!`}
 						</h1>
