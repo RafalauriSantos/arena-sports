@@ -15,8 +15,8 @@ export default function PrivacyPolicy() {
 					<section className="space-y-2">
 						<h2 className="text-xl font-semibold">1) Quem somos</h2>
 						<p>
-							Este site/aplicativo ("{ARENA_CONFIG.name}") permite a
-							gestão e agendamento de quadras esportivas.
+							Este site/aplicativo ("{ARENA_CONFIG.name}") permite a gestão e
+							agendamento de quadras esportivas.
 						</p>
 						<p>
 							A operação e manutenção do serviço é realizada por RS VERSALITYS.

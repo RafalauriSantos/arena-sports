@@ -13,8 +13,7 @@ export default function TermsOfService() {
 					<section className="space-y-2">
 						<h2 className="text-xl font-semibold">1) Aceite</h2>
 						<p>
-							Ao usar o {ARENA_CONFIG.name}, você concorda com estes
-							termos.
+							Ao usar o {ARENA_CONFIG.name}, você concorda com estes termos.
 						</p>
 						<p>O serviço é operado por RS VERSALITYS.</p>
 					</section>

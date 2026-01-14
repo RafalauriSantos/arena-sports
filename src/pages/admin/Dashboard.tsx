@@ -1159,9 +1159,7 @@ export default function DashboardHome() {
 				<div className="md:hidden sticky top-0 z-30 bg-[#02040a]/80 backdrop-blur-lg border-b border-white/5 px-4 py-3 flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<Activity className="h-5 w-5 text-emerald-500" />
-						<span className="font-bold text-lg tracking-tight">
-							ArenaSys
-						</span>
+						<span className="font-bold text-lg tracking-tight">ArenaSys</span>
 					</div>
 					<Button
 						variant="ghost"
