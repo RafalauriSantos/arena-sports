@@ -28,7 +28,7 @@ export default function Support() {
 						<h2 className="text-xl font-semibold">E-mail</h2>
 						<p className="text-muted-foreground">
 							Defina um e-mail real de suporte (ex.: suporte@seudominio.com) e
-							atualize também no Stripe.
+							use o mesmo contato nos canais de cobrança.
 						</p>
 					</section>
 

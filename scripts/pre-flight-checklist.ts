@@ -8,9 +8,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { config } from 'dotenv'
 import { readFileSync, existsSync } from 'fs'
-import { join } from 'path'
+import { join, resolve } from 'path'
 
-config()
+const envFile = existsSync(resolve(process.cwd(), '.env.local'))
+  ? '.env.local'
+  : '.env'
+config({ path: envFile })
 
 console.log('🚀 Executando Pre-Flight Checklist - Arena Sports\n')
 
@@ -72,7 +75,9 @@ async function checkSupabaseConnectivity() {
     )
 
     // Teste básico de conectividade
-    const { data, error } = await supabase.from('profiles').select('count').limit(1)
+    const { error } = await supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
 
     if (error) {
       console.log('❌ Erro de conectividade:', error.message)
@@ -82,7 +87,7 @@ async function checkSupabaseConnectivity() {
     console.log('✅ Conexão com Supabase estabelecida')
 
     // Verificar tabelas críticas
-    const criticalTables = ['profiles', 'arenas', 'fields', 'bookings', 'tenant_subscriptions']
+    const criticalTables = ['profiles', 'tenants', 'courts', 'bookings', 'tenant_subscriptions']
 
     for (const table of criticalTables) {
       try {

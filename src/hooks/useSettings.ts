@@ -65,7 +65,7 @@ const DEFAULT_SUBSCRIPTION: Subscription = {
 };
 
 export function useSettings() {
-  const { tenantId } = useAuth();
+  const { tenantId, user } = useAuth();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -158,12 +158,19 @@ export function useSettings() {
           setSubscription(subRes.data[0] as unknown as Subscription);
         }
 
+        // Obter email do usuário autenticado
+        const userEmail = user?.email || "";
+        
+        // Se o email do tenant estiver vazio, usar o email do usuário
+        const tenantEmail = tenantRes.data.email || userEmail;
+        const shouldAutoSave = !tenantRes.data.email && userEmail;
+
         // Atualiza Form Data
-        setFormData({
+        const newFormData = {
           tenant: {
             business_name: tenantRes.data.business_name || "",
             phone: tenantRes.data.phone || "",
-            email: tenantRes.data.email || "",
+            email: tenantEmail,
             address: tenantRes.data.address || "",
             description: tenantRes.data.description || "",
             subdomain: tenantRes.data.subdomain || "",
@@ -187,7 +194,32 @@ export function useSettings() {
               ? promoRes.data.promo_days
               : ["monday", "tuesday", "wednesday"],
           },
-        });
+        };
+
+        setFormData(newFormData);
+
+        // Salvar automaticamente se o email foi preenchido
+        if (shouldAutoSave && userEmail) {
+          // Aguardar um pouco para garantir que o estado foi atualizado
+          setTimeout(async () => {
+            try {
+              const { error: tenantError } = await supabase
+                .from("tenants")
+                .update({
+                  email: userEmail,
+                })
+                .eq("id", tenantId);
+
+              if (tenantError) {
+                console.error("Erro ao salvar email automaticamente:", tenantError);
+              } else {
+                console.log("✅ Email preenchido e salvo automaticamente:", userEmail);
+              }
+            } catch (error) {
+              console.error("Erro ao salvar email automaticamente:", error);
+            }
+          }, 500);
+        }
 
       } catch (error) {
         console.error("Erro ao carregar configurações:", error);
@@ -202,7 +234,7 @@ export function useSettings() {
     };
 
     loadData();
-  }, [tenantId, toast]);
+  }, [tenantId, user, toast]);
 
   // 2. SALVAR DADOS (WRITE)
   const saveSettings = async () => {
@@ -358,7 +390,7 @@ export function useSettings() {
   const addCourt = () => {
     setFormData(prev => ({
       ...prev,
-      courts: [...prev.courts, { name: "Nova Quadra", base_price: 150, active: true }],
+      courts: [...prev.courts, { name: "", base_price: 0, active: true }],
     }));
   };
 

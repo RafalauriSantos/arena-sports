@@ -172,6 +172,7 @@ const ensureProfile = async (user: User) => {
 const fallbackOnboardUser = async (user: User, businessName: string) => {
 	const baseSubdomain = slugifySubdomain(businessName);
 	const suffix = (user.id || "").replace(/-/g, "").slice(0, 6) || "owner";
+	const userEmail = user.email || "";
 
 	let lastError: unknown = null;
 	for (let attempt = 0; attempt < 3; attempt++) {
@@ -186,6 +187,7 @@ const fallbackOnboardUser = async (user: User, businessName: string) => {
 				owner_id: user.id,
 				business_name: businessName,
 				subdomain: candidateSubdomain,
+				email: userEmail, // Preencher email automaticamente
 			})
 			.select("id")
 			.single();

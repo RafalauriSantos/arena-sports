@@ -39,6 +39,7 @@ dist-ssr
 
 # Variaveis de Ambiente (SEGURANÇA MÁXIMA)
 .env
+.env.local
 .env.*
 !.env.example
 

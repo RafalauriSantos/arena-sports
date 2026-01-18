@@ -38,6 +38,8 @@ export async function invokeEdgeFunction<TResponse>(
             apikey: supabaseAnonKey,
             Authorization: `Bearer ${options.accessToken}`,
             "Content-Type": "application/json",
+            "Origin": window.location.origin, // Para callback do Asaas
+            "Referer": window.location.href, // Fallback para callback
         },
         body: options.body == null ? undefined : JSON.stringify(options.body),
     });

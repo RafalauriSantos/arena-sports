@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
 							Podemos compartilhar dados com provedores essenciais para operar o
 							serviço (ex.: autenticação e infraestrutura). Quando aplicável,
 							dados de pagamento são processados por provedores de pagamento
-							(ex.: Stripe).
+							(ex.: Asaas).
 						</p>
 					</section>
 

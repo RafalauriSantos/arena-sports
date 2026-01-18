@@ -14,10 +14,13 @@ type Body = {
 };
 
 const ASAAS_BASE_URL = (
-    Deno.env.get("ASAAS_BASE_URL") ?? "https://sandbox.asaas.com/api/v3"
+    Deno.env.get("ASAAS_API_URL") ??
+    Deno.env.get("ASAAS_BASE_URL") ??
+    "https://sandbox.asaas.com/api/v3"
 ).replace(/\/+$/, "");
 
-const ASAAS_TOKEN = Deno.env.get("ASAAS_ACCESS_TOKEN");
+const ASAAS_TOKEN =
+    Deno.env.get("ASAAS_API_KEY") ?? Deno.env.get("ASAAS_ACCESS_TOKEN");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -33,14 +36,14 @@ const PLANS = {
     start: {
         name: "Arena Start",
         prices: {
-            month: 149,
-            year: 1788,
+            month: 69.9,
+            year: 699,
         },
     },
     pro: {
         name: "Arena Pro",
         prices: {
-            month: 249,
+            month: 149.9,
             year: 1164,
         },
     },

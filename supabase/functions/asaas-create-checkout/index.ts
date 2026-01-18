@@ -5,9 +5,17 @@
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const ASAAS_API_KEY = Deno.env.get("ASAAS_API_KEY");
+const ASAAS_API_KEY =
+	Deno.env.get("ASAAS_API_KEY") ?? Deno.env.get("ASAAS_ACCESS_TOKEN");
 const ASAAS_URL =
-	Deno.env.get("ASAAS_API_URL") || "https://sandbox.asaas.com/api/v3";
+	Deno.env.get("ASAAS_API_URL") ||
+	Deno.env.get("ASAAS_BASE_URL") ||
+	"https://sandbox.asaas.com/api/v3";
+
+const PLAN_PRICES = {
+	start: { month: 69.9, year: 699 },
+	pro: { month: 149.9, year: 1164 },
+} as const;
 
 Deno.serve(async (req) => {
 	if (req.method === "OPTIONS") {
@@ -33,15 +41,42 @@ Deno.serve(async (req) => {
 			Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 		);
 
-		const {
-			plan_code,
-			interval,
-			// Dados do cliente para criação no Asaas (opcionais - serão buscados do banco se não enviados)
-			customer: customerDataFromRequest,
-		} = await req.json();
+	const {
+		plan_code,
+		interval,
+		// Dados do cliente para criação no Asaas (opcionais - serão buscados do banco se não enviados)
+		customer: customerDataFromRequest,
+	} = await req.json();
 
-		if (!plan_code) {
-			throw new Error("Plan code is required");
+	// Validação e debug da chave de API
+	if (!ASAAS_API_KEY) {
+		console.error("❌ ASAAS_API_KEY não encontrada");
+		console.error("Variáveis de ambiente disponíveis:", Object.keys(Deno.env.toObject()).filter(k => k.includes("ASAAS")));
+		throw new Error("ASAAS_API_KEY não configurado");
+	}
+	
+	// Verificar se a chave não está vazia
+	if (ASAAS_API_KEY.trim() === "") {
+		console.error("❌ ASAAS_API_KEY está vazia");
+		throw new Error("ASAAS_API_KEY está vazia");
+	}
+	
+	console.log("✅ ASAAS_API_KEY encontrada:", ASAAS_API_KEY.substring(0, 20) + "...");
+	console.log("✅ ASAAS_API_KEY tamanho:", ASAAS_API_KEY.length);
+	console.log("🌐 ASAAS_URL:", ASAAS_URL);
+
+		const normalizedPlan = String(plan_code || "").toLowerCase();
+		const normalizedInterval =
+			interval === "year" || interval === "month" ? interval : "month";
+
+		if (!normalizedPlan || !(normalizedPlan in PLAN_PRICES)) {
+			return new Response(
+				JSON.stringify({ error: "Plan code inválido. Use start ou pro." }),
+				{
+					status: 400,
+					headers: { ...corsHeaders, "Content-Type": "application/json" },
+				}
+			);
 		}
 
 		// Verificar autenticação
@@ -298,12 +333,35 @@ Deno.serve(async (req) => {
 					: null,
 			});
 
+			// Validar chave antes de fazer requisição
+			if (!ASAAS_API_KEY || ASAAS_API_KEY.trim() === "") {
+				throw new Error("ASAAS_API_KEY não está configurada ou está vazia");
+			}
+
+			console.log("📤 Fazendo requisição para criar customer no Asaas...");
+			console.log("URL:", `${ASAAS_URL}/customers`);
+			console.log("Chave presente:", !!ASAAS_API_KEY);
+			console.log("Chave tamanho:", ASAAS_API_KEY?.length || 0);
+			console.log("Chave início:", ASAAS_API_KEY?.substring(0, 20) || "vazia");
+			
+			// Garantir que a chave não está vazia antes de fazer a requisição
+			if (!ASAAS_API_KEY || ASAAS_API_KEY.trim() === "") {
+				throw new Error("ASAAS_API_KEY está vazia ou não foi configurada");
+			}
+			
+			const requestHeaders = {
+				"Content-Type": "application/json",
+				"access_token": ASAAS_API_KEY.trim(),
+			};
+			
+			console.log("Headers sendo enviados:", {
+				"Content-Type": requestHeaders["Content-Type"],
+				"access_token": requestHeaders["access_token"].substring(0, 20) + "...",
+			});
+			
 			const customerRes = await fetch(`${ASAAS_URL}/customers`, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					access_token: ASAAS_API_KEY!,
-				},
+				headers: requestHeaders,
 				body: JSON.stringify(customerPayload),
 			});
 
@@ -398,14 +456,12 @@ Deno.serve(async (req) => {
 		console.log("Criando assinatura...");
 
 		// Valores dos planos (em reais)
-		let value = 79.0; // R$ 79,00 (Start)
-		if (plan_code === "pro") {
-			value = 149.0; // R$ 149,00 (Pro)
-		}
+		const planPricing = PLAN_PRICES[normalizedPlan as "start" | "pro"];
+		const value = planPricing[normalizedInterval];
 
 		// Se tiver interval, ajustar valor para anual (se necessário)
 		// Por enquanto, mantemos mensal
-		const cycle = interval === "year" ? "YEARLY" : "MONTHLY";
+		const cycle = normalizedInterval === "year" ? "YEARLY" : "MONTHLY";
 
 		const subscriptionRes = await fetch(`${ASAAS_URL}/subscriptions`, {
 			method: "POST",
@@ -422,8 +478,8 @@ Deno.serve(async (req) => {
 					.split("T")[0], // Cobrar amanhã
 				cycle: cycle === "YEARLY" ? "YEARLY" : "MONTHLY",
 				description: `Assinatura Arena System - Plano ${
-					plan_code || "Start"
-				} - ${interval === "year" ? "Anual" : "Mensal"}`,
+					normalizedPlan === "pro" ? "Pro" : "Start"
+				} - ${normalizedInterval === "year" ? "Anual" : "Mensal"}`,
 			}),
 		});
 
@@ -445,10 +501,10 @@ Deno.serve(async (req) => {
 					tenant_id: tenant_id,
 					asaas_subscription_id: subscriptionId,
 					asaas_customer_id: asaasCustomerId,
-					plan_code: plan_code || "start",
-					plan_name: `Arena ${plan_code === "pro" ? "Pro" : "Start"}`,
+					plan_code: normalizedPlan,
+					plan_name: `Arena ${normalizedPlan === "pro" ? "Pro" : "Start"}`,
 					status: "trial", // Status inicial - será atualizado pelo webhook quando pagar
-					billing_interval: interval || "month",
+					billing_interval: normalizedInterval,
 					monthly_price: Math.round(value * 100), // Converter para centavos (integer)
 				},
 				{
@@ -471,26 +527,31 @@ Deno.serve(async (req) => {
 		// Criar payment vinculado à subscription com data de vencimento imediata (hoje ou amanhã)
 		const dueDate = new Date(Date.now() + 86400000).toISOString().split("T")[0]; // Amanhã
 
-		const paymentRes = await fetch(`${ASAAS_URL}/payments`, {
+		// Criar Payment SEM callback primeiro (prioridade: funcionar sempre)
+		const paymentBody: Record<string, any> = {
+			customer: asaasCustomerId,
+			billingType: "UNDEFINED", // Permite PIX, boleto ou cartão
+			value: value,
+			dueDate: dueDate,
+			description: `Assinatura Arena System - Plano ${
+				normalizedPlan === "pro" ? "Pro" : "Start"
+			} - ${normalizedInterval === "year" ? "Anual" : "Mensal"}`,
+			subscription: subscriptionId, // Vincular à subscription criada
+		};
+
+		// Criar payment primeiro (sem callback para garantir que funciona)
+		let paymentRes = await fetch(`${ASAAS_URL}/payments`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				access_token: ASAAS_API_KEY!,
 			},
-			body: JSON.stringify({
-				customer: asaasCustomerId,
-				billingType: "UNDEFINED", // Permite PIX, boleto ou cartão
-				value: value,
-				dueDate: dueDate,
-				description: `Assinatura Arena System - Plano ${
-					plan_code || "Start"
-				} - ${interval === "year" ? "Anual" : "Mensal"}`,
-				subscription: subscriptionId, // Vincular à subscription criada
-			}),
+			body: JSON.stringify(paymentBody),
 		});
 
-		const paymentData = await paymentRes.json();
+		let paymentData = await paymentRes.json();
 
+		// Se falhar, lançar erro (sem tentar callback)
 		if (paymentData.errors) {
 			console.error("Erro ao criar payment:", paymentData.errors);
 			throw new Error(
@@ -500,6 +561,41 @@ Deno.serve(async (req) => {
 					"Erro desconhecido"
 				}`
 			);
+		}
+
+		// ✅ Payment criado com sucesso! Agora tentar adicionar callback (prioridade baixa)
+		// Nota: O Asaas não permite atualizar callback depois, então tentamos criar com callback
+		// apenas como fallback. Mas como isso pode falhar, priorizamos criar sem callback.
+
+		// Tentar obter URL para callback (opcional - última prioridade)
+		let frontendUrl = "";
+		
+		// Tentar 1: Pegar do header Referer ou Origin do request
+		const referer = req.headers.get("referer") || req.headers.get("origin");
+		if (referer) {
+			try {
+				const url = new URL(referer);
+				frontendUrl = url.origin;
+				console.log("URL base obtida do header:", frontendUrl);
+			} catch (e) {
+				console.warn("Erro ao parsear URL do header:", referer);
+			}
+		}
+		
+		// Tentar 2: Usar variável de ambiente FRONTEND_URL
+		if (!frontendUrl) {
+			frontendUrl = Deno.env.get("FRONTEND_URL") || "";
+			if (frontendUrl) {
+				console.log("URL base obtida de FRONTEND_URL:", frontendUrl);
+			}
+		}
+
+		// Se tiver URL e quiser tentar callback, poderia tentar atualizar o payment
+		// Mas o Asaas não permite atualizar payment após criação, então deixamos sem callback
+		// O webhook e redirecionamento manual funcionam perfeitamente
+		if (!frontendUrl) {
+			console.log("ℹ️ Callback não configurado. Webhook atualizará status automaticamente.");
+			console.log("   Para redirecionamento automático, configure FRONTEND_URL e cadastre domínio no Asaas.");
 		}
 
 		// A invoiceUrl é a URL do checkout do Asaas

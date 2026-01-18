@@ -23,6 +23,7 @@ const Login = () => {
 	const [arenaName, setArenaName] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [signupEmail, setSignupEmail] = useState<string>(""); // Email usado no signup (para mostrar na confirmação)
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -35,22 +36,30 @@ const Login = () => {
 	}, [location.search]);
 
 	// --- LÓGICA DE SESSÃO MANTIDA ---
-	// IMPORTANTE: Não redireciona automaticamente se estiver em modo signup
+	// IMPORTANTE: Não redireciona automaticamente se estiver em modo signup ou email-confirmation
 	// (permite que novo usuário crie conta mesmo se houver sessão de outro usuário)
 	useEffect(() => {
 		const checkSession = async () => {
-			// Se estiver em modo signup, não redireciona (deixa fazer signup)
-			if (mode === "signup") {
+			// Se estiver em modo signup ou email-confirmation, não redireciona
+			if (mode === "signup" || mode === "email-confirmation") {
 				return;
 			}
 
 			const { data } = await supabase.auth.getSession();
-			if (data?.session) {
+			if (data?.session?.user) {
+				// Verificar se email está confirmado (apenas usuários confirmados podem acessar)
+				const user = data.session.user;
+				if (!user.email_confirmed_at && user.email) {
+					// Email não confirmado - não redireciona, deixa na tela de login
+					// O usuário verá erro ao tentar fazer login
+					return;
+				}
+
 				// Verificar se já completou onboarding
 				const { data: profile } = await supabase
 					.from("profiles")
 					.select("onboarding_completed_at, tenant_id")
-					.eq("id", data.session.user.id)
+					.eq("id", user.id)
 					.single();
 
 				// Se já completou onboarding, vai direto pro dashboard
@@ -73,17 +82,32 @@ const Login = () => {
 
 		try {
 			if (mode === "signin") {
-				const { error } = await supabase.auth.signInWithPassword({
+				const { data: signInData, error } = await supabase.auth.signInWithPassword({
 					email,
 					password,
 				});
-				if (error) throw error;
 
-				// Após signin, verificar se já completou onboarding
-				const {
-					data: { user },
-				} = await supabase.auth.getUser();
+				// Tratar erro específico de email não confirmado
+				if (error) {
+					const isEmailNotConfirmed = /email.*not.*confirmed|confirmation|verify.*email/i.test(
+						error.message
+					);
+					if (isEmailNotConfirmed) {
+						setError(
+							"Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação."
+						);
+						setSignupEmail(email);
+						setMode("email-confirmation");
+						setIsLoading(false);
+						return;
+					}
+					throw error;
+				}
+
+				// Login bem-sucedido - verificar onboarding
+				const user = signInData?.user;
 				if (user) {
+					// Usar session do signInData para evitar query extra
 					const { data: profile } = await supabase
 						.from("profiles")
 						.select("onboarding_completed_at")
@@ -103,20 +127,100 @@ const Login = () => {
 				return;
 			}
 
-			// SIGNUP: Cria conta e mostra mensagem de confirmação
+			// SIGNUP: Validações antes de criar conta
+			if (!email || !email.includes("@")) {
+				setError("Email inválido. Digite um email válido.");
+				setIsLoading(false);
+				return;
+			}
+
+			if (!password || password.length < 6) {
+				setError("Senha deve ter no mínimo 6 caracteres.");
+				setIsLoading(false);
+				return;
+			}
+
 			const businessName = arenaName || "Minha ArenaSys";
+			
+			// Construir URL de redirect de forma segura
+			const origin = window.location.origin;
+			const redirectUrl = `${origin}/welcome`;
+			
+			// SIGNUP: Cria conta e mostra mensagem de confirmação
 			const { data: signUpData, error } = await supabase.auth.signUp({
-				email,
+				email: email.trim().toLowerCase(),
 				password,
 				options: {
 					data: {
 						business_name: businessName,
 						app_slug: "arena-sys",
 					},
-					emailRedirectTo: `${window.location.origin}/welcome`,
+					// emailRedirectTo só é necessário se confirmação estiver habilitada
+					// Se der erro 400, pode ser que a URL não esteja nas allowed redirect URLs do Supabase
+					emailRedirectTo: redirectUrl,
 				},
 			});
-			if (error) throw error;
+
+			// Tratamento específico de erros do signup
+			if (error) {
+				const errorMsg = error.message.toLowerCase();
+				
+				// Email já cadastrado
+				if (errorMsg.includes("already registered") || errorMsg.includes("user already exists")) {
+					setError("Este email já está cadastrado. Faça login ou use outro email.");
+					setMode("signin");
+					setIsLoading(false);
+					return;
+				}
+				
+				// Email inválido
+				if (errorMsg.includes("invalid email") || errorMsg.includes("email format")) {
+					setError("Email inválido. Verifique o formato do email.");
+					setIsLoading(false);
+					return;
+				}
+				
+				// Senha muito curta
+				if (errorMsg.includes("password") && errorMsg.includes("short")) {
+					setError("Senha muito curta. Use no mínimo 6 caracteres.");
+					setIsLoading(false);
+					return;
+				}
+				
+				// Redirect URL não permitida
+				if (errorMsg.includes("redirect") || errorMsg.includes("url") || errorMsg.includes("invalid redirect")) {
+					setError(
+						"URL de redirecionamento não configurada. Configure a URL permitida no Supabase Dashboard (Authentication > URL Configuration > Redirect URLs)."
+					);
+					console.error("Redirect URL error:", error, "Tentou usar:", redirectUrl);
+					setIsLoading(false);
+					return;
+				}
+				
+				// Erro genérico 400 - pode ser várias coisas
+				// Verificar se é um erro 400 de várias formas possíveis
+				const errorStatus = (error as { status?: number; statusCode?: number }).status || 
+				                    (error as { status?: number; statusCode?: number }).statusCode;
+				
+				if (errorStatus === 400 || errorMsg.includes("bad request")) {
+					console.error("Signup 400 error details:", {
+						message: error.message,
+						status: errorStatus,
+						email: email.trim().toLowerCase(),
+						redirectUrl,
+						fullError: error,
+					});
+					// Mostrar mensagem mais útil
+					setError(
+						`Erro ao criar conta: ${error.message || "Verifique se o email é válido e se a senha tem no mínimo 6 caracteres. Se o problema persistir, verifique as configurações de redirect URL no Supabase."}`
+					);
+					setIsLoading(false);
+					return;
+				}
+				
+				// Outros erros
+				throw error;
+			}
 
 			// Salvar email para mostrar na tela de confirmação
 			setSignupEmail(email);
@@ -136,9 +240,30 @@ const Login = () => {
 			navigate("/welcome", { replace: true });
 			return;
 		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Erro de autenticação";
+			let message = "Erro de autenticação";
+			
+			if (err instanceof Error) {
+				message = err.message;
+				
+				// Tratamento específico de erros comuns
+				const errorLower = message.toLowerCase();
+				
+				if (errorLower.includes("network") || errorLower.includes("fetch")) {
+					message = "Erro de conexão. Verifique sua internet e tente novamente.";
+				} else if (errorLower.includes("invalid credentials") || errorLower.includes("wrong password")) {
+					message = "Email ou senha incorretos. Verifique e tente novamente.";
+				} else if (errorLower.includes("too many requests") || errorLower.includes("rate limit")) {
+					message = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+				} else if (errorLower.includes("email")) {
+					// Manter mensagem original se já foi tratada acima
+					if (!message.includes("já está cadastrado") && !message.includes("inválido")) {
+						message = `Erro relacionado ao email: ${message}`;
+					}
+				}
+			}
+			
 			setError(message);
+			console.error("Auth error:", err);
 		} finally {
 			setIsLoading(false);
 		}
@@ -238,6 +363,18 @@ const Login = () => {
 										</p>
 									</div>
 
+									{successMessage && (
+										<div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm text-center">
+											{successMessage}
+										</div>
+									)}
+
+									{error && (
+										<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+											{error}
+										</div>
+									)}
+
 									<div className="space-y-3 text-left bg-white/5 rounded-lg p-4 border border-white/10">
 										<div className="flex items-start gap-3">
 											<CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -261,42 +398,56 @@ const Login = () => {
 										</div>
 									</div>
 
-									<div className="flex flex-col sm:flex-row gap-3 pt-2">
+									<div className="flex flex-col gap-3 pt-2">
 										<Button
 											onClick={async () => {
 												// Reenviar email de confirmação
 												setIsLoading(true);
+												setError(null);
+												setSuccessMessage(null);
+												const targetEmail = signupEmail || email;
 												const { error: resendError } =
 													await supabase.auth.resend({
 														type: "signup",
-														email: signupEmail || email,
+														email: targetEmail,
 														options: {
 															emailRedirectTo: `${window.location.origin}/welcome`,
 														},
 													});
 												setIsLoading(false);
 												if (resendError) {
-													setError(resendError.message);
+													setError(
+														resendError.message ||
+															"Erro ao reenviar email. Tente novamente."
+													);
+													setSuccessMessage(null);
 												} else {
 													setError(null);
-													alert(
-														"Email reenviado com sucesso! Verifique sua caixa de entrada."
+													setSuccessMessage(
+														"✅ Email reenviado com sucesso! Verifique sua caixa de entrada."
 													);
+													// Limpar mensagem após 5 segundos
+													setTimeout(() => {
+														setSuccessMessage(null);
+													}, 5000);
 												}
 											}}
 											disabled={isLoading}
 											variant="outline"
-											className="flex-1 border-white/20 hover:bg-white/5 text-white">
+											className="w-full border-white/20 hover:bg-white/5 text-white">
 											{isLoading ? "Enviando..." : "Reenviar Email"}
 										</Button>
 										<Button
-											onClick={() => {
+											onClick={async () => {
+												// Tentar login novamente após confirmação
 												setMode("signin");
 												setEmail(signupEmail || email);
 												setSignupEmail("");
+												setError(null);
+												setSuccessMessage(null);
 											}}
-											className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold">
-											Fazer Login
+											className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm sm:text-base">
+											Tentar Login Novamente
 										</Button>
 									</div>
 
@@ -409,6 +560,8 @@ const Login = () => {
 											onClick={() => {
 												setMode(mode === "signin" ? "signup" : "signin");
 												setError(null);
+												setSuccessMessage(null);
+												setSignupEmail("");
 											}}
 											className="text-sm text-gray-400 hover:text-white transition-colors">
 											{mode === "signin"

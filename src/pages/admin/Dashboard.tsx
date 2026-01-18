@@ -905,7 +905,7 @@ export default function DashboardHome() {
 				number: "02",
 				title: "Checkout oficial Asaas",
 				description:
-					"Abrimos a página segura do Asaas com parcelamento em até 12x.",
+					"Escolha Cartão de Crédito no checkout para parcelar em até 12x sem juros. Outras formas de pagamento também disponíveis.",
 			},
 			{
 				number: "03",

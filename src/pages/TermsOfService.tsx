@@ -43,8 +43,8 @@ export default function TermsOfService() {
 						<h2 className="text-xl font-semibold">4) Pagamentos</h2>
 						<p>
 							Quando habilitado, pagamentos/assinaturas podem ser processados
-							por provedores terceiros (ex.: Stripe). Condições de planos podem
-							variar.
+							por provedores terceiros (ex.: Asaas). Condições de planos podem
+							variar conforme a modalidade escolhida.
 						</p>
 					</section>
 

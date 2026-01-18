@@ -7,9 +7,14 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { config } from 'dotenv'
+import { existsSync } from 'fs'
+import { resolve } from 'path'
 import type { User } from '@supabase/supabase-js'
 
-config()
+const envFile = existsSync(resolve(process.cwd(), '.env.local'))
+  ? '.env.local'
+  : '.env'
+config({ path: envFile })
 
 // =============================================================================
 // 🏗️ TIPOS E INTERFACES
@@ -23,14 +28,11 @@ interface TestUser {
 
 interface TenantData {
   tenant_id: string
-  arena_id?: string
-  [key: string]: unknown
 }
 
 interface SubscriptionData {
-  checkout_url?: string
-  subscription_id?: string
-  [key: string]: unknown
+  url?: string
+  subscriptionId?: string
 }
 
 interface WebhookPayload {
@@ -59,6 +61,14 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 console.log('🚀 Teste de Fluxo Completo - Cadastro → Onboarding → Billing\n')
 
+const isEmailConfirmationError = (message: string) =>
+  /confirm|confirmation|email not confirmed/i.test(message)
+
+const isSignupRestricted = (message: string) =>
+  /sign.?up.*(disabled|not allowed|invite)|email.*invalid/i.test(message)
+
+const testEmailDomain = process.env.TEST_EMAIL_DOMAIN || 'example.com'
+
 // =============================================================================
 // 🧪 SIMULAÇÃO: Cadastro de Novo Usuário
 // =============================================================================
@@ -66,7 +76,7 @@ console.log('🚀 Teste de Fluxo Completo - Cadastro → Onboarding → Billing\
 async function simulateUserSignup(): Promise<TestUser | null> {
   console.log('📝 Simulando cadastro de novo usuário...')
 
-  const testEmail = `fluxo-completo-${Date.now()}@example.com`
+  const testEmail = `fluxo-completo-${Date.now()}@${testEmailDomain}`
   const testPassword = 'test123456'
 
   try {
@@ -75,7 +85,27 @@ async function simulateUserSignup(): Promise<TestUser | null> {
       password: testPassword
     })
 
-    if (error) throw error
+    if (error) {
+      if (isSignupRestricted(error.message)) {
+        console.log(
+          '⚠️ Signup bloqueado por política do projeto. Defina TEST_EMAIL_DOMAIN ou habilite signups.'
+        )
+        return null
+      }
+      throw error
+    }
+    const { error: signinError } = await supabase.auth.signInWithPassword({
+      email: testEmail,
+      password: testPassword
+    })
+
+    if (signinError) {
+      if (isEmailConfirmationError(signinError.message)) {
+        console.log('⚠️ Email não confirmado. Encerrando fluxo de teste.')
+        return null
+      }
+      throw signinError
+    }
 
     console.log(`✅ Usuário criado: ${testEmail}`)
     return { user: data.user, email: testEmail, password: testPassword }
@@ -96,27 +126,22 @@ async function simulateOnboarding(user: TestUser): Promise<TenantData | null> {
   try {
     // Simular preenchimento do welcome
     const onboardingData = {
-      name: 'Arena Teste Fluxo Completo',
-      address: 'Rua Teste, 123',
-      phone: '(11) 99999-9999',
-      cpf_cnpj: '12.345.678/0001-99' // CPF/CNPJ válido para Asaas
+      businessName: 'Arena Teste Fluxo Completo',
+      saasSlug: 'arena-sys'
     }
 
     // Verificar se a função fn_onboard_user existe e funciona
     const { data, error } = await supabase.rpc('fn_onboard_user', {
-      user_id: user.user?.id,
-      arena_name: onboardingData.name,
-      arena_address: onboardingData.address,
-      arena_phone: onboardingData.phone,
-      cpf_cnpj: onboardingData.cpf_cnpj
+      p_business_name: onboardingData.businessName,
+      p_saas_slug: onboardingData.saasSlug
     })
 
     if (error) throw error
 
     console.log('✅ Onboarding completado via fn_onboard_user')
-    console.log('📊 Tenant criado com ID:', data?.tenant_id)
+    console.log('📊 Tenant criado com ID:', data)
 
-    return data as TenantData
+    return { tenant_id: data as string }
 
   } catch (error) {
     console.log('❌ Erro no onboarding:', error instanceof Error ? error.message : String(error))
@@ -132,12 +157,31 @@ async function simulateAsaasCheckout(user: TestUser, tenantData: TenantData): Pr
   console.log('💳 Simulando checkout Asaas...')
 
   try {
+    const shouldRunAsaas = /^(1|true|yes)$/i.test(process.env.RUN_ASAAS_TESTS ?? '')
+    if (!shouldRunAsaas) {
+      console.log('⚠️ Teste de checkout Asaas ignorado (RUN_ASAAS_TESTS=1 para habilitar)')
+      return null
+    }
+
+    const cpfCnpj = process.env.TEST_ASAAS_CPF_CNPJ
+    const phone = process.env.TEST_ASAAS_PHONE
+
+    if (!cpfCnpj || !phone) {
+      console.log('⚠️ TEST_ASAAS_CPF_CNPJ/TEST_ASAAS_PHONE ausentes. Pulando checkout.')
+      return null
+    }
+
     // Preparar dados para checkout
     const checkoutData = {
       tenant_id: tenantData.tenant_id,
-      plan_id: 'starter', // ou o plano que estiver disponível
-      success_url: 'http://localhost:5173/success',
-      cancel_url: 'http://localhost:5173/cancel'
+      plan_code: 'start',
+      interval: 'month',
+      customer: {
+        name: user.email.split('@')[0],
+        email: user.email,
+        cpfCnpj,
+        phone
+      }
     }
 
     // Chamar Edge Function
@@ -148,8 +192,8 @@ async function simulateAsaasCheckout(user: TestUser, tenantData: TenantData): Pr
     if (error) throw error
 
     console.log('✅ Checkout Asaas criado')
-    console.log('🔗 URL de pagamento:', data?.checkout_url)
-    console.log('🆔 Subscription ID:', data?.subscription_id)
+    console.log('🔗 URL de pagamento:', data?.url)
+    console.log('🆔 Subscription ID:', data?.subscriptionId)
 
     return data as SubscriptionData
 
@@ -173,7 +217,7 @@ async function simulateWebhook(tenantData: TenantData, subscriptionData: Subscri
       event: 'PAYMENT_RECEIVED',
       payment: {
         id: `pay_${Date.now()}`,
-        subscription: subscriptionData?.subscription_id,
+        subscription: subscriptionData?.subscriptionId,
         value: 97.00,
         netValue: 94.09,
         status: 'RECEIVED'
@@ -181,8 +225,14 @@ async function simulateWebhook(tenantData: TenantData, subscriptionData: Subscri
     }
 
     // Chamar Edge Function do webhook
+    const webhookToken =
+      process.env.TEST_ASAAS_WEBHOOK_TOKEN ||
+      process.env.ASAAS_WEBHOOK_SECRET ||
+      process.env.ASAAS_WEBHOOK_TOKEN
+
     const { data, error } = await supabase.functions.invoke('asaas-webhook', {
-      body: webhookPayload
+      body: webhookPayload,
+      headers: webhookToken ? { 'asaas-access-token': webhookToken } : undefined
     })
 
     if (error) throw error

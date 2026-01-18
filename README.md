@@ -221,22 +221,9 @@ Importante:
 
 Dica: use `bun run dev` para interatividade rápida com hot reload; para testar o comportamento de produção, rode `bun run build` e `bun run preview`.
 
-## 💳 Billing (Stripe)
+## 💳 Billing (Asaas)
 
-O billing roda via **Stripe Checkout (assinatura)** + **Stripe Webhooks** + **Supabase Edge Functions**.
-
-### Variáveis do Frontend (`.env.local`)
-
-Além das variáveis do Supabase, o app usa IDs de preços do Stripe (para exibir/selecionar plano):
-
-- `VITE_STRIPE_PRICE_START_MONTHLY`
-- `VITE_STRIPE_PRICE_START_YEARLY`
-- `VITE_STRIPE_PRICE_PRO_MONTHLY`
-- `VITE_STRIPE_PRICE_PRO_YEARLY`
-
-Importante:
-
-- Esses IDs **não são segredo** (podem ficar no browser). Segredos do Stripe ficam apenas nas Edge Functions.
+O billing roda via **Asaas Subscriptions + Payments + Webhooks** + **Supabase Edge Functions**.
 
 ### Secrets das Edge Functions (Supabase)
 
@@ -245,23 +232,16 @@ Configure como secrets no Supabase (Dashboard → Edge Functions → Secrets, ou
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (segredo)
-- `STRIPE_SECRET_KEY` (segredo)
-- `STRIPE_WEBHOOK_SECRET` (segredo; usado no webhook)
-
-IDs de preços para inferência no backend (aceita duas grafias por compatibilidade):
-
-- `STRIPE_PRICE_START_MONTH` ou `STRIPE_PRICE_START_MONTHLY`
-- `STRIPE_PRICE_START_YEAR` ou `STRIPE_PRICE_START_YEARLY`
-- `STRIPE_PRICE_PRO_MONTH` ou `STRIPE_PRICE_PRO_MONTHLY`
-- `STRIPE_PRICE_PRO_YEAR` ou `STRIPE_PRICE_PRO_YEARLY`
+- `ASAAS_API_KEY` (segredo)
+- `ASAAS_WEBHOOK_SECRET` (segredo; usado no webhook)
+- `ASAAS_API_URL` (opcional; sandbox/prod)
 
 ### Edge Functions usadas
 
-- `stripe-create-checkout`: cria sessão do Stripe Checkout.
-- `stripe-sync-checkout`: sincroniza a assinatura ao voltar do Checkout (fallback contra atraso de webhook).
-- `stripe-webhook`: recebe eventos do Stripe e atualiza `tenant_subscriptions`.
-- `stripe-create-portal-session`: abre o Billing Portal (gerenciar assinatura).
-- `ensure-tenant-subscription`: garante que existe linha em `tenant_subscriptions` (e que trial só começa após consentimento).
+- `asaas-create-checkout`: cria assinatura e gera URL de pagamento.
+- `asaas-webhook`: recebe eventos do Asaas e atualiza `tenant_subscriptions`.
+- `asaas-manage-subscription`: cancelamento/reativação/troca de plano.
+- `ensure-tenant-subscription`: garante linha em `tenant_subscriptions` (trial após consentimento).
 
 Obs.: no [supabase/config.toml](supabase/config.toml) estas funções estão com `verify_jwt = false` (o webhook precisa disso). As funções acionadas pelo app validam o usuário/tenant na própria lógica.
 
@@ -280,38 +260,48 @@ npx supabase@latest secrets set \
 	SUPABASE_URL=... \
 	SUPABASE_ANON_KEY=... \
 	SUPABASE_SERVICE_ROLE_KEY=... \
-	STRIPE_SECRET_KEY=... \
-	STRIPE_WEBHOOK_SECRET=... \
-	STRIPE_PRICE_START_MONTHLY=... \
-	STRIPE_PRICE_PRO_MONTHLY=...
+	ASAAS_API_KEY=... \
+	ASAAS_WEBHOOK_SECRET=... \
+	ASAAS_API_URL=...
 ```
 
 3. Deploy das funções (se necessário no seu fluxo):
 
 ```bash
-npx supabase@latest functions deploy stripe-webhook
-npx supabase@latest functions deploy stripe-create-checkout
-npx supabase@latest functions deploy stripe-sync-checkout
-npx supabase@latest functions deploy stripe-create-portal-session
+npx supabase@latest functions deploy asaas-webhook
+npx supabase@latest functions deploy asaas-create-checkout
+npx supabase@latest functions deploy asaas-manage-subscription
 npx supabase@latest functions deploy ensure-tenant-subscription
 ```
 
-4. Configurar webhook no Stripe:
+4. Configurar webhook no Asaas:
 
-- Endpoint: `https://<PROJECT_REF>.functions.supabase.co/stripe-webhook`
-- Eventos esperados: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
+- Endpoint: `https://<PROJECT_REF>.functions.supabase.co/asaas-webhook`
+- Header obrigatório: `asaas-access-token: <ASAAS_WEBHOOK_SECRET>`
 
 ### Validação (o que precisa acontecer)
 
 - Selecionar **Pro** (recomendado) ou **Start** no app → ir pro Checkout
-- Pagar → voltar para o app → status vira **Ativo** e mostra plano/valor corretos (ex.: **Pro R$169**)
+- Pagar → voltar para o app → status vira **Ativo** e mostra plano/valor corretos
 - Usuário pago **não** vê CTA de trial/assinar
-- Portal abre em Configurações (gerenciar assinatura)
 
 ### Troubleshooting
 
-- Se pagou e não atualizou na hora: o app chama `stripe-sync-checkout` no retorno usando `session_id`. Verifique se o `session_id` está presente na URL e se a função responde 200.
-- Se webhook estiver falhando: confira `STRIPE_WEBHOOK_SECRET` e os logs da função `stripe-webhook`.
+- Se pagou e não atualizou: confira o webhook e os logs da função `asaas-webhook`.
+- Se checkout falha: valide `ASAAS_API_KEY` e dados obrigatórios (CPF/CNPJ e telefone).
+
+### ✅ Checklist final de testes (MPV)
+
+- Variáveis de ambiente configuradas (Supabase + Asaas) no ambiente correto.
+- Migrations aplicadas e RLS ativo nas tabelas críticas.
+- Login, signup e onboarding criam `tenant_id` corretamente.
+- Criar/editar/deletar reservas funciona no admin.
+- Calendário público (`/agendar/:subdomain`) mostra ocupação correta.
+- Trial inicia apenas após consentimento e bloqueio funciona após expirar.
+- Checkout Asaas abre, pagamento aprova e status vira **active**.
+- Webhook registra evento e atualiza `tenant_subscriptions`.
+- Build e preview de produção executam sem erros.
+- PWA testado em desktop e mobile (principal fluxo de reserva).
 
 ## ⚙️ Funcionalidades Atuais (MVP)
 
@@ -323,7 +313,7 @@ npx supabase@latest functions deploy ensure-tenant-subscription
 
 ## 🔜 Próximos Passos (Roadmap)
 
-- [x] Integração com Gateway de Pagamento (Stripe).
+- [x] Integração com Gateway de Pagamento (Asaas).
 - [ ] Notificações via WhatsApp para confirmação de jogos.
 - [ ] Implementação de IA (Python) para análise preditiva de horários de pico.
 

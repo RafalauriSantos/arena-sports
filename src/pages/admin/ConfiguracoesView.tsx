@@ -719,6 +719,7 @@ export default function ConfiguracoesView() {
 													onChange={(e) =>
 														updateCourt(index, "name", e.target.value)
 													}
+													placeholder="Ex: Quadra 1, Campo Society, etc"
 													className="bg-white/5 border-white/10 text-white"
 												/>
 											</div>
@@ -728,14 +729,15 @@ export default function ConfiguracoesView() {
 												</Label>
 												<Input
 													type="number"
-													value={court.base_price}
+													value={court.base_price || ""}
 													onChange={(e) =>
 														updateCourt(
 															index,
 															"base_price",
-															Number(e.target.value)
+															Number(e.target.value) || 0
 														)
 													}
+													placeholder="Ex: 100, 150, 200"
 													className="bg-white/5 border-white/10 text-white"
 												/>
 											</div>
@@ -1037,6 +1039,11 @@ export default function ConfiguracoesView() {
 												Recomendamos o Pro para usar tudo liberado. Pagamento
 												seguro pelo Asaas. Você pode cancelar quando quiser.
 											</p>
+											<div className="mt-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+												<p className="text-[11px] text-emerald-400 font-medium">
+													💳 Parcelamento disponível: Ao escolher <strong>Cartão de Crédito</strong> no checkout, você poderá parcelar em até 12x sem juros.
+												</p>
+											</div>
 										</div>
 									)}
 								</CardContent>
