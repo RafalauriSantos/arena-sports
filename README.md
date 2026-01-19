@@ -276,8 +276,11 @@ npx supabase@latest functions deploy ensure-tenant-subscription
 
 4. Configurar webhook no Asaas:
 
-- Endpoint: `https://<PROJECT_REF>.functions.supabase.co/asaas-webhook`
-- Header obrigatório: `asaas-access-token: <ASAAS_WEBHOOK_SECRET>`
+- **Endpoint:** `https://<PROJECT_REF>.functions.supabase.co/asaas-webhook`
+- **Header obrigatório:** `asaas-access-token: <ASAAS_WEBHOOK_SECRET>`
+- **Eventos:** `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `SUBSCRIPTION_CREATED`
+
+> **Importante:** O webhook precisa estar configurado corretamente no Asaas para que os pagamentos atualizem automaticamente o status da assinatura.
 
 ### Validação (o que precisa acontecer)
 

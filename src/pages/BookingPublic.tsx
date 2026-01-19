@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import {
@@ -10,6 +10,8 @@ import {
 	Calendar as CalendarIcon,
 	Frown,
 	Loader2,
+	ChevronLeft,
+	ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,7 +88,14 @@ export default function BookingPublic() {
 		slot: TimeChip;
 	} | null>(null);
 	const [reserveError, setReserveError] = useState<string | null>(null);
+	const [reserveSuccess, setReserveSuccess] = useState<string | null>(null);
+	const [isReserving, setIsReserving] = useState(false);
 	const [tenantId, setTenantId] = useState<string | null>(null);
+	const [playerName, setPlayerName] = useState("");
+	const [playerPhone, setPlayerPhone] = useState("");
+
+	// Ref para controlar o scroll do carrossel
+	const carouselRef = useRef<HTMLDivElement>(null);
 
 	// 1. Carregar Dados Iniciais (Empresa e Quadras)
 	useEffect(() => {
@@ -231,6 +240,50 @@ export default function BookingPublic() {
 		};
 	}, [tenantId]);
 
+	// 1c. 🔥 Realtime: escuta mudanças nas CONFIGURAÇÕES do tenant (horários, preços, etc)
+	useEffect(() => {
+		if (!tenantId) return;
+
+		console.log("🔄 [REALTIME] Iniciando escuta de configurações do tenant:", tenantId);
+
+		const tenantChannel = supabase
+			.channel(`tenant-settings-${tenantId}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "UPDATE",
+					schema: "public",
+					table: "tenants",
+					filter: `id=eq.${tenantId}`,
+				},
+				async (payload) => {
+					console.log("🔥 [REALTIME] Configurações do tenant atualizadas! Recarregando...", payload);
+					
+					// Recarrega os dados do tenant para pegar os novos settings
+					const { data, error } = await supabase
+						.from("tenants")
+						.select("*")
+						.eq("id", tenantId)
+						.single();
+
+					if (!error && data) {
+						console.log("✅ [REALTIME] Settings atualizados em tempo real:", data.settings);
+						setTenant(data);
+					} else {
+						console.error("❌ [REALTIME] Erro ao recarregar settings:", error);
+					}
+				}
+			)
+			.subscribe((status) => {
+				console.log("📡 [REALTIME] Status da conexão:", status);
+			});
+
+		return () => {
+			console.log("🔌 [REALTIME] Desconectando canal de configurações");
+			supabase.removeChannel(tenantChannel);
+		};
+	}, [tenantId]);
+
 	// 2. Carregar ocupação do dia (avulsos + mensalistas) via RPC pública segura
 	useEffect(() => {
 		let cancelled = false;
@@ -277,9 +330,8 @@ export default function BookingPublic() {
 		};
 	}, [cleanSubdomain, selectedDate]);
 
-	// 2. Carregar slots disponíveis (com descontos e bloqueios)
-	const courtsWithSlots = (() => {
-		// Helpers para data e hora
+	// 2. Carregar slots disponíveis (com descontos e bloqueios) - Otimizado com useMemo
+	const courtsWithSlots = useMemo(() => {
 		const now = new Date();
 		const isToday = isSameDay(selectedDate, now);
 		const nowHour = now.getHours();
@@ -295,16 +347,32 @@ export default function BookingPublic() {
 			occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`)
 		);
 
+		// Horários de operação por dia da semana
+		const dayOfWeek = selectedDate.getDay();
+		const isSunday = dayOfWeek === 0;
+
+		// Configuração de horários (suporta personalização por dia)
+		let startHour = 7;
+		let endHour = 23;
+
+		if (isSunday && bookingConfigs.sunday_hours) {
+			startHour = bookingConfigs.sunday_hours.start || 7;
+			endHour = bookingConfigs.sunday_hours.end || 23;
+		} else if (bookingConfigs.weekday_hours) {
+			startHour = bookingConfigs.weekday_hours.start || 7;
+			endHour = bookingConfigs.weekday_hours.end || 23;
+		}
+
 		return courts.map((court) => {
 			const slots: TimeChip[] = [];
 
-			// Grade das 07:00 as 23:00
-			for (let h = 7; h <= 23; h++) {
+			// Grade com horários personalizados por dia
+			for (let h = startHour; h <= endHour; h++) {
 				const time = `${h.toString().padStart(2, "0")}:00`;
 				const slotKey = `${court.id}-${time}`;
 
 				// Bloqueio 1: Passado (se for hoje)
-				if (isToday && h <= nowHour) continue;
+				if (isToday && h < nowHour) continue;
 
 				// Bloqueio 2: Ocupado (avulso ou mensalista)
 				if (occupied.has(slotKey)) continue;
@@ -320,7 +388,23 @@ export default function BookingPublic() {
 			}
 			return { ...court, slots };
 		});
-	})();
+	}, [courts, occupiedSlots, selectedDate, tenant]);
+
+	// 3. Funções de navegação do carrossel
+	const scrollCarousel = (direction: "left" | "right") => {
+		if (!carouselRef.current) return;
+		const scrollAmount = 200; // Pixels para rolar
+		const currentScroll = carouselRef.current.scrollLeft;
+		const targetScroll =
+			direction === "left"
+				? currentScroll - scrollAmount
+				: currentScroll + scrollAmount;
+
+		carouselRef.current.scrollTo({
+			left: targetScroll,
+			behavior: "smooth",
+		});
+	};
 
 	// 4. Funções de Ação
 	const handleBooking = (
@@ -329,7 +413,94 @@ export default function BookingPublic() {
 		slot: TimeChip
 	) => {
 		setReserveError(null);
+		setReserveSuccess(null);
+		setPlayerName("");
+		setPlayerPhone("");
 		setSelectedSlot({ courtId, courtName, slot });
+	};
+
+	// Nova função: Reservar direto no sistema (pagar no balcão)
+	const handleDirectBooking = async () => {
+		if (!selectedSlot || !tenantId) return;
+		
+		// Validações básicas
+		if (!playerName.trim() || playerName.trim().length < 3) {
+			setReserveError("Por favor, informe seu nome completo");
+			return;
+		}
+
+		if (!playerPhone.trim() || playerPhone.replace(/\D/g, "").length < 10) {
+			setReserveError("Por favor, informe um telefone válido (DDD + número)");
+			return;
+		}
+
+		setIsReserving(true);
+		setReserveError(null);
+
+		try {
+			const dateStr = format(selectedDate, "yyyy-MM-dd");
+			const startTime = selectedSlot.slot.time;
+			const [hour] = startTime.split(":");
+			const endHour = (parseInt(hour) + 1).toString().padStart(2, "0");
+			
+			// Monta TIMESTAMPTZ completo (2024-01-20 20:00:00+00)
+			const startTimestamp = `${dateStr} ${startTime}:00+00`;
+			const endTimestamp = `${dateStr} ${endHour}:00:00+00`;
+
+			// Revalidação: verifica se o slot ainda está livre
+			const { data: checkData } = await supabase.rpc(
+				"fn_public_get_occupied_slots",
+				{
+					p_subdomain: cleanSubdomain!,
+					p_date: dateStr,
+				}
+			);
+
+			const occupied = new Set(
+				(checkData as Array<{ court_id: string; slot_time: string }> || [])
+					.map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`)
+			);
+
+			const slotKey = `${selectedSlot.courtId}-${startTime}`;
+			if (occupied.has(slotKey)) {
+				throw new Error("Horário acabou de ser reservado. Escolha outro horário.");
+			}
+
+			// Cria a reserva
+			const { error } = await supabase.from("bookings").insert({
+				court_id: selectedSlot.courtId,
+				tenant_id: tenantId,
+				start_time: startTimestamp, // TIMESTAMPTZ
+				end_time: endTimestamp, // TIMESTAMPTZ
+				customer_name: playerName.trim(),
+				customer_phone: playerPhone.replace(/\D/g, ""),
+				status: "pending_payment", // Status para "pagar no balcão"
+				total_price: selectedSlot.slot.price,
+				notes: "Reserva via calendário público - Pagar no balcão",
+			});
+
+			if (error) throw error;
+
+			setReserveSuccess(`Reserva confirmada! ${tenant?.business_name || "A arena"} aguarda você no horário marcado.`);
+			
+			// Limpa form após 3 segundos
+			setTimeout(() => {
+				setSelectedSlot(null);
+				setReserveSuccess(null);
+				setPlayerName("");
+				setPlayerPhone("");
+			}, 3000);
+
+		} catch (error: unknown) {
+			console.error("Erro ao criar reserva:", error);
+			const message = 
+				error instanceof Error 
+					? error.message 
+					: "Erro ao confirmar reserva. Tente novamente.";
+			setReserveError(message);
+		} finally {
+			setIsReserving(false);
+		}
 	};
 
 	const sendWhatsapp = (type: "deposit" | "full" | "standard") => {
@@ -347,24 +518,24 @@ export default function BookingPublic() {
 				configs.deposit_type === "fixed"
 					? configs.deposit_value
 					: slot.price * (percent / 100);
-			textoPagamento = `🔒 Pagamento do SINAL: R$ ${sinal.toFixed(
+			textoPagamento = `🔒 *Pagar SINAL via PIX*\n💰 Valor do sinal: R$ ${sinal.toFixed(
 				2
-			)}\n(Pagarei o restante de R$ ${(slot.price - sinal).toFixed(
+			)}\n💳 Restante: R$ ${(slot.price - sinal).toFixed(
 				2
-			)} no local)`;
+			)} (no local)\n\n📸 *IMPORTANTE:* Após pagar, envie o comprovante aqui!`;
 		} else if (type === "full") {
 			const valorFinal =
 				slot.price * (1 - configs.full_payment_discount_percent / 100);
-			textoPagamento = `💎 Pagamento TOTAL com Desconto: R$ ${valorFinal.toFixed(
+			textoPagamento = `💎 *Pagar TUDO via PIX (COM DESCONTO)*\n💰 Valor com ${configs.full_payment_discount_percent}% OFF: R$ ${valorFinal.toFixed(
 				2
-			)}`;
+			)}\n~~R$ ${slot.price.toFixed(2)}~~\n\n📸 *IMPORTANTE:* Após pagar, envie o comprovante aqui!`;
 		} else {
-			textoPagamento = `💰 Valor a pagar: R$ ${slot.price.toFixed(
+			textoPagamento = `💰 *Pagar via PIX*\n💵 Valor total: R$ ${slot.price.toFixed(
 				2
-			)} (Pagarei no local)`;
+			)}\n\n📸 *IMPORTANTE:* Após pagar, envie o comprovante aqui!`;
 		}
 
-		const msg = `Olá! Quero reservar:\n\n🏟 *${courtName}*\n📅 *${dateFmt}*\n⏰ *${slot.time}*\n\n${textoPagamento}\n\nQual a chave PIX?`;
+		const msg = `Olá! Quero reservar:\n\n🏟 *${courtName}*\n📅 *${dateFmt}*\n⏰ *${slot.time}*\n\n${textoPagamento}\n\n🔑 Qual a chave PIX?`;
 
 		(async () => {
 			setReserveError(null);
@@ -467,10 +638,27 @@ export default function BookingPublic() {
 
 			{/* Carrossel de Datas */}
 			<div className="max-w-md mx-auto -mt-8 px-4 relative z-20">
-				<div className="flex gap-3 overflow-x-auto pb-4 pt-2 snap-x hide-scrollbar">
-					{Array.from({ length: 14 }).map((_, i) => {
+				{/* Botões de navegação (apenas desktop) */}
+				<button
+					onClick={() => scrollCarousel("left")}
+					className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-30 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 transition-all hover:scale-110"
+					aria-label="Voltar datas">
+					<ChevronLeft className="w-5 h-5 text-gray-700" />
+				</button>
+				<button
+					onClick={() => scrollCarousel("right")}
+					className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 transition-all hover:scale-110"
+					aria-label="Avançar datas">
+					<ChevronRight className="w-5 h-5 text-gray-700" />
+				</button>
+
+				<div
+					ref={carouselRef}
+					className="flex gap-3 overflow-x-auto pb-4 pt-2 snap-x hide-scrollbar scroll-smooth">
+					{Array.from({ length: 21 }).map((_, i) => {
 						const date = addDays(new Date(), i);
 						const isSelected = isSameDay(date, selectedDate);
+						const isToday = i === 0;
 						return (
 							<button
 								key={i}
@@ -481,7 +669,9 @@ export default function BookingPublic() {
 										: "bg-white text-gray-500 border-gray-100 hover:border-gray-300"
 								}`}>
 								<span className="text-xs font-medium uppercase">
-									{format(date, "EEE", { locale: ptBR }).replace(".", "")}
+									{isToday
+										? "HOJE"
+										: format(date, "EEE", { locale: ptBR }).replace(".", "")}
 								</span>
 								<span
 									className={`text-xl font-bold ${
@@ -598,73 +788,150 @@ export default function BookingPublic() {
 									{reserveError}
 								</div>
 							)}
-							{/* Opção 1: Sinal */}
-							{configs.require_deposit && (
-								<button
-									onClick={() => sendWhatsapp("deposit")}
-									className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition-all group">
-									<div className="text-left">
-										<p className="font-bold text-gray-900 group-hover:text-green-700">
-											Pagar Sinal
-										</p>
-										<p className="text-xs text-gray-500">Garante a reserva</p>
-									</div>
-									<span className="font-bold text-green-600 text-lg">
-										R${" "}
-										{(configs.deposit_type === "fixed"
-											? configs.deposit_value
-											: selectedSlot.slot.price * (configs.deposit_value / 100)
-										).toFixed(2)}
-									</span>
-								</button>
+							
+							{reserveSuccess && (
+								<div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-700 text-sm font-medium">
+									✅ {reserveSuccess}
+								</div>
 							)}
 
-							{/* Opção 2: Pagar Tudo */}
-							{configs.enable_full_payment_discount && (
-								<button
-									onClick={() => sendWhatsapp("full")}
-									className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all relative overflow-hidden group">
-									<div className="absolute top-0 right-0 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
-										{configs.full_payment_discount_percent}% OFF
+							{!reserveSuccess && (
+								<>
+									{/* Formulário de Dados do Jogador */}
+									<div className="space-y-3 mb-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-1">
+												Seu nome completo
+											</label>
+											<input
+												type="text"
+												value={playerName}
+												onChange={(e) => setPlayerName(e.target.value)}
+												placeholder="Ex: João Silva"
+												className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 placeholder:text-gray-400"
+												disabled={isReserving}
+											/>
+										</div>
+										<div>
+											<label className="block text-sm font-medium text-gray-700 mb-1">
+												Seu telefone (WhatsApp)
+											</label>
+											<input
+												type="tel"
+												value={playerPhone}
+												onChange={(e) => setPlayerPhone(e.target.value)}
+												placeholder="Ex: (15) 98164-2350"
+												className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 placeholder:text-gray-400"
+												disabled={isReserving}
+											/>
+										</div>
 									</div>
-									<div className="text-left">
-										<p className="font-bold text-gray-900 group-hover:text-primary">
-											Pagar Tudo
-										</p>
-										<p className="text-xs text-gray-500">Melhor preço</p>
-									</div>
-									<div className="text-right">
-										<p className="text-xs text-gray-400 line-through">
-											R$ {selectedSlot.slot.price.toFixed(2)}
-										</p>
-										<span className="font-bold text-primary text-lg">
-											R${" "}
-											{(
-												selectedSlot.slot.price *
-												(1 - configs.full_payment_discount_percent / 100)
-											).toFixed(2)}
-										</span>
-									</div>
-								</button>
-							)}
 
-							{/* Opção 3: Padrão */}
-							{!configs.require_deposit &&
-								!configs.enable_full_payment_discount && (
+									{/* Opção 1: Pagar no Balcão (Principal) */}
 									<button
-										onClick={() => sendWhatsapp("standard")}
-										className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black transition-all flex items-center justify-center gap-2">
-										<MessageCircle className="w-5 h-5" />
-										Reservar no WhatsApp
+										onClick={handleDirectBooking}
+										disabled={isReserving}
+										className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+										{isReserving ? (
+											<>
+												<Loader2 className="w-5 h-5 animate-spin" />
+												Confirmando...
+											</>
+										) : (
+											<>
+												<Trophy className="w-5 h-5" />
+												Reservar e Pagar no Balcão
+											</>
+										)}
 									</button>
-								)}
+
+									<p className="text-xs text-gray-500 text-center">
+										Você paga quando chegar • R$ {selectedSlot.slot.price}
+									</p>
+
+									{/* Divider */}
+									<div className="relative my-4">
+										<div className="absolute inset-0 flex items-center">
+											<div className="w-full border-t border-gray-200"></div>
+										</div>
+										<div className="relative flex justify-center text-xs uppercase">
+											<span className="bg-white px-2 text-gray-500 font-medium">
+												ou pagar via PIX
+											</span>
+										</div>
+									</div>
+									
+									{/* Opção 2: Pagar Sinal via PIX */}
+									{configs.require_deposit && (
+										<button
+											onClick={() => sendWhatsapp("deposit")}
+											className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all group">
+											<div className="text-left">
+												<p className="font-bold text-gray-900 group-hover:text-green-700">
+													💳 Pagar Sinal (PIX)
+												</p>
+												<p className="text-xs text-gray-500">Garante + enviar comprovante</p>
+											</div>
+											<span className="font-bold text-green-600 text-lg">
+												R${" "}
+												{(configs.deposit_type === "fixed"
+													? configs.deposit_value
+													: selectedSlot.slot.price * (configs.deposit_value / 100)
+												).toFixed(2)}
+											</span>
+										</button>
+									)}
+
+									{/* Opção 3: Pagar Tudo com Desconto via PIX */}
+									{configs.enable_full_payment_discount && (
+										<button
+											onClick={() => sendWhatsapp("full")}
+											className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all relative overflow-hidden group">
+											<div className="absolute top-0 right-0 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
+												{configs.full_payment_discount_percent}% OFF
+											</div>
+											<div className="text-left">
+												<p className="font-bold text-gray-900 group-hover:text-primary">
+													💎 Pagar Tudo (PIX)
+												</p>
+												<p className="text-xs text-gray-500">Desconto + enviar comprovante</p>
+											</div>
+											<div className="text-right">
+												<p className="text-xs text-gray-400 line-through">
+													R$ {selectedSlot.slot.price.toFixed(2)}
+												</p>
+												<span className="font-bold text-primary text-lg">
+													R${" "}
+													{(
+														selectedSlot.slot.price *
+														(1 - configs.full_payment_discount_percent / 100)
+													).toFixed(2)}
+												</span>
+											</div>
+										</button>
+									)}
+
+									{/* Opção 4: Padrão (sem sinal nem desconto) - enviar comprovante via WhatsApp */}
+									{!configs.require_deposit && !configs.enable_full_payment_discount && (
+										<button
+											onClick={() => sendWhatsapp("standard")}
+											className="w-full bg-gray-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
+											<MessageCircle className="w-5 h-5" />
+											📱 Pagar via PIX e Enviar Comprovante
+										</button>
+									)}
+								</>
+							)}
 						</div>
 
 						<div className="p-4 bg-gray-50 text-center border-t border-gray-100">
 							<button
 								onClick={() => {
 									setReserveError(null);
+									setReserveSuccess(null);
 									setSelectedSlot(null);
+									setPlayerName("");
+									setPlayerPhone("");
 								}}
 								className="text-sm text-gray-500 hover:text-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-200/50 transition-colors">
 								Cancelar

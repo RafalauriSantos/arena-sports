@@ -22,7 +22,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { useBookings } from "@/contexts/BookingsContext";
 import { NewBookingModal } from "@/components/admin/NewBookingModal";
 import { useToast } from "@/hooks/use-toast";
-import { addDays, format } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { normalizeCustomerPhone } from "@/lib/phone";
@@ -248,12 +249,17 @@ export default function AgendaMaster() {
 			});
 	}, [bookings]);
 
-	const { pastBookings, todayBookings, tomorrowBookings } = useMemo(() => {
+	const { pastBookings, todayBookings, tomorrowBookings, upcomingBookings } = useMemo(() => {
 		const today = format(new Date(), "yyyy-MM-dd");
 		const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
 		const sortTimeAsc = (a: AdminBooking, b: AdminBooking) =>
 			a.time.localeCompare(b.time);
+
+		const sortDateAscTimeAsc = (a: AdminBooking, b: AdminBooking) => {
+			if (a.date !== b.date) return a.date.localeCompare(b.date);
+			return a.time.localeCompare(b.time);
+		};
 
 		const sortDateDescTimeDesc = (a: AdminBooking, b: AdminBooking) => {
 			if (a.date !== b.date) return b.date.localeCompare(a.date);
@@ -269,17 +275,26 @@ export default function AgendaMaster() {
 		const tomorrowList = adminBookingsData
 			.filter((b) => b.date === tomorrow)
 			.sort(sortTimeAsc);
+		const upcoming = adminBookingsData
+			.filter((b) => b.date > tomorrow)
+			.sort(sortDateAscTimeAsc);
 
 		return {
 			pastBookings: past,
 			todayBookings: todayList,
 			tomorrowBookings: tomorrowList,
+			upcomingBookings: upcoming,
 		};
 	}, [adminBookingsData]);
 
-	const renderBookingCard = (booking: AdminBooking) => {
+	const renderBookingCard = (booking: AdminBooking, showDate = false) => {
 		const statusConfig = getStatusConfig(booking.paymentStatus);
 		const StatusIcon = statusConfig.icon;
+
+		// Formata data legível (ex: "Seg, 20/01")
+		const formattedDate = showDate
+			? format(parseISO(booking.date + "T00:00:00"), "EEE, dd/MM", { locale: ptBR })
+			: null;
 
 		return (
 			<Card
@@ -301,6 +316,11 @@ export default function AgendaMaster() {
 							<div>
 								<CardTitle className="text-base md:text-lg text-white">
 									{booking.time}
+									{formattedDate && (
+										<span className="text-xs md:text-sm text-gray-400 ml-2 font-normal">
+											{formattedDate}
+										</span>
+									)}
 								</CardTitle>
 								<p className="text-xs md:text-sm text-gray-400">
 									{booking.field}
@@ -540,6 +560,28 @@ export default function AgendaMaster() {
 						) : (
 							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
 								{tomorrowBookings.map(renderBookingCard)}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+
+				<Card className="border border-white/10 bg-black/20">
+					<CardHeader className="p-3 md:p-4">
+						<div className="flex items-center justify-between gap-2">
+							<CardTitle className="text-white text-base md:text-lg">
+								Próximos jogos
+							</CardTitle>
+							<Badge variant="outline" className="border-white/10 bg-white/5">
+								{upcomingBookings.length}
+							</Badge>
+						</div>
+					</CardHeader>
+					<CardContent className="p-3 md:p-4 pt-0">
+						{upcomingBookings.length === 0 ? (
+							<p className="text-sm text-gray-400">Nenhuma reserva agendada.</p>
+						) : (
+							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
+								{upcomingBookings.map((booking) => renderBookingCard(booking, true))}
 							</div>
 						)}
 					</CardContent>

@@ -12,9 +12,11 @@ export const supabase = createClient(
   supabaseAnonKey || "MISSING_KEY",
   {
     auth: {
-      persistSession: true,
+      persistSession: true, // Sempre usa localStorage (pode ser controlado no login)
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      storage: window.localStorage, // Padrão: localStorage (persiste após fechar)
+      storageKey: 'sb-auth-token', // Chave customizada
     },
   }
 );

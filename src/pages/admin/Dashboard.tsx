@@ -22,6 +22,8 @@ import {
 	Share2,
 	Lock,
 	Loader2,
+	Sparkles,
+	CheckCircle2,
 } from "lucide-react";
 import {
 	AreaChart,
@@ -40,6 +42,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { supabase } from "@/lib/supabaseClient";
 import { invokeEdgeFunction } from "@/lib/edgeFunctions";
+import { 
+	SetupChecklistSidebar, 
+	useSetupProgress 
+} from "@/components/admin/SetupChecklistSidebar";
+import { TrialBanner } from "@/components/admin/TrialBanner";
+import { TrialCountdown } from "@/components/admin/TrialCountdown";
 
 // --- HELPERS (Formatadores) ---
 const formatCurrency = (value: number) =>
@@ -89,6 +97,7 @@ type SidebarFixedProps = {
 	setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 	activeView: string;
 	setActiveView: React.Dispatch<React.SetStateAction<string>>;
+	tenantId: string;
 };
 
 const SidebarFixed = ({
@@ -98,9 +107,11 @@ const SidebarFixed = ({
 	setCollapsed,
 	activeView,
 	setActiveView,
+	tenantId,
 }: SidebarFixedProps) => {
 	const { userProfile, signOut } = useAuth();
 	const { toast } = useToast();
+	const [checklistOpen, setChecklistOpen] = useState(false);
 
 	const handleShare = async () => {
 		const shareData = {
@@ -130,6 +141,9 @@ const SidebarFixed = ({
 		{ id: "financeiro", icon: BarChart, label: "Financeiro" },
 		{ id: "folgas", icon: Clock, label: "Gerenciar Folgas" },
 	];
+
+	// Hook para progresso do checklist
+	const { completed, total, isComplete } = useSetupProgress(tenantId, userProfile);
 
 	return (
 		<>
@@ -200,6 +214,74 @@ const SidebarFixed = ({
 							</span>
 						)}
 					</button>
+
+					{/* Trial Countdown */}
+					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
+
+				{/* Botão do Checklist - Sempre visível */}
+				<button
+					onClick={() => setChecklistOpen(true)}
+					className={cn(
+						"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 border mb-3 group relative overflow-hidden",
+						collapsed ? "justify-center px-0" : "",
+						isComplete
+							? "bg-green-500/20 text-green-400 border-green-500/40 hover:bg-green-500/30 hover:border-green-500/60"
+							: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50 animate-pulse-border"
+					)}
+					title={isComplete ? "Arena Configurada!" : "Configure sua Arena"}>
+					{/* Glow effect */}
+					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+					
+					<div className="flex items-center gap-3 relative z-10">
+						{isComplete ? (
+							<Trophy className="h-5 w-5 animate-bounce" />
+						) : completed === 0 ? (
+							<Sparkles className="h-5 w-5 animate-pulse" />
+						) : (
+							<CheckCircle2 className="h-5 w-5" />
+						)}
+						{!collapsed && (
+							<div className="flex flex-col items-start">
+								<span className="text-sm font-bold">
+									{isComplete
+										? "Arena Pronta! 🎉"
+										: completed === 0 
+										? "Comece Aqui!" 
+										: `Configure Arena`}
+								</span>
+								<span className="text-xs opacity-75">
+									{isComplete ? "Clique para ver" : `${completed}/${total} concluídos`}
+								</span>
+							</div>
+						)}
+					</div>
+
+					{!collapsed && (
+						<div className="relative z-10 flex items-center gap-2">
+							<div className={cn(
+								"text-xs font-bold px-2 py-1 rounded-full",
+								isComplete ? "bg-green-500/30" : "bg-current/20"
+							)}>
+								{Math.round((completed / total) * 100)}%
+							</div>
+							<ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+						</div>
+					)}
+
+					{/* Badge para modo collapsed */}
+					{collapsed && !isComplete && (
+						<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507] animate-bounce">
+							{total - completed}
+						</div>
+					)}
+
+					{/* Badge de troféu quando completo no collapsed */}
+					{collapsed && isComplete && (
+						<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507]">
+							✓
+						</div>
+					)}
+				</button>
 
 					{menuItems.map((item) => (
 						<button
@@ -289,6 +371,18 @@ const SidebarFixed = ({
 					</div>
 				</div>
 			</aside>
+
+			{/* Modal do Checklist */}
+			<SetupChecklistSidebar
+				isOpen={checklistOpen}
+				onClose={() => setChecklistOpen(false)}
+				onNavigate={(view) => {
+					setActiveView(view);
+					setMobileOpen(false);
+				}}
+				tenantId={tenantId}
+				userProfile={userProfile}
+			/>
 		</>
 	);
 };
@@ -1141,14 +1235,15 @@ export default function DashboardHome() {
 				<div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]" />
 			</div>
 
-			<SidebarFixed
-				mobileOpen={mobileOpen}
-				setMobileOpen={setMobileOpen}
-				collapsed={collapsed}
-				setCollapsed={setCollapsed}
-				activeView={activeView}
-				setActiveView={setActiveView}
-			/>
+		<SidebarFixed
+			mobileOpen={mobileOpen}
+			setMobileOpen={setMobileOpen}
+			collapsed={collapsed}
+			setCollapsed={setCollapsed}
+			activeView={activeView}
+			setActiveView={setActiveView}
+			tenantId={tenantId || ""}
+		/>
 
 			<div
 				className={cn(
@@ -1169,18 +1264,21 @@ export default function DashboardHome() {
 					</Button>
 				</div>
 
-				<main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
-					{activeView === "dashboard" && (
-						<div className="space-y-6">
-							<ArenaSysStatusHero
-								revenueToday={stats.revenueToday}
-								occupancyAvg={occupancyAvg}
-								nextPeak="19:00 — 21:00"
-								planLabel={planLabel}
-								planPill={planPill}
-							/>
+				{/* Trial Banner */}
+				<TrialBanner tenantId={tenantId || ""} />
 
-							<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+				<main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+				{activeView === "dashboard" && (
+					<div className="space-y-6">
+						<ArenaSysStatusHero
+							revenueToday={stats.revenueToday}
+							occupancyAvg={occupancyAvg}
+							nextPeak="19:00 — 21:00"
+							planLabel={planLabel}
+							planPill={planPill}
+						/>
+
+						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
 								<MetricPill
 									label="Hoje"
 									value={formatCurrency(stats.revenueToday)}

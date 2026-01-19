@@ -7,6 +7,11 @@ import {
 	Users,
 	ArrowRight,
 	Trophy,
+	User,
+	MapPin,
+	CreditCard,
+	Phone,
+	BadgeDollarSign,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,9 +67,10 @@ function Confetti() {
 interface ChecklistItem {
 	id: string;
 	label: string;
+	description: string;
 	icon: React.ReactNode;
 	completed: boolean;
-	onClick?: () => void;
+	priority: "high" | "medium";
 }
 
 export default function Welcome() {
@@ -149,46 +155,84 @@ export default function Welcome() {
 				});
 			}
 
-			// Verificar progresso do checklist
-			const [courtsRes, bookingsRes] = await Promise.all([
+			// Verificar progresso do checklist com validações completas
+			const [courtsRes, tenantData] = await Promise.all([
 				supabase
 					.from("courts")
-					.select("id")
+					.select("id, base_price")
 					.eq("tenant_id", tenantId)
-					.eq("active", true)
-					.limit(1),
+					.eq("active", true),
 				supabase
-					.from("bookings")
-					.select("id")
-					.eq("tenant_id", tenantId)
-					.limit(1),
+					.from("tenants")
+					.select("business_name, phone, address, cpf_cnpj")
+					.eq("id", tenantId)
+					.single(),
 			]);
 
-			const hasCourts = (courtsRes.data?.length ?? 0) > 0;
-			const hasBookings = (bookingsRes.data?.length ?? 0) > 0;
+			const courts = courtsRes.data || [];
+			const hasCourts = courts.length > 0;
+			const allCourtsPriced = courts.length > 0 && courts.every((c) => c.base_price > 0);
+
+			// Validações do perfil
+			const hasProfileName = !!userProfile?.full_name?.trim();
+			const hasAvatar = !!userProfile?.avatar_url;
+
+			// Validações do tenant
+			const hasBusinessName = !!tenantData.data?.business_name?.trim();
+			const hasPhone = !!tenantData.data?.phone && tenantData.data.phone.replace(/\D/g, "").length >= 10;
+			const hasAddress = !!tenantData.data?.address?.trim();
+			const cpfCnpjClean = tenantData.data?.cpf_cnpj?.replace(/\D/g, "") || "";
+			const hasCpfCnpj = cpfCnpjClean.length === 11 || cpfCnpjClean.length === 14;
 
 			setChecklist([
 				{
-					id: "create-arena",
-					label: "Criar primeira quadra",
+					id: "profile",
+					label: "Complete seu perfil",
+					description: "Nome e foto",
+					icon: <User className="w-4 h-4" />,
+					completed: hasProfileName && hasAvatar,
+					priority: "high",
+				},
+				{
+					id: "business",
+					label: "Dados da arena",
+					description: "Nome comercial e telefone",
+					icon: <Phone className="w-4 h-4" />,
+					completed: hasBusinessName && hasPhone,
+					priority: "high",
+				},
+				{
+					id: "address",
+					label: "Endereço completo",
+					description: "Para clientes localizarem",
+					icon: <MapPin className="w-4 h-4" />,
+					completed: hasAddress,
+					priority: "high",
+				},
+				{
+					id: "courts",
+					label: "Cadastre suas quadras",
+					description: "Pelo menos 1 quadra",
 					icon: <Trophy className="w-4 h-4" />,
 					completed: hasCourts,
-					onClick: () => navigate("/dashboard"),
+					priority: "high",
 				},
-				{
-					id: "define-hours",
-					label: "Definir horários e preços",
-					icon: <Calendar className="w-4 h-4" />,
-					completed: hasBookings || hasCourts, // Se tem quadra, provavelmente definiu horários
-					onClick: () => navigate("/dashboard"),
-				},
-				{
-					id: "invite-team",
-					label: "Convidar equipe (em breve)",
-					icon: <Users className="w-4 h-4" />,
-					completed: false,
-					onClick: undefined, // Desabilitado por enquanto
-				},
+			{
+				id: "pricing",
+				label: "Configure os preços",
+				description: "Valores para cada quadra",
+				icon: <BadgeDollarSign className="w-4 h-4" />,
+				completed: allCourtsPriced,
+				priority: "high",
+			},
+			{
+				id: "cpf",
+				label: "CPF/CNPJ",
+				description: "Para você receber pagamentos",
+				icon: <CreditCard className="w-4 h-4" />,
+				completed: hasCpfCnpj,
+				priority: "medium",
+			},
 			]);
 
 			setLoading(false);
@@ -218,9 +262,11 @@ export default function Welcome() {
 
 	const progressPercentage = (trialDays.current / trialDays.total) * 100;
 	const completedCount = checklist.filter((item) => item.completed).length;
-	const totalChecklistItems = checklist.filter(
-		(item) => item.id !== "invite-team"
-	).length; // Não conta "em breve"
+	const totalChecklistItems = checklist.length;
+	const allCompleted = completedCount === totalChecklistItems;
+	const highPriorityIncomplete = checklist.filter(
+		(item) => item.priority === "high" && !item.completed
+	);
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
@@ -310,27 +356,44 @@ export default function Welcome() {
 
 							{/* Checklist */}
 							<div className="space-y-4">
-								<h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-									Checklist de Primeiros Passos
-								</h3>
+								<div className="flex items-center justify-between">
+									<h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+										Configure sua Arena
+									</h3>
+									<span className="text-xs font-bold text-emerald-400">
+										{completedCount}/{totalChecklistItems}
+									</span>
+								</div>
+
+							{/* Alerta de Prioridade */}
+							{highPriorityIncomplete.length > 0 && (
+								<div className="flex items-start gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+									<Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+									<div className="flex-1 text-xs text-emerald-200">
+										<p className="font-semibold">
+											{highPriorityIncomplete.length} item(ns) essencial(is) pendente(s)
+										</p>
+										<p className="text-emerald-300 mt-0.5">
+											Configure para compartilhar o link de agendamento
+										</p>
+									</div>
+								</div>
+							)}
+
 								<div className="space-y-2">
 									{checklist.map((item) => (
-										<button
+										<div
 											key={item.id}
-											onClick={item.onClick}
-											disabled={!item.onClick}
 											className={`
 												w-full flex items-center gap-3 p-3 rounded-lg border transition-all
 												${
 													item.completed
-														? "bg-emerald-500/10 border-emerald-500/30 text-white"
-														: item.onClick
-														? "bg-white/5 border-white/10 hover:bg-white/10 hover:border-emerald-500/30 text-gray-300 hover:text-white cursor-pointer"
-														: "bg-white/5 border-white/10 text-gray-500 cursor-not-allowed opacity-60"
+														? "bg-emerald-500/10 border-emerald-500/30"
+														: "bg-white/5 border-white/10"
 												}
 											`}>
 											<div
-												className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
+												className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
 													item.completed
 														? "bg-emerald-500 border-emerald-500"
 														: "border-gray-500"
@@ -339,37 +402,49 @@ export default function Welcome() {
 													<CheckCircle2 className="w-3 h-3 text-black" />
 												)}
 											</div>
-											<div className="flex-1 flex items-center gap-2">
+											<div className="flex-shrink-0">
 												{item.icon}
-												<span
+											</div>
+											<div className="flex-1">
+												<p
 													className={`text-sm font-medium ${
-														item.completed ? "line-through opacity-70" : ""
+														item.completed 
+															? "text-white line-through opacity-70" 
+															: "text-gray-200"
 													}`}>
 													{item.label}
-												</span>
+												</p>
+												<p className="text-xs text-gray-500 mt-0.5">
+													{item.description}
+												</p>
 											</div>
-											{item.onClick && !item.completed && (
-												<ArrowRight className="w-4 h-4 text-gray-400" />
-											)}
-										</button>
+										</div>
 									))}
 								</div>
 
 								{/* Progresso do Checklist */}
-								<div className="pt-2 text-center">
-									<p className="text-xs text-gray-500">
-										{completedCount} de {totalChecklistItems} tarefas concluídas
-									</p>
-									<div className="h-1.5 w-full rounded-full bg-white/5 mt-2 overflow-hidden">
+								<div className="space-y-2">
+									<div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
 										<div
-											className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-500"
+											className={`h-full rounded-full transition-all duration-500 ${
+												allCompleted 
+													? "bg-gradient-to-r from-emerald-500 to-green-500"
+													: "bg-gradient-to-r from-emerald-500 to-cyan-500"
+											}`}
 											style={{
-												width: `${
-													(completedCount / totalChecklistItems) * 100
-												}%`,
+												width: `${(completedCount / totalChecklistItems) * 100}%`,
 											}}
 										/>
 									</div>
+									{allCompleted ? (
+										<p className="text-center text-xs font-semibold text-emerald-400">
+											✓ Arena 100% configurada!
+										</p>
+									) : (
+										<p className="text-center text-xs text-gray-500">
+											Complete todas as configurações para começar
+										</p>
+									)}
 								</div>
 							</div>
 
@@ -391,8 +466,6 @@ export default function Welcome() {
 													})
 													.eq("id", user.id);
 											}
-											// Pequeno delay para feedback visual
-											await new Promise((resolve) => setTimeout(resolve, 1000));
 											// Ir para dashboard
 											navigate("/dashboard");
 										} catch (error) {
@@ -405,17 +478,19 @@ export default function Welcome() {
 									{isCompletingOnboarding ? (
 										<>
 											<div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-											Configurando sua arena...
+											Entrando no dashboard...
 										</>
 									) : (
 										<>
-											Começar Agora
+											{allCompleted ? "Ir para Dashboard" : "Configurar Agora"}
 											<ArrowRight className="w-4 h-4" />
 										</>
 									)}
 								</Button>
 								<p className="text-center text-xs text-gray-500 mt-3">
-									Pequenos extras que marcam muito 💚
+									{allCompleted 
+										? "Sua arena está pronta! 🎉" 
+										: "Configure depois no Dashboard"}
 								</p>
 							</div>
 						</div>

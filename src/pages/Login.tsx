@@ -21,12 +21,22 @@ const Login = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [arenaName, setArenaName] = useState("");
+	const [rememberMe, setRememberMe] = useState(true); // Novo: checkbox "Lembrar-me" (true por padrão)
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [signupEmail, setSignupEmail] = useState<string>(""); // Email usado no signup (para mostrar na confirmação)
 	const location = useLocation();
 	const navigate = useNavigate();
+
+	// Carregar último email usado (se houver)
+	useEffect(() => {
+		const lastEmail = localStorage.getItem('last-login-email');
+		if (lastEmail && mode === 'signin') {
+			setEmail(lastEmail);
+			setRememberMe(true);
+		}
+	}, [mode]);
 
 	useEffect(() => {
 		const params = new URLSearchParams(location.search);
@@ -82,6 +92,13 @@ const Login = () => {
 
 		try {
 			if (mode === "signin") {
+				// Salvar email se "Lembrar-me" estiver marcado
+				if (rememberMe) {
+					localStorage.setItem('last-login-email', email);
+				} else {
+					localStorage.removeItem('last-login-email');
+				}
+
 				const { data: signInData, error } = await supabase.auth.signInWithPassword({
 					email,
 					password,
@@ -531,6 +548,25 @@ const Login = () => {
 												/>
 											</div>
 										</div>
+
+										{/* Checkbox "Lembrar-me" apenas no modo signin */}
+										{mode === "signin" && (
+											<div className="flex items-center gap-2 py-1">
+												<input
+													type="checkbox"
+													id="remember-me"
+													checked={rememberMe}
+													onChange={(e) => setRememberMe(e.target.checked)}
+													className="w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer"
+												/>
+												<label
+													htmlFor="remember-me"
+													className="text-sm text-gray-400 cursor-pointer select-none hover:text-gray-300 transition-colors"
+												>
+													Lembrar-me neste dispositivo
+												</label>
+											</div>
+										)}
 
 										{error && (
 											<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">

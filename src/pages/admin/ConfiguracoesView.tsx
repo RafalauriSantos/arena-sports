@@ -22,6 +22,8 @@ import {
 	Wallet,
 	Globe,
 	Lock, // Ícone de cadeado
+	Clock,
+	MapPin,
 	type LucideIcon,
 } from "lucide-react";
 import {
@@ -41,6 +43,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import AvatarUpload from "@/components/admin/AvatarUpload";
+import { OperatingHoursSettings } from "@/components/settings/OperatingHoursSettings";
+import { CpfCnpjInput } from "@/components/ui/CpfCnpjInput";
 
 // --- Componentes Auxiliares ---
 const StatusBadge = ({
@@ -454,10 +458,11 @@ export default function ConfiguracoesView() {
 
 				{/* TABS */}
 				<Tabs defaultValue="arena-sys" className="space-y-8">
-					<TabsList className="w-full h-auto bg-white/5 p-1 rounded-2xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+					<TabsList className="w-full h-auto bg-white/5 p-1 rounded-2xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
 						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
 						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
 						<TabTrigger value="quadras" icon={Trophy} label="Quadras" />
+						<TabTrigger value="horarios" icon={Clock} label="Horários" />
 						<TabTrigger value="cobranca" icon={Wallet} label="Cobrança" />
 						<TabTrigger value="marketing" icon={Sparkles} label="Marketing" />
 						<TabTrigger
@@ -569,6 +574,23 @@ export default function ConfiguracoesView() {
 												className="bg-white/5 border-white/10 text-white min-h-[100px]"
 											/>
 										</div>
+
+										<div className="space-y-2">
+											<Label className="text-gray-300 flex items-center gap-2">
+												<MapPin className="h-4 w-4 text-primary" /> Endereço
+											</Label>
+											<Textarea
+												value={formData.tenant.address}
+												onChange={(e) =>
+													updateTenant("address", e.target.value)
+												}
+												placeholder="Rua, número, bairro, cidade - UF"
+												className="bg-white/5 border-white/10 text-white min-h-[80px]"
+											/>
+											<p className="text-xs text-gray-500">
+												Aparece no calendário público para seus clientes localizarem.
+											</p>
+										</div>
 									</div>
 								</PremiumCard>
 								<PremiumCard
@@ -594,26 +616,15 @@ export default function ConfiguracoesView() {
 												className="bg-white/5 border-white/10 text-white"
 											/>
 										</div>
-										<div className="space-y-2 md:col-span-2">
-											<Label>CPF/CNPJ</Label>
-											<Input
-												value={formData.tenant.cpf_cnpj}
-												onChange={(e) =>
-													updateTenant(
-														"cpf_cnpj",
-														e.target.value.replace(/\D/g, "")
-													)
-												}
-												placeholder="Digite seu CPF (11 dígitos) ou CNPJ (14 dígitos)"
-												autoComplete="off"
-												inputMode="numeric"
-												maxLength={14}
-												className="bg-white/5 border-white/10 text-white"
-											/>
-											<p className="text-xs text-gray-500">
-												Obrigatório para processar pagamentos via Asaas.
-											</p>
-										</div>
+									<div className="md:col-span-2">
+										<CpfCnpjInput
+											value={formData.tenant.cpf_cnpj || ""}
+											onChange={(value) => updateTenant("cpf_cnpj", value)}
+										/>
+										<p className="text-xs text-gray-500 mt-2">
+											Obrigatório para processar pagamentos via Asaas.
+										</p>
+									</div>
 									</div>
 								</PremiumCard>
 							</div>
@@ -677,6 +688,17 @@ export default function ConfiguracoesView() {
 
 					{/* ... OUTRAS ABAS (Mantidas Igual) ... */}
 					{/* Pode copiar o conteúdo das outras abas (quadras, cobrança, etc) do código anterior ou manter oculto aqui pra não ficar gigante, o importante foi a aba IDENTIDADE acima */}
+					{/* HORÁRIOS DE FUNCIONAMENTO */}
+					<TabsContent
+						value="horarios"
+						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+						<div className="max-w-3xl">
+							<OperatingHoursSettings 
+								tenantId={userProfile?.tenant_id || ''} 
+							/>
+						</div>
+					</TabsContent>
+
 					<TabsContent
 						value="quadras"
 						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">

@@ -180,12 +180,23 @@ export function useSettings() {
           courts: Array.isArray(courtsRes.data)
             ? courtsRes.data
               .filter(isRecord)
-              .map((c): Court => ({
-                id: typeof c.id === "string" ? c.id : undefined,
-                name: typeof c.name === "string" ? c.name : "",
-                base_price: Number(c.base_price ?? 0),
-                active: typeof c.active === "boolean" ? c.active : true,
-              }))
+              // Remove duplicatas: normaliza nome (trim + lowercase) antes de comparar
+              .reduce((acc: Court[], c) => {
+                const courtName = typeof c.name === "string" ? c.name : "";
+                const normalizedName = courtName.trim().toLowerCase();
+                const existing = acc.find(court => 
+                  court.name.trim().toLowerCase() === normalizedName
+                );
+                if (!existing) {
+                  acc.push({
+                    id: typeof c.id === "string" ? c.id : undefined,
+                    name: courtName.trim(), // Remove espaços extras
+                    base_price: Number(c.base_price ?? 0),
+                    active: typeof c.active === "boolean" ? c.active : true,
+                  });
+                }
+                return acc;
+              }, [])
             : [],
           promo: {
             active: promoRes.data?.active ?? false,
@@ -239,6 +250,10 @@ export function useSettings() {
   // 2. SALVAR DADOS (WRITE)
   const saveSettings = async () => {
     if (!tenantId) return;
+    if (saving) {
+      console.warn("⚠️ Salvamento já em andamento, ignorando clique duplicado");
+      return; // Previne cliques duplos
+    }
     setSaving(true);
 
     try {
@@ -270,26 +285,54 @@ export function useSettings() {
           email: formData.tenant.email,
           address: formData.tenant.address,
           description: formData.tenant.description,
-          document: formData.tenant.cpf_cnpj, // Map to DB column 'document'
+          cpf_cnpj: formData.tenant.cpf_cnpj, // ✅ CORRETO - coluna cpf_cnpj
           settings: updatedSettingsJSON, // <--- SALVA O JSON COM AS REGRAS FINANCEIRAS
         })
         .eq("id", tenantId);
 
       if (tenantError) throw tenantError;
 
-      // B. Quadras Update/Insert (Parallel Promise)
-      const courtPromises = formData.courts.map(court => {
-        const payload = {
-          tenant_id: tenantId,
-          name: court.name,
-          base_price: Number(court.base_price),
-          active: true,
-          id: court.id // Se tiver ID, o Supabase entende que é Update
-        };
-        return supabase.from("courts").upsert(payload);
-      });
+      // B. Validação: detectar nomes duplicados (ignorando espaços e maiúsculas)
+      const normalizedNames = formData.courts.map(c => c.name.trim().toLowerCase());
+      const duplicates = normalizedNames.filter((name, idx) => 
+        normalizedNames.indexOf(name) !== idx
+      );
+      
+      if (duplicates.length > 0) {
+        throw new Error(`Nomes de quadras duplicados detectados. Por favor, use nomes únicos.`);
+      }
 
-      await Promise.all(courtPromises);
+      // C. Quadras Update/Insert (Sequential para evitar duplicatas)
+      for (const court of formData.courts) {
+        const trimmedName = court.name.trim(); // Remove espaços extras
+        
+        if (court.id) {
+          // UPDATE: Quadra existente
+          const { error: updateError } = await supabase
+            .from("courts")
+            .update({
+              name: trimmedName,
+              base_price: Number(court.base_price),
+              active: true,
+            })
+            .eq("id", court.id)
+            .eq("tenant_id", tenantId); // Segurança extra
+
+          if (updateError) throw updateError;
+        } else {
+          // INSERT: Nova quadra
+          const { error: insertError } = await supabase
+            .from("courts")
+            .insert({
+              tenant_id: tenantId,
+              name: trimmedName,
+              base_price: Number(court.base_price),
+              active: true,
+            });
+
+          if (insertError) throw insertError;
+        }
+      }
 
       // C. Quadras Delete
       if (deletedCourtIds.length > 0) {
