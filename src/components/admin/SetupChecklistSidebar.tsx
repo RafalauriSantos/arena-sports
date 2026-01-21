@@ -3,7 +3,7 @@
  * Modal compacto que aparece até o usuário completar tudo
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -107,7 +107,7 @@ export function SetupChecklistSidebar({
 	const [wasCompleteRef, setWasCompleteRef] = useState(false);
 
 	// Carrega e valida o checklist
-	const loadChecklist = async () => {
+	const loadChecklist = useCallback(async () => {
 		if (!tenantId) return;
 
 		try {
@@ -201,14 +201,14 @@ export function SetupChecklistSidebar({
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [tenantId, userProfile, onNavigate]);
 
 	useEffect(() => {
 		if (isOpen) {
 			setLoading(true);
 			loadChecklist();
 		}
-	}, [isOpen, tenantId, userProfile]);
+	}, [isOpen, loadChecklist]);
 
 	const completed = checklist.filter((i) => i.completed).length;
 	const total = checklist.length;
@@ -385,7 +385,13 @@ export function SetupChecklistSidebar({
  * Hook para calcular progresso do checklist
  * Usado no botão da sidebar
  */
-export function useSetupProgress(tenantId: string, userProfile: any) {
+interface UserProfile {
+	full_name?: string | null;
+	avatar_url?: string | null;
+	tenant_id?: string | null;
+}
+
+export function useSetupProgress(tenantId: string, userProfile: UserProfile | null | undefined) {
 	const [progress, setProgress] = useState({ completed: 0, total: 6 });
 	const [loading, setLoading] = useState(true);
 

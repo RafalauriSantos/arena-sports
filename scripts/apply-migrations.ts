@@ -16,9 +16,10 @@ function exec(command: string, silent = false): string {
       stdio: silent ? 'pipe' : 'inherit'
     });
     return output;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (!silent) {
-      console.error(`❌ Erro: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error(`❌ Erro: ${errorMessage}`);
     }
     throw error;
   }

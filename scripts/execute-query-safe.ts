@@ -10,7 +10,7 @@
  */
 
 import { execSync } from 'child_process';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import * as readline from 'readline';
 
@@ -168,18 +168,19 @@ async function main() {
 			
 			// Salva SQL em arquivo temporário
 			const tempFile = join(process.cwd(), 'temp_query_exec.sql');
-			require('fs').writeFileSync(tempFile, sql);
+			writeFileSync(tempFile, sql);
 			
 			// Executa psql
 			const psqlCommand = `psql "${connectionString}" -f "${tempFile}"`;
 			exec(psqlCommand);
 			
 			// Remove arquivo temporário
-			require('fs').unlinkSync(tempFile);
+			unlinkSync(tempFile);
 			
 			log('\n✅ Query executada com sucesso!', 'green');
-		} catch (error: any) {
-			log(`\n❌ Erro ao executar: ${error.message}`, 'red');
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+			log(`\n❌ Erro ao executar: ${errorMessage}`, 'red');
 			log('💡 Verifique se psql está instalado e a connection string está correta', 'yellow');
 			log('💡 Alternativa: Copie a query acima e execute no SQL Editor', 'yellow');
 		}

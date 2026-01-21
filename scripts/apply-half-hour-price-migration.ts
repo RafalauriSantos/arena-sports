@@ -6,14 +6,13 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { join, resolve } from 'path';
 import * as dotenv from 'dotenv';
-import { resolve } from 'path';
 
 // Carrega .env.local
 const envPath = resolve(process.cwd(), '.env.local');
-if (require('fs').existsSync(envPath)) {
+if (existsSync(envPath)) {
 	dotenv.config({ path: envPath });
 }
 
@@ -48,7 +47,7 @@ async function main() {
 		log('\n📋 Alternativa: Execute manualmente no SQL Editor do Supabase:', 'blue');
 		
 		const migrationPath = join(process.cwd(), 'supabase', 'migrations', '20260121000002_add_half_hour_price_to_courts.sql');
-		if (require('fs').existsSync(migrationPath)) {
+		if (existsSync(migrationPath)) {
 			const sql = readFileSync(migrationPath, 'utf-8');
 			console.log('\n' + sql + '\n');
 		}
@@ -67,7 +66,7 @@ async function main() {
 	// 3. Ler migration
 	const migrationPath = join(process.cwd(), 'supabase', 'migrations', '20260121000002_add_half_hour_price_to_courts.sql');
 	
-	if (!require('fs').existsSync(migrationPath)) {
+	if (!existsSync(migrationPath)) {
 		log('❌ Arquivo de migration não encontrado', 'red');
 		log(`   Esperado em: ${migrationPath}`, 'yellow');
 		process.exit(1);

@@ -124,10 +124,10 @@ async function testContactFields() {
     console.log("╚═══════════════════════════════════════════════════════════╝\n");
 
     const allFieldsPresent = 
-      tenant.hasOwnProperty('phone') &&
-      tenant.hasOwnProperty('email') &&
-      tenant.hasOwnProperty('description') &&
-      tenant.hasOwnProperty('settings');
+      Object.prototype.hasOwnProperty.call(tenant, 'phone') &&
+      Object.prototype.hasOwnProperty.call(tenant, 'email') &&
+      Object.prototype.hasOwnProperty.call(tenant, 'description') &&
+      Object.prototype.hasOwnProperty.call(tenant, 'settings');
 
     if (allFieldsPresent) {
       console.log("✅ SUCESSO! Todas as colunas foram criadas:");

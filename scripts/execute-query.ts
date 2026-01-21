@@ -34,9 +34,10 @@ function exec(command: string, silent = false): string {
 			stdio: silent ? 'pipe' : 'inherit'
 		});
 		return output;
-	} catch (error: any) {
+	} catch (error: unknown) {
 		if (!silent) {
-			throw new Error(`Erro ao executar: ${command}\n${error.message}`);
+			const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+			throw new Error(`Erro ao executar: ${command}\n${errorMessage}`);
 		}
 		throw error;
 	}

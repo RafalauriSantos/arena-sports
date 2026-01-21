@@ -104,26 +104,27 @@ export default function MensalistasView() {
 			if (slotsError) throw slotsError;
 			
 			// Buscar nomes das quadras separadamente
-			const courtIds = [...new Set((slotsData || []).map((s: any) => s.court_id))];
+			const courtIds = [...new Set((slotsData || []).map((s: RecurringSlot) => s.court_id))];
 			const { data: courtsForSlots } = await supabase
 				.from("courts")
 				.select("id, name")
 				.in("id", courtIds);
 
-			const courtsMap = new Map((courtsForSlots || []).map((c: any) => [c.id, c]));
+			const courtsMap = new Map((courtsForSlots || []).map((c: { id: string; name: string }) => [c.id, c]));
 
 			// Combinar dados
-			const normalizedSlots = (slotsData || []).map((slot: any) => ({
+			const normalizedSlots = (slotsData || []).map((slot: RecurringSlot) => ({
 				...slot,
 				court: courtsMap.get(slot.court_id) || { name: "Quadra não encontrada" },
 			}));
 
 			setRecurringSlots(normalizedSlots);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Erro ao carregar mensalistas:", error);
+			const errorMessage = error instanceof Error ? error.message : "Não foi possível carregar os mensalistas.";
 			toast({
 				title: "Erro",
-				description: error.message || "Não foi possível carregar os mensalistas.",
+				description: errorMessage,
 				variant: "destructive",
 			});
 		} finally {
@@ -228,11 +229,12 @@ export default function MensalistasView() {
 
 			handleCloseModal();
 			loadData();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Erro ao salvar mensalista:", error);
+			const errorMessage = error instanceof Error ? error.message : "Não foi possível salvar o mensalista.";
 			toast({
 				title: "Erro",
-				description: error.message || "Não foi possível salvar o mensalista.",
+				description: errorMessage,
 				variant: "destructive",
 			});
 		}
@@ -257,11 +259,12 @@ export default function MensalistasView() {
 			});
 
 			loadData();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Erro ao alterar status:", error);
+			const errorMessage = error instanceof Error ? error.message : "Não foi possível alterar o status.";
 			toast({
 				title: "Erro",
-				description: error.message || "Não foi possível alterar o status.",
+				description: errorMessage,
 				variant: "destructive",
 			});
 		}
@@ -287,11 +290,12 @@ export default function MensalistasView() {
 			});
 
 			loadData();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Erro ao excluir:", error);
+			const errorMessage = error instanceof Error ? error.message : "Não foi possível excluir o mensalista.";
 			toast({
 				title: "Erro",
-				description: error.message || "Não foi possível excluir o mensalista.",
+				description: errorMessage,
 				variant: "destructive",
 			});
 		}

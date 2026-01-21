@@ -86,7 +86,12 @@ function getConnectionInfo() {
 	};
 }
 
-async function executeWithPsql(sql: string, connInfo: any): Promise<boolean> {
+interface ConnectionInfo {
+	connectionString: string | null;
+	password?: string;
+}
+
+async function executeWithPsql(sql: string, connInfo: ConnectionInfo): Promise<boolean> {
 	if (!connInfo.connectionString) {
 		return false;
 	}
@@ -105,8 +110,9 @@ async function executeWithPsql(sql: string, connInfo: any): Promise<boolean> {
 		);
 		
 		return true;
-	} catch (error: any) {
-		log(`❌ Erro ao executar: ${error.message}`, 'red');
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+		log(`❌ Erro ao executar: ${errorMessage}`, 'red');
 		return false;
 	}
 }
