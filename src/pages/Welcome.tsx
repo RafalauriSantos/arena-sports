@@ -250,7 +250,7 @@ export default function Welcome() {
 				timerRef.current = null;
 			}
 		};
-	}, [navigate, tenantId, subscription]);
+	}, [navigate, tenantId, subscription, userProfile?.avatar_url, userProfile?.full_name]);
 
 	if (loading) {
 		return (

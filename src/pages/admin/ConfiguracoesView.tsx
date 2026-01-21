@@ -290,7 +290,7 @@ export default function ConfiguracoesView() {
 		return () => {
 			cancelled = true;
 		};
-	}, [refetchSubscription, subscription?.status]);
+	}, [refetchSubscription, subscription?.status, toast]);
 
 	useEffect(() => {
 		const planCode = (subscription?.plan_code ?? "").toLowerCase();

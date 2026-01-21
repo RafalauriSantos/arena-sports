@@ -59,21 +59,21 @@ export function useDashboardMetrics(tenantId?: string) {
   const [loading, setLoading] = useState(true);
 
   // Função para obter o início da semana (segunda-feira)
-  const getStartOfWeek = (date: Date): Date => {
+  const getStartOfWeek = useCallback((date: Date): Date => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Ajusta para segunda-feira
     return new Date(d.setDate(diff));
-  };
+  }, []);
 
   // Função para obter o fim da semana (domingo)
-  const getEndOfWeek = (date: Date): Date => {
+  const getEndOfWeek = useCallback((date: Date): Date => {
     const start = getStartOfWeek(date);
     const end = new Date(start);
     end.setDate(start.getDate() + 6); // Adiciona 6 dias para chegar no domingo
     end.setHours(23, 59, 59, 999);
     return end;
-  };
+  }, [getStartOfWeek]);
 
   const fetchMetrics = useCallback(async () => {
     if (!tenantId) return;
@@ -270,7 +270,7 @@ export function useDashboardMetrics(tenantId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [tenantId, getStartOfWeek, getEndOfWeek]);
 
   useEffect(() => {
     fetchMetrics();

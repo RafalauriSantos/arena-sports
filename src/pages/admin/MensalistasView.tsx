@@ -75,6 +75,7 @@ export default function MensalistasView() {
 	useEffect(() => {
 		if (!tenantId) return;
 		loadData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [tenantId]);
 
 	const loadData = async () => {

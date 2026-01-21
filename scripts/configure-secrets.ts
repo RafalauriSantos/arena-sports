@@ -81,8 +81,9 @@ for (const [key, value] of Object.entries(secrets)) {
         const stderr = await new Response(proc.stderr).text()
         throw new Error(stderr)
       }
-    } catch (error: any) {
-      console.error(`   ❌ Erro ao configurar ${key}:`, error.message || error)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`   ❌ Erro ao configurar ${key}:`, errorMessage)
     }
   }
 }

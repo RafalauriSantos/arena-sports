@@ -122,8 +122,9 @@ function checkFile(filePath: string, description: string) {
 			allGood,
 			messagesCount: messages.length
 		};
-	} catch (error: any) {
-		log(`   ❌ Erro ao ler arquivo: ${error.message}`, 'red');
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+		log(`   ❌ Erro ao ler arquivo: ${errorMessage}`, 'red');
 		return null;
 	}
 }
@@ -133,7 +134,15 @@ async function main() {
 	log('🧪 TESTE AUTOMATIZADO: Mensagens de WhatsApp', 'cyan');
 	console.log('='.repeat(60) + '\n');
 
-	const results: Array<{ file: string; description: string; result: any }> = [];
+	interface TestResult {
+		file: string;
+		description: string;
+		result: {
+			allGood: boolean;
+			messagesCount: number;
+		} | null;
+	}
+	const results: TestResult[] = [];
 
 	// 1. Verifica mensagem do calendário público
 	const publicResult = checkFile(

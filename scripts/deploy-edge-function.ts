@@ -111,8 +111,9 @@ async function deployFunction(functionName: string) {
 
     console.log(`✅ Função '${functionName}' deployada com sucesso!`)
     return true
-  } catch (error: any) {
-    console.error(`❌ Erro ao fazer deploy: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.error(`❌ Erro ao fazer deploy: ${errorMessage}`)
     return false
   }
 }

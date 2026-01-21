@@ -33,8 +33,9 @@ function exec(command: string): string {
 			stdio: 'pipe'
 		});
 		return output;
-	} catch (error: any) {
-		throw new Error(`Erro ao executar: ${command}\n${error.message}`);
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+		throw new Error(`Erro ao executar: ${command}\n${errorMessage}`);
 	}
 }
 

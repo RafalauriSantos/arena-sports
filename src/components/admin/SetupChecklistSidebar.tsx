@@ -201,7 +201,8 @@ export function SetupChecklistSidebar({
 		} finally {
 			setLoading(false);
 		}
-	}, [tenantId, userProfile, onNavigate]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [tenantId, userProfile]);
 
 	useEffect(() => {
 		if (isOpen) {

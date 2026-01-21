@@ -164,9 +164,14 @@ async function debugPublicCalendar() {
 
 	console.log(`   ✅ RPC funcionou! Horários ocupados: ${occupiedSlots?.length || 0}`);
 
+	interface OccupiedSlot {
+		court_id: string;
+		slot_time: string;
+	}
+
 	if (occupiedSlots && occupiedSlots.length > 0) {
 		console.log("\n   Horários ocupados hoje:");
-		occupiedSlots.forEach((slot: any) => {
+		(occupiedSlots as OccupiedSlot[]).forEach((slot) => {
 			const court = courts.find((c) => c.id === slot.court_id);
 			console.log(
 				`   - ${court?.name || "Quadra desconhecida"} às ${slot.slot_time}`
@@ -184,7 +189,7 @@ async function debugPublicCalendar() {
 
 	const occupiedSet = new Set(
 		(occupiedSlots || []).map(
-			(s: any) => `${s.court_id}-${s.slot_time.slice(0, 5)}`
+			(s: OccupiedSlot) => `${s.court_id}-${s.slot_time.slice(0, 5)}`
 		)
 	);
 

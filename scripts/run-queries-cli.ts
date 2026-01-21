@@ -89,8 +89,9 @@ async function executeQuery(queryName: string, sql: string) {
 		// Alternativa: tentar usar a API REST diretamente (limitado)
 		// Mas isso requer criar uma função SQL no banco, o que não é ideal
 		
-	} catch (error: any) {
-		log(`❌ Erro: ${error.message}`, 'red');
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+		log(`❌ Erro: ${errorMessage}`, 'red');
 	}
 }
 

@@ -169,7 +169,7 @@ export function useSubscriptionAccess() {
             isSaasAdmin,
             hasSubscriptionError: hasError,
         };
-    }, [query.data]);
+    }, [query.data, query.error]);
 
     return {
         ...query,

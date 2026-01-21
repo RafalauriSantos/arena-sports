@@ -51,9 +51,10 @@ async function main() {
 				cwd: process.cwd()
 			});
 			log(`\n   ✅ ${test.name} concluído`, 'green');
-		} catch (error: any) {
+		} catch (error: unknown) {
 			log(`\n   ⚠️  ${test.name} teve problemas`, 'yellow');
-			log(`   Erro: ${error.message}`, 'yellow');
+			const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+			log(`   Erro: ${errorMessage}`, 'yellow');
 		}
 	}
 

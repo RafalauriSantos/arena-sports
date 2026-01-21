@@ -83,8 +83,9 @@ async function checkBasicConnectivity() {
       console.log(`   ❌ Servidor retornou status ${response.status}`)
       return false
     }
-  } catch (error: any) {
-    console.log(`   ❌ Erro de conexão: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.log(`   ❌ Erro de conexão: ${errorMessage}`)
     console.log('   💡 Verifique se a URL do Supabase está correta')
     return false
   }
@@ -137,8 +138,9 @@ async function checkDatabaseAccess() {
       console.log('   ✅ Service role key está funcionando')
     }
     return true
-  } catch (error: any) {
-    console.log(`   ❌ Erro inesperado: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.log(`   ❌ Erro inesperado: ${errorMessage}`)
     return false
   }
 }
@@ -193,8 +195,9 @@ async function checkCriticalTables() {
       } else {
         console.log(`   ✅ Tabela '${table}': OK`)
       }
-    } catch (error: any) {
-      console.log(`   ❌ Tabela '${table}': ${error.message}`)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.log(`   ❌ Tabela '${table}': ${errorMessage}`)
       allOk = false
     }
   }
@@ -290,8 +293,9 @@ async function checkAuth() {
     console.log('   ℹ️  Verifique no Supabase Dashboard: Authentication > Settings')
 
     return true
-  } catch (error: any) {
-    console.log(`   ❌ Erro: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.log(`   ❌ Erro: ${errorMessage}`)
     return false
   }
 }
@@ -328,8 +332,9 @@ async function checkRLS() {
       console.log('   ⚠️  RLS pode não estar ativo (verifique as políticas)')
       return true // Não é um erro crítico, apenas um aviso
     }
-  } catch (error: any) {
-    console.log(`   ❌ Erro: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.log(`   ❌ Erro: ${errorMessage}`)
     return false
   }
 }

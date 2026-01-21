@@ -44,7 +44,7 @@ function exec(command: string, silent = false): string {
 			stdio: silent ? 'pipe' : 'inherit'
 		});
 		return output;
-	} catch (error: any) {
+	} catch (error: unknown) {
 		if (!silent) {
 			throw error;
 		}
