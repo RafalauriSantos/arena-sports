@@ -11,7 +11,6 @@ import {
 	CheckCircle2,
 	AlertTriangle,
 	Lock,
-	Star,
 	Check,
 	ArrowRight,
 	Smartphone,
@@ -22,51 +21,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 
-// --- DADOS DOS DEPOIMENTOS (7 PROVAS SOCIAIS) ---
-const testimonials = [
-	{
-		name: "Carlos Silva",
-		role: "ArenaSys Society SP",
-		text: "Aumentei meu faturamento em R$ 5.200 no primeiro mês só recuperando horários perdidos.",
-		initials: "CS",
-	},
-	{
-		name: "Ana Beatriz",
-		role: "Tennis Club Rio",
-		text: "Eu vivia no WhatsApp. Agora tenho tempo para treinar e cuidar da gestão de verdade.",
-		initials: "AB",
-	},
-	{
-		name: "Roberto Mendes",
-		role: "Beach Tennis Pro",
-		text: "O pagamento antecipado via PIX acabou com os calotes de última hora. Sensacional.",
-		initials: "RM",
-	},
-	{
-		name: "Lucas Ferreira",
-		role: "Futsal da Vila",
-		text: "Meus clientes elogiam muito a facilidade de reservar pelo link. Ficou muito profissional.",
-		initials: "LF",
-	},
-	{
-		name: "Fernanda Costa",
-		role: "ArenaSys Multi",
-		text: "O suporte é incrível. Qualquer dúvida que tenho, eles resolvem na hora.",
-		initials: "FC",
-	},
-	{
-		name: "Marcos Paulo",
-		role: "Complexo Esportivo",
-		text: "Gerenciar 4 quadras era um caos. Com o ArenaSys, virou um jogo de criança.",
-		initials: "MP",
-	},
-	{
-		name: "Juliana Santos",
-		role: "Vôlei de Areia",
-		text: "O melhor investimento que fiz. O sistema se paga na primeira semana.",
-		initials: "JS",
-	},
-];
+// --- DEPOIMENTOS REMOVIDOS ---
+// Removidos para manter autenticidade. Adicione depoimentos reais conforme receber feedback dos clientes.
 
 // --- DADOS DO FAQ (QUEBRA DE OBJEÇÕES) ---
 const faqList = [
@@ -520,44 +476,35 @@ export default function LandingPage() {
 				</div>
 			</section>
 
-			{/* --- SEÇÃO DE PROVA SOCIAL (MARQUEE 7 PESSOAS) --- */}
-			<section className="py-12 border-y border-white/5 bg-[#050507] overflow-hidden">
-				<div className="max-w-7xl mx-auto px-6 mb-8 text-center">
-					<p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase opacity-70">
-						Quem usa, não volta para o papel
-					</p>
-				</div>
-
-				<div className="relative w-full overflow-hidden mask-linear-gradient">
-					<div className="flex w-max animate-scroll gap-6">
-						{[...testimonials, ...testimonials].map((t, i) => (
-							<div
-								key={i}
-								className="w-[300px] p-6 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col gap-4 hover:bg-white/[0.05] transition-colors">
-								<div className="flex items-center gap-3">
-									<div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
-										{t.initials}
-									</div>
-									<div>
-										<p className="text-white text-sm font-bold">{t.name}</p>
-										<p className="text-gray-500 text-[10px] uppercase tracking-wide">
-											{t.role}
-										</p>
-									</div>
-								</div>
-								<div className="flex gap-0.5 text-emerald-500">
-									{[1, 2, 3, 4, 5].map((star) => (
-										<Star key={star} className="w-3 h-3 fill-current" />
-									))}
-								</div>
-								<p className="text-gray-400 text-xs leading-relaxed italic">
-									"{t.text}"
-								</p>
-							</div>
-						))}
+			{/* --- SEÇÃO DE PROVA SOCIAL (JUNTE-SE AOS PRIMEIROS) --- */}
+			<section className="py-16 border-y border-white/5 bg-[#050507]">
+				<div className="max-w-4xl mx-auto px-6 text-center">
+					<div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-6">
+						<Zap className="w-4 h-4 text-emerald-400" />
+						<p className="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">
+							Programa Founders
+						</p>
 					</div>
-					<div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-[#02040a] to-transparent z-10" />
-					<div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-[#02040a] to-transparent z-10" />
+					<h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+						Seja um dos primeiros
+					</h2>
+					<p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+						Estamos lançando agora e oferecendo condições especiais para os primeiros arenas que se juntarem a nós. 
+						Você terá acesso prioritário a novas funcionalidades e suporte dedicado.
+					</p>
+					{foundersProgress && foundersProgress.remaining > 0 && (
+						<div className="mt-8 p-6 bg-white/[0.03] border border-white/5 rounded-2xl">
+							<p className="text-sm text-gray-500 mb-2">Vagas disponíveis no programa founders</p>
+							<div className="flex items-center justify-center gap-4">
+								<div className="text-3xl font-bold text-emerald-400">
+									{foundersProgress.remaining}
+								</div>
+								<div className="text-gray-500 text-sm">
+									de {foundersProgress.cap} vagas
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 			</section>
 

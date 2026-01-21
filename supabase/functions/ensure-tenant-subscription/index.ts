@@ -124,8 +124,8 @@ Deno.serve(async (req: Request) => {
 
         const existing = subs?.[0] ?? null;
         const nowIso = new Date().toISOString();
-        const nowTrialEnds = addDaysFromIso(nowIso, 21);
-        const nowGraceEnds = addDaysFromIso(nowIso, 24);
+        const nowTrialEnds = addDaysFromIso(nowIso, 7);
+        const nowGraceEnds = addDaysFromIso(nowIso, 10);
 
         if (!existing) {
             const { data: inserted, error: insertError } = await supabaseAdmin
@@ -176,8 +176,8 @@ Deno.serve(async (req: Request) => {
                 patch.grace_ends_at = nowGraceEnds;
             } else {
                 const startedAtIso = existing.trial_started_at ?? nowIso;
-                const computedTrialEnds = addDaysFromIso(startedAtIso, 21);
-                const computedGraceEnds = addDaysFromIso(startedAtIso, 24);
+                const computedTrialEnds = addDaysFromIso(startedAtIso, 7);
+                const computedGraceEnds = addDaysFromIso(startedAtIso, 10);
 
                 patch.trial_ends_at = existing.trial_ends_at ?? computedTrialEnds;
                 patch.grace_ends_at = existing.grace_ends_at ?? computedGraceEnds;

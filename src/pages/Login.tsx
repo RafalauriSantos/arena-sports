@@ -323,7 +323,7 @@ const Login = () => {
 					<div className="flex flex-col sm:flex-row gap-1 sm:gap-2 pt-2">
 						<div className="flex items-center gap-3 text-gray-300">
 							<CheckCircle2 className="w-5 h-5 text-emerald-500" />
-							<span>Zero mensalidade fixa (teste)</span>
+							<span>7 dias grátis para testar</span>
 						</div>
 						<div className="flex items-center gap-3 text-gray-300">
 							<CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -331,26 +331,15 @@ const Login = () => {
 						</div>
 					</div>
 
-					{/* Prova Social (Números) */}
-					<div className="grid grid-cols-3 gap-1 sm:gap-4 border-t border-white/10 pt-4 sm:pt-6 mt-4 sm:mt-6 text-center">
-						<div>
-							<p className="text-3xl font-bold text-white">R$ 1.2M+</p>
-							<p className="text-xs text-gray-500 uppercase tracking-widest">
-								Processados
-							</p>
+					{/* Programa Founders - Prova Social Autêntica */}
+					<div className="border-t border-white/10 pt-4 sm:pt-6 mt-4 sm:mt-6">
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold tracking-wide uppercase">
+							<Zap className="w-3 h-3 fill-emerald-400" />
+							Programa Founders - Vagas Limitadas
 						</div>
-						<div>
-							<p className="text-3xl font-bold text-white">15k+</p>
-							<p className="text-xs text-gray-500 uppercase tracking-widest">
-								Jogos/Mês
-							</p>
-						</div>
-						<div>
-							<p className="text-3xl font-bold text-white">4.9/5</p>
-							<p className="text-xs text-gray-500 uppercase tracking-widest">
-								Avaliação
-							</p>
-						</div>
+						<p className="text-gray-400 text-sm mt-3 max-w-md">
+							Seja um dos primeiros arenas a transformar sua gestão. Condições especiais para quem se juntar agora.
+						</p>
 					</div>
 				</div>
 

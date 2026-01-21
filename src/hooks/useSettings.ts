@@ -67,7 +67,7 @@ interface Subscription {
 }
 
 const DEFAULT_SUBSCRIPTION: Subscription = {
-  plan_name: "Trial do Plano Pro (21 dias) — tudo liberado",
+  plan_name: "Trial do Plano Pro (7 dias) — tudo liberado",
   status: "trial",
   monthly_price: 0,
 };

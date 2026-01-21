@@ -313,11 +313,11 @@ export default function Welcome() {
 							<div className="text-center space-y-2">
 								<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
 									<Trophy className="w-3 h-3" />
-									21 dias gratuitos
+									7 dias gratuitos
 								</div>
 								<p className="text-gray-300 text-sm">
 									Você tem{" "}
-									<strong className="text-white">21 dias gratuitos</strong> para
+									<strong className="text-white">7 dias gratuitos</strong> para
 									testar tudo sem compromisso.
 								</p>
 							</div>

@@ -20,7 +20,7 @@ export type TenantSubscription = {
 
 const DEFAULT_SUB: TenantSubscription = {
     plan_code: "start",
-    plan_name: "Trial do Plano Pro (21 dias) — tudo liberado",
+    plan_name: "Trial do Plano Pro (7 dias) — tudo liberado",
     monthly_price: 0,
     billing_interval: null,
     status: "trial",
@@ -154,7 +154,7 @@ export function useSubscriptionAccess() {
 
         const trialStartedAt = sub.trial_started_at ?? null;
         const computedTrialEndsAt =
-            sub.trial_ends_at ?? (trialStartedAt ? addDays(trialStartedAt, 21) : null);
+            sub.trial_ends_at ?? (trialStartedAt ? addDays(trialStartedAt, 7) : null);
 
         const hasAccess =
             isSaasAdmin ||

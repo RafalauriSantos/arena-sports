@@ -544,11 +544,11 @@ export default function DashboardHome() {
 			: null;
 
 		toast({
-			title: "Trial do Plano Pro (21 dias) iniciado",
+			title: "Trial do Plano Pro (7 dias) iniciado",
 			description:
 				daysLeft != null
 					? `Tudo liberado no Plano Pro. Restam ${daysLeft} dia(s) de trial.`
-					: "Tudo liberado no Plano Pro durante o trial de 21 dias.",
+					: "Tudo liberado no Plano Pro durante o trial de 7 dias.",
 		});
 	}, [
 		hasAccess,
@@ -581,7 +581,7 @@ export default function DashboardHome() {
 			await refetchSubscription();
 			toast({
 				title: "Trial do Plano Pro iniciado",
-				description: "Tudo liberado por 21 dias.",
+				description: "Tudo liberado por 7 dias.",
 			});
 		} catch (err: unknown) {
 			const message = getStringProp(err, "message") || "Tente novamente.";
@@ -944,13 +944,13 @@ export default function DashboardHome() {
 				<Card className="w-full max-w-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
 					<CardHeader>
 						<CardTitle className="text-white flex items-center gap-2">
-							<Trophy className="h-5 w-5" /> Trial do Plano Pro (21 dias) — tudo
+							<Trophy className="h-5 w-5" /> Trial do Plano Pro (7 dias) — tudo
 							liberado
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<p className="text-sm text-gray-300">
-							Seu cadastro foi criado. Você tem direito a um trial de 21 dias do
+							Seu cadastro foi criado. Você tem direito a um trial de 7 dias do
 							Plano Pro, com tudo liberado.
 						</p>
 						<p className="text-xs text-gray-500">
@@ -968,7 +968,7 @@ export default function DashboardHome() {
 									Iniciando...
 								</>
 							) : (
-								"Começar trial do Plano Pro (21 dias)"
+								"Começar trial do Plano Pro (7 dias)"
 							)}
 						</Button>
 					</CardContent>
