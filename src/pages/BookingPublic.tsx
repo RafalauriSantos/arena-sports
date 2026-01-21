@@ -20,12 +20,15 @@ import { format, addDays, isSameDay, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toWhatsAppLinkPhone } from "@/lib/phone";
+import { formatPhoneInput, unformatPhone, isValidPhone } from "@/lib/phoneFormat";
+import { formatFullAddress } from "@/lib/cep";
 
 // --- Tipos ---
 interface Court {
 	id: string;
 	name: string;
 	base_price: number;
+	half_hour_price?: number;
 }
 
 interface TimeChip {
@@ -34,6 +37,14 @@ interface TimeChip {
 	originalPrice?: number;
 	hasDiscount: boolean;
 }
+
+// Função auxiliar para calcular preço baseado na duração
+const calculatePrice = (basePrice: number, halfHourPrice: number | undefined, duration: 60 | 90): number => {
+	if (duration === 90) {
+		return basePrice + (halfHourPrice || 0);
+	}
+	return basePrice;
+};
 
 type OccupiedSlot = {
 	court_id: string;
@@ -47,7 +58,16 @@ type TenantPublic = {
 	id: string;
 	business_name?: string | null;
 	phone?: string | null;
+	email?: string | null;
 	address?: string | null;
+	description?: string | null;
+	cep?: string | null;
+	street?: string | null;
+	number?: string | null;
+	complement?: string | null;
+	neighborhood?: string | null;
+	city?: string | null;
+	state?: string | null;
 	settings?: Record<string, unknown> | null;
 };
 
@@ -86,7 +106,9 @@ export default function BookingPublic() {
 		courtId: string;
 		courtName: string;
 		slot: TimeChip;
+		halfHourPrice?: number; // Preço da meia hora adicional
 	} | null>(null);
+	const [bookingDuration, setBookingDuration] = useState<60 | 90>(60); // 60 min (1h) ou 90 min (1h30)
 	const [reserveError, setReserveError] = useState<string | null>(null);
 	const [reserveSuccess, setReserveSuccess] = useState<string | null>(null);
 	const [isReserving, setIsReserving] = useState(false);
@@ -203,11 +225,12 @@ export default function BookingPublic() {
 					setCourts((prev) => {
 						const next = [...prev];
 						const index = next.findIndex((c) => c.id === row.id);
-						const normalized: Court = {
-							id: row.id,
-							name: String(row.name ?? ""),
-							base_price: Number(row.base_price ?? 0),
-						};
+					const normalized: Court = {
+						id: row.id,
+						name: String(row.name ?? ""),
+						base_price: Number(row.base_price ?? 0),
+						half_hour_price: Number(row.half_hour_price ?? 0) || undefined,
+					};
 
 						if (index >= 0) {
 							next[index] = { ...next[index], ...normalized };
@@ -223,12 +246,14 @@ export default function BookingPublic() {
 					setSelectedSlot((prev) => {
 						if (!prev || prev.courtId !== row.id) return prev;
 						const newPrice = Number(row.base_price ?? prev.slot.price);
+						const newHalfHourPrice = Number(row.half_hour_price ?? prev.halfHourPrice ?? 0);
 						return {
 							...prev,
 							slot: {
 								...prev.slot,
 								price: newPrice,
 							},
+							halfHourPrice: newHalfHourPrice,
 						};
 					});
 				}
@@ -284,7 +309,97 @@ export default function BookingPublic() {
 		};
 	}, [tenantId]);
 
-	// 2. Carregar ocupação do dia (avulsos + mensalistas) via RPC pública segura
+	// 2. Real-time para bookings (atualiza automaticamente quando há novas reservas)
+	useEffect(() => {
+		if (!tenantId || !cleanSubdomain) return;
+
+		console.log("📡 [REALTIME] Conectando canal de bookings para tenant:", tenantId);
+
+		const bookingsChannel = supabase
+			.channel(`bookings-public-${tenantId}-${Date.now()}`) // Nome único para evitar conflitos
+			.on(
+				"postgres_changes",
+				{
+					event: "*", // INSERT, UPDATE, DELETE
+					schema: "public",
+					table: "bookings",
+					filter: `tenant_id=eq.${tenantId}`,
+				},
+				async (payload) => {
+					console.log("🔥 [REALTIME] Booking alterado!", payload);
+					
+					// Se for INSERT ou UPDATE, verifica se é do dia atual
+					if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+						const bookingDate = payload.new?.start_time 
+							? new Date(payload.new.start_time)
+							: null;
+						
+						if (bookingDate) {
+							const bookingDateStr = format(bookingDate, "yyyy-MM-dd");
+							const currentDateStr = format(selectedDate, "yyyy-MM-dd");
+							
+							// Só atualiza se for do dia que está sendo visualizado
+							if (bookingDateStr === currentDateStr) {
+								// Recarrega ocupação do dia atual
+								const { data, error } = await supabase.rpc(
+									"fn_public_get_occupied_slots",
+									{
+										p_subdomain: cleanSubdomain,
+										p_date: currentDateStr,
+									}
+								);
+
+								if (!error && data) {
+									const occupied = (data as Array<{ court_id: string; slot_time: string }> || []).map(
+										(r) => ({
+											courtId: r.court_id,
+											time: r.slot_time.slice(0, 5),
+										})
+									);
+									setOccupiedSlots(occupied);
+									console.log("✅ [REALTIME] Ocupação atualizada:", occupied);
+								}
+							}
+						}
+					} else if (payload.eventType === 'DELETE') {
+						// Se deletou, recarrega também
+						const dateStr = format(selectedDate, "yyyy-MM-dd");
+						const { data, error } = await supabase.rpc(
+							"fn_public_get_occupied_slots",
+							{
+								p_subdomain: cleanSubdomain,
+								p_date: dateStr,
+							}
+						);
+
+						if (!error && data) {
+							const occupied = (data as Array<{ court_id: string; slot_time: string }> || []).map(
+								(r) => ({
+									courtId: r.court_id,
+									time: r.slot_time.slice(0, 5),
+								})
+							);
+							setOccupiedSlots(occupied);
+						}
+					}
+				}
+			)
+			.subscribe((status) => {
+				console.log("📡 [REALTIME] Status do canal de bookings:", status);
+				if (status === 'SUBSCRIBED') {
+					console.log("✅ [REALTIME] Conectado com sucesso!");
+				} else if (status === 'CHANNEL_ERROR') {
+					console.error("❌ [REALTIME] Erro na conexão");
+				}
+			});
+
+		return () => {
+			console.log("🔌 [REALTIME] Desconectando canal de bookings");
+			supabase.removeChannel(bookingsChannel);
+		};
+	}, [tenantId, cleanSubdomain, selectedDate]);
+
+	// 3. Carregar ocupação do dia (avulsos + mensalistas) via RPC pública segura
 	useEffect(() => {
 		let cancelled = false;
 		const OCCUPANCY_REFRESH_MS = 60_000;
@@ -416,7 +531,14 @@ export default function BookingPublic() {
 		setReserveSuccess(null);
 		setPlayerName("");
 		setPlayerPhone("");
-		setSelectedSlot({ courtId, courtName, slot });
+		// Busca o court para pegar o half_hour_price
+		const court = courts.find(c => c.id === courtId);
+		setSelectedSlot({ 
+			courtId, 
+			courtName, 
+			slot,
+			halfHourPrice: court?.half_hour_price
+		});
 	};
 
 	// Nova função: Reservar direto no sistema (pagar no balcão)
@@ -424,12 +546,12 @@ export default function BookingPublic() {
 		if (!selectedSlot || !tenantId) return;
 		
 		// Validações básicas
-		if (!playerName.trim() || playerName.trim().length < 3) {
-			setReserveError("Por favor, informe seu nome completo");
+		if (!playerName.trim() || playerName.trim().length < 2) {
+			setReserveError("Por favor, informe seu nome");
 			return;
 		}
 
-		if (!playerPhone.trim() || playerPhone.replace(/\D/g, "").length < 10) {
+		if (!isValidPhone(playerPhone)) {
 			setReserveError("Por favor, informe um telefone válido (DDD + número)");
 			return;
 		}
@@ -440,14 +562,38 @@ export default function BookingPublic() {
 		try {
 			const dateStr = format(selectedDate, "yyyy-MM-dd");
 			const startTime = selectedSlot.slot.time;
-			const [hour] = startTime.split(":");
+			const [hour, minute] = startTime.split(":");
 			const endHour = (parseInt(hour) + 1).toString().padStart(2, "0");
 			
-			// Monta TIMESTAMPTZ completo (2024-01-20 20:00:00+00)
-			const startTimestamp = `${dateStr} ${startTime}:00+00`;
-			const endTimestamp = `${dateStr} ${endHour}:00:00+00`;
+			// Cria Date object no timezone local do navegador
+			const startDate = new Date(selectedDate);
+			startDate.setHours(parseInt(hour), parseInt(minute || "0"), 0, 0);
+			
+			const endDate = new Date(startDate);
+			endDate.setMinutes(endDate.getMinutes() + bookingDuration); // Usa a duração escolhida
+			
+			// Obtém offset do timezone local em minutos (ex: -180 para UTC-3)
+			const timezoneOffset = startDate.getTimezoneOffset();
+			const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+			const offsetMinutes = Math.abs(timezoneOffset) % 60;
+			const offsetSign = timezoneOffset <= 0 ? '+' : '-';
+			const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+			
+			// Formata timestamp com timezone local explícito
+			const formatWithTimezone = (date: Date) => {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				const hours = String(date.getHours()).padStart(2, '0');
+				const mins = String(date.getMinutes()).padStart(2, '0');
+				const secs = String(date.getSeconds()).padStart(2, '0');
+				return `${year}-${month}-${day} ${hours}:${mins}:${secs}${timezoneString}`;
+			};
+			
+			const startTimestamp = formatWithTimezone(startDate);
+			const endTimestamp = formatWithTimezone(endDate);
 
-			// Revalidação: verifica se o slot ainda está livre
+			// ✅ VALIDAÇÃO CRÍTICA: Verifica se o slot ainda está livre (ANTES de inserir)
 			const { data: checkData } = await supabase.rpc(
 				"fn_public_get_occupied_slots",
 				{
@@ -461,25 +607,85 @@ export default function BookingPublic() {
 					.map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`)
 			);
 
+			// Verifica se o slot inicial está livre
 			const slotKey = `${selectedSlot.courtId}-${startTime}`;
 			if (occupied.has(slotKey)) {
 				throw new Error("Horário acabou de ser reservado. Escolha outro horário.");
 			}
 
+			// Se for 1h30, verifica se o próximo slot também está livre
+			if (bookingDuration === 90) {
+				const [startHour, startMin] = startTime.split(":").map(Number);
+				const nextHour = startHour + 1;
+				const nextTime = `${nextHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
+				const nextSlotKey = `${selectedSlot.courtId}-${nextTime}`;
+				
+				if (occupied.has(nextSlotKey)) {
+					throw new Error("O horário das " + nextTime + " já está reservado. Para jogar 1h30, esse horário precisa estar livre.");
+				}
+			}
+
+			// ✅ VALIDAÇÃO ADICIONAL: Verifica conflito direto no banco usando intervalo (race condition)
+			// Verifica se há alguma reserva que sobrepõe o intervalo [startTimestamp, endTimestamp)
+			const { data: conflictCheck } = await supabase
+				.from("bookings")
+				.select("id, start_time, end_time")
+				.eq("tenant_id", tenantId)
+				.eq("court_id", selectedSlot.courtId)
+				.in("status", ["pending", "paid", "pending_payment", "confirmed", "in_progress"])
+				.is("cancelled_at", null)
+				.lt("start_time", endTimestamp) // Reserva começa antes do nosso fim
+				.gt("end_time", startTimestamp) // Reserva termina depois do nosso início
+				.maybeSingle();
+
+			if (conflictCheck) {
+				throw new Error("Este horário já está reservado ou conflita com outra reserva. Por favor, escolha outro.");
+			}
+
+			// Calcula preço baseado na duração
+			const finalPrice = calculatePrice(
+				selectedSlot.slot.price,
+				selectedSlot.halfHourPrice,
+				bookingDuration
+			);
+
 			// Cria a reserva
-			const { error } = await supabase.from("bookings").insert({
+			const { error, data: newBooking } = await supabase.from("bookings").insert({
 				court_id: selectedSlot.courtId,
 				tenant_id: tenantId,
 				start_time: startTimestamp, // TIMESTAMPTZ
 				end_time: endTimestamp, // TIMESTAMPTZ
 				customer_name: playerName.trim(),
-				customer_phone: playerPhone.replace(/\D/g, ""),
+				customer_phone: unformatPhone(playerPhone),
 				status: "pending_payment", // Status para "pagar no balcão"
-				total_price: selectedSlot.slot.price,
-				notes: "Reserva via calendário público - Pagar no balcão",
-			});
+				total_price: finalPrice,
+				notes: `Reserva via calendário público - ${bookingDuration}min - Pagar no balcão`,
+			}).select().single();
 
 			if (error) throw error;
+
+			// ✅ ATUALIZA IMEDIATAMENTE o estado local (sem esperar real-time)
+			// Marca o slot inicial e, se for 1h30, também o próximo slot como ocupado
+			setOccupiedSlots(prev => {
+				const newSlots = [...prev];
+				
+				// Adiciona o slot inicial se não existir
+				if (!newSlots.some(s => s.courtId === selectedSlot.courtId && s.time === startTime)) {
+					newSlots.push({ courtId: selectedSlot.courtId, time: startTime });
+				}
+				
+				// Se for 1h30, adiciona o próximo slot também
+				if (bookingDuration === 90) {
+					const [startHour, startMin] = startTime.split(":").map(Number);
+					const nextHour = startHour + 1;
+					const nextTime = `${nextHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
+					if (!newSlots.some(s => s.courtId === selectedSlot.courtId && s.time === nextTime)) {
+						newSlots.push({ courtId: selectedSlot.courtId, time: nextTime });
+					}
+				}
+				
+				return newSlots;
+			});
 
 			setReserveSuccess(`Reserva confirmada! ${tenant?.business_name || "A arena"} aguarda você no horário marcado.`);
 			
@@ -489,6 +695,7 @@ export default function BookingPublic() {
 				setReserveSuccess(null);
 				setPlayerName("");
 				setPlayerPhone("");
+				setBookingDuration(60); // Reset para 1h
 			}, 3000);
 
 		} catch (error: unknown) {
@@ -509,6 +716,19 @@ export default function BookingPublic() {
 		const configs = tenant.settings?.booking || {};
 
 		const dateFmt = format(selectedDate, "dd/MM (EEEE)", { locale: ptBR });
+		const finalPrice = calculatePrice(
+			slot.price,
+			selectedSlot?.halfHourPrice,
+			bookingDuration
+		);
+		const durationText = bookingDuration === 90 ? "1h30" : "1h";
+		
+		// Calcula horário de término
+		const [startHour, startMin] = slot.time.split(":").map(Number);
+		const endDate = new Date(selectedDate);
+		endDate.setHours(startHour, startMin, 0, 0);
+		endDate.setMinutes(endDate.getMinutes() + bookingDuration);
+		const endTime = format(endDate, "HH:mm");
 
 		let textoPagamento = "";
 
@@ -517,25 +737,36 @@ export default function BookingPublic() {
 			const sinal =
 				configs.deposit_type === "fixed"
 					? configs.deposit_value
-					: slot.price * (percent / 100);
-			textoPagamento = `🔒 *Pagar SINAL via PIX*\n💰 Valor do sinal: R$ ${sinal.toFixed(
-				2
-			)}\n💳 Restante: R$ ${(slot.price - sinal).toFixed(
-				2
-			)} (no local)\n\n📸 *IMPORTANTE:* Após pagar, envie o comprovante aqui!`;
+					: finalPrice * (percent / 100);
+			textoPagamento = `*Pagar SINAL via PIX*
+Valor do sinal: R$ ${sinal.toFixed(2)}
+Restante: R$ ${(finalPrice - sinal).toFixed(2)} (no local)
+
+*IMPORTANTE:* Apos pagar, envie o comprovante aqui!`;
 		} else if (type === "full") {
 			const valorFinal =
-				slot.price * (1 - configs.full_payment_discount_percent / 100);
-			textoPagamento = `💎 *Pagar TUDO via PIX (COM DESCONTO)*\n💰 Valor com ${configs.full_payment_discount_percent}% OFF: R$ ${valorFinal.toFixed(
-				2
-			)}\n~~R$ ${slot.price.toFixed(2)}~~\n\n📸 *IMPORTANTE:* Após pagar, envie o comprovante aqui!`;
+				finalPrice * (1 - configs.full_payment_discount_percent / 100);
+			textoPagamento = `*Pagar TUDO via PIX (COM DESCONTO)*
+Valor com ${configs.full_payment_discount_percent}% OFF: R$ ${valorFinal.toFixed(2)}
+De: R$ ${finalPrice.toFixed(2)}
+
+*IMPORTANTE:* Apos pagar, envie o comprovante aqui!`;
 		} else {
-			textoPagamento = `💰 *Pagar via PIX*\n💵 Valor total: R$ ${slot.price.toFixed(
-				2
-			)}\n\n📸 *IMPORTANTE:* Após pagar, envie o comprovante aqui!`;
+			textoPagamento = `*Pagar via PIX*
+Valor total: R$ ${finalPrice.toFixed(2)}
+
+*IMPORTANTE:* Apos pagar, envie o comprovante aqui!`;
 		}
 
-		const msg = `Olá! Quero reservar:\n\n🏟 *${courtName}*\n📅 *${dateFmt}*\n⏰ *${slot.time}*\n\n${textoPagamento}\n\n🔑 Qual a chave PIX?`;
+		const msg = `Ola! Quero reservar:
+
+*${courtName}*
+*${dateFmt}*
+*${slot.time} - ${endTime} (${durationText})*
+
+${textoPagamento}
+
+Qual a chave PIX?`;
 
 		(async () => {
 			setReserveError(null);
@@ -627,12 +858,52 @@ export default function BookingPublic() {
 					<h1 className="text-3xl font-extrabold tracking-tight capitalize">
 						{tenant.business_name}
 					</h1>
-					<div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
-						<MapPin className="w-4 h-4" />
-						<span className="truncate max-w-[250px]">
-							{tenant.address || "Endereço não informado"}
-						</span>
-					</div>
+					
+					{/* Descrição da Arena */}
+					{tenant.description && (
+						<p className="text-gray-300 text-sm max-w-[300px] mx-auto">
+							{tenant.description}
+						</p>
+					)}
+					
+					{/* Endereço */}
+					{(tenant.street || tenant.city || tenant.address) && (
+						<div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
+							<MapPin className="w-4 h-4 flex-shrink-0" />
+							<span className="max-w-[300px] text-center leading-relaxed">
+								{tenant.street 
+									? formatFullAddress(
+											tenant.street,
+											tenant.number || undefined,
+											tenant.complement || undefined,
+											tenant.neighborhood || undefined,
+											tenant.city || undefined,
+											tenant.state || undefined
+										)
+									: tenant.address || "Endereço não informado"
+								}
+							</span>
+						</div>
+					)}
+					
+					{/* Botão de WhatsApp */}
+					{tenant.phone && (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => {
+								const phoneDigits = toWhatsAppLinkPhone(tenant.phone || "");
+								const msg = `Ola! Estou no calendario de *${tenant.business_name}* e gostaria de mais informacoes sobre horarios e valores.\n\nAguardo seu retorno!`;
+								window.open(
+									`https://wa.me/${phoneDigits}?text=${encodeURIComponent(msg)}`,
+									"_blank"
+								);
+							}}
+							className="mt-2 gap-2 bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700">
+							<MessageCircle className="w-4 h-4" />
+							Falar no WhatsApp
+						</Button>
+					)}
 				</div>
 			</div>
 
@@ -721,7 +992,7 @@ export default function BookingPublic() {
 									<p>Sem horários livres.</p>
 								</div>
 							) : (
-								<div className="grid grid-cols-3 gap-2">
+								<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
 									{court.slots.map((slot) => (
 										<button
 											key={slot.time}
@@ -771,14 +1042,15 @@ export default function BookingPublic() {
 
 			{/* Modal Checkout */}
 			{selectedSlot && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-					<div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95">
-						<div className="p-6 text-center border-b border-gray-100">
-							<h3 className="text-lg font-bold text-gray-900">
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+					<div className="bg-white w-full max-w-sm rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+						<div className="p-4 sm:p-6 text-center border-b border-gray-100">
+							<h3 className="text-base sm:text-lg font-bold text-gray-900">
 								Confirmar Reserva
 							</h3>
 							<p className="text-gray-500 text-sm mt-1">
 								{selectedSlot.courtName} • {selectedSlot.slot.time}
+								{bookingDuration === 90 && " - 1h30"}
 							</p>
 						</div>
 
@@ -797,19 +1069,51 @@ export default function BookingPublic() {
 
 							{!reserveSuccess && (
 								<>
+									{/* Seleção de Duração */}
+									<div className="mb-4">
+										<label className="block text-sm font-medium text-gray-700 mb-2">
+											Duração do jogo
+										</label>
+										<div className="grid grid-cols-2 gap-2">
+											<button
+												type="button"
+												onClick={() => setBookingDuration(60)}
+												disabled={isReserving}
+												className={`py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
+													bookingDuration === 60
+														? "border-primary bg-primary/10 text-primary"
+														: "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+												} disabled:opacity-50`}>
+												1 hora
+											</button>
+											<button
+												type="button"
+												onClick={() => setBookingDuration(90)}
+												disabled={isReserving}
+												className={`py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
+													bookingDuration === 90
+														? "border-primary bg-primary/10 text-primary"
+														: "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+												} disabled:opacity-50`}>
+												1h30
+											</button>
+										</div>
+									</div>
+
 									{/* Formulário de Dados do Jogador */}
 									<div className="space-y-3 mb-4">
 										<div>
 											<label className="block text-sm font-medium text-gray-700 mb-1">
-												Seu nome completo
+												Seu nome
 											</label>
 											<input
 												type="text"
 												value={playerName}
 												onChange={(e) => setPlayerName(e.target.value)}
-												placeholder="Ex: João Silva"
-												className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 placeholder:text-gray-400"
+												placeholder="Ex: João"
+												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-500"
 												disabled={isReserving}
+												maxLength={50}
 											/>
 										</div>
 										<div>
@@ -819,10 +1123,14 @@ export default function BookingPublic() {
 											<input
 												type="tel"
 												value={playerPhone}
-												onChange={(e) => setPlayerPhone(e.target.value)}
-												placeholder="Ex: (15) 98164-2350"
-												className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 placeholder:text-gray-400"
+												onChange={(e) => {
+													const formatted = formatPhoneInput(e.target.value);
+													setPlayerPhone(formatted);
+												}}
+												placeholder="(11) 99988-7766"
+												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-500"
 												disabled={isReserving}
+												maxLength={15}
 											/>
 										</div>
 									</div>
@@ -831,22 +1139,29 @@ export default function BookingPublic() {
 									<button
 										onClick={handleDirectBooking}
 										disabled={isReserving}
-										className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+										className="w-full bg-gray-900 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
 										{isReserving ? (
 											<>
-												<Loader2 className="w-5 h-5 animate-spin" />
-												Confirmando...
+												<Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+												<span className="text-sm sm:text-base">Confirmando...</span>
 											</>
 										) : (
 											<>
-												<Trophy className="w-5 h-5" />
-												Reservar e Pagar no Balcão
+												<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+												<span className="text-sm sm:text-base">Reservar e Pagar no Balcão</span>
 											</>
 										)}
 									</button>
 
 									<p className="text-xs text-gray-500 text-center">
-										Você paga quando chegar • R$ {selectedSlot.slot.price}
+										Você paga quando chegar • R$ {calculatePrice(
+											selectedSlot.slot.price,
+											selectedSlot.halfHourPrice,
+											bookingDuration
+										).toFixed(2)}
+										{bookingDuration === 90 && selectedSlot.halfHourPrice && (
+											` (${selectedSlot.slot.price.toFixed(2)} + ${selectedSlot.halfHourPrice.toFixed(2)})`
+										)}
 									</p>
 
 									{/* Divider */}
@@ -876,7 +1191,11 @@ export default function BookingPublic() {
 												R${" "}
 												{(configs.deposit_type === "fixed"
 													? configs.deposit_value
-													: selectedSlot.slot.price * (configs.deposit_value / 100)
+													: calculatePrice(
+														selectedSlot.slot.price,
+														selectedSlot.halfHourPrice,
+														bookingDuration
+													) * (configs.deposit_value / 100)
 												).toFixed(2)}
 											</span>
 										</button>
@@ -898,12 +1217,20 @@ export default function BookingPublic() {
 											</div>
 											<div className="text-right">
 												<p className="text-xs text-gray-400 line-through">
-													R$ {selectedSlot.slot.price.toFixed(2)}
+													R$ {calculatePrice(
+														selectedSlot.slot.price,
+														selectedSlot.halfHourPrice,
+														bookingDuration
+													).toFixed(2)}
 												</p>
 												<span className="font-bold text-primary text-lg">
 													R${" "}
 													{(
-														selectedSlot.slot.price *
+														calculatePrice(
+															selectedSlot.slot.price,
+															selectedSlot.halfHourPrice,
+															bookingDuration
+														) *
 														(1 - configs.full_payment_discount_percent / 100)
 													).toFixed(2)}
 												</span>

@@ -3,6 +3,7 @@ import AgendaMaster from "./AgendaMaster";
 import FinanceiroView from "./FinanceiroView";
 import ConfiguracoesView from "./ConfiguracoesView";
 import FolgasView from "./FolgasView";
+import MensalistasView from "./MensalistasView";
 import {
 	Home,
 	Calendar,
@@ -18,8 +19,6 @@ import {
 	User,
 	ChevronLeft,
 	ChevronRight,
-	Megaphone,
-	Share2,
 	Lock,
 	Loader2,
 	Sparkles,
@@ -68,22 +67,37 @@ const formatLocalDate = (date: Date) =>
 	`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 
 const formatDateShort = (dateStr: string) => {
-	const date = new Date(dateStr);
-	const utcDate = new Date(
-		date.getUTCFullYear(),
-		date.getUTCMonth(),
-		date.getUTCDate()
-	);
-	return new Intl.DateTimeFormat("pt-BR", { weekday: "short" })
-		.format(utcDate)
-		.replace(".", "");
+	// Parse a data no formato YYYY-MM-DD corretamente (timezone local)
+	// Usa Date.UTC para evitar problemas de timezone, depois converte para local
+	const [year, month, day] = dateStr.split("-").map(Number);
+	
+	// Cria a data no timezone local explicitamente
+	const date = new Date(year, month - 1, day, 12, 0, 0, 0); // Usa meio-dia para evitar problemas de DST
+	
+	// Retorna o dia da semana abreviado (seg, ter, qua, etc)
+	const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+	const dayOfWeek = date.getDay();
+	return weekdays[dayOfWeek];
 };
 
-const getLast7Days = () => {
+// Retorna os dias da semana atual (segunda a domingo)
+const getCurrentWeekDays = () => {
+	const now = new Date();
+	const day = now.getDay(); // 0 = domingo, 1 = segunda, ..., 6 = sábado
+	
+	// Calcula quantos dias atrás está a segunda-feira
+	// Se hoje é domingo (0), segunda foi há 6 dias
+	// Se hoje é segunda (1), segunda é hoje (0 dias)
+	// Se hoje é terça (2), segunda foi há 1 dia
+	const daysFromMonday = day === 0 ? 6 : day - 1;
+	
+	// Cria uma nova data para segunda-feira (não modifica o objeto original)
+	const mondayDate = now.getDate() - daysFromMonday;
+	const monday = new Date(now.getFullYear(), now.getMonth(), mondayDate, 0, 0, 0, 0);
+	
 	const days = [];
-	for (let i = 6; i >= 0; i--) {
-		const d = new Date();
-		d.setDate(d.getDate() - i);
+	for (let i = 0; i < 7; i++) {
+		const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 0, 0, 0, 0);
 		days.push(formatLocalDate(d));
 	}
 	return days;
@@ -113,32 +127,11 @@ const SidebarFixed = ({
 	const { toast } = useToast();
 	const [checklistOpen, setChecklistOpen] = useState(false);
 
-	const handleShare = async () => {
-		const shareData = {
-			title: "Agende na ArenaSys",
-			text: `Venha jogar na ${userProfile?.tenant_id || "minha ArenaSys"}!`,
-			url: window.location.origin + "/agendar",
-		};
-
-		try {
-			if (navigator.share) {
-				await navigator.share(shareData);
-				return;
-			}
-			await navigator.clipboard.writeText(shareData.url);
-			toast({
-				title: "Link copiado",
-				description: "Cole e compartilhe com seus clientes.",
-			});
-		} catch {
-			// user canceled or unsupported
-		}
-	};
-
 	const menuItems = [
 		{ id: "dashboard", icon: Home, label: "Visão Geral" },
 		{ id: "agenda", icon: Calendar, label: "Reservas" },
 		{ id: "financeiro", icon: BarChart, label: "Financeiro" },
+		{ id: "mensalistas", icon: Trophy, label: "Mensalistas" },
 		{ id: "folgas", icon: Clock, label: "Gerenciar Folgas" },
 	];
 
@@ -195,26 +188,6 @@ const SidebarFixed = ({
 				</div>
 
 				<div className="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
-					<button
-						onClick={handleShare}
-						className={cn(
-							"w-full flex items-center gap-3 px-3 py-3 mb-6 rounded-xl transition-all duration-300 group relative overflow-hidden",
-							"bg-gradient-to-r from-emerald-500 to-emerald-700 hover:to-emerald-600 text-white shadow-lg shadow-emerald-500/20 active:scale-95",
-							collapsed ? "justify-center px-0" : ""
-						)}
-						title="Divulgar ArenaSys">
-						{collapsed ? (
-							<Share2 className="h-5 w-5" />
-						) : (
-							<Megaphone className="h-5 w-5 fill-white/20" />
-						)}
-						{!collapsed && (
-							<span className="text-sm font-bold tracking-wide">
-								Divulgar ArenaSys
-							</span>
-						)}
-					</button>
-
 					{/* Trial Countdown */}
 					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
 
@@ -424,40 +397,40 @@ const ArenaSysStatusHero = ({
 
 	return (
 		<div
-			className={`relative overflow-hidden rounded-3xl bg-[#0F1115]/80 border border-white/5 p-6 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
+			className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#0F1115]/80 border border-white/5 p-4 sm:p-6 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
 			{/* Glow Effect Topo */}
 			<div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-			<div className="relative z-10 flex flex-col items-center text-center space-y-3">
-				<div className="inline-flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+			<div className="relative z-10 flex flex-col items-center text-center space-y-2 sm:space-y-3">
+				<div className="inline-flex items-center gap-2 bg-white/5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/5 shadow-inner">
 					<span
 						className={`h-2 w-2 rounded-full ${statusConfig.color} animate-pulse`}
 					/>
-					<h2 className="text-sm font-medium text-white">
+					<h2 className="text-xs sm:text-sm font-medium text-white">
 						{statusConfig.text}
 					</h2>
 				</div>
-				<div className="inline-flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+				<div className="inline-flex items-center gap-2 bg-white/5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/5 shadow-inner">
 					<span className={`h-2 w-2 rounded-full ${planPill.color}`} />
-					<h3 className="text-xs font-medium text-white">
+					<h3 className="text-[10px] sm:text-xs font-medium text-white">
 						{planPill.text}: <span className="text-gray-300">{planLabel}</span>
 					</h3>
 				</div>
-				<div className="flex gap-8 text-sm text-gray-400 mt-1">
+				<div className="flex gap-4 sm:gap-8 text-xs sm:text-sm text-gray-400 mt-1">
 					<div className="flex flex-col">
-						<span className="text-[10px] uppercase tracking-wider text-gray-600 font-bold">
+						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-600 font-bold">
 							Hoje
 						</span>
-						<span className="text-white font-bold text-xl">
+						<span className="text-white font-bold text-lg sm:text-xl">
 							{formatCurrency(revenueToday)}
 						</span>
 					</div>
 					<div className="w-[1px] bg-white/10" />
 					<div className="flex flex-col">
-						<span className="text-[10px] uppercase tracking-wider text-gray-600 font-bold">
+						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-600 font-bold">
 							Ocupação
 						</span>
-						<span className="text-white font-bold text-xl">
+						<span className="text-white font-bold text-lg sm:text-xl">
 							{occupancyAvg}%
 						</span>
 					</div>
@@ -474,16 +447,16 @@ type MetricPillProps = {
 };
 
 const MetricPill = ({ label, value, icon: Icon }: MetricPillProps) => (
-	<div className="flex flex-col p-4 rounded-2xl bg-[#0F1115]/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all backdrop-blur-md group">
-		<div className="flex justify-between items-start mb-2">
-			<span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
+	<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0F1115]/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all backdrop-blur-md group">
+		<div className="flex justify-between items-start mb-1 sm:mb-2">
+			<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
 				{label}
 			</span>
 			{Icon && (
-				<Icon className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+				<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
 			)}
 		</div>
-		<span className="text-xl font-bold text-white tracking-tight">{value}</span>
+		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate">{value}</span>
 	</div>
 );
 
@@ -493,6 +466,8 @@ export default function DashboardHome() {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [activeView, setActiveView] = useState("dashboard");
+	
+	// Removido: Logs excessivos estavam causando poluição no console
 	const { toast } = useToast();
 	const { tenantId } = useAuth();
 	const {
@@ -691,7 +666,7 @@ export default function DashboardHome() {
 		return () => {
 			cancelled = true;
 		};
-	}, [refetchSubscription, subscription?.status]);
+	}, [refetchSubscription, subscription?.status, toast]);
 
 	const startCheckout = async () => {
 		try {
@@ -803,29 +778,72 @@ export default function DashboardHome() {
 	};
 
 	const stats = useMemo(() => {
-		// Mesma lógica de sempre...
 		const todayStr = formatLocalDate(new Date());
-		const todayBookings = bookings.filter((b) => b.date === todayStr);
+		// Inclui todos os jogos de hoje (exceto cancelados)
+		const todayBookings = bookings.filter(
+			(b) => b.date === todayStr && b.status !== "cancelled"
+		);
+		
 		const monthBookings = bookings.filter((b) => {
 			const d = new Date(b.date + "T00:00:00");
 			const now = new Date();
 			return (
-				d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+				d.getMonth() === now.getMonth() && 
+				d.getFullYear() === now.getFullYear() &&
+				b.status !== "cancelled"
 			);
 		});
 
-		const revenueToday = todayBookings
-			.filter((b) => b.paymentStatus === "paid")
-			.reduce((acc, b) => acc + (b.totalPrice || 0), 0);
-		const revenueMonth = monthBookings
-			.filter((b) => b.paymentStatus === "paid")
-			.reduce((acc, b) => acc + (b.totalPrice || 0), 0);
+		// Receita de hoje: usa paidAmount se disponível, senão totalPrice se pago
+		const revenueToday = todayBookings.reduce((acc, b) => {
+			if (b.paidAmount && b.paidAmount > 0) {
+				return acc + b.paidAmount;
+			}
+			// Verifica se está pago ou se o jogo já aconteceu (in_progress/completed do banco)
+			const statusStr = String(b.status || "");
+			if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+				return acc + (b.totalPrice || 0);
+			}
+			return acc;
+		}, 0);
+		
+		// Receita do mês: mesma lógica
+		const revenueMonth = monthBookings.reduce((acc, b) => {
+			if (b.paidAmount && b.paidAmount > 0) {
+				return acc + b.paidAmount;
+			}
+			// Verifica se está pago ou se o jogo já aconteceu (in_progress/completed do banco)
+			const statusStr = String(b.status || "");
+			if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+				return acc + (b.totalPrice || 0);
+			}
+			return acc;
+		}, 0);
 
-		const chartData = getLast7Days().map((dateStr) => {
-			const total = bookings
-				.filter((b) => b.date === dateStr && b.paymentStatus === "paid")
-				.reduce((acc, b) => acc + (b.totalPrice || 0), 0);
-			return { day: formatDateShort(dateStr), value: total };
+		// Gráfico da semana (segunda a domingo)
+		const weekDays = getCurrentWeekDays();
+		const chartData = weekDays.map((dateStr) => {
+			const dayBookings = bookings.filter(
+			(b) => b.date === dateStr && b.status !== "cancelled"
+			);
+			
+			const total = dayBookings.reduce((acc, b) => {
+				if (b.paidAmount && b.paidAmount > 0) {
+					return acc + b.paidAmount;
+				}
+				// Verifica se está pago ou se o jogo já aconteceu (in_progress/completed do banco)
+				const statusStr = String(b.status || "");
+				if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+					return acc + (b.totalPrice || 0);
+				}
+				return acc;
+			}, 0);
+			
+			return { 
+				day: formatDateShort(dateStr), 
+				value: total,
+				date: dateStr // Mantém a data para debug
+			};
 		});
 
 		const uniqueCourts = Array.from(
@@ -1309,9 +1327,12 @@ export default function DashboardHome() {
 											Performance da Semana
 										</CardTitle>
 									</CardHeader>
-									<CardContent className="h-[250px] -ml-4">
+									<CardContent className="h-[200px] sm:h-[250px] px-2 sm:px-4">
 										<ResponsiveContainer width="100%" height="100%">
-											<AreaChart data={stats.chartData}>
+											<AreaChart 
+												data={stats.chartData}
+												margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
+											>
 												<defs>
 													<linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
 														<stop
@@ -1334,8 +1355,12 @@ export default function DashboardHome() {
 													dataKey="day"
 													axisLine={false}
 													tickLine={false}
-													tick={{ fill: "#666", fontSize: 12 }}
-													dy={10}
+													tick={{ fill: "#999", fontSize: 10 }}
+													height={35}
+													interval={0}
+													angle={0}
+													textAnchor="middle"
+													padding={{ left: 5, right: 5 }}
 												/>
 												<Tooltip
 													contentStyle={{
@@ -1408,6 +1433,11 @@ export default function DashboardHome() {
 					{activeView === "financeiro" && (
 						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
 							<FinanceiroView />
+						</div>
+					)}
+					{activeView === "mensalistas" && (
+						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+							<MensalistasView />
 						</div>
 					)}
 					{activeView === "folgas" && (

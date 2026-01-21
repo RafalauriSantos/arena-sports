@@ -45,6 +45,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AvatarUpload from "@/components/admin/AvatarUpload";
 import { OperatingHoursSettings } from "@/components/settings/OperatingHoursSettings";
 import { CpfCnpjInput } from "@/components/ui/CpfCnpjInput";
+import { formatPhoneInput } from "@/lib/phoneFormat";
+import { formatCep, unformatCep, fetchAddressByCep, isValidCep } from "@/lib/cep";
 
 // --- Componentes Auxiliares ---
 const StatusBadge = ({
@@ -152,11 +154,46 @@ export default function ConfiguracoesView() {
 	);
 	const [startingCheckout, setStartingCheckout] = useState(false);
 	const [syncingCheckout, setSyncingCheckout] = useState(false);
+	const [searchingCep, setSearchingCep] = useState(false);
 	const subscriptionStatusRef = useRef(subscription?.status);
 
 	useEffect(() => {
 		subscriptionStatusRef.current = subscription?.status;
 	}, [subscription?.status]);
+
+	// Função para buscar CEP automaticamente
+	const handleCepSearch = async (cep: string) => {
+		const cleanCep = unformatCep(cep);
+		
+		if (cleanCep.length !== 8) return;
+		
+		setSearchingCep(true);
+		
+		try {
+			const data = await fetchAddressByCep(cleanCep);
+			
+			if (data) {
+				// Atualiza os campos automaticamente
+				updateTenant("street", data.logradouro);
+				updateTenant("neighborhood", data.bairro);
+				updateTenant("city", data.localidade);
+				updateTenant("state", data.uf);
+				
+				toast({
+					title: "CEP encontrado!",
+					description: `${data.logradouro}, ${data.bairro} - ${data.localidade}/${data.uf}`,
+				});
+			}
+		} catch (error) {
+			toast({
+				title: "Erro ao buscar CEP",
+				description: error instanceof Error ? error.message : "Tente novamente.",
+				variant: "destructive",
+			});
+		} finally {
+			setSearchingCep(false);
+		}
+	};
 
 	const computeTrialDaysLeft = () => {
 		if (subscription.status !== "trial") return null;
@@ -573,22 +610,8 @@ export default function ConfiguracoesView() {
 												}
 												className="bg-white/5 border-white/10 text-white min-h-[100px]"
 											/>
-										</div>
-
-										<div className="space-y-2">
-											<Label className="text-gray-300 flex items-center gap-2">
-												<MapPin className="h-4 w-4 text-primary" /> Endereço
-											</Label>
-											<Textarea
-												value={formData.tenant.address}
-												onChange={(e) =>
-													updateTenant("address", e.target.value)
-												}
-												placeholder="Rua, número, bairro, cidade - UF"
-												className="bg-white/5 border-white/10 text-white min-h-[80px]"
-											/>
 											<p className="text-xs text-gray-500">
-												Aparece no calendário público para seus clientes localizarem.
+												Bio curta da arena exibida no calendário público.
 											</p>
 										</div>
 									</div>
@@ -601,11 +624,15 @@ export default function ConfiguracoesView() {
 											<Label>WhatsApp</Label>
 											<Input
 												value={formData.tenant.phone}
-												onChange={(e) => updateTenant("phone", e.target.value)}
+												onChange={(e) => {
+													const formatted = formatPhoneInput(e.target.value);
+													updateTenant("phone", formatted);
+												}}
 												autoComplete="tel"
 												inputMode="numeric"
-												maxLength={13}
-												className="bg-white/5 border-white/10 text-white"
+												maxLength={15}
+												placeholder="(11) 99999-9999"
+												className="bg-white/5 border-white/10 text-white font-medium"
 											/>
 										</div>
 										<div className="space-y-2">
@@ -625,6 +652,126 @@ export default function ConfiguracoesView() {
 											Obrigatório para processar pagamentos via Asaas.
 										</p>
 									</div>
+									</div>
+								</PremiumCard>
+
+								{/* CARD ENDEREÇO */}
+								<PremiumCard
+									title="Localização"
+									description="Endereço exibido no calendário público.">
+									<div className="space-y-4">
+										{/* CEP com busca automática */}
+										<div className="space-y-2">
+											<Label>CEP</Label>
+											<div className="flex gap-2">
+												<Input
+													value={formData.tenant.cep}
+													onChange={(e) => {
+														const formatted = formatCep(e.target.value);
+														updateTenant("cep", formatted);
+														// Busca automaticamente quando completar 8 dígitos
+														if (unformatCep(formatted).length === 8) {
+															handleCepSearch(formatted);
+														}
+													}}
+													placeholder="12345-678"
+													maxLength={9}
+													className="bg-white/5 border-white/10 text-white font-medium"
+													disabled={searchingCep}
+												/>
+												<Button
+													variant="outline"
+													onClick={() => handleCepSearch(formData.tenant.cep)}
+													disabled={searchingCep || !isValidCep(formData.tenant.cep)}
+													className="shrink-0">
+													{searchingCep ? (
+														<Loader2 className="h-4 w-4 animate-spin" />
+													) : (
+														"Buscar"
+													)}
+												</Button>
+											</div>
+										</div>
+
+										{/* Rua e Número */}
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+											<div className="sm:col-span-2 space-y-2">
+												<Label>Rua/Avenida</Label>
+												<Input
+													value={formData.tenant.street}
+													onChange={(e) => updateTenant("street", e.target.value)}
+													placeholder="Av. Paulista"
+													className="bg-white/5 border-white/10 text-white"
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label>Número</Label>
+												<Input
+													value={formData.tenant.number}
+													onChange={(e) => updateTenant("number", e.target.value)}
+													placeholder="1000"
+													className="bg-white/5 border-white/10 text-white"
+												/>
+											</div>
+										</div>
+
+										{/* Complemento */}
+										<div className="space-y-2">
+											<Label>Complemento (opcional)</Label>
+											<Input
+												value={formData.tenant.complement}
+												onChange={(e) => updateTenant("complement", e.target.value)}
+												placeholder="Sala 10, Bloco A, etc"
+												className="bg-white/5 border-white/10 text-white"
+											/>
+										</div>
+
+										{/* Bairro, Cidade, Estado */}
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+											<div className="space-y-2">
+												<Label>Bairro</Label>
+												<Input
+													value={formData.tenant.neighborhood}
+													onChange={(e) => updateTenant("neighborhood", e.target.value)}
+													placeholder="Centro"
+													className="bg-white/5 border-white/10 text-white"
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label>Cidade</Label>
+												<Input
+													value={formData.tenant.city}
+													onChange={(e) => updateTenant("city", e.target.value)}
+													placeholder="São Paulo"
+													className="bg-white/5 border-white/10 text-white"
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label>UF</Label>
+												<Input
+													value={formData.tenant.state}
+													onChange={(e) => updateTenant("state", e.target.value.toUpperCase())}
+													placeholder="SP"
+													maxLength={2}
+													className="bg-white/5 border-white/10 text-white uppercase"
+												/>
+											</div>
+										</div>
+
+										{/* Preview do endereço */}
+										{(formData.tenant.street || formData.tenant.city) && (
+											<div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+												<p className="text-xs text-gray-400 mb-1">Preview:</p>
+												<p className="text-sm text-white font-medium">
+													{formData.tenant.street && `${formData.tenant.street}`}
+													{formData.tenant.number && `, ${formData.tenant.number}`}
+													{formData.tenant.complement && ` - ${formData.tenant.complement}`}
+													{formData.tenant.neighborhood && ` - ${formData.tenant.neighborhood}`}
+													{formData.tenant.city && `, ${formData.tenant.city}`}
+													{formData.tenant.state && `/${formData.tenant.state}`}
+												</p>
+											</div>
+										)}
 									</div>
 								</PremiumCard>
 							</div>
@@ -745,23 +892,47 @@ export default function ConfiguracoesView() {
 													className="bg-white/5 border-white/10 text-white"
 												/>
 											</div>
-											<div className="space-y-2">
-												<Label className="text-xs uppercase text-gray-500">
-													Preço (R$)
-												</Label>
-												<Input
-													type="number"
-													value={court.base_price || ""}
-													onChange={(e) =>
-														updateCourt(
-															index,
-															"base_price",
-															Number(e.target.value) || 0
-														)
-													}
-													placeholder="Ex: 100, 150, 200"
-													className="bg-white/5 border-white/10 text-white"
-												/>
+											<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+												<div className="space-y-2 flex flex-col">
+													<Label className="text-xs uppercase text-gray-500">
+														Preço 1h (R$)
+													</Label>
+													<Input
+														type="number"
+														value={court.base_price || ""}
+														onChange={(e) =>
+															updateCourt(
+																index,
+																"base_price",
+																Number(e.target.value) || 0
+															)
+														}
+														placeholder="Ex: 100, 150, 200"
+														className="bg-white/5 border-white/10 text-white"
+													/>
+												</div>
+												<div className="space-y-2 flex flex-col">
+													<Label className="text-xs uppercase text-gray-500">
+														Meia hora adicional (R$)
+													</Label>
+													<Input
+														type="number"
+														value={court.half_hour_price !== undefined ? court.half_hour_price : ""}
+														onChange={(e) => {
+															const value = e.target.value;
+															updateCourt(
+																index,
+																"half_hour_price",
+																value === "" ? 0 : Number(value) || 0
+															);
+														}}
+														placeholder="Ex: 50, 75, 100"
+														className="bg-white/5 border-white/10 text-white"
+													/>
+													<p className="text-xs text-gray-500 mt-1">
+														Total 1h30: R$ {((court.base_price || 0) + (court.half_hour_price || 0)).toFixed(2)}
+													</p>
+												</div>
 											</div>
 										</CardContent>
 									</Card>
@@ -895,39 +1066,44 @@ export default function ConfiguracoesView() {
 						<PremiumCard
 							title="Preços Dinâmicos"
 							description="IA para ajustar preços.">
-							<div className="flex items-center justify-between">
-								<div className="space-y-1">
-									<Label className="text-white text-base">
-										Ativar Promoção Automática
-									</Label>
-									<p className="text-gray-400 text-sm">
-										Descontos em horários ociosos.
-									</p>
+							<div className="relative opacity-50 pointer-events-none">
+								{/* Overlay com cadeado */}
+								<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-900/50 rounded-xl z-10">
+									<Lock className="h-8 w-8 text-gray-400" />
+									<p className="text-gray-400 font-medium">Em Desenvolvimento</p>
 								</div>
-								<Switch
-									checked={formData.promo.active}
-									onCheckedChange={(checked) => updatePromo("active", checked)}
-									className="data-[state=checked]:bg-primary"
-								/>
-							</div>
-							{formData.promo.active && (
+								
+								{/* Conteúdo original (desabilitado visualmente) */}
+								<div className="flex items-center justify-between">
+									<div className="space-y-1">
+										<Label className="text-white text-base">
+											Ativar Promoção Automática
+										</Label>
+										<p className="text-gray-400 text-sm">
+											Descontos em horários ociosos.
+										</p>
+									</div>
+									<Switch
+										checked={false}
+										disabled
+										className="data-[state=checked]:bg-primary"
+									/>
+								</div>
 								<div className="mt-6 space-y-4 p-4 bg-gray-950/30 rounded-xl border border-white/5">
 									<div className="flex justify-between">
 										<Label className="text-gray-200">Porcentagem</Label>
 										<span className="text-primary font-bold">
-											{formData.promo.discount_percentage}% OFF
+											0% OFF
 										</span>
 									</div>
 									<Slider
-										value={[Number(formData.promo.discount_percentage)]}
+										value={[0]}
 										max={50}
 										step={5}
-										onValueChange={([val]) =>
-											updatePromo("discount_percentage", val)
-										}
+										disabled
 									/>
 								</div>
-							)}
+							</div>
 						</PremiumCard>
 					</TabsContent>
 

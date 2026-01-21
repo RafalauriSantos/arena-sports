@@ -27,6 +27,7 @@ export interface Court {
   id?: string;
   name: string;
   base_price: number;
+  half_hour_price?: number; // Preço da meia hora adicional (1h30)
   active: boolean;
 }
 
@@ -44,6 +45,13 @@ interface TenantData {
   description: string;
   subdomain: string;
   cpf_cnpj: string;
+  cep: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
   settings: Record<string, unknown>;
 }
 
@@ -109,6 +117,13 @@ export function useSettings() {
       description: "",
       subdomain: "",
       cpf_cnpj: "",
+      cep: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      city: "",
+      state: "",
       settings: {},
     } as TenantData,
     courts: [] as Court[],
@@ -175,6 +190,13 @@ export function useSettings() {
             description: tenantRes.data.description || "",
             subdomain: tenantRes.data.subdomain || "",
             cpf_cnpj: tenantRes.data.document || "", // Map from DB column 'document'
+            cep: tenantRes.data.cep || "",
+            street: tenantRes.data.street || "",
+            number: tenantRes.data.number || "",
+            complement: tenantRes.data.complement || "",
+            neighborhood: tenantRes.data.neighborhood || "",
+            city: tenantRes.data.city || "",
+            state: tenantRes.data.state || "",
             settings: tenantRes.data.settings || {},
           },
           courts: Array.isArray(courtsRes.data)
@@ -192,6 +214,7 @@ export function useSettings() {
                     id: typeof c.id === "string" ? c.id : undefined,
                     name: courtName.trim(), // Remove espaços extras
                     base_price: Number(c.base_price ?? 0),
+                    half_hour_price: Number(c.half_hour_price ?? 0) || undefined,
                     active: typeof c.active === "boolean" ? c.active : true,
                   });
                 }
@@ -283,9 +306,15 @@ export function useSettings() {
           subdomain: formData.tenant.subdomain,
           phone: normalizedWhatsApp,
           email: formData.tenant.email,
-          address: formData.tenant.address,
           description: formData.tenant.description,
           cpf_cnpj: formData.tenant.cpf_cnpj, // ✅ CORRETO - coluna cpf_cnpj
+          cep: formData.tenant.cep?.replace(/\D/g, "") || null,
+          street: formData.tenant.street || null,
+          number: formData.tenant.number || null,
+          complement: formData.tenant.complement || null,
+          neighborhood: formData.tenant.neighborhood || null,
+          city: formData.tenant.city || null,
+          state: formData.tenant.state?.toUpperCase() || null,
           settings: updatedSettingsJSON, // <--- SALVA O JSON COM AS REGRAS FINANCEIRAS
         })
         .eq("id", tenantId);
@@ -313,6 +342,7 @@ export function useSettings() {
             .update({
               name: trimmedName,
               base_price: Number(court.base_price),
+              half_hour_price: Number(court.half_hour_price || 0),
               active: true,
             })
             .eq("id", court.id)
@@ -327,6 +357,7 @@ export function useSettings() {
               tenant_id: tenantId,
               name: trimmedName,
               base_price: Number(court.base_price),
+              half_hour_price: Number(court.half_hour_price || 0),
               active: true,
             });
 

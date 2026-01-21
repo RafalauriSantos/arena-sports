@@ -5,6 +5,9 @@ import {
 	CheckCircle,
 	AlertCircle,
 	XCircle,
+	Play,
+	Square,
+	Clock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +30,7 @@ import { ptBR } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { normalizeCustomerPhone } from "@/lib/phone";
+import { formatPhoneInput, unformatPhone } from "@/lib/phoneFormat";
 
 type PaymentStatus = "paid" | "pending" | "deposit";
 
@@ -43,6 +47,9 @@ interface AdminBooking {
 	paymentStatus: PaymentStatus;
 	depositPercent?: number;
 	bookingId: string;
+	startedAt?: string | null;
+	completedAt?: string | null;
+	cancelledAt?: string | null;
 }
 
 type BookingEventAction = "INSERT" | "UPDATE" | "DELETE";
@@ -65,7 +72,8 @@ type BookingEventRow = {
 };
 
 export default function AgendaMaster() {
-	const { bookings, updateBooking, deleteBooking } = useBookings();
+	const context = useBookings();
+	const { bookings, updateBooking, deleteBooking, refreshData } = context;
 	const { toast } = useToast();
 	const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(
 		null
@@ -79,6 +87,47 @@ export default function AgendaMaster() {
 	);
 	const [editedPhone, setEditedPhone] = useState("");
 	const [savingPhone, setSavingPhone] = useState(false);
+	const [elapsedTime, setElapsedTime] = useState<string>("00:00:00");
+
+	// Timer em tempo real para mostrar tempo decorrido do jogo
+	useEffect(() => {
+		if (!selectedBooking?.startedAt || selectedBooking.completedAt) {
+			setElapsedTime("00:00:00");
+			return;
+		}
+
+		const updateTimer = () => {
+			const startTime = new Date(selectedBooking.startedAt!);
+			const now = new Date();
+			const diff = now.getTime() - startTime.getTime();
+
+			if (diff < 0) {
+				setElapsedTime("00:00:00");
+				return;
+			}
+
+			const hours = Math.floor(diff / (1000 * 60 * 60));
+			const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+			const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+			const formatted = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+			setElapsedTime(formatted);
+		};
+
+		// Atualiza imediatamente
+		updateTimer();
+
+		// Atualiza a cada segundo
+		const interval = setInterval(updateTimer, 1000);
+
+		return () => clearInterval(interval);
+	}, [selectedBooking?.startedAt, selectedBooking?.completedAt]);
+
+	// Log quando bookings muda (apenas para debug, pode ser removido depois)
+	useEffect(() => {
+		// Log apenas quando há mudança significativa (nova reserva ou remoção)
+		// Não logar em cada render para evitar poluição
+	}, [bookings]);
 
 	useEffect(() => {
 		if (!isModalOpen || !selectedBooking) return;
@@ -156,8 +205,26 @@ export default function AgendaMaster() {
 
 		const oldStatus = event.old_data?.status;
 		const newStatus = event.new_data?.status;
+		
+		// Mensagens amigáveis para mudanças de status do controle de jogo
 		if (oldStatus && newStatus && oldStatus !== newStatus) {
-			return `Status: ${oldStatus} → ${newStatus}`;
+			if (newStatus === "in_progress") {
+				return "Jogo iniciado";
+			}
+			if (newStatus === "completed") {
+				return "Jogo finalizado";
+			}
+			if (newStatus === "cancelled") {
+				return "Reserva cancelada";
+			}
+			if (oldStatus === "pending_payment" && newStatus === "paid") {
+				return "Pagamento confirmado";
+			}
+			if (oldStatus === "pending" && newStatus === "paid") {
+				return "Pagamento confirmado";
+			}
+			// Para outras mudanças, mostra de forma genérica
+			return `Status alterado: ${oldStatus} → ${newStatus}`;
 		}
 
 		const oldStart = formatMaybeTime(event.old_data?.start_time);
@@ -232,22 +299,27 @@ export default function AgendaMaster() {
 					? "deposit"
 					: "pending";
 
-				return {
-					id: b.id,
-					time: b.time,
-					date: b.date,
-					field: b.fieldName,
-					customerName: b.customerName,
-					phone: b.customerPhone || "",
-					totalAmount,
-					paidAmount,
-					remainingAmount,
-					paymentStatus,
-					depositPercent: b.depositPercent,
-					bookingId: b.id,
-				};
+			return {
+				id: b.id,
+				time: b.time,
+				date: b.date,
+				field: b.fieldName,
+				customerName: b.customerName,
+				phone: b.customerPhone || "",
+				totalAmount,
+				paidAmount,
+				remainingAmount,
+				paymentStatus,
+				depositPercent: b.depositPercent,
+				bookingId: b.id,
+				startedAt: b.startedAt,
+				completedAt: b.completedAt,
+				cancelledAt: b.cancelledAt,
+			};
 			});
 	}, [bookings]);
+
+	// Removido: Logs excessivos estavam causando poluição no console
 
 	const { pastBookings, todayBookings, tomorrowBookings, upcomingBookings } = useMemo(() => {
 		const today = format(new Date(), "yyyy-MM-dd");
@@ -316,6 +388,14 @@ export default function AgendaMaster() {
 							<div>
 								<CardTitle className="text-base md:text-lg text-white">
 									{booking.time}
+									{booking.endTime && booking.startTime && (() => {
+										const duration = Math.round((booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60));
+										if (duration > 60) {
+											const endTimeStr = format(booking.endTime, "HH:mm");
+											return ` - ${endTimeStr}`;
+										}
+										return "";
+									})()}
 									{formattedDate && (
 										<span className="text-xs md:text-sm text-gray-400 ml-2 font-normal">
 											{formattedDate}
@@ -372,7 +452,7 @@ export default function AgendaMaster() {
 													: ""
 										  }`
 										: "Pagar no local";
-								const msg = `Olá ${booking.customerName}! Sua reserva foi registrada.\n\nQuadra: ${booking.field}\nData: ${booking.date}\nHorário: ${booking.time}\nPagamento: ${paymentLabel}\n\nQualquer ajuste é só responder por aqui.`;
+								const msg = `Ola *${booking.customerName}*! Sua reserva foi registrada.\n\n*Quadra:* ${booking.field}\n*Data:* ${booking.date}\n*Horario:* ${booking.time}\n*Pagamento:* ${paymentLabel}\n\nQualquer ajuste e so responder por aqui.`;
 								window.open(
 									`https://wa.me/55${booking.phone}?text=${encodeURIComponent(
 										msg
@@ -418,6 +498,79 @@ export default function AgendaMaster() {
 		setIsModalOpen(false);
 	};
 
+	const handleStartGame = async () => {
+		if (!selectedBooking) return;
+
+		const startTime = new Date().toISOString();
+
+		try {
+			// Usa a função SQL que contorna a constraint e garante consistência
+			const { error } = await supabase.rpc("fn_start_booking", {
+				p_booking_id: selectedBooking.bookingId,
+			});
+
+			if (error) throw error;
+
+			// Atualiza o estado local imediatamente para o timer começar
+			setSelectedBooking({
+				...selectedBooking,
+				startedAt: startTime,
+			});
+
+			toast({
+				title: "🏁 Jogo iniciado!",
+				description: `${selectedBooking.field} - ${selectedBooking.time}`,
+			});
+
+			// Atualiza o contexto em background
+			refreshData();
+		} catch (error) {
+			console.error("Erro ao iniciar jogo:", error);
+			toast({
+				title: "Erro ao iniciar jogo",
+				description: error instanceof Error ? error.message : "Tente novamente.",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleCompleteGame = async () => {
+		if (!selectedBooking) return;
+
+		const completeTime = new Date().toISOString();
+
+		try {
+			// Usa a função SQL que contorna a constraint e garante consistência
+			const { error } = await supabase.rpc("fn_complete_booking", {
+				p_booking_id: selectedBooking.bookingId,
+			});
+
+			if (error) throw error;
+
+			// Atualiza o estado local imediatamente para parar o timer
+			setSelectedBooking({
+				...selectedBooking,
+				completedAt: completeTime,
+			});
+
+			toast({
+				title: "✅ Jogo finalizado!",
+				description: `${selectedBooking.field} - ${selectedBooking.time}`,
+			});
+
+			// Atualiza o contexto
+			await refreshData();
+			setIsModalOpen(false);
+		} catch (error) {
+			console.error(error);
+			toast({
+				title: "Erro ao finalizar jogo",
+				description: "Tente novamente.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	const handleCancelBooking = () => {
 		if (!selectedBooking) return;
 
@@ -438,13 +591,18 @@ export default function AgendaMaster() {
 				selectedBooking.paymentStatus === "paid"
 					? "Pago"
 					: selectedBooking.paymentStatus === "deposit"
-					? `Sinal${
-							selectedBooking.depositPercent
-								? ` (${selectedBooking.depositPercent}%)`
-								: ""
-					  }`
+					? `Sinal de ${selectedBooking.depositPercent || 0}%`
 					: "Pagar no local";
-			const msg = `Olá ${selectedBooking.customerName}! Sua reserva foi registrada.\n\nQuadra: ${selectedBooking.field}\nData: ${selectedBooking.date}\nHorário: ${selectedBooking.time}\nPagamento: ${paymentLabel}\n\nQualquer ajuste é só responder por aqui.`;
+			const msg = `*Reserva Confirmada!*
+
+Ola *${selectedBooking.customerName}*!
+
+*Quadra:* ${selectedBooking.field}
+*Data:* ${selectedBooking.date}
+*Horario:* ${selectedBooking.time}
+*Pagamento:* ${paymentLabel}
+
+Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			window.open(
 				`https://wa.me/55${selectedBooking.phone}?text=${encodeURIComponent(
 					msg
@@ -459,7 +617,7 @@ export default function AgendaMaster() {
 		setSavingPhone(true);
 		try {
 			await updateBooking(selectedBooking.bookingId, {
-				customerPhone: editedPhone,
+				customerPhone: unformatPhone(editedPhone),
 			});
 			toast({
 				title: "Telefone atualizado",
@@ -591,47 +749,56 @@ export default function AgendaMaster() {
 			{/* Detail Modal */}
 			{selectedBooking && (
 				<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-					<DialogContent className="sm:max-w-[500px]">
+					<DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] flex flex-col p-4 sm:p-6">
 						<DialogHeader>
-							<DialogTitle className="text-2xl">
-								{selectedBooking.time} - {selectedBooking.field}
+							<DialogTitle className="text-lg sm:text-2xl">
+								{selectedBooking.time}
+								{selectedBooking.endTime && selectedBooking.startTime && (() => {
+									const duration = Math.round((selectedBooking.endTime.getTime() - selectedBooking.startTime.getTime()) / (1000 * 60));
+									if (duration > 60) {
+										const endTimeStr = format(selectedBooking.endTime, "HH:mm");
+										return ` - ${endTimeStr}`;
+									}
+									return "";
+								})()} - {selectedBooking.field}
 							</DialogTitle>
-							<DialogDescription>
+							<DialogDescription className="text-xs sm:text-sm">
 								Detalhes completos do agendamento
 							</DialogDescription>
 						</DialogHeader>
 
-						<div className="space-y-4 py-4">
+						<div className="space-y-4 py-4 overflow-y-auto flex-1 min-h-0">
 							<div>
-								<h4 className="text-sm font-medium text-muted-foreground mb-1">
+								<h4 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">
 									Cliente
 								</h4>
-								<p className="text-lg font-bold">
+								<p className="text-base sm:text-lg font-bold">
 									{selectedBooking.customerName}
 								</p>
 							</div>
 
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div>
 									<h4 className="text-sm font-medium text-muted-foreground mb-1">
-										Telefone
+										Telefone (WhatsApp)
 									</h4>
 									<div className="space-y-2">
 										<Label htmlFor="editPhone" className="sr-only">
-											Telefone
+											Telefone (WhatsApp)
 										</Label>
 										<Input
 											id="editPhone"
-											placeholder="11999999999"
+											placeholder="(11) 99999-9999"
 											autoComplete="tel"
 											inputMode="numeric"
-											maxLength={13}
+											maxLength={15}
 											required
 											value={editedPhone}
 											onChange={(e) => {
-												const digits = normalizeCustomerPhone(e.target.value);
-												setEditedPhone(digits.slice(0, 11));
+												const formatted = formatPhoneInput(e.target.value);
+												setEditedPhone(formatted);
 											}}
+											className="bg-white text-gray-900 font-medium"
 										/>
 									</div>
 								</div>
@@ -732,10 +899,10 @@ export default function AgendaMaster() {
 							</div>
 						</div>
 
-						<DialogFooter className="flex-col gap-2 sm:flex-col">
+						<DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end flex-shrink-0 border-t pt-4 mt-4">
 							<Button
-								size="lg"
-								className="w-full"
+								size="default"
+								className="w-full sm:w-auto"
 								disabled={savingPhone}
 								onClick={handleSavePhone}>
 								{savingPhone ? "Salvando..." : "Salvar telefone"}
@@ -744,14 +911,60 @@ export default function AgendaMaster() {
 							{selectedBooking.paymentStatus !== "paid" &&
 								selectedBooking.remainingAmount > 0 && (
 									<Button
-										size="lg"
-										className="w-full gap-2 glow-primary"
+										size="default"
+										className="w-full sm:w-auto gap-2 glow-primary"
 										onClick={handleConfirmPayment}>
-										<CheckCircle className="h-5 w-5" />
-										Confirmar Pagamento Total (R${" "}
-										{selectedBooking.totalAmount.toFixed(2)})
+										<CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+										<span className="text-sm sm:text-base">Confirmar Pagamento Total (R${" "}
+										{selectedBooking.totalAmount.toFixed(2)})</span>
 									</Button>
 								)}
+
+							{/* Controle de Jogo: Iniciar/Finalizar */}
+							{!selectedBooking.completedAt && !selectedBooking.cancelledAt && (
+								<div className="w-full space-y-2 pt-2 border-t">
+									<h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+										<Clock className="h-4 w-4" />
+										Controle do Jogo
+									</h4>
+									
+									{selectedBooking.completedAt ? (
+										<div className="flex items-center gap-2 text-sm text-green-600">
+											<CheckCircle className="h-4 w-4" />
+											Jogo finalizado!
+										</div>
+									) : selectedBooking.startedAt ? (
+										<div className="space-y-2">
+											{/* Timer compacto */}
+											<div className="flex items-center justify-between gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+												<div className="flex items-center gap-2">
+													<Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-pulse" />
+													<span className="text-xs text-muted-foreground">Tempo decorrido:</span>
+												</div>
+												<p className="text-lg font-mono font-bold text-blue-600 dark:text-blue-400">
+													{elapsedTime}
+												</p>
+											</div>
+											
+										<Button
+											size="default"
+											className="w-full gap-2 bg-green-600 hover:bg-green-700 text-sm sm:text-base"
+											onClick={handleCompleteGame}>
+												<Square className="h-4 w-4" />
+												Finalizar Jogo
+											</Button>
+										</div>
+									) : (
+										<Button
+											size="default"
+											className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
+											onClick={handleStartGame}>
+											<Play className="h-5 w-5" />
+											Iniciar Jogo
+										</Button>
+									)}
+								</div>
+							)}
 
 							<div className="grid grid-cols-2 gap-2 w-full">
 								<Button

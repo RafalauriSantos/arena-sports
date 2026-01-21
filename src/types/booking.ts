@@ -23,6 +23,9 @@ export interface Booking {
   players?: string[];
   createdAt?: string;
   courtName?: string; // Adicionado para compatibilidade com o front antigo
+  startedAt?: string | null; // Quando o jogo começou
+  completedAt?: string | null; // Quando o jogo terminou
+  cancelledAt?: string | null; // Quando foi cancelado
 }
 
 export interface TimeSlot {

@@ -10,6 +10,7 @@ type CourtRow = {
 
 type BookingRow = {
   total_price: number | null;
+  paid_amount: number | null;
   status: string | null;
   start_time: string;
   court_id: string | null;
@@ -57,6 +58,23 @@ export function useDashboardMetrics(tenantId?: string) {
   const [agendaSlots, setAgendaSlots] = useState<AgendaSlotWithCourt[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Função para obter o início da semana (segunda-feira)
+  const getStartOfWeek = (date: Date): Date => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Ajusta para segunda-feira
+    return new Date(d.setDate(diff));
+  };
+
+  // Função para obter o fim da semana (domingo)
+  const getEndOfWeek = (date: Date): Date => {
+    const start = getStartOfWeek(date);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6); // Adiciona 6 dias para chegar no domingo
+    end.setHours(23, 59, 59, 999);
+    return end;
+  };
+
   const fetchMetrics = useCallback(async () => {
     if (!tenantId) return;
 
@@ -67,10 +85,12 @@ export function useDashboardMetrics(tenantId?: string) {
     const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
     const endOfDay = new Date(new Date().setHours(23, 59, 59, 999)).toISOString();
 
-    // Data de 7 dias atrás para o gráfico
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const startOfSevenDays = sevenDaysAgo.toISOString();
+    // Semana completa: segunda a domingo da semana atual
+    const startOfWeek = getStartOfWeek(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = getEndOfWeek(now);
+    const startOfWeekISO = startOfWeek.toISOString();
+    const endOfWeekISO = endOfWeek.toISOString();
 
     try {
       // 0) Courts (base para ocupação e agenda)
@@ -82,67 +102,124 @@ export function useDashboardMetrics(tenantId?: string) {
       if (courtsError) throw courtsError;
 
       // 1) Métricas de Reservas (Hoje)
+      // Inclui todos os jogos do dia: pending, paid, in_progress, completed
       const { data: bookingsToday, error: bookingsTodayError } = await supabase
         .from("bookings")
-        .select("total_price, status, start_time, court_id")
+        .select("total_price, paid_amount, status, start_time, court_id")
         .eq("tenant_id", tenantId)
         .gte("start_time", startOfDay)
-        .lte("start_time", endOfDay);
+        .lte("start_time", endOfDay)
+        .neq("status", "cancelled"); // Exclui cancelados
       if (bookingsTodayError) throw bookingsTodayError;
 
       const today = (bookingsToday as BookingRow[] | null) ?? [];
-      const totalPaidToday = today
-        .filter((b) => b.status === "paid")
-        .reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0);
+      
+      // Receita de hoje: usa paid_amount se disponível, senão total_price se status = paid
+      const totalPaidToday = today.reduce((acc, curr) => {
+        // Se tem paid_amount, usa ele (já foi pago parcial ou total)
+        if (curr.paid_amount != null && curr.paid_amount > 0) {
+          return acc + Number(curr.paid_amount);
+        }
+        // Se status é paid mas não tem paid_amount, usa total_price
+        if (curr.status === "paid") {
+          return acc + (Number(curr.total_price) || 0);
+        }
+        // Se status é in_progress ou completed, considera como pago (já aconteceu)
+        if (curr.status === "in_progress" || curr.status === "completed") {
+          return acc + (Number(curr.total_price) || 0);
+        }
+        return acc;
+      }, 0);
+      
       setRevenueToday(totalPaidToday);
+      
+      // Jogos de hoje: todos exceto cancelados
       setScheduledGames(today.length);
 
+      // Receita pendente: apenas pending sem pagamento
       const pending = today
-        .filter((b) => b.status === "pending")
+        .filter((b) => b.status === "pending" || b.status === "pending_payment")
+        .filter((b) => !b.paid_amount || b.paid_amount === 0)
         .reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0);
       setPendingRevenue(pending);
 
-      // 2) Receita dos Últimos 7 Dias (Gráfico)
+      // 2) Receita da Semana Completa (Segunda a Domingo) - Gráfico
       const { data: weeklyData, error: weeklyError } = await supabase
         .from("bookings")
-        .select("total_price, start_time, status")
+        .select("total_price, paid_amount, start_time, status")
         .eq("tenant_id", tenantId)
-        .gte("start_time", startOfSevenDays)
-        .eq("status", "paid");
+        .gte("start_time", startOfWeekISO)
+        .lte("start_time", endOfWeekISO)
+        .neq("status", "cancelled"); // Exclui cancelados
       if (weeklyError) throw weeklyError;
 
-      const week = (weeklyData as Array<Pick<BookingRow, "total_price" | "start_time">> | null) ?? [];
+      const week = (weeklyData as BookingRow[] | null) ?? [];
+      
+      // Agrupa por dia da semana
       const grouped = week.reduce((acc: Record<string, number>, curr) => {
         const date = toLocalDateStr(curr.start_time);
-        acc[date] = (acc[date] || 0) + (Number(curr.total_price) || 0);
+        
+        // Calcula o valor pago: usa paid_amount se disponível, senão total_price se pago
+        let amount = 0;
+        if (curr.paid_amount != null && curr.paid_amount > 0) {
+          amount = Number(curr.paid_amount);
+        } else if (curr.status === "paid" || curr.status === "in_progress" || curr.status === "completed") {
+          amount = Number(curr.total_price) || 0;
+        }
+        
+        acc[date] = (acc[date] || 0) + amount;
         return acc;
       }, {});
-      const chartData = Object.keys(grouped)
-        .sort()
-        .map((date) => ({ date, amount: grouped[date] }));
-      setWeeklyRevenue(chartData);
+      
+      // Preenche todos os dias da semana (segunda a domingo) mesmo sem dados
+      const weekDays: { date: string; amount: number }[] = [];
+      const currentDate = new Date(startOfWeek);
+      for (let i = 0; i < 7; i++) {
+        const dateStr = `${currentDate.getFullYear()}-${pad2(currentDate.getMonth() + 1)}-${pad2(currentDate.getDate())}`;
+        weekDays.push({
+          date: dateStr,
+          amount: grouped[dateStr] || 0
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      setWeeklyRevenue(weekDays);
 
       // 3) Agenda Visual e Ocupação (gerada a partir de courts + bookings)
+      // Busca todos os bookings da semana para calcular ocupação
+      const { data: weekBookings, error: weekBookingsError } = await supabase
+        .from("bookings")
+        .select("court_id, start_time, status")
+        .eq("tenant_id", tenantId)
+        .gte("start_time", startOfWeekISO)
+        .lte("start_time", endOfWeekISO)
+        .neq("status", "cancelled");
+      if (weekBookingsError) throw weekBookingsError;
+      
       const courts = ((courtsData as CourtRow[] | null) ?? []).filter((c) => c.active);
+      
+      // Lookup de horários reservados de hoje
       const bookedLookup = new Set(
         today
           .filter((b) => !!b.court_id)
           .map((b) => `${b.court_id}-${toLocalTimeStr(b.start_time)}`)
       );
+      
+      // Lookup de horários reservados da semana (para ocupação)
+      const weekBookedLookup = new Set(
+        (weekBookings as Array<{ court_id: string | null; start_time: string }> | null) ?? []
+          .filter((b) => !!b.court_id)
+          .map((b) => `${b.court_id}-${toLocalDateStr(b.start_time)}-${toLocalTimeStr(b.start_time)}`)
+      );
 
       const generatedAgenda: AgendaSlotWithCourt[] = [];
       const occupancyData: CourtOccupancy[] = [];
 
+      // Agenda de hoje
       courts.forEach((court) => {
-        let total = 0;
-        let occupied = 0;
-
         for (let hour = OPENING_HOUR; hour <= CLOSING_HOUR; hour++) {
           const time = `${hour.toString().padStart(2, "0")}:00`;
-          total += 1;
-
           const isReserved = bookedLookup.has(`${court.id}-${time}`);
-          if (isReserved) occupied += 1;
 
           generatedAgenda.push({
             id: `${court.id}-${todayDateStr}-${time}`,
@@ -154,13 +231,35 @@ export function useDashboardMetrics(tenantId?: string) {
             courts: { name: court.name },
           });
         }
+      });
+      
+      // Taxa de ocupação da semana (segunda a domingo)
+      courts.forEach((court) => {
+        let totalSlotsWeek = 0;
+        let occupiedSlotsWeek = 0;
+
+        // Calcula para cada dia da semana
+        const currentDate = new Date(startOfWeek);
+        for (let day = 0; day < 7; day++) {
+          const dateStr = `${currentDate.getFullYear()}-${pad2(currentDate.getMonth() + 1)}-${pad2(currentDate.getDate())}`;
+          
+          for (let hour = OPENING_HOUR; hour <= CLOSING_HOUR; hour++) {
+            const time = `${hour.toString().padStart(2, "0")}:00`;
+            totalSlotsWeek += 1;
+            
+            const isReserved = weekBookedLookup.has(`${court.id}-${dateStr}-${time}`);
+            if (isReserved) occupiedSlotsWeek += 1;
+          }
+          
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
 
         occupancyData.push({
           courtId: court.id,
           courtName: court.name,
-          totalSlots: total,
-          occupiedSlots: occupied,
-          occupancyRate: total > 0 ? Math.round((occupied / total) * 100) : 0,
+          totalSlots: totalSlotsWeek,
+          occupiedSlots: occupiedSlotsWeek,
+          occupancyRate: totalSlotsWeek > 0 ? Math.round((occupiedSlotsWeek / totalSlotsWeek) * 100) : 0,
         });
       });
 

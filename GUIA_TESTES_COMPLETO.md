@@ -1,7 +1,11 @@
 # 🧪 Guia Completo de Testes - Arena Sports
 
-**Última atualização:** 2026-01-18  
-**Status:** 🟢 97% dos testes automatizados passando (32/33)
+**Última atualização:** 2026-01-20  
+**Status:** 🟢 97% dos testes automatizados passando (32/33)  
+**Novidades:**  
+- ✅ Migration de campos de contato (phone, email, description)  
+- ✅ Sistema de Check-in/Check-out implementado  
+- ✅ Mensagens WhatsApp modernizadas com emojis
 
 ---
 
@@ -27,17 +31,21 @@
 
 ## 🔴 Testes Prioritários Restantes
 
-### 1. WhatsApp Integration (30min)
+### 1. WhatsApp Integration (30min) - ✅ MIGRATION APLICADA
+- [ ] Cadastrar telefone do admin em Configurações
 - [ ] Link gerado corretamente
 - [ ] Mensagem formatada (nome, data, hora, quadra)
 - [ ] Caracteres especiais tratados
 - [ ] Abre WhatsApp Web/App
 
 **Como testar:**
-1. Criar uma reserva no admin
-2. Clicar no botão de WhatsApp
-3. Verificar se a mensagem está formatada
-4. Confirmar que abre o app corretamente
+1. Login → Configurações → Arena
+2. Preencher WhatsApp: `11999887766`
+3. Salvar configurações
+4. Criar uma reserva no admin
+5. Clicar no botão de WhatsApp
+6. Verificar se a mensagem está formatada
+7. Confirmar que abre o app corretamente
 
 ---
 

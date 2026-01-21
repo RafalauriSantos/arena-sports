@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { normalizeCustomerPhone, isValidCustomerPhone } from "@/lib/phone";
+import { formatPhoneInput, unformatPhone } from "@/lib/phoneFormat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookings } from "@/contexts/BookingsContext";
 
@@ -43,6 +44,7 @@ interface Court {
 	id: string;
 	name: string;
 	base_price: number;
+	half_hour_price?: number;
 }
 
 // Lista de horários simples para Admin (07:00 as 23:00)
@@ -86,7 +88,7 @@ export function NewBookingModal({
 
 		const { data, error } = await supabase
 			.from("courts")
-			.select("id, name, base_price")
+			.select("id, name, base_price, half_hour_price")
 			.eq("tenant_id", currentTenantId)
 			.eq("active", true);
 
@@ -109,6 +111,7 @@ export function NewBookingModal({
 		phone: "",
 		paymentStatus: "pending" as "paid" | "pending" | "deposit",
 		depositPercent: 30,
+		duration: 60 as 60 | 90, // Duração em minutos: 60 (1h) ou 90 (1h30)
 	});
 
 	const isBookingOverlapError = (err: unknown) => {
@@ -138,7 +141,7 @@ export function NewBookingModal({
 			return;
 		}
 
-		const phoneDigits = normalizeCustomerPhone(formData.phone);
+		const phoneDigits = unformatPhone(formData.phone);
 		if (!phoneDigits) {
 			toast({
 				title: "Telefone obrigatório",
@@ -161,30 +164,40 @@ export function NewBookingModal({
 
 		try {
 			// 2. Preparar Dados para o Supabase
-			// Formatar Data/Hora para ISO (YYYY-MM-DDTHH:MM:SS)
-			const startDateTime = `${formData.date}T${formData.time}:00`;
+			// Cria Date object no timezone local
+			const [year, month, day] = formData.date.split('-').map(Number);
+			const [hour, minute] = formData.time.split(':').map(Number);
+			
+			const startDateObj = new Date(year, month - 1, day, hour, minute, 0);
+			const endDateObj = new Date(startDateObj.getTime() + formData.duration * 60 * 1000);
+			
+			// Obtém offset do timezone local
+			const timezoneOffset = startDateObj.getTimezoneOffset();
+			const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+			const offsetMinutes = Math.abs(timezoneOffset) % 60;
+			const offsetSign = timezoneOffset <= 0 ? '+' : '-';
+			const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+			
+			// Formata timestamp com timezone local explícito
+			const formatWithTimezone = (date: Date) => {
+				const y = date.getFullYear();
+				const m = String(date.getMonth() + 1).padStart(2, '0');
+				const d = String(date.getDate()).padStart(2, '0');
+				const h = String(date.getHours()).padStart(2, '0');
+				const min = String(date.getMinutes()).padStart(2, '0');
+				const s = String(date.getSeconds()).padStart(2, '0');
+				return `${y}-${m}-${d} ${h}:${min}:${s}${timezoneString}`;
+			};
+			
+			const startDateTime = formatWithTimezone(startDateObj);
+			const endDateTime = formatWithTimezone(endDateObj);
 
-			// Calculando horário de fim (assumindo 1 hora de jogo padrão)
-			const startDateObj = new Date(startDateTime);
-			const endDateObj = new Date(startDateObj.getTime() + 60 * 60 * 1000);
-			const endDateTime = endDateObj.toISOString();
-
-			// Pegar preço da quadra selecionada
+			// Pegar preço da quadra selecionada e calcular baseado na duração
 			const selectedCourt = courts.find((c) => c.id === formData.fieldId);
-			const price = selectedCourt?.base_price || 0;
+			const basePrice = selectedCourt?.base_price || 0;
+			const price = basePrice * (formData.duration / 60); // Preço proporcional à duração
 
-			const depositPercent = Number(formData.depositPercent);
-			if (formData.paymentStatus === "deposit") {
-				if (
-					!Number.isFinite(depositPercent) ||
-					depositPercent <= 0 ||
-					depositPercent > 100
-				) {
-					throw new Error("Percentual do sinal inválido (1 a 100). ");
-				}
-			}
-
-			// Pegar o ID do Tenant do usuário logado (Segurança)
+			// Pegar o ID do Tenant do usuário logado (Segurança) - PRIMEIRO!
 			const {
 				data: { user },
 			} = await supabase.auth.getUser();
@@ -197,6 +210,33 @@ export function NewBookingModal({
 				.single();
 
 			if (!profile?.tenant_id) throw new Error("Empresa não identificada.");
+
+			// ✅ VALIDAÇÃO CRÍTICA: Verifica se há conflito usando intervalo (considera duração)
+			const { data: conflictCheck } = await supabase
+				.from("bookings")
+				.select("id, start_time, end_time")
+				.eq("tenant_id", profile.tenant_id)
+				.eq("court_id", formData.fieldId)
+				.in("status", ["pending", "paid", "pending_payment", "confirmed", "in_progress"])
+				.is("cancelled_at", null)
+				.lt("start_time", endDateTime) // Reserva começa antes do nosso fim
+				.gt("end_time", startDateTime) // Reserva termina depois do nosso início
+				.maybeSingle();
+
+			if (conflictCheck) {
+				throw new Error("Este horário já está reservado ou conflita com outra reserva. Escolha outro horário.");
+			}
+
+			const depositPercent = Number(formData.depositPercent);
+			if (formData.paymentStatus === "deposit") {
+				if (
+					!Number.isFinite(depositPercent) ||
+					depositPercent <= 0 ||
+					depositPercent > 100
+				) {
+					throw new Error("Percentual do sinal inválido (1 a 100). ");
+				}
+			}
 
 			// 3. INSERT na tabela 'bookings'
 			const isPaidFull = formData.paymentStatus === "paid";
@@ -212,8 +252,8 @@ export function NewBookingModal({
 				court_id: formData.fieldId,
 				customer_name: formData.customerName,
 				customer_phone: phoneDigits,
-				start_time: new Date(startDateTime).toISOString(), // Garante formato UTC correto
-				end_time: endDateTime,
+				start_time: startDateTime, // TIMESTAMPTZ com timezone local
+				end_time: endDateTime, // TIMESTAMPTZ com timezone local
 				total_price: price,
 				paid_amount: paidAmount,
 				deposit_percent: isDeposit ? depositPercent : null,
@@ -236,15 +276,25 @@ export function NewBookingModal({
 				formData.paymentStatus === "paid"
 					? "Pago"
 					: formData.paymentStatus === "deposit"
-					? `Sinal (${Number(formData.depositPercent) || 0}%)`
+					? `Sinal de ${Number(formData.depositPercent) || 0}%`
 					: "Pagar no local";
-			const msg = `Olá ${
-				formData.customerName
-			}! Sua reserva foi registrada.\n\nQuadra: ${
-				selectedCourt?.name || "Quadra"
-			}\nData: ${formData.date}\nHorário: ${
-				formData.time
-			}\nPagamento: ${paymentLabel}\n\nQualquer ajuste é só responder por aqui.`;
+			// Calcula horário de término
+			const [startHour, startMin] = formData.time.split(":").map(Number);
+			const endDate = new Date(formData.date + "T" + formData.time);
+			endDate.setMinutes(endDate.getMinutes() + formData.duration);
+			const endTime = `${endDate.getHours().toString().padStart(2, "0")}:${endDate.getMinutes().toString().padStart(2, "0")}`;
+			const durationText = formData.duration === 90 ? "1h30" : "1h";
+
+			const msg = `*Reserva Confirmada!*
+
+Ola *${formData.customerName}*! Sua reserva foi registrada com sucesso.
+
+*Quadra:* ${selectedCourt?.name || "Quadra"}
+*Data:* ${formData.date}
+*Horario:* ${formData.time} - ${endTime} (${durationText})
+*Pagamento:* ${paymentLabel}
+
+Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			window.open(
 				`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(msg)}`,
 				"_blank"
@@ -287,19 +337,19 @@ export function NewBookingModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[500px]">
+			<DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
 				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						<Plus className="h-5 w-5 text-primary" />
+					<DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+						<Plus className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
 						Novo Agendamento
 					</DialogTitle>
-					<DialogDescription>
+					<DialogDescription className="text-xs sm:text-sm">
 						Insira os dados para reservar um horário manualmente.
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
-					<div className="grid grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="date">Data</Label>
 							<Input
@@ -338,26 +388,59 @@ export function NewBookingModal({
 						</div>
 					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="time">Horário de Início</Label>
-						<Select
-							value={formData.time}
-							onValueChange={(value) =>
-								setFormData({ ...formData, time: value })
-							}
-							disabled={!formData.date}>
-							<SelectTrigger>
-								<SelectValue placeholder="Escolha a hora..." />
-							</SelectTrigger>
-							<SelectContent className="max-h-[200px]">
-								{HOURS.map((time) => (
-									<SelectItem key={time} value={time}>
-										{time}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label htmlFor="time">Horário de Início</Label>
+							<Select
+								value={formData.time}
+								onValueChange={(value) =>
+									setFormData({ ...formData, time: value })
+								}
+								disabled={!formData.date}>
+								<SelectTrigger>
+									<SelectValue placeholder="Escolha a hora..." />
+								</SelectTrigger>
+								<SelectContent className="max-h-[200px]">
+									{HOURS.map((time) => (
+										<SelectItem key={time} value={time}>
+											{time}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="space-y-2">
+							<Label>Duração</Label>
+							<Select
+								value={formData.duration.toString()}
+								onValueChange={(value) =>
+									setFormData({ ...formData, duration: Number(value) as 60 | 90 })
+								}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="60">1 hora</SelectItem>
+									<SelectItem value="90">1h30</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
+
+					{formData.fieldId && formData.duration && (
+						<div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
+							Preço: R$ {(() => {
+								const selectedCourt = courts.find((c) => c.id === formData.fieldId);
+								const basePrice = selectedCourt?.base_price || 0;
+								const halfHourPrice = selectedCourt?.half_hour_price || 0;
+								const finalPrice = formData.duration === 90 
+									? basePrice + halfHourPrice 
+									: basePrice;
+								return finalPrice.toFixed(2);
+							})()} ({formData.duration === 90 ? "1h30" : "1h"})
+						</div>
+					)}
 
 					<div className="space-y-2">
 						<Label htmlFor="customerName">Nome do Cliente / Time</Label>
@@ -373,20 +456,20 @@ export function NewBookingModal({
 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="phone">Telefone *</Label>
+							<Label htmlFor="phone">Telefone (WhatsApp) *</Label>
 							<Input
 								id="phone"
-								placeholder="11999999999"
+								placeholder="(11) 99999-9999"
 								autoComplete="tel"
 								inputMode="numeric"
-								maxLength={13}
+								maxLength={15}
 								required
 								value={formData.phone}
 								onChange={(e) => {
-									const digits = normalizeCustomerPhone(e.target.value);
-									// Limite: DDD + número (11)
-									setFormData({ ...formData, phone: digits.slice(0, 11) });
+									const formatted = formatPhoneInput(e.target.value);
+									setFormData({ ...formData, phone: formatted });
 								}}
+								className="bg-white text-gray-900 font-medium"
 							/>
 						</div>
 
