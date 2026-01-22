@@ -188,6 +188,7 @@ const fallbackOnboardUser = async (user: User, businessName: string) => {
 				business_name: businessName,
 				subdomain: candidateSubdomain,
 				email: userEmail, // Preencher email automaticamente
+				cpf_cnpj: null, // Garantir que cpf_cnpj seja null (não string vazia)
 			})
 			.select("id")
 			.single();

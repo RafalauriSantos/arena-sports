@@ -17,10 +17,14 @@ export default defineConfig(({ mode }) => ({
     // but only register SW in production (see `src/main.tsx`).
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: null,
+      injectRegister: null, // Não injetar automaticamente (usamos manualmente no main.tsx)
       devOptions: {
-        enabled: true,
+        enabled: false, // Desabilitar PWA em dev para evitar problemas
+        type: 'module',
       },
+      includeAssets: ['favicon.ico', 'placeholder.svg'],
+      strategies: 'generateSW', // Gerar service worker
+      filename: 'sw.js',
       manifest: {
         name: 'ArenaSys',
         short_name: 'ArenaSys',

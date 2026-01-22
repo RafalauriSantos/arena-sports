@@ -189,7 +189,7 @@ export function useSettings() {
             address: tenantRes.data.address || "",
             description: tenantRes.data.description || "",
             subdomain: tenantRes.data.subdomain || "",
-            cpf_cnpj: tenantRes.data.document || "", // Map from DB column 'document'
+            cpf_cnpj: tenantRes.data.cpf_cnpj || "", // Usar coluna correta cpf_cnpj
             cep: tenantRes.data.cep || "",
             street: tenantRes.data.street || "",
             number: tenantRes.data.number || "",
@@ -285,9 +285,14 @@ export function useSettings() {
         throw new Error("WhatsApp inválido. Use DDD + número (10/11 dígitos) ou 55 + DDD + número.");
       }
 
-      // Validate CPF/CNPJ
-      const cpfCnpj = formData.tenant.cpf_cnpj?.replace(/\D/g, "") || "";
-      if (cpfCnpj && cpfCnpj.length !== 11 && cpfCnpj.length !== 14) {
+      // Validate CPF/CNPJ - converter string vazia para null
+      const cpfCnpjRaw = formData.tenant.cpf_cnpj?.replace(/\D/g, "") || "";
+      const cpfCnpjClean = cpfCnpjRaw.trim();
+      
+      // Se estiver vazio, usar null (requisito da constraint do banco)
+      const cpfCnpjFinal = cpfCnpjClean === "" ? null : cpfCnpjClean;
+      
+      if (cpfCnpjFinal && cpfCnpjFinal.length !== 11 && cpfCnpjFinal.length !== 14) {
         throw new Error("CPF/CNPJ inválido. CPF deve ter 11 dígitos, CNPJ 14 dígitos.");
       }
 
@@ -307,7 +312,7 @@ export function useSettings() {
           phone: normalizedWhatsApp,
           email: formData.tenant.email,
           description: formData.tenant.description,
-          cpf_cnpj: formData.tenant.cpf_cnpj, // ✅ CORRETO - coluna cpf_cnpj
+          cpf_cnpj: cpfCnpjFinal, // Já convertido para null se vazio (requisito da constraint)
           cep: formData.tenant.cep?.replace(/\D/g, "") || null,
           street: formData.tenant.street || null,
           number: formData.tenant.number || null,
