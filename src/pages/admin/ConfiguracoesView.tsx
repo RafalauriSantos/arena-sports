@@ -417,7 +417,17 @@ export default function ConfiguracoesView() {
 	};
 
 	const getPublicLink = () => {
-		const origin = window.location.origin;
+		// Sempre usar domínio de produção para links compartilháveis
+		const isLocalhost = window.location.hostname === "localhost" || 
+		                     window.location.hostname.includes("127.0.0.1") ||
+		                     window.location.hostname.includes("192.168.");
+		
+		// Em produção, sempre usar o domínio atual
+		// Em dev, tentar variável de ambiente, senão usar o domínio de produção
+		const origin = isLocalhost
+			? (import.meta.env.VITE_PUBLIC_URL || import.meta.env.VITE_APP_URL || "https://arenasys.com.br")
+			: window.location.origin;
+		
 		const slug = formData.tenant.subdomain || "sua-arenasys";
 		return `${origin}/agendar/${slug}`;
 	};
@@ -792,25 +802,34 @@ export default function ConfiguracoesView() {
 											<span className="text-xs text-gray-500 uppercase font-bold tracking-wider">
 												URL Oficial
 											</span>
-											<div
-												className="text-sm font-mono text-white break-all cursor-pointer hover:text-primary transition-colors flex items-center gap-2"
-												onClick={handleCopyLink}>
-												{formData.tenant.subdomain ? (
+											{formData.tenant.subdomain ? (
+												<a
+													href={getPublicLink()}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-sm font-mono text-white break-all cursor-pointer hover:text-primary transition-colors flex items-center gap-2 underline"
+													onClick={(e) => {
+														// Se clicar no ícone, copia ao invés de abrir
+														if ((e.target as HTMLElement).closest('svg')) {
+															e.preventDefault();
+															handleCopyLink();
+														}
+													}}>
 													<span>
-														{window.location.host}/agendar/
+														{getPublicLink().replace(/\/agendar\/.*$/, "")}/agendar/
 														{formData.tenant.subdomain}
 													</span>
-												) : (
-													<span className="text-gray-600">
-														Preencha o nome...
-													</span>
-												)}
-												{copied ? (
-													<Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-												) : (
-													<Copy className="h-4 w-4 text-gray-500 flex-shrink-0" />
-												)}
-											</div>
+													{copied ? (
+														<Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+													) : (
+														<Copy className="h-4 w-4 text-gray-500 flex-shrink-0" />
+													)}
+												</a>
+											) : (
+												<div className="text-sm font-mono text-gray-600 flex items-center gap-2">
+													<span>Preencha o nome...</span>
+												</div>
+											)}
 										</div>
 										<div className="space-y-3">
 											<Button

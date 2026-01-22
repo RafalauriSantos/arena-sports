@@ -59,17 +59,40 @@ export function DivulgacaoCard() {
 
 	const { shareLink } = useMemo(() => {
 		const isBrowser = typeof window !== "undefined";
+		
+		// Sempre usar domínio de produção para links compartilháveis
+		// Se estiver em desenvolvimento, usar variável de ambiente ou detectar automaticamente
+		let origin = "";
+		
+		if (isBrowser) {
+				// Detectar se está em produção ou desenvolvimento
+			const isLocalhost = window.location.hostname === "localhost" || 
+			                    window.location.hostname.includes("127.0.0.1") ||
+			                    window.location.hostname.includes("192.168.");
+			
+			if (isLocalhost) {
+				// Em desenvolvimento: usar variável de ambiente ou domínio de produção
+				const prodUrl = import.meta.env.VITE_PUBLIC_URL || import.meta.env.VITE_APP_URL;
+				origin = prodUrl || "https://arenasys.com.br"; // Sempre usar domínio de produção em dev
+			} else {
+				// Em produção: sempre usar o domínio atual (já está em produção)
+				origin = window.location.origin;
+			}
+		} else {
+			origin = "https://arenasys.com.br"; // Domínio de produção
+		}
 
 		// Lógica de Subdomínio vs ID
 		let link = "";
 		if (subdomain) {
-			link = `https://${subdomain}.app.seusistema.com`; // Ajuste conforme seu domínio base real
+			// Usa a rota /agendar/:subdomain
+			link = `${origin}/agendar/${subdomain}`;
 		} else if (tenantId) {
-			// Fallback para ID se não tiver subdomínio configurado
-			const origin = isBrowser
-				? window.location.origin
-				: "https://e-sportivo.vercel.app";
+			// Fallback para ID se não tiver subdomínio configurado (não recomendado, mas funciona)
 			link = `${origin}/agendar/${tenantId}`;
+		} else {
+			// Se não tiver nem subdomain nem tenantId, retorna link vazio
+			link = "";
 		}
 
 		return {
@@ -150,16 +173,47 @@ export function DivulgacaoCard() {
 						<Input
 							value={clickableLink}
 							readOnly
-							className="bg-slate-800/70 border-primary/20 text-white"
+							className="bg-slate-800/70 border-primary/20 text-white cursor-pointer"
+							onClick={() => {
+								if (clickableLink) {
+									window.open(clickableLink, "_blank", "noopener,noreferrer");
+								}
+							}}
+							title="Clique para abrir o link"
 						/>
 						<Button
 							variant="outline"
 							className="border-primary/50 text-white"
+							onClick={() => {
+								if (clickableLink) {
+									window.open(clickableLink, "_blank", "noopener,noreferrer");
+								} else {
+									copyToClipboard();
+								}
+							}}
+							type="button"
+							title="Abrir link no navegador">
+							<LinkIcon className="h-4 w-4" />
+						</Button>
+						<Button
+							variant="outline"
+							className="border-primary/50 text-white"
 							onClick={copyToClipboard}
-							type="button">
+							type="button"
+							title="Copiar link">
 							<Copy className="h-4 w-4" />
 						</Button>
 					</div>
+					{clickableLink && (
+						<a
+							href={clickableLink}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-xs text-primary hover:text-primary/80 underline flex items-center gap-1">
+							<LinkIcon className="h-3 w-3" />
+							Abrir link em nova aba
+						</a>
+					)}
 				</div>
 				<Button
 					onClick={handleShare}
