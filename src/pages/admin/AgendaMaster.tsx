@@ -8,6 +8,7 @@ import {
 	Play,
 	Square,
 	Clock,
+	Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -361,121 +362,79 @@ export default function AgendaMaster() {
 
 	const renderBookingCard = (booking: AdminBooking, showDate = false) => {
 		const statusConfig = getStatusConfig(booking.paymentStatus);
-		const StatusIcon = statusConfig.icon;
+		
+		// Calcula horário de término se houver duração > 60min
+		const endTimeDisplay = booking.endTime && booking.startTime && (() => {
+			const duration = Math.round((booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60));
+			if (duration > 60) {
+				return format(booking.endTime, "HH:mm");
+			}
+			return null;
+		})();
 
-		// Formata data legível (ex: "Seg, 20/01")
-		const formattedDate = showDate
-			? format(parseISO(booking.date + "T00:00:00"), "EEE, dd/MM", { locale: ptBR })
-			: null;
+		// Status visual minimalista - apenas cor sutil
+		const statusColor = 
+			booking.paymentStatus === "paid" ? "border-l-emerald-500/50" :
+			booking.paymentStatus === "deposit" ? "border-l-amber-500/50" :
+			"border-l-gray-500/30";
 
 		return (
 			<Card
 				key={booking.id}
 				className={cn(
-					"cursor-pointer transition-all hover:scale-[1.01] border backdrop-blur-md bg-gradient-to-br from-gray-900/50 to-gray-900/30 border-white/5 hover:border-white/10",
-					statusConfig.color
+					"group cursor-pointer transition-all duration-300 ease-out",
+					"border-l-4 border-r border-t border-b border-white/5",
+					"bg-gray-900/40 backdrop-blur-sm",
+					"hover:bg-gray-900/60 hover:border-white/10",
+					"active:scale-[0.99]",
+					statusColor
 				)}
 				onClick={() => handleBookingClick(booking)}>
-				<CardHeader className="p-3 md:p-4 pb-2 md:pb-3">
-					<div className="flex items-center justify-between gap-2">
-						<div className="flex items-center gap-2 md:gap-3">
-							<div
-								className={cn(
-									"h-2 w-2 md:h-3 md:w-3 rounded-full animate-pulse flex-shrink-0",
-									statusConfig.dotColor
+				<CardContent className="p-6">
+					{/* Linha 1: Horário + Status (minimalista) */}
+					<div className="flex items-start justify-between mb-4">
+						<div className="flex items-baseline gap-3">
+							<span className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+								{booking.time}
+								{endTimeDisplay && (
+									<span className="text-lg sm:text-xl text-gray-500 font-light ml-2">
+										{endTimeDisplay}
+									</span>
 								)}
-							/>
-							<div>
-								<CardTitle className="text-base md:text-lg text-white">
-									{booking.time}
-									{booking.endTime && booking.startTime && (() => {
-										const duration = Math.round((booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60));
-										if (duration > 60) {
-											const endTimeStr = format(booking.endTime, "HH:mm");
-											return ` - ${endTimeStr}`;
-										}
-										return "";
-									})()}
-									{formattedDate && (
-										<span className="text-xs md:text-sm text-gray-400 ml-2 font-normal">
-											{formattedDate}
-										</span>
-									)}
-								</CardTitle>
-								<p className="text-xs md:text-sm text-gray-400">
-									{booking.field}
-								</p>
-							</div>
-						</div>
-						<Badge
-							variant="outline"
-							className={cn(
-								"gap-1 text-xs border-white/10 bg-black/20",
-								statusConfig.color
-							)}>
-							<StatusIcon className="h-3 w-3" />
-							<span className="hidden md:inline">{statusConfig.label}</span>
-						</Badge>
-					</div>
-				</CardHeader>
-
-				<CardContent className="p-3 md:p-4 pt-0 space-y-2 md:space-y-3">
-					<div className="flex items-center justify-between gap-2">
-						<div className="min-w-0 flex-1">
-							<p className="font-bold text-sm md:text-lg truncate text-white">
-								{booking.customerName}
-							</p>
-							{booking.phone ? (
-								<p className="text-xs md:text-sm text-gray-400 truncate">
-									{booking.phone}
-								</p>
-							) : (
-								<p className="text-xs md:text-sm text-gray-500 truncate">
-									Sem telefone
-								</p>
-							)}
-						</div>
-						<Button
-							variant="outline"
-							size="icon"
-							className="flex-shrink-0 h-8 w-8 md:h-9 md:w-9 border-white/10 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white"
-							onClick={(e) => {
-								e.stopPropagation();
-								if (!booking.phone) return;
-								const paymentLabel =
-									booking.paymentStatus === "paid"
-										? "Pago"
-										: booking.paymentStatus === "deposit"
-										? `Sinal${
-												booking.depositPercent
-													? ` (${booking.depositPercent}%)`
-													: ""
-										  }`
-										: "Pagar no local";
-								const msg = `Ola *${booking.customerName}*! Sua reserva foi registrada.\n\n*Quadra:* ${booking.field}\n*Data:* ${booking.date}\n*Horario:* ${booking.time}\n*Pagamento:* ${paymentLabel}\n\nQualquer ajuste e so responder por aqui.`;
-								window.open(
-									`https://wa.me/55${booking.phone}?text=${encodeURIComponent(
-										msg
-									)}`,
-									"_blank"
-								);
-							}}>
-							<MessageCircle className="h-3 w-3 md:h-4 md:w-4" />
-						</Button>
-					</div>
-
-					<div className="flex items-center justify-between pt-2 border-t border-white/10 gap-2">
-						<div className="text-xs md:text-sm text-gray-300">
-							<span className="font-bold text-white">
-								R$ {booking.totalAmount.toFixed(0)}
 							</span>
 						</div>
-						{booking.remainingAmount > 0 && (
-							<div className="text-xs md:text-sm text-amber-400 font-bold">
-								Receber: R$ {booking.remainingAmount.toFixed(0)}
-							</div>
-						)}
+						{/* Indicador de status - apenas ponto sutil */}
+						<div className={cn(
+							"w-2 h-2 rounded-full mt-2",
+							booking.paymentStatus === "paid" ? "bg-emerald-500/60" :
+							booking.paymentStatus === "deposit" ? "bg-amber-500/60" :
+							"bg-gray-500/40"
+						)} />
 					</div>
+
+					{/* Linha 2: Cliente (essencial) */}
+					<div className="mb-4">
+						<p className="text-base sm:text-lg font-medium text-white/90 leading-tight">
+							{booking.customerName}
+						</p>
+						<p className="text-sm text-gray-500 mt-1 font-light">
+							{booking.field}
+						</p>
+					</div>
+
+					{/* Linha 3: Valor (apenas se houver pendência) */}
+					{booking.remainingAmount > 0 ? (
+						<div className="flex items-baseline gap-2 pt-3 border-t border-amber-500/20">
+							<span className="text-xs text-amber-400/80 font-light">Falta receber</span>
+							<span className="text-lg font-semibold text-amber-400">
+								R$ {booking.remainingAmount.toFixed(0)}
+							</span>
+						</div>
+					) : (
+						<div className="flex items-center gap-2 pt-3 border-t border-white/5">
+							<span className="text-xs text-gray-500 font-light">Pago</span>
+						</div>
+					)}
 				</CardContent>
 			</Card>
 		);
@@ -749,240 +708,202 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			{/* Detail Modal */}
 			{selectedBooking && (
 				<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-					<DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] flex flex-col p-4 sm:p-6">
-						<DialogHeader>
-							<DialogTitle className="text-lg sm:text-2xl">
-								{selectedBooking.time}
-								{selectedBooking.endTime && selectedBooking.startTime && (() => {
-									const duration = Math.round((selectedBooking.endTime.getTime() - selectedBooking.startTime.getTime()) / (1000 * 60));
-									if (duration > 60) {
-										const endTimeStr = format(selectedBooking.endTime, "HH:mm");
-										return ` - ${endTimeStr}`;
-									}
-									return "";
-								})()} - {selectedBooking.field}
-							</DialogTitle>
-							<DialogDescription className="text-xs sm:text-sm">
-								Detalhes completos do agendamento
-							</DialogDescription>
+					<DialogContent className="w-[95vw] sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-gray-900/95 backdrop-blur-xl border border-white/10">
+						{/* Header Minimalista */}
+						<DialogHeader className="px-6 pt-8 pb-6">
+							<div className="space-y-1">
+								<DialogTitle className="text-3xl font-light text-white tracking-tight">
+									{selectedBooking.time}
+									{selectedBooking.endTime && selectedBooking.startTime && (() => {
+										const duration = Math.round((selectedBooking.endTime.getTime() - selectedBooking.startTime.getTime()) / (1000 * 60));
+										if (duration > 60) {
+											const endTimeStr = format(selectedBooking.endTime, "HH:mm");
+											return <span className="text-2xl text-gray-500 font-light ml-2">{endTimeStr}</span>;
+										}
+										return null;
+									})()}
+								</DialogTitle>
+								<DialogDescription className="text-base text-gray-400 font-light">
+									{selectedBooking.field}
+								</DialogDescription>
+							</div>
 						</DialogHeader>
 
-						<div className="space-y-4 py-4 overflow-y-auto flex-1 min-h-0">
-							<div>
-								<h4 className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">
+						<div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 space-y-8">
+							{/* Cliente - Minimalista */}
+							<div className="space-y-3">
+								<p className="text-sm text-gray-500 font-light uppercase tracking-wider">
 									Cliente
-								</h4>
-								<p className="text-base sm:text-lg font-bold">
+								</p>
+								<p className="text-xl font-medium text-white leading-tight">
 									{selectedBooking.customerName}
 								</p>
 							</div>
 
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							{/* Telefone - Editável */}
+							<div className="space-y-3">
+								<Label htmlFor="editPhone" className="text-sm text-gray-500 font-light uppercase tracking-wider">
+									Telefone
+								</Label>
+								<Input
+									id="editPhone"
+									placeholder="(11) 99999-9999"
+									autoComplete="tel"
+									inputMode="numeric"
+									maxLength={15}
+									required
+									value={editedPhone}
+									onChange={(e) => {
+										const formatted = formatPhoneInput(e.target.value);
+										setEditedPhone(formatted);
+									}}
+									className="bg-gray-800/50 border-gray-700/50 text-white text-base font-light h-12 focus:border-primary/50 focus:bg-gray-800 transition-colors"
+								/>
+							</div>
+
+							{/* Valores - Grid Minimalista */}
+							<div className="grid grid-cols-3 gap-6 py-6 border-y border-white/5">
 								<div>
-									<h4 className="text-sm font-medium text-muted-foreground mb-1">
-										Telefone (WhatsApp)
-									</h4>
-									<div className="space-y-2">
-										<Label htmlFor="editPhone" className="sr-only">
-											Telefone (WhatsApp)
-										</Label>
-										<Input
-											id="editPhone"
-											placeholder="(11) 99999-9999"
-											autoComplete="tel"
-											inputMode="numeric"
-											maxLength={15}
-											required
-											value={editedPhone}
-											onChange={(e) => {
-												const formatted = formatPhoneInput(e.target.value);
-												setEditedPhone(formatted);
-											}}
-											className="bg-white text-gray-900 font-medium"
-										/>
-									</div>
+									<p className="text-xs text-gray-500 font-light mb-2">Total</p>
+									<p className="text-lg font-medium text-white">
+										R$ {selectedBooking.totalAmount.toFixed(0)}
+									</p>
 								</div>
 								<div>
-									<h4 className="text-sm font-medium text-muted-foreground mb-1">
-										Pagamento
-									</h4>
-									<p className="font-medium">
-										{selectedBooking.paymentStatus === "paid"
-											? "Pago"
-											: selectedBooking.paymentStatus === "deposit"
-											? `Sinal${
-													selectedBooking.depositPercent
-														? ` (${selectedBooking.depositPercent}%)`
-														: ""
-											  }`
-											: "Pendente"}
+									<p className="text-xs text-gray-500 font-light mb-2">Pago</p>
+									<p className="text-lg font-medium text-gray-400">
+										R$ {selectedBooking.paidAmount.toFixed(0)}
+									</p>
+								</div>
+								<div className={cn(
+									selectedBooking.remainingAmount > 0 && "bg-amber-500/10 rounded-lg p-3 -m-3"
+								)}>
+									<p className={cn(
+										"text-xs font-light mb-2",
+										selectedBooking.remainingAmount > 0 ? "text-amber-400/90" : "text-gray-500"
+									)}>
+										Pendente
+									</p>
+									<p className={cn(
+										"text-lg font-medium",
+										selectedBooking.remainingAmount > 0 ? "text-amber-400" : "text-gray-500"
+									)}>
+										R$ {selectedBooking.remainingAmount.toFixed(0)}
 									</p>
 								</div>
 							</div>
 
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<h4 className="text-sm font-medium text-muted-foreground mb-1">
-										Valor Total
-									</h4>
-									<p className="text-xl font-bold text-primary">
-										R$ {selectedBooking.totalAmount.toFixed(2)}
-									</p>
-								</div>
-								<div>
-									<h4 className="text-sm font-medium text-muted-foreground mb-1">
-										Já Pago
-									</h4>
-									<p className="text-xl font-bold">
-										R$ {selectedBooking.paidAmount.toFixed(2)}
-									</p>
-								</div>
-								{selectedBooking.remainingAmount > 0 && (
-									<div>
-										<h4 className="text-sm font-medium text-muted-foreground mb-1">
-											Falta Receber
-										</h4>
-										<p className="text-xl font-bold text-warning">
-											R$ {selectedBooking.remainingAmount.toFixed(2)}
-										</p>
-									</div>
-								)}
+							{/* Status Pagamento - Sutil */}
+							<div className="flex items-center gap-3">
+								<div className={cn(
+									"w-2 h-2 rounded-full",
+									selectedBooking.paymentStatus === "paid" ? "bg-emerald-500/60" :
+									selectedBooking.paymentStatus === "deposit" ? "bg-amber-500/60" :
+									"bg-gray-500/40"
+								)} />
+								<p className="text-sm text-gray-400 font-light">
+									{selectedBooking.paymentStatus === "paid" ? "Pagamento confirmado" :
+									 selectedBooking.paymentStatus === "deposit" ? `Sinal ${selectedBooking.depositPercent ? `(${selectedBooking.depositPercent}%)` : ""}` :
+									 "Aguardando pagamento"}
+								</p>
 							</div>
 
-							<div className="space-y-2 pt-2 border-t">
-								<div className="flex items-center justify-between">
-									<h4 className="text-sm font-medium text-muted-foreground">
+							{/* Histórico - Apenas se houver eventos */}
+							{bookingEvents.length > 0 && (
+								<div className="space-y-4 pt-4 border-t border-white/5">
+									<p className="text-sm text-gray-500 font-light uppercase tracking-wider">
 										Histórico
-									</h4>
-									{bookingEventsLoading && (
-										<span className="text-xs text-muted-foreground">
-											Carregando...
-										</span>
-									)}
-								</div>
-
-								{bookingEventsError && (
-									<p className="text-sm text-destructive">
-										{bookingEventsError}
 									</p>
-								)}
-
-								{!bookingEventsLoading &&
-									!bookingEventsError &&
-									bookingEvents.length === 0 && (
-										<p className="text-sm text-muted-foreground">
-											Nenhum evento registrado.
-										</p>
-									)}
-
-								{bookingEvents.length > 0 && (
-									<div className="space-y-2">
+									<div className="space-y-3">
 										{bookingEvents.map((event) => (
 											<div
 												key={event.id}
-												className="flex items-start justify-between gap-3 rounded-md border bg-background/50 px-3 py-2">
-												<div className="min-w-0">
-													<p className="text-sm font-medium truncate">
+												className="flex items-start gap-3 text-sm">
+												<div className="w-1 h-1 rounded-full bg-gray-600 mt-2 flex-shrink-0" />
+												<div className="flex-1 min-w-0">
+													<p className="text-white/80 font-light">
 														{summarizeEvent(event)}
 													</p>
-													<p className="text-xs text-muted-foreground">
-														{format(new Date(event.created_at), "dd/MM HH:mm")}
+													<p className="text-xs text-gray-500 font-light mt-0.5">
+														{format(new Date(event.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
 													</p>
 												</div>
-												<Badge variant="outline" className="shrink-0">
-													{formatEventAction(String(event.action))}
-												</Badge>
 											</div>
 										))}
 									</div>
-								)}
-							</div>
-						</div>
-
-						<DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end flex-shrink-0 border-t pt-4 mt-4">
-							<Button
-								size="default"
-								className="w-full sm:w-auto"
-								disabled={savingPhone}
-								onClick={handleSavePhone}>
-								{savingPhone ? "Salvando..." : "Salvar telefone"}
-							</Button>
-
-							{selectedBooking.paymentStatus !== "paid" &&
-								selectedBooking.remainingAmount > 0 && (
-									<Button
-										size="default"
-										className="w-full sm:w-auto gap-2 glow-primary"
-										onClick={handleConfirmPayment}>
-										<CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-										<span className="text-sm sm:text-base">Confirmar Pagamento Total (R${" "}
-										{selectedBooking.totalAmount.toFixed(2)})</span>
-									</Button>
-								)}
-
-							{/* Controle de Jogo: Iniciar/Finalizar */}
-							{!selectedBooking.completedAt && !selectedBooking.cancelledAt && (
-								<div className="w-full space-y-2 pt-2 border-t">
-									<h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-										<Clock className="h-4 w-4" />
-										Controle do Jogo
-									</h4>
-									
-									{selectedBooking.completedAt ? (
-										<div className="flex items-center gap-2 text-sm text-green-600">
-											<CheckCircle className="h-4 w-4" />
-											Jogo finalizado!
-										</div>
-									) : selectedBooking.startedAt ? (
-										<div className="space-y-2">
-											{/* Timer compacto */}
-											<div className="flex items-center justify-between gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-												<div className="flex items-center gap-2">
-													<Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-pulse" />
-													<span className="text-xs text-muted-foreground">Tempo decorrido:</span>
-												</div>
-												<p className="text-lg font-mono font-bold text-blue-600 dark:text-blue-400">
-													{elapsedTime}
-												</p>
-											</div>
-											
-										<Button
-											size="default"
-											className="w-full gap-2 bg-green-600 hover:bg-green-700 text-sm sm:text-base"
-											onClick={handleCompleteGame}>
-												<Square className="h-4 w-4" />
-												Finalizar Jogo
-											</Button>
-										</div>
-									) : (
-										<Button
-											size="default"
-											className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
-											onClick={handleStartGame}>
-											<Play className="h-5 w-5" />
-											Iniciar Jogo
-										</Button>
-									)}
 								</div>
 							)}
+						</div>
 
-							<div className="grid grid-cols-2 gap-2 w-full">
+						{/* Controle de Jogo - Minimalista */}
+						{!selectedBooking.completedAt && !selectedBooking.cancelledAt && (
+							<div className="px-6 py-4 border-t border-white/5">
+								{selectedBooking.startedAt ? (
+									<div className="space-y-4">
+										<div className="flex items-center justify-between">
+											<span className="text-sm text-gray-500 font-light">Tempo decorrido</span>
+											<p className="text-2xl font-light text-white font-mono tracking-tight">
+												{elapsedTime}
+											</p>
+										</div>
+										<Button
+											size="lg"
+											className="w-full h-12 bg-emerald-600/90 hover:bg-emerald-600 text-white font-light text-base"
+											onClick={handleCompleteGame}>
+											Finalizar
+										</Button>
+									</div>
+								) : (
+									<Button
+										size="lg"
+										className="w-full h-12 bg-primary/90 hover:bg-primary text-white font-light text-base"
+										onClick={handleStartGame}>
+										Iniciar Jogo
+									</Button>
+								)}
+							</div>
+						)}
+
+						{/* Footer Minimalista */}
+						<DialogFooter className="flex items-center justify-between gap-3 flex-shrink-0 border-t border-white/5 px-6 py-4">
+							<div className="flex items-center gap-2">
 								<Button
-									variant="outline"
-									className="gap-2"
+									variant="ghost"
+									size="sm"
+									className="h-9 px-3 text-gray-400 hover:text-white hover:bg-white/5 font-light text-sm"
+									disabled={savingPhone}
+									onClick={handleSavePhone}>
+									{savingPhone ? (
+										<Loader2 className="h-3.5 w-3.5 animate-spin" />
+									) : (
+										"Salvar"
+									)}
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-9 px-3 text-emerald-400/80 hover:text-emerald-400 hover:bg-emerald-500/10 font-light text-sm"
 									disabled={!selectedBooking.phone}
 									onClick={handleWhatsApp}>
-									<MessageCircle className="h-4 w-4" />
 									WhatsApp
 								</Button>
-								<Button
-									variant="destructive"
-									className="gap-2"
-									onClick={handleCancelBooking}>
-									<XCircle className="h-4 w-4" />
-									Cancelar
-								</Button>
+								{selectedBooking.paymentStatus !== "paid" &&
+									selectedBooking.remainingAmount > 0 && (
+										<Button
+											size="sm"
+											className="h-9 px-4 bg-primary/80 hover:bg-primary text-white font-light text-sm"
+											onClick={handleConfirmPayment}>
+											Confirmar Pagamento
+										</Button>
+									)}
 							</div>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-9 px-3 text-gray-500 hover:text-red-400 hover:bg-red-500/10 font-light text-sm"
+								onClick={handleCancelBooking}>
+								Cancelar
+							</Button>
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>

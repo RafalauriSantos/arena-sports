@@ -303,12 +303,25 @@ export function useSettings() {
         booking: bookingSettings // Salva as regras aqui dentro
       };
 
+      // Normalizar subdomain (mesma lógica usada na busca em BookingPublic.tsx)
+      const normalizeSubdomain = (input: string) => {
+        if (!input) return "";
+        return input
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Tira acentos
+          .replace(/[^a-z0-9]+/g, "-") // Troca símbolos por hífen
+          .replace(/^-+|-+$/g, ""); // Tira hifens das pontas
+      };
+      
+      const normalizedSubdomain = normalizeSubdomain(formData.tenant.subdomain);
+
       // A. Tenant Update
       const { error: tenantError } = await supabase
         .from("tenants")
         .update({
           business_name: formData.tenant.business_name,
-          subdomain: formData.tenant.subdomain,
+          subdomain: normalizedSubdomain,
           phone: normalizedWhatsApp,
           email: formData.tenant.email,
           description: formData.tenant.description,

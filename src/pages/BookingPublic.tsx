@@ -183,8 +183,12 @@ export default function BookingPublic() {
 
 				if (!tData) {
 					// Debug: Buscar TODOS os tenants para ver o que tem no banco
+					console.error("=".repeat(60));
 					console.error("❌ [BookingPublic] Tenant não encontrado!");
+					console.error("=".repeat(60));
 					console.error("🔍 Buscando no banco por:", cleanSubdomain || subdomain);
+					console.error("   Subdomain original da URL:", JSON.stringify(subdomain));
+					console.error("   Subdomain normalizado:", JSON.stringify(cleanSubdomain));
 					
 					const { data: debugList, error: debugError } = await supabase
 						.from("tenants")
@@ -197,12 +201,42 @@ export default function BookingPublic() {
 						console.error("   Mensagem:", debugError.message);
 						console.error("   Detalhes:", debugError.details);
 					} else {
-						console.error("📋 [BookingPublic] O que existe no banco:", debugList);
+						console.error("📋 [BookingPublic] RESULTADO DA BUSCA:");
+						console.error("   Total encontrado:", debugList?.length || 0);
+						
 						if (debugList && debugList.length > 0) {
-							console.error("   Subdomains encontrados:", debugList.map(t => t.subdomain).join(", "));
+							// Forçar expansão do objeto no console
+							console.error("   Dados completos (JSON):");
+							console.error(JSON.stringify(debugList, null, 2));
+							
+							console.error("\n   Análise detalhada:");
+							debugList.forEach((t, index) => {
+								console.error(`\n   [${index + 1}] Tenant:`);
+								console.error(`       ID: ${t.id}`);
+								console.error(`       Nome: ${JSON.stringify(t.business_name)}`);
+								console.error(`       Subdomain: ${JSON.stringify(t.subdomain)}`);
+								
+								if (t.subdomain) {
+									console.error(`       Tipo: ${typeof t.subdomain}`);
+									console.error(`       Tamanho: ${t.subdomain.length} caracteres`);
+									console.error(`       Códigos dos caracteres: [${Array.from(t.subdomain).map(c => c.charCodeAt(0)).join(", ")}]`);
+									console.error(`       === "sp-center": ${t.subdomain === "sp-center"}`);
+									console.error(`       === "SP-Center": ${t.subdomain === "SP-Center"}`);
+									console.error(`       .toLowerCase() === "sp-center": ${t.subdomain.toLowerCase() === "sp-center"}`);
+									console.error(`       Comparação exata: "${t.subdomain}" === "${cleanSubdomain || subdomain}": ${t.subdomain === (cleanSubdomain || subdomain)}`);
+								} else {
+									console.error(`       ⚠️ Subdomain é NULL ou undefined!`);
+								}
+							});
+							
+							const subdomainsList = debugList.map(t => JSON.stringify(t.subdomain)).join(", ");
+							console.error("\n   Subdomains encontrados:", subdomainsList);
+						} else {
+							console.error("   ⚠️ Nenhum tenant encontrado no banco!");
 						}
 					}
 					
+					console.error("=".repeat(60));
 					throw new Error("Arena não encontrada. Verifique se o link está correto.");
 				}
 
@@ -221,11 +255,24 @@ export default function BookingPublic() {
 
 				if (cError) {
 					console.error("❌ [BookingPublic] Erro ao buscar quadras:", cError);
+					console.error("   Código:", cError.code);
+					console.error("   Mensagem:", cError.message);
+					console.error("   Detalhes:", cError.details);
 				} else {
 					console.log(`✅ [BookingPublic] ${cData?.length || 0} quadra(s) encontrada(s)`);
+					if (cData && cData.length > 0) {
+						console.log("   Quadras encontradas:", cData.map(c => ({ id: c.id, name: c.name, active: c.active, base_price: c.base_price })));
+					} else {
+						console.warn("   ⚠️ Nenhuma quadra ativa encontrada para este tenant!");
+					}
 				}
 
-				if (cData) setCourts(cData);
+				if (cData) {
+					setCourts(cData);
+					console.log("✅ [BookingPublic] Quadras carregadas no estado:", cData.length);
+				} else {
+					console.warn("⚠️ [BookingPublic] cData é null/undefined, não há quadras para exibir");
+				}
 			} catch (error: unknown) {
 				console.error("Erro fatal:", error);
 				const message =
@@ -506,11 +553,17 @@ export default function BookingPublic() {
 
 	// 2. Carregar slots disponíveis (com descontos e bloqueios) - Otimizado com useMemo
 	const courtsWithSlots = useMemo(() => {
+		console.log("🔄 [BookingPublic] Gerando horários disponíveis...");
+		console.log("   Courts:", courts.length);
+		console.log("   Tenant:", tenant?.business_name || "não carregado");
+		console.log("   Settings:", tenant?.settings ? "existe" : "não existe");
+		
 		const now = new Date();
 		const isToday = isSameDay(selectedDate, now);
 		const nowHour = now.getHours();
 
 		const bookingConfigs = tenant?.settings?.booking || {};
+		console.log("   Booking configs:", bookingConfigs);
 
 		// Regra de Desconto por Antecedência (7 dias)
 		const diffTime = selectedDate.getTime() - now.getTime();
@@ -563,6 +616,15 @@ export default function BookingPublic() {
 			return { ...court, slots };
 		});
 	}, [courts, occupiedSlots, selectedDate, tenant]);
+	
+	// Debug: Log quando courtsWithSlots mudar
+	useEffect(() => {
+		console.log("📊 [BookingPublic] courtsWithSlots atualizado:");
+		console.log("   Total de quadras:", courtsWithSlots.length);
+		courtsWithSlots.forEach((court, index) => {
+			console.log(`   [${index + 1}] ${court.name}: ${court.slots.length} horários disponíveis`);
+		});
+	}, [courtsWithSlots]);
 
 	// 3. Funções de navegação do carrossel
 	const scrollCarousel = (direction: "left" | "right") => {
