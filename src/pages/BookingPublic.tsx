@@ -133,52 +133,77 @@ export default function BookingPublic() {
 			setErrorMsg(null);
 
 			try {
-				// Tenta buscar pelo subdomain exato (já limpo)
+				// Primeiro, tenta buscar pelo subdomain original (sem normalização)
 				console.log("📡 [BookingPublic] Buscando tenant no Supabase...");
-				const { data: tData0, error: tError } = await supabase
+				console.log("   Tentativa 1: subdomain original:", subdomain);
+				const { data: tDataOriginal, error: tErrorOriginal } = await supabase
 					.from("tenants")
 					.select("*")
-					.eq("subdomain", cleanSubdomain)
+					.eq("subdomain", subdomain || "")
 					.maybeSingle();
 				
-				if (tError) {
-					console.error("❌ [BookingPublic] Erro ao buscar tenant:", tError);
-					console.error("   Código:", tError.code);
-					console.error("   Mensagem:", tError.message);
+				if (tErrorOriginal) {
+					console.warn("⚠️ [BookingPublic] Erro na busca original:", tErrorOriginal.message);
 				}
 				
-				let tData = tData0;
+				let tData = tDataOriginal;
 
-				// FALLBACK DE SEGURANÇA (Se a URL antiga ainda estiver cacheada ou indexada)
-				if (!tData) {
-					console.warn("⚠️ [BookingPublic] Tentativa direta falhou, tentando busca flexível...");
-					const { data: retryData, error: retryError } = await supabase
+				// Se não encontrou, tenta com o subdomain normalizado
+				if (!tData && cleanSubdomain && cleanSubdomain !== subdomain) {
+					console.log("   Tentativa 2: subdomain normalizado:", cleanSubdomain);
+					const { data: tDataNormalized, error: tErrorNormalized } = await supabase
 						.from("tenants")
 						.select("*")
-						.ilike("subdomain", cleanSubdomain)
+						.eq("subdomain", cleanSubdomain)
 						.maybeSingle();
 					
-					if (retryError) {
-						console.error("❌ [BookingPublic] Erro na busca flexível:", retryError);
+					if (tErrorNormalized) {
+						console.warn("⚠️ [BookingPublic] Erro na busca normalizada:", tErrorNormalized.message);
 					}
 					
-					tData = retryData;
+					tData = tDataNormalized;
+				}
+
+				// FALLBACK: Busca case-insensitive (ilike)
+				if (!tData) {
+					console.log("   Tentativa 3: busca case-insensitive (ilike)");
+					const searchTerm = cleanSubdomain || subdomain || "";
+					const { data: tDataIlike, error: tErrorIlike } = await supabase
+						.from("tenants")
+						.select("*")
+						.ilike("subdomain", `%${searchTerm}%`)
+						.maybeSingle();
+					
+					if (tErrorIlike) {
+						console.warn("⚠️ [BookingPublic] Erro na busca ilike:", tErrorIlike.message);
+					}
+					
+					tData = tDataIlike;
 				}
 
 				if (!tData) {
-					// Último recurso: Logar o que tem no banco para você ver no console
+					// Debug: Buscar TODOS os tenants para ver o que tem no banco
 					console.error("❌ [BookingPublic] Tenant não encontrado!");
+					console.error("🔍 Buscando no banco por:", cleanSubdomain || subdomain);
+					
 					const { data: debugList, error: debugError } = await supabase
 						.from("tenants")
-						.select("subdomain");
+						.select("id, business_name, subdomain")
+						.limit(10);
 					
 					if (debugError) {
 						console.error("❌ [BookingPublic] Erro ao buscar lista de debug:", debugError);
+						console.error("   Código:", debugError.code);
+						console.error("   Mensagem:", debugError.message);
+						console.error("   Detalhes:", debugError.details);
 					} else {
-						console.error("📋 [BookingPublic] Subdomains disponíveis no banco:", debugList);
+						console.error("📋 [BookingPublic] O que existe no banco:", debugList);
+						if (debugList && debugList.length > 0) {
+							console.error("   Subdomains encontrados:", debugList.map(t => t.subdomain).join(", "));
+						}
 					}
 					
-					throw new Error("Arena não encontrada.");
+					throw new Error("Arena não encontrada. Verifique se o link está correto.");
 				}
 
 				console.log("✅ [BookingPublic] Tenant encontrado:", tData.business_name || tData.id);
