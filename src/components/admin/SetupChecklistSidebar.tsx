@@ -177,24 +177,24 @@ export function SetupChecklistSidebar({
 					priority: "high",
 					navTo: "config",
 				},
-			{
-				id: "pricing",
-				label: "Configure os preços",
-				description: "Valores para cada quadra",
-				icon: BadgeDollarSign,
-				completed: allCourtsPriced,
-				priority: "high",
-				navTo: "config",
-			},
-			{
-				id: "cpf",
-				label: "CPF/CNPJ",
-				description: "Para você receber pagamentos",
-				icon: CreditCard,
-				completed: hasCpfCnpj,
-				priority: "medium",
-				navTo: "config",
-			},
+				{
+					id: "pricing",
+					label: "Configure os preços",
+					description: "Valores para cada quadra",
+					icon: BadgeDollarSign,
+					completed: allCourtsPriced,
+					priority: "high",
+					navTo: "config",
+				},
+				{
+					id: "cpf",
+					label: "CPF/CNPJ",
+					description: "Para você receber pagamentos",
+					icon: CreditCard,
+					completed: hasCpfCnpj,
+					priority: "medium",
+					navTo: "config",
+				},
 			]);
 		} catch (error) {
 			console.error("Erro ao carregar checklist:", error);
@@ -203,12 +203,13 @@ export function SetupChecklistSidebar({
 		}
 	}, [tenantId, userProfile]);
 
+	// Carregar checklist quando o modal abrir
 	useEffect(() => {
-		if (isOpen) {
+		if (isOpen && tenantId) {
 			setLoading(true);
 			loadChecklist();
 		}
-	}, [isOpen, loadChecklist]);
+	}, [isOpen, tenantId, loadChecklist]);
 
 	const completed = checklist.filter((i) => i.completed).length;
 	const total = checklist.length;
