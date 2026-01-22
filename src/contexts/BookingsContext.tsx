@@ -389,7 +389,8 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 					if (status === 'SUBSCRIBED') {
 						console.log("✅ [REALTIME] Conectado! Escutando eventos de bookings e courts");
 					} else if (status === 'CHANNEL_ERROR') {
-						console.error("❌ [REALTIME] Erro na conexão:", err);
+						const errorMessage = err instanceof Error ? err.message : err ? String(err) : 'Erro desconhecido';
+						console.error("❌ [REALTIME] Erro na conexão:", errorMessage);
 					} else if (status === 'TIMED_OUT' || status === 'CLOSED') {
 						console.warn("⚠️ [REALTIME] Conexão perdida. Status:", status);
 					}

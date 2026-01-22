@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     // but only register SW in production (see `src/main.tsx`).
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: null, // Não injetar automaticamente (usamos manualmente no main.tsx)
+      injectRegister: 'auto', // Injetar automaticamente o manifest e service worker
       devOptions: {
         enabled: false, // Desabilitar PWA em dev para evitar problemas
         type: 'module',

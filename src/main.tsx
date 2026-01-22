@@ -5,11 +5,19 @@ import "./index.css";
 import { registerSW } from "virtual:pwa-register";
 
 // Auto-refresh on new deployments (PWA): apply update and reload.
+// Com injectRegister: 'auto', o VitePWA já registra automaticamente,
+// mas mantemos o controle manual para melhor UX
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
 	const updateSW = registerSW({
 		immediate: true,
 		onNeedRefresh() {
-			updateSW(true).then(() => window.location.reload());
+			// Atualiza silenciosamente em background
+			updateSW(true).then(() => {
+				// Recarrega apenas quando o SW estiver pronto
+				if (navigator.serviceWorker.controller) {
+					window.location.reload();
+				}
+			});
 		},
 		onOfflineReady() {
 			// No UI needed.
