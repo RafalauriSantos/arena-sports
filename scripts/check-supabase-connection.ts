@@ -251,8 +251,9 @@ async function checkEdgeFunctions() {
       } else {
         console.log(`   ⚠️  ${funcName}: Status ${response.status}`)
       }
-    } catch (error: any) {
-      console.log(`   ❌ ${funcName}: ${error.message}`)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.log(`   ❌ ${funcName}: ${errorMessage}`)
       allOk = false
     }
   }

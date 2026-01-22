@@ -212,7 +212,8 @@ export default function BookingPublic() {
 			}
 		}
 		loadShell();
-	}, [cleanSubdomain]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [cleanSubdomain]); // cleanSubdomain já depende de subdomain via useMemo
 
 	// 1b. Realtime: manter preços/quadras atualizados sem refresh
 	useEffect(() => {

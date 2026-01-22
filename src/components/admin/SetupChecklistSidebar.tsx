@@ -201,7 +201,6 @@ export function SetupChecklistSidebar({
 		} finally {
 			setLoading(false);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [tenantId, userProfile]);
 
 	useEffect(() => {
@@ -392,6 +391,7 @@ interface UserProfile {
 	tenant_id?: string | null;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSetupProgress(tenantId: string, userProfile: UserProfile | null | undefined) {
 	const [progress, setProgress] = useState({ completed: 0, total: 6 });
 	const [loading, setLoading] = useState(true);
