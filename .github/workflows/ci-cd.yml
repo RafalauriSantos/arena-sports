@@ -60,8 +60,9 @@ jobs:
       - name: Deploy to Vercel
         run: |
           npm i -g vercel
-          vercel --prod --yes
+          vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        continue-on-error: true
