@@ -40,7 +40,9 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Support = lazy(() => import("./pages/Support"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
-const BookingPublic = lazy(() => import("./pages/BookingPublic"));
+// BookingPublic - Import direto temporariamente para forçar reload
+import BookingPublicComponent from "./pages/BookingPublic";
+const BookingPublic = BookingPublicComponent;
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
