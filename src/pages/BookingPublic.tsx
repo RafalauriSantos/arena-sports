@@ -93,19 +93,6 @@ const getStringProp = (value: unknown, key: string): string | undefined => {
 };
 
 export default function BookingPublic() {
-	// 🔥 DEBUG: Verificar se o novo código está sendo executado
-	console.log("🎨🎨🎨 [BookingPublic] NOVO DESIGN CARREGADO - Versão Mobile First - TIMESTAMP:", Date.now());
-	
-	// 🔥 ALERT para confirmar que o código está rodando
-	if (typeof window !== 'undefined') {
-		// Só mostra uma vez por sessão
-		const hasShownAlert = sessionStorage.getItem('booking-public-new-design-alert');
-		if (!hasShownAlert) {
-			alert("🎨 NOVO CÓDIGO ATIVO! Se você vê este alert, o novo BookingPublic está rodando!");
-			sessionStorage.setItem('booking-public-new-design-alert', 'true');
-		}
-	}
-	
 	const { subdomain } = useParams();
 
 	const cleanSubdomain = useMemo(() => {
@@ -1051,20 +1038,12 @@ Qual a chave PIX?`;
 		? `https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`
 		: null;
 
-	// 🔥 DEBUG: Log para confirmar que está renderizando o novo design
-	console.log("🎨🎨🎨 [BookingPublic] Renderizando NOVO DESIGN - Header Imersivo - TIMESTAMP:", Date.now());
-	
 	return (
 		<div className={`min-h-screen bg-white font-sans ${
 			selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 		}`}>
-			{/* 🔥 BANNER DE TESTE - REMOVER DEPOIS */}
-			<div className="fixed top-0 left-0 right-0 z-50 bg-red-500 text-white text-center py-2 font-bold text-sm">
-				🎨 NOVO DESIGN ATIVO - Se você vê isso, o novo código está rodando!
-			</div>
-			
 			{/* Header Imersivo (Hero Section) - NOVO DESIGN MOBILE FIRST */}
-			<div className="relative h-64 md:h-80 overflow-hidden mt-8">
+			<div className="relative h-64 md:h-80 overflow-hidden">
 				{/* Background com gradiente ou foto de capa (futuro) */}
 				<div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700" />
 				<div className="absolute inset-0 bg-black/40" />
