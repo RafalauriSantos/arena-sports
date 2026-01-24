@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AgendaMaster from "./AgendaMaster";
 import FinanceiroView from "./FinanceiroView";
 import ConfiguracoesView from "./ConfiguracoesView";
@@ -463,6 +464,7 @@ const MetricPill = ({ label, value, icon: Icon }: MetricPillProps) => (
 // --- TELA PRINCIPAL (Layout Controller) ---
 export default function DashboardHome() {
 	const { bookings, timeSlots, loading } = useBookings();
+	const [searchParams, setSearchParams] = useSearchParams();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [activeView, setActiveView] = useState("dashboard");
@@ -483,10 +485,18 @@ export default function DashboardHome() {
 	const [startingTrial, setStartingTrial] = useState(false);
 	const [syncingCheckout, setSyncingCheckout] = useState(false);
 	const syncErrorShownRef = useRef(false);
-	const [selectedPlan, setSelectedPlan] = useState<"start" | "pro">("pro");
+	const [selectedPlan] = useState<"pro">("pro"); // Apenas um plano agora
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
 		"month"
 	);
+
+	// Ler parâmetros da URL para navegação
+	useEffect(() => {
+		const viewParam = searchParams.get("view");
+		if (viewParam && ["dashboard", "agenda", "financeiro", "mensalistas", "folgas", "config"].includes(viewParam)) {
+			setActiveView(viewParam);
+		}
+	}, [searchParams]);
 
 	const planLabel = useMemo(() => {
 		return (subscription?.plan_name || "").trim() || "Plano";
@@ -505,15 +515,7 @@ export default function DashboardHome() {
 		return { color: "bg-gray-500", text: "Plano" };
 	}, [subscription?.status]);
 
-	useEffect(() => {
-		const planCode = (subscription?.plan_code ?? "").toLowerCase();
-		if (planCode === "start" || planCode === "pro") {
-			setSelectedPlan(planCode);
-			return;
-		}
-		const name = (subscription?.plan_name ?? "").toLowerCase();
-		setSelectedPlan(name.includes("pro") ? "pro" : "start");
-	}, [subscription?.plan_code, subscription?.plan_name]);
+	// Apenas um plano agora, sempre "pro" - não precisa de useEffect
 
 	const hasAccessRef = useRef(hasAccess);
 	useEffect(() => {
@@ -982,28 +984,18 @@ export default function DashboardHome() {
 		const planMatrix = [
 			{
 				plan: "pro",
-				label: "Plano Pro",
-				tagline: "Tudo liberado para gerenciar reservas e receita",
-				badge: "Mais vendido",
-				monthly: "R$ 149,90/mês",
-				annual: "R$ 1.164/ano (≈ R$ 97/mês + taxas)",
+				label: "Arena System",
+				tagline: "Tudo que você precisa para gerenciar sua arena",
+				badge: "Único Plano",
+				monthly: "R$ 97/mês",
+				annual: "R$ 1.164/ano (12x de R$ 97)",
+				foundersMonthly: "R$ 67,90/mês",
+				foundersAnnual: "R$ 814,80/ano (12x de R$ 67,90)",
 				highlights: [
-					"Quadras, turmas e pagamentos ilimitados",
-					"Relatórios e alertas inteligentes",
-					"Suporte priorizado e integrações",
-				],
-			},
-			{
-				plan: "start",
-				label: "Plano Start",
-				tagline: "Operação enxuta com tudo que precisa para começar",
-				badge: "Essencial",
-				monthly: "R$ 69,90/mês",
-				annual: "R$ 699/ano (≈ R$ 58/mês)",
-				highlights: [
-					"Dashboard de reservas e relatórios básicos",
-					"Central de contatos e notificações",
-					"Upgrade para o Pro sempre que precisar",
+					"Agenda inteligente e link público de reservas",
+					"Pagamento via Pix integrado",
+					"Múltiplas quadras e gestão de mensalistas",
+					"Relatórios avançados e suporte prioritário",
 				],
 			},
 		];
@@ -1151,32 +1143,14 @@ export default function DashboardHome() {
 							</div>
 						</section>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-							<Button
-								type="button"
-								variant={selectedPlan === "pro" ? "default" : "outline"}
-								onClick={() => setSelectedPlan("pro")}
-								className={
-									selectedPlan === "pro"
-										? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
-										: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
-								}>
-								{billingInterval === "year"
-									? "Pro (recomendado) — R$ 1.164/ano (≈ R$ 97/mês + taxas)"
-									: "Pro (recomendado) — R$ 149,90/mês"}
-							</Button>
-							<Button
-								type="button"
-								variant={selectedPlan === "start" ? "default" : "outline"}
-								onClick={() => setSelectedPlan("start")}
-								className={
-									selectedPlan === "start"
-										? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
-										: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
-								}>
-								{billingInterval === "year"
-									? "Start (básico) — R$ 699/ano (≈ R$ 58/mês)"
-									: "Start (básico) — R$ 69,90/mês"}
-							</Button>
+							<div className="w-full p-3 bg-white/5 rounded-lg border border-white/10 text-center">
+								<p className="text-sm font-medium text-white mb-1">Arena System</p>
+								<p className="text-xs text-gray-400">
+									{billingInterval === "year"
+										? "R$ 1.164/ano (12x de R$ 97)"
+										: "R$ 97/mês"}
+								</p>
+							</div>
 						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 							<Button

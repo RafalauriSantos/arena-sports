@@ -12,10 +12,15 @@ const ASAAS_URL =
 	Deno.env.get("ASAAS_BASE_URL") ||
 	"https://sandbox.asaas.com/api/v3";
 
-const PLAN_PRICES = {
-	start: { month: 69.9, year: 699 },
-	pro: { month: 149.9, year: 1164 },
+// Preços base (sem desconto)
+const BASE_PRICE = {
+	month: 97, // R$ 97/mês
+	year: 1164, // R$ 1.164/ano (12x de R$ 97)
 } as const;
+
+// Desconto de 30% para Founders 20
+const FOUNDERS_DISCOUNT = 0.3; // 30%
+const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 Deno.serve(async (req) => {
 	if (req.method === "OPTIONS") {
@@ -41,43 +46,33 @@ Deno.serve(async (req) => {
 			Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 		);
 
-	const {
-		plan_code,
-		interval,
-		// Dados do cliente para criação no Asaas (opcionais - serão buscados do banco se não enviados)
-		customer: customerDataFromRequest,
-	} = await req.json();
+		const {
+			plan_code,
+			interval,
+			// Dados do cliente para criação no Asaas (opcionais - serão buscados do banco se não enviados)
+			customer: customerDataFromRequest,
+		} = await req.json();
 
-	// Validação e debug da chave de API
-	if (!ASAAS_API_KEY) {
-		console.error("❌ ASAAS_API_KEY não encontrada");
-		console.error("Variáveis de ambiente disponíveis:", Object.keys(Deno.env.toObject()).filter(k => k.includes("ASAAS")));
-		throw new Error("ASAAS_API_KEY não configurado");
-	}
-	
-	// Verificar se a chave não está vazia
-	if (ASAAS_API_KEY.trim() === "") {
-		console.error("❌ ASAAS_API_KEY está vazia");
-		throw new Error("ASAAS_API_KEY está vazia");
-	}
-	
-	console.log("✅ ASAAS_API_KEY encontrada:", ASAAS_API_KEY.substring(0, 20) + "...");
-	console.log("✅ ASAAS_API_KEY tamanho:", ASAAS_API_KEY.length);
-	console.log("🌐 ASAAS_URL:", ASAAS_URL);
+		// Validação e debug da chave de API
+		if (!ASAAS_API_KEY) {
+			console.error("❌ ASAAS_API_KEY não encontrada");
+			console.error("Variáveis de ambiente disponíveis:", Object.keys(Deno.env.toObject()).filter(k => k.includes("ASAAS")));
+			throw new Error("ASAAS_API_KEY não configurado");
+		}
 
-		const normalizedPlan = String(plan_code || "").toLowerCase();
+		// Verificar se a chave não está vazia
+		if (ASAAS_API_KEY.trim() === "") {
+			console.error("❌ ASAAS_API_KEY está vazia");
+			throw new Error("ASAAS_API_KEY está vazia");
+		}
+
+		console.log("✅ ASAAS_API_KEY encontrada:", ASAAS_API_KEY.substring(0, 20) + "...");
+		console.log("✅ ASAAS_API_KEY tamanho:", ASAAS_API_KEY.length);
+		console.log("🌐 ASAAS_URL:", ASAAS_URL);
+
+		// Apenas um plano agora (removido start/pro)
 		const normalizedInterval =
 			interval === "year" || interval === "month" ? interval : "month";
-
-		if (!normalizedPlan || !(normalizedPlan in PLAN_PRICES)) {
-			return new Response(
-				JSON.stringify({ error: "Plan code inválido. Use start ou pro." }),
-				{
-					status: 400,
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-				}
-			);
-		}
 
 		// Verificar autenticação
 		const { data, error: authError } = await supabaseClient.auth.getUser();
@@ -106,6 +101,31 @@ Deno.serve(async (req) => {
 		}
 
 		const tenant_id = profile.tenant_id;
+
+		// 1.5. Verificar se ainda há vagas para Founders 20 e calcular preço
+		const { count: foundersCount } = await supabaseAdmin
+			.from("tenant_subscriptions")
+			.select("id", { count: "exact", head: true })
+			.eq("is_founder", true)
+			.in("status", ["active", "trial", "past_due"]);
+
+		const currentFoundersCount = foundersCount || 0;
+		const isFounder = currentFoundersCount < FOUNDERS_CAP;
+		const foundersRemaining = Math.max(0, FOUNDERS_CAP - currentFoundersCount);
+
+		// Calcular preço com desconto se for founder
+		const basePrice = BASE_PRICE[normalizedInterval];
+		const finalPrice = isFounder
+			? Math.round(basePrice * (1 - FOUNDERS_DISCOUNT) * 100) / 100 // Aplicar 30% desconto
+			: basePrice;
+
+		// Preço mensal equivalente (para salvar no banco)
+		const monthlyPriceEquivalent = normalizedInterval === "year"
+			? finalPrice / 12 // Se anual, dividir por 12
+			: finalPrice; // Se mensal, usar direto
+
+		console.log(`📊 Founders: ${currentFoundersCount}/${FOUNDERS_CAP}, Vagas restantes: ${foundersRemaining}`);
+		console.log(`💰 Preço base: R$ ${basePrice}, Preço final: R$ ${finalPrice} ${isFounder ? "(Founder - 30% OFF)" : ""}`);
 
 		// 2. Buscar dados do Tenant
 		const { data: tenant, error: tenantError } = await supabaseClient
@@ -343,22 +363,22 @@ Deno.serve(async (req) => {
 			console.log("Chave presente:", !!ASAAS_API_KEY);
 			console.log("Chave tamanho:", ASAAS_API_KEY?.length || 0);
 			console.log("Chave início:", ASAAS_API_KEY?.substring(0, 20) || "vazia");
-			
+
 			// Garantir que a chave não está vazia antes de fazer a requisição
 			if (!ASAAS_API_KEY || ASAAS_API_KEY.trim() === "") {
 				throw new Error("ASAAS_API_KEY está vazia ou não foi configurada");
 			}
-			
+
 			const requestHeaders = {
 				"Content-Type": "application/json",
 				"access_token": ASAAS_API_KEY.trim(),
 			};
-			
+
 			console.log("Headers sendo enviados:", {
 				"Content-Type": requestHeaders["Content-Type"],
 				"access_token": requestHeaders["access_token"].substring(0, 20) + "...",
 			});
-			
+
 			const customerRes = await fetch(`${ASAAS_URL}/customers`, {
 				method: "POST",
 				headers: requestHeaders,
@@ -368,10 +388,9 @@ Deno.serve(async (req) => {
 			const customerResponse = await customerRes.json();
 			if (customerResponse.errors) {
 				throw new Error(
-					`Erro Asaas Customer: ${
-						customerResponse.errors[0]?.description ||
-						customerResponse.errors[0]?.message ||
-						"Erro desconhecido"
+					`Erro Asaas Customer: ${customerResponse.errors[0]?.description ||
+					customerResponse.errors[0]?.message ||
+					"Erro desconhecido"
 					}`
 				);
 			}
@@ -455,12 +474,8 @@ Deno.serve(async (req) => {
 		// 6. Criar a Assinatura (Subscription)
 		console.log("Criando assinatura...");
 
-		// Valores dos planos (em reais)
-		const planPricing = PLAN_PRICES[normalizedPlan as "start" | "pro"];
-		const value = planPricing[normalizedInterval];
-
-		// Se tiver interval, ajustar valor para anual (se necessário)
-		// Por enquanto, mantemos mensal
+		// Usar preço calculado (com desconto se for founder)
+		const value = finalPrice;
 		const cycle = normalizedInterval === "year" ? "YEARLY" : "MONTHLY";
 
 		const subscriptionRes = await fetch(`${ASAAS_URL}/subscriptions`, {
@@ -477,9 +492,7 @@ Deno.serve(async (req) => {
 					.toISOString()
 					.split("T")[0], // Cobrar amanhã
 				cycle: cycle === "YEARLY" ? "YEARLY" : "MONTHLY",
-				description: `Assinatura Arena System - Plano ${
-					normalizedPlan === "pro" ? "Pro" : "Start"
-				} - ${normalizedInterval === "year" ? "Anual" : "Mensal"}`,
+				description: `Assinatura Arena System - ${normalizedInterval === "year" ? "Anual" : "Mensal"}${isFounder ? " (Founder 20 - 30% OFF)" : ""}`,
 			}),
 		});
 
@@ -501,11 +514,12 @@ Deno.serve(async (req) => {
 					tenant_id: tenant_id,
 					asaas_subscription_id: subscriptionId,
 					asaas_customer_id: asaasCustomerId,
-					plan_code: normalizedPlan,
-					plan_name: `Arena ${normalizedPlan === "pro" ? "Pro" : "Start"}`,
+					plan_code: "pro", // Apenas um plano agora
+					plan_name: `Arena System${isFounder ? " (Founder 20)" : ""}`,
 					status: "trial", // Status inicial - será atualizado pelo webhook quando pagar
 					billing_interval: normalizedInterval,
-					monthly_price: Math.round(value * 100), // Converter para centavos (integer)
+					monthly_price: Math.round(monthlyPriceEquivalent * 100), // Preço mensal equivalente em centavos
+					is_founder: isFounder, // Marcar como founder se aplicável
 				},
 				{
 					onConflict: "tenant_id",
@@ -533,9 +547,7 @@ Deno.serve(async (req) => {
 			billingType: "UNDEFINED", // Permite PIX, boleto ou cartão
 			value: value,
 			dueDate: dueDate,
-			description: `Assinatura Arena System - Plano ${
-				normalizedPlan === "pro" ? "Pro" : "Start"
-			} - ${normalizedInterval === "year" ? "Anual" : "Mensal"}`,
+			description: `Assinatura Arena System - ${normalizedInterval === "year" ? "Anual" : "Mensal"}${isFounder ? " (Founder 20 - 30% OFF)" : ""}`,
 			subscription: subscriptionId, // Vincular à subscription criada
 		};
 
@@ -555,10 +567,9 @@ Deno.serve(async (req) => {
 		if (paymentData.errors) {
 			console.error("Erro ao criar payment:", paymentData.errors);
 			throw new Error(
-				`Erro ao criar cobrança: ${
-					paymentData.errors[0]?.description ||
-					paymentData.errors[0]?.message ||
-					"Erro desconhecido"
+				`Erro ao criar cobrança: ${paymentData.errors[0]?.description ||
+				paymentData.errors[0]?.message ||
+				"Erro desconhecido"
 				}`
 			);
 		}
@@ -569,7 +580,7 @@ Deno.serve(async (req) => {
 
 		// Tentar obter URL para callback (opcional - última prioridade)
 		let frontendUrl = "";
-		
+
 		// Tentar 1: Pegar do header Referer ou Origin do request
 		const referer = req.headers.get("referer") || req.headers.get("origin");
 		if (referer) {
@@ -581,7 +592,7 @@ Deno.serve(async (req) => {
 				console.warn("Erro ao parsear URL do header:", referer);
 			}
 		}
-		
+
 		// Tentar 2: Usar variável de ambiente FRONTEND_URL
 		if (!frontendUrl) {
 			frontendUrl = Deno.env.get("FRONTEND_URL") || "";

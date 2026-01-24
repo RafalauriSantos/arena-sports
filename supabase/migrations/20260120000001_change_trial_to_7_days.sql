@@ -76,5 +76,4 @@ BEGIN
 END $$;
 
 -- 3. Comentário explicativo
-COMMENT ON FUNCTION public.fn_tenant_has_access(uuid) IS 
-'Verifica acesso ao tenant considerando trial de 7 dias (reduzido de 21 dias para aumentar conversão)';
+COMMENT ON FUNCTION public.fn_tenant_has_access (uuid) IS 'Verifica acesso ao tenant considerando trial de 7 dias (reduzido de 21 dias para aumentar conversão)';

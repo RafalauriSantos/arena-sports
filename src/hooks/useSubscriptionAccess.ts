@@ -16,6 +16,7 @@ export type TenantSubscription = {
     trial_started_at?: string | null;
     trial_ends_at?: string | null;
     grace_ends_at?: string | null;
+    is_founder?: boolean;
 };
 
 const DEFAULT_SUB: TenantSubscription = {
@@ -96,7 +97,7 @@ export function useSubscriptionAccess() {
                 supabase
                     .from("tenant_subscriptions")
                     .select(
-                        "plan_code, plan_name, monthly_price, billing_interval, status, trial_started_at, trial_ends_at, grace_ends_at"
+                        "plan_code, plan_name, monthly_price, billing_interval, status, trial_started_at, trial_ends_at, grace_ends_at, is_founder"
                     )
                     .eq("tenant_id", validTenantId)
                     .order("updated_at", { ascending: false, nullsFirst: false })
@@ -146,6 +147,8 @@ export function useSubscriptionAccess() {
             billing_interval: normalizedInterval,
             plan_name:
                 rawSub.plan_name ?? (normalizedPlanCode === "pro" ? "Arena Pro" : "Arena Start"),
+            // Preservar is_founder do banco
+            is_founder: rawSub.is_founder ?? false,
         };
 
         const isTrial = sub.status === "trial";

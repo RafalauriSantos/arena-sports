@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import type * as React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettings";
 import { supabase } from "@/lib/supabaseClient";
 import { invokeEdgeFunction } from "@/lib/edgeFunctions";
+import { SubscriptionCard } from "@/components/admin/SubscriptionCard";
 import {
 	Trophy,
 	Sparkles,
@@ -125,6 +127,10 @@ function LoadingSkeleton() {
 // --- Componente Principal ---
 
 export default function ConfiguracoesView() {
+	const [searchParams] = useSearchParams();
+	const tabParam = searchParams.get("tab");
+	const [activeTab, setActiveTab] = useState(tabParam || "arena-sys");
+	
 	const {
 		loading,
 		saving,
@@ -145,10 +151,17 @@ export default function ConfiguracoesView() {
 	const { user, userProfile, updateProfile } = useAuth();
 	const { toast } = useToast();
 
+	// Atualizar tab quando o parâmetro da URL mudar
+	useEffect(() => {
+		if (tabParam && ["perfil", "arena-sys", "quadras", "horarios", "cobranca", "marketing", "billing"].includes(tabParam)) {
+			setActiveTab(tabParam);
+		}
+	}, [tabParam]);
+
 	const [profileName, setProfileName] = useState("");
 	const [profileJobTitle, setProfileJobTitle] = useState("");
 	const [copied, setCopied] = useState(false);
-	const [selectedPlan, setSelectedPlan] = useState<"start" | "pro">("pro");
+	const [selectedPlan] = useState<"pro">("pro"); // Apenas um plano agora
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
 		"month"
 	);
@@ -200,15 +213,21 @@ export default function ConfiguracoesView() {
 		const startedAt = subscription.trial_started_at
 			? new Date(subscription.trial_started_at)
 			: null;
+		// SEMPRE usar 7 dias (não mais 21)
 		const endsAt = subscription.trial_ends_at
 			? new Date(subscription.trial_ends_at)
 			: startedAt
-			? new Date(new Date(startedAt).setDate(startedAt.getDate() + 21))
+			? new Date(new Date(startedAt).setDate(startedAt.getDate() + 7))
 			: null;
 		if (!endsAt) return null;
+		// Garantir que não seja mais que 7 dias a partir de startedAt
+		const maxEndsAt = startedAt 
+			? new Date(new Date(startedAt).setDate(startedAt.getDate() + 7))
+			: endsAt;
+		const finalEndsAt = endsAt > maxEndsAt ? maxEndsAt : endsAt;
 		return Math.max(
 			0,
-			Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+			Math.ceil((finalEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
 		);
 	};
 
@@ -292,15 +311,7 @@ export default function ConfiguracoesView() {
 		};
 	}, [refetchSubscription, subscription?.status, toast]);
 
-	useEffect(() => {
-		const planCode = (subscription?.plan_code ?? "").toLowerCase();
-		if (planCode === "start" || planCode === "pro") {
-			setSelectedPlan(planCode);
-			return;
-		}
-		const name = (subscription?.plan_name ?? "").toLowerCase();
-		setSelectedPlan(name.includes("pro") ? "pro" : "start");
-	}, [subscription?.plan_code, subscription?.plan_name]);
+	// Apenas um plano agora, sempre "pro" - não precisa de useEffect
 
 	useEffect(() => {
 		if (userProfile) {
@@ -504,7 +515,11 @@ export default function ConfiguracoesView() {
 				</div>
 
 				{/* TABS */}
-				<Tabs defaultValue="arena-sys" className="space-y-8">
+				<Tabs 
+					value={activeTab}
+					onValueChange={setActiveTab}
+					className="space-y-8"
+				>
 					<TabsList className="w-full h-auto bg-white/5 p-1 rounded-2xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
 						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
 						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
@@ -1129,151 +1144,15 @@ export default function ConfiguracoesView() {
 					<TabsContent
 						value="billing"
 						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<Card className="md:col-span-2 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
-								<CardHeader>
-									<CardTitle className="text-white">Seu Plano</CardTitle>
-									<CardDescription className="text-gray-400">
-										Status da assinatura.
-									</CardDescription>
-								</CardHeader>
-								<CardContent className="space-y-6">
-									<div className="flex items-center justify-between p-4 bg-gray-950/50 rounded-lg border border-white/5">
-										<div>
-											<p className="text-sm text-gray-400">Plano Atual</p>
-											<p className="text-xl font-bold text-white mt-1">
-												{subscription.plan_name}
-											</p>
-											{subscription.status === "trial" &&
-												subscription.trial_started_at && (
-													<p className="text-sm text-gray-400 mt-1">
-														Restam {computeTrialDaysLeft()} dia(s) de trial.
-													</p>
-												)}
-										</div>
-										<StatusBadge
-											status={
-												subscription.status === "active"
-													? "success"
-													: subscription.status === "trial" ||
-													  subscription.status === "past_due"
-													? "warning"
-													: "warning"
-											}>
-											{subscription.status === "active"
-												? "Ativo"
-												: subscription.status === "trial"
-												? "Trial"
-												: subscription.status === "past_due"
-												? "Pagamento pendente"
-												: "Cancelado"}
-										</StatusBadge>
-									</div>
-
-									{(subscription.status === "trial" ||
-										subscription.status === "canceled") && (
-										<div className="space-y-3 p-4 bg-gray-950/30 rounded-xl border border-white/5">
-											<p className="text-sm text-gray-300 font-medium">
-												{subscription.status === "trial"
-													? "Tudo liberado durante o trial. Assine quando quiser para não interromper o acesso."
-													: "Assine um plano para voltar a usar o sistema."}
-											</p>
-											<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-												<Button
-													type="button"
-													variant={
-														selectedPlan === "pro" ? "default" : "outline"
-													}
-													onClick={() => setSelectedPlan("pro")}
-													className={
-														selectedPlan === "pro"
-															? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
-															: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
-													}>
-													{billingInterval === "year"
-														? "Pro (recomendado) — R$ 1.164/ano (≈ R$ 97/mês + taxas)"
-														: "Pro (recomendado) — R$ 149,90/mês"}
-												</Button>
-												<Button
-													type="button"
-													variant={
-														selectedPlan === "start" ? "default" : "outline"
-													}
-													onClick={() => setSelectedPlan("start")}
-													className={
-														selectedPlan === "start"
-															? "bg-primary text-primary-foreground w-full whitespace-normal text-center h-auto py-2"
-															: "border-white/20 hover:bg-white/5 text-white w-full whitespace-normal text-center h-auto py-2"
-													}>
-													{billingInterval === "year"
-														? "Start (básico) — R$ 699/ano (≈ R$ 58/mês)"
-														: "Start (básico) — R$ 69,90/mês"}
-												</Button>
-											</div>
-											<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-												<Button
-													type="button"
-													variant={
-														billingInterval === "month" ? "default" : "outline"
-													}
-													onClick={() => setBillingInterval("month")}
-													className={
-														billingInterval === "month"
-															? "bg-primary text-primary-foreground w-full"
-															: "border-white/20 hover:bg-white/5 text-white w-full"
-													}>
-													Mensal
-												</Button>
-												<Button
-													type="button"
-													variant={
-														billingInterval === "year" ? "default" : "outline"
-													}
-													onClick={() => setBillingInterval("year")}
-													className={
-														billingInterval === "year"
-															? "bg-primary text-primary-foreground w-full"
-															: "border-white/20 hover:bg-white/5 text-white w-full"
-													}>
-													Anual
-												</Button>
-											</div>
-											<Button
-												type="button"
-												onClick={startCheckout}
-												disabled={startingCheckout}
-												className="w-full bg-white text-gray-950 hover:bg-gray-200 font-bold">
-												{startingCheckout ? (
-													<>
-														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-														Redirecionando...
-													</>
-												) : (
-													"Assinar com Asaas"
-												)}
-											</Button>
-											<p className="text-[11px] text-gray-500">
-												Recomendamos o Pro para usar tudo liberado. Pagamento
-												seguro pelo Asaas. Você pode cancelar quando quiser.
-											</p>
-											<div className="mt-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-												<p className="text-[11px] text-emerald-400 font-medium">
-													💳 Parcelamento disponível: Ao escolher <strong>Cartão de Crédito</strong> no checkout, você poderá parcelar em até 12x sem juros.
-												</p>
-											</div>
-										</div>
-									)}
-								</CardContent>
-							</Card>
-							<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
-								<CardHeader>
-									<CardTitle className="text-white">Faturas</CardTitle>
-								</CardHeader>
-								<CardContent className="flex flex-col items-center justify-center py-8 text-center space-y-3">
-									<CreditCard className="h-8 w-8 text-gray-600" />
-									<p className="text-sm text-gray-400">Sem faturas.</p>
-								</CardContent>
-							</Card>
+						<div className="max-w-4xl mx-auto">
+							<SubscriptionCard
+								subscription={subscription}
+								billingInterval={billingInterval}
+								onBillingIntervalChange={setBillingInterval}
+								onStartCheckout={startCheckout}
+								isStartingCheckout={startingCheckout}
+								isFounder={Boolean(subscription.is_founder)}
+							/>
 						</div>
 					</TabsContent>
 				</Tabs>

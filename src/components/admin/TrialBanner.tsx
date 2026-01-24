@@ -29,11 +29,17 @@ export function TrialBanner({ tenantId }: TrialBannerProps) {
   // Permite fechar apenas se não for crítico
   const canDismiss = !isCritical;
 
+  const handleBannerClick = () => {
+    navigate("/dashboard?view=config&tab=billing");
+  };
+
   return (
     <div
+      onClick={handleBannerClick}
       className={cn(
         "w-full px-4 py-3 flex items-center justify-between gap-4",
         "border-b transition-all duration-300",
+        "cursor-pointer hover:opacity-90",
         isLastHours
           ? "bg-red-600/20 border-red-500/50 animate-pulse"
           : isCritical
@@ -88,7 +94,7 @@ export function TrialBanner({ tenantId }: TrialBannerProps) {
               "Assine agora e não perca seu progresso! 💳"
             ) : (
               <>
-                Trial {trial.variant === "test_7d" ? "de 7 dias" : "de 21 dias"} •{" "}
+                Trial de 7 dias •{" "}
                 Expira em {new Date(trial.trialEndsAt).toLocaleDateString("pt-BR")}
               </>
             )}
@@ -96,9 +102,9 @@ export function TrialBanner({ tenantId }: TrialBannerProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <Button
-          onClick={() => navigate("/admin/dashboard?view=config&tab=subscription")}
+          onClick={handleBannerClick}
           variant={isCritical ? "destructive" : isUrgent ? "default" : "outline"}
           size="sm"
           className={cn(
@@ -111,7 +117,10 @@ export function TrialBanner({ tenantId }: TrialBannerProps) {
 
         {canDismiss && (
           <Button
-            onClick={() => setDismissed(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDismissed(true);
+            }}
             variant="ghost"
             size="sm"
             className="shrink-0 p-1 h-auto text-gray-400 hover:text-white"

@@ -770,6 +770,18 @@ export default function BookingPublic() {
 				bookingDuration
 			);
 
+			// Debug: Verificar dados antes de inserir
+			console.log("🔍 [BookingPublic] Dados da reserva antes de inserir:", {
+				court_id: selectedSlot.courtId,
+				tenant_id: tenantId,
+				status: "pending_payment",
+				customer_name: playerName.trim(),
+				customer_phone: unformatPhone(playerPhone),
+				start_time: startTimestamp,
+				end_time: endTimestamp,
+				total_price: finalPrice,
+			});
+
 			// Cria a reserva
 			const { error, data: newBooking } = await supabase.from("bookings").insert({
 				court_id: selectedSlot.courtId,
@@ -783,7 +795,15 @@ export default function BookingPublic() {
 				notes: `Reserva via calendário público - ${bookingDuration}min - Pagar no balcão`,
 			}).select().single();
 
-			if (error) throw error;
+			if (error) {
+				console.error("❌ [BookingPublic] Erro detalhado ao criar reserva:", {
+					code: error.code,
+					message: error.message,
+					details: error.details,
+					hint: error.hint,
+				});
+				throw error;
+			}
 
 			// ✅ ATUALIZA IMEDIATAMENTE o estado local (sem esperar real-time)
 			// Marca o slot inicial e, se for 1h30, também o próximo slot como ocupado

@@ -175,7 +175,7 @@ export function useSettings() {
 
         // Obter email do usuário autenticado
         const userEmail = user?.email || "";
-        
+
         // Se o email do tenant estiver vazio, usar o email do usuário
         const tenantEmail = tenantRes.data.email || userEmail;
         const shouldAutoSave = !tenantRes.data.email && userEmail;
@@ -206,7 +206,7 @@ export function useSettings() {
               .reduce((acc: Court[], c) => {
                 const courtName = typeof c.name === "string" ? c.name : "";
                 const normalizedName = courtName.trim().toLowerCase();
-                const existing = acc.find(court => 
+                const existing = acc.find(court =>
                   court.name.trim().toLowerCase() === normalizedName
                 );
                 if (!existing) {
@@ -288,10 +288,10 @@ export function useSettings() {
       // Validate CPF/CNPJ - converter string vazia para null
       const cpfCnpjRaw = formData.tenant.cpf_cnpj?.replace(/\D/g, "") || "";
       const cpfCnpjClean = cpfCnpjRaw.trim();
-      
+
       // Se estiver vazio, usar null (requisito da constraint do banco)
       const cpfCnpjFinal = cpfCnpjClean === "" ? null : cpfCnpjClean;
-      
+
       if (cpfCnpjFinal && cpfCnpjFinal.length !== 11 && cpfCnpjFinal.length !== 14) {
         throw new Error("CPF/CNPJ inválido. CPF deve ter 11 dígitos, CNPJ 14 dígitos.");
       }
@@ -313,7 +313,7 @@ export function useSettings() {
           .replace(/[^a-z0-9]+/g, "-") // Troca símbolos por hífen
           .replace(/^-+|-+$/g, ""); // Tira hifens das pontas
       };
-      
+
       const normalizedSubdomain = normalizeSubdomain(formData.tenant.subdomain);
 
       // A. Tenant Update
@@ -341,10 +341,10 @@ export function useSettings() {
 
       // B. Validação: detectar nomes duplicados (ignorando espaços e maiúsculas)
       const normalizedNames = formData.courts.map(c => c.name.trim().toLowerCase());
-      const duplicates = normalizedNames.filter((name, idx) => 
+      const duplicates = normalizedNames.filter((name, idx) =>
         normalizedNames.indexOf(name) !== idx
       );
-      
+
       if (duplicates.length > 0) {
         throw new Error(`Nomes de quadras duplicados detectados. Por favor, use nomes únicos.`);
       }
@@ -352,7 +352,7 @@ export function useSettings() {
       // C. Quadras Update/Insert (Sequential para evitar duplicatas)
       for (const court of formData.courts) {
         const trimmedName = court.name.trim(); // Remove espaços extras
-        
+
         if (court.id) {
           // UPDATE: Quadra existente
           const { error: updateError } = await supabase

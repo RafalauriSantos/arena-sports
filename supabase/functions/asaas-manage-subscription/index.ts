@@ -32,22 +32,15 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios");
 }
 
-const PLANS = {
-    start: {
-        name: "Arena Start",
-        prices: {
-            month: 69.9,
-            year: 699,
-        },
-    },
-    pro: {
-        name: "Arena Pro",
-        prices: {
-            month: 149.9,
-            year: 1164,
-        },
-    },
+// Preços base (sem desconto)
+const BASE_PRICE = {
+    month: 97, // R$ 97/mês
+    year: 1164, // R$ 1.164/ano (12x de R$ 97)
 } as const;
+
+// Desconto de 30% para Founders 20
+const FOUNDERS_DISCOUNT = 0.3; // 30%
+const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 async function asaasRequest(
     endpoint: string,
@@ -164,7 +157,7 @@ Deno.serve(async (req) => {
 
         if (!subscription.asaas_subscription_id) {
             return new Response(
-                JSON.stringify({ 
+                JSON.stringify({
                     error: "Assinatura não possui ID do ASAAS. Não é possível gerenciar.",
                     subscription_status: subscription.status
                 }),
@@ -222,7 +215,7 @@ Deno.serve(async (req) => {
                 // Reativar assinatura no ASAAS (se suportado)
                 // Nota: ASAAS pode não ter API direta para reativar, pode precisar criar nova assinatura
                 // Por enquanto, vamos tentar atualizar status manualmente e criar nova se necessário
-                
+
                 if (subscription.status === "canceled") {
                     // Criar nova assinatura (checkout seria melhor, mas por simplicidade atualizamos)
                     // Em produção, pode ser melhor redirecionar para checkout novamente
@@ -257,8 +250,8 @@ Deno.serve(async (req) => {
                 // Validar plan_code e interval
                 if (!body.plan_code || !body.interval) {
                     return new Response(
-                        JSON.stringify({ 
-                            error: "Para trocar plano, 'plan_code' e 'interval' são obrigatórios" 
+                        JSON.stringify({
+                            error: "Para trocar plano, 'plan_code' e 'interval' são obrigatórios"
                         }),
                         { status: 400, headers: corsHeaders }
                     );
@@ -278,7 +271,7 @@ Deno.serve(async (req) => {
                 // Atualizar assinatura no ASAAS
                 // Nota: ASAAS pode não ter API direta para trocar plano, pode precisar cancelar e criar nova
                 // Por simplicidade, vamos atualizar localmente e deixar webhook sincronizar
-                
+
                 // Opção 1: Cancelar e criar nova (melhor fluxo)
                 // Por enquanto, apenas atualizamos local e deixamos o webhook sincronizar quando houver pagamento
 
@@ -313,8 +306,8 @@ Deno.serve(async (req) => {
 
             default:
                 return new Response(
-                    JSON.stringify({ 
-                        error: `Ação '${body.action}' não reconhecida. Use: cancel, reactivate, change_plan` 
+                    JSON.stringify({
+                        error: `Ação '${body.action}' não reconhecida. Use: cancel, reactivate, change_plan`
                     }),
                     { status: 400, headers: corsHeaders }
                 );
@@ -323,11 +316,11 @@ Deno.serve(async (req) => {
     } catch (error: unknown) {
         console.error("[MANAGE SUBSCRIPTION ERROR]:", error);
         const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-        
+
         return new Response(
-            JSON.stringify({ 
+            JSON.stringify({
                 error: "Erro ao gerenciar assinatura",
-                details: errorMessage 
+                details: errorMessage
             }),
             { status: 500, headers: corsHeaders }
         );
