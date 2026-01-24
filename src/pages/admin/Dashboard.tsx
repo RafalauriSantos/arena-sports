@@ -24,6 +24,7 @@ import {
 	Loader2,
 	Sparkles,
 	CheckCircle2,
+	Headphones,
 } from "lucide-react";
 import {
 	AreaChart,
@@ -48,6 +49,7 @@ import {
 } from "@/components/admin/SetupChecklistSidebar";
 import { TrialBanner } from "@/components/admin/TrialBanner";
 import { TrialCountdown } from "@/components/admin/TrialCountdown";
+import { SupportModal } from "@/components/admin/SupportModal";
 
 // --- HELPERS (Formatadores) ---
 const formatCurrency = (value: number) =>
@@ -127,6 +129,7 @@ const SidebarFixed = ({
 	const { userProfile, signOut } = useAuth();
 	const { toast } = useToast();
 	const [checklistOpen, setChecklistOpen] = useState(false);
+	const [supportModalOpen, setSupportModalOpen] = useState(false);
 
 	const menuItems = [
 		{ id: "dashboard", icon: Home, label: "Visão Geral" },
@@ -304,6 +307,21 @@ const SidebarFixed = ({
 						{!collapsed && <span className="text-sm">Configurações</span>}
 					</button>
 
+					{/* Botão de Suporte */}
+					<button
+						onClick={() => {
+							setSupportModalOpen(true);
+							setMobileOpen(false);
+						}}
+						className={cn(
+							"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2",
+							collapsed ? "justify-center" : ""
+						)}
+						title="Falar com Suporte">
+						<Headphones className="h-5 w-5 shrink-0" />
+						{!collapsed && <span className="text-sm">Suporte</span>}
+					</button>
+
 					<div
 						className={cn(
 							"flex items-center gap-3 p-2 rounded-xl border border-white/5 bg-white/5 mt-2",
@@ -356,6 +374,12 @@ const SidebarFixed = ({
 				}}
 				tenantId={tenantId}
 				userProfile={userProfile}
+			/>
+
+			{/* Modal de Suporte */}
+			<SupportModal
+				open={supportModalOpen}
+				onOpenChange={setSupportModalOpen}
 			/>
 		</>
 	);

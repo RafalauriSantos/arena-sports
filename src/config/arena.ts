@@ -3,7 +3,7 @@ export const ARENA_CONFIG = {
   pixKey: "pix@arenasys.com",
   name: "ArenaSys",
   subtitle: "ArenaSys - Gestão Inteligente de Quadras Esportivas",
-  whatsapp: "5511999999999", // WhatsApp do dono (com código do país)
+  whatsapp: "5515981642350", // WhatsApp do dono (com código do país)
   fields: [
     {
       id: "principal",
