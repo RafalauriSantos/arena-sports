@@ -1,8 +1,13 @@
+# robots.txt para ArenaSys
+# Otimizado para SEO e indexação
+
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 0
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 0
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +15,21 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# Bloquear áreas administrativas e privadas
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /login
+Disallow: /welcome
+Disallow: /api
+Disallow: /_next
+
+# Permitir páginas públicas importantes
+Allow: /
+Allow: /agendar/*
+Allow: /privacidade
+Allow: /termos
+
+# Sitemap
+Sitemap: https://arenasys.com.br/sitemap.xml

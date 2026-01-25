@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { SEO } from "@/components/SEO";
 
 // --- DEPOIMENTOS REMOVIDOS ---
 // Removidos para manter autenticidade. Adicione depoimentos reais conforme receber feedback dos clientes.
@@ -273,7 +274,14 @@ export default function LandingPage() {
 	}, []);
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+		<>
+			<SEO
+				title="ArenaSys - Sistema de Gestão e Agendamento de Quadras Esportivas | SaaS para Arenas"
+				description="Sistema completo de gestão e agendamento para quadras esportivas. Automatize reservas, receba pagamentos via PIX, gerencie horários e clientes. Teste grátis por 7 dias. A partir de R$ 97/mês."
+				keywords="sistema gestão quadras, agendamento quadras esportivas, software arena, gestão reservas esportivas, sistema agendamento online, software para quadras, gestão de quadra society, sistema booking esportivo, SaaS quadras, agendamento automático quadras"
+				canonical="/"
+			/>
+			<div className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
 			{/* Estilos para Animação Marquee */}
 			<style>{`
         @keyframes scroll {
@@ -1043,5 +1051,6 @@ export default function LandingPage() {
 				</div>
 			</footer>
 		</div>
+		</>
 	);
 }
