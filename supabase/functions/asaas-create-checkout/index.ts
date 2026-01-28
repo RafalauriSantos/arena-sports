@@ -15,7 +15,7 @@ const ASAAS_URL =
 // Preços base (sem desconto)
 const BASE_PRICE = {
 	month: 97, // R$ 97/mês
-	year: 1164, // R$ 1.164/ano (12x de R$ 97)
+	year: 970, // R$ 970/ano (2 meses grátis = 17% off)
 } as const;
 
 // Desconto de 30% para Founders 20
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 		// Validação e debug da chave de API
 		if (!ASAAS_API_KEY) {
 			console.error("❌ ASAAS_API_KEY não encontrada");
-			console.error("Variáveis de ambiente disponíveis:", Object.keys(Deno.env.toObject()).filter(k => k.includes("ASAAS")));
+			console.error("Variáveis de ambiente disponíveis:", Array.from(Object.keys(Deno.env)).filter((k: string) => k.includes("ASAAS")));
 			throw new Error("ASAAS_API_KEY não configurado");
 		}
 
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 		console.log("🌐 ASAAS_URL:", ASAAS_URL);
 
 		// Apenas um plano agora (removido start/pro)
-		const normalizedInterval =
+		const normalizedInterval: "month" | "year" =
 			interval === "year" || interval === "month" ? interval : "month";
 
 		// Verificar autenticação
@@ -103,13 +103,18 @@ Deno.serve(async (req) => {
 		const tenant_id = profile.tenant_id;
 
 		// 1.5. Verificar se ainda há vagas para Founders 20 e calcular preço
-		const { count: foundersCount } = await supabaseAdmin
+		const { data: foundersData, error: foundersError } = await supabaseAdmin
 			.from("tenant_subscriptions")
-			.select("id", { count: "exact", head: true })
+			.select("id")
 			.eq("is_founder", true)
 			.in("status", ["active", "trial", "past_due"]);
 
-		const currentFoundersCount = foundersCount || 0;
+		if (foundersError) {
+			console.error("Error fetching founder subscriptions:", foundersError);
+			// Decide how to handle this error. For now, let's assume 0 founders if error.
+		}
+
+		const currentFoundersCount = foundersData?.length || 0;
 		const isFounder = currentFoundersCount < FOUNDERS_CAP;
 		const foundersRemaining = Math.max(0, FOUNDERS_CAP - currentFoundersCount);
 
@@ -514,8 +519,8 @@ Deno.serve(async (req) => {
 					tenant_id: tenant_id,
 					asaas_subscription_id: subscriptionId,
 					asaas_customer_id: asaasCustomerId,
-					plan_code: "pro", // Apenas um plano agora
-					plan_name: `Arena System${isFounder ? " (Founder 20)" : ""}`,
+					plan_code: "arena", // Plano único ArenaSys
+					plan_name: `ArenaSys${isFounder ? " (Founder 20)" : ""}`,
 					status: "trial", // Status inicial - será atualizado pelo webhook quando pagar
 					billing_interval: normalizedInterval,
 					monthly_price: Math.round(monthlyPriceEquivalent * 100), // Preço mensal equivalente em centavos

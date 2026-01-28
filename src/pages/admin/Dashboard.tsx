@@ -43,9 +43,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { supabase } from "@/lib/supabaseClient";
 import { invokeEdgeFunction } from "@/lib/edgeFunctions";
-import { 
-	SetupChecklistSidebar, 
-	useSetupProgress 
+import {
+	SetupChecklistSidebar,
+	useSetupProgress,
 } from "@/components/admin/SetupChecklistSidebar";
 import { TrialBanner } from "@/components/admin/TrialBanner";
 import { TrialCountdown } from "@/components/admin/TrialCountdown";
@@ -73,10 +73,10 @@ const formatDateShort = (dateStr: string) => {
 	// Parse a data no formato YYYY-MM-DD corretamente (timezone local)
 	// Usa Date.UTC para evitar problemas de timezone, depois converte para local
 	const [year, month, day] = dateStr.split("-").map(Number);
-	
+
 	// Cria a data no timezone local explicitamente
 	const date = new Date(year, month - 1, day, 12, 0, 0, 0); // Usa meio-dia para evitar problemas de DST
-	
+
 	// Retorna o dia da semana abreviado (seg, ter, qua, etc)
 	const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 	const dayOfWeek = date.getDay();
@@ -87,20 +87,36 @@ const formatDateShort = (dateStr: string) => {
 const getCurrentWeekDays = () => {
 	const now = new Date();
 	const day = now.getDay(); // 0 = domingo, 1 = segunda, ..., 6 = sábado
-	
+
 	// Calcula quantos dias atrás está a segunda-feira
 	// Se hoje é domingo (0), segunda foi há 6 dias
 	// Se hoje é segunda (1), segunda é hoje (0 dias)
 	// Se hoje é terça (2), segunda foi há 1 dia
 	const daysFromMonday = day === 0 ? 6 : day - 1;
-	
+
 	// Cria uma nova data para segunda-feira (não modifica o objeto original)
 	const mondayDate = now.getDate() - daysFromMonday;
-	const monday = new Date(now.getFullYear(), now.getMonth(), mondayDate, 0, 0, 0, 0);
-	
+	const monday = new Date(
+		now.getFullYear(),
+		now.getMonth(),
+		mondayDate,
+		0,
+		0,
+		0,
+		0,
+	);
+
 	const days = [];
 	for (let i = 0; i < 7; i++) {
-		const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i, 0, 0, 0, 0);
+		const d = new Date(
+			monday.getFullYear(),
+			monday.getMonth(),
+			monday.getDate() + i,
+			0,
+			0,
+			0,
+			0,
+		);
 		days.push(formatLocalDate(d));
 	}
 	return days;
@@ -140,22 +156,25 @@ const SidebarFixed = ({
 	];
 
 	// Hook para progresso do checklist
-	const { completed, total, isComplete } = useSetupProgress(tenantId, userProfile);
+	const { completed, total, isComplete } = useSetupProgress(
+		tenantId,
+		userProfile,
+	);
 
 	return (
 		<>
 			<aside
 				className={cn(
 					"fixed top-0 left-0 z-50 h-full bg-[#050507]/95 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out shadow-2xl flex flex-col",
-					mobileOpen
-						? "translate-x-0 w-72"
-						: "-translate-x-full md:translate-x-0",
-					collapsed ? "md:w-20" : "md:w-72"
+					mobileOpen ? "translate-x-0 w-72" : (
+						"-translate-x-full md:translate-x-0"
+					),
+					collapsed ? "md:w-20" : "md:w-72",
 				)}>
 				<div
 					className={cn(
 						"flex items-center h-20 border-b border-white/5",
-						collapsed ? "justify-center px-0" : "justify-between px-6"
+						collapsed ? "justify-center px-0" : "justify-between px-6",
 					)}>
 					{!collapsed && (
 						<div className="flex items-center gap-3">
@@ -178,11 +197,9 @@ const SidebarFixed = ({
 						onClick={() => setCollapsed(!collapsed)}
 						className="hidden md:flex text-gray-500 hover:text-white transition-colors p-1"
 						title={collapsed ? "Expandir" : "Recolher"}>
-						{collapsed ? (
+						{collapsed ?
 							<ChevronRight className="h-5 w-5" />
-						) : (
-							<ChevronLeft className="h-5 w-5" />
-						)}
+						:	<ChevronLeft className="h-5 w-5" />}
 					</button>
 					<button
 						onClick={() => setMobileOpen(false)}
@@ -195,70 +212,71 @@ const SidebarFixed = ({
 					{/* Trial Countdown */}
 					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
 
-				{/* Botão do Checklist - Sempre visível */}
-				<button
-					onClick={() => setChecklistOpen(true)}
-					className={cn(
-						"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 border mb-3 group relative overflow-hidden",
-						collapsed ? "justify-center px-0" : "",
-						isComplete
-							? "bg-green-500/20 text-green-400 border-green-500/40 hover:bg-green-500/30 hover:border-green-500/60"
-							: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50 animate-pulse-border"
-					)}
-					title={isComplete ? "Arena Configurada!" : "Configure sua Arena"}>
-					{/* Glow effect */}
-					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-					
-					<div className="flex items-center gap-3 relative z-10">
-						{isComplete ? (
-							<Trophy className="h-5 w-5 animate-bounce" />
-						) : completed === 0 ? (
-							<Sparkles className="h-5 w-5 animate-pulse" />
-						) : (
-							<CheckCircle2 className="h-5 w-5" />
+					{/* Botão do Checklist - Sempre visível */}
+					<button
+						onClick={() => setChecklistOpen(true)}
+						className={cn(
+							"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 border mb-3 group relative overflow-hidden",
+							collapsed ? "justify-center px-0" : "",
+							isComplete ?
+								"bg-green-500/20 text-green-400 border-green-500/40 hover:bg-green-500/30 hover:border-green-500/60"
+							:	"bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50 animate-pulse-border",
 						)}
+						title={isComplete ? "Arena Configurada!" : "Configure sua Arena"}>
+						{/* Glow effect */}
+						<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+						<div className="flex items-center gap-3 relative z-10">
+							{isComplete ?
+								<Trophy className="h-5 w-5 animate-bounce" />
+							: completed === 0 ?
+								<Sparkles className="h-5 w-5 animate-pulse" />
+							:	<CheckCircle2 className="h-5 w-5" />}
+							{!collapsed && (
+								<div className="flex flex-col items-start">
+									<span className="text-sm font-bold">
+										{isComplete ?
+											"Arena Pronta! 🎉"
+										: completed === 0 ?
+											"Comece Aqui!"
+										:	`Configure Arena`}
+									</span>
+									<span className="text-xs opacity-75">
+										{isComplete ?
+											"Clique para ver"
+										:	`${completed}/${total} concluídos`}
+									</span>
+								</div>
+							)}
+						</div>
+
 						{!collapsed && (
-							<div className="flex flex-col items-start">
-								<span className="text-sm font-bold">
-									{isComplete
-										? "Arena Pronta! 🎉"
-										: completed === 0 
-										? "Comece Aqui!" 
-										: `Configure Arena`}
-								</span>
-								<span className="text-xs opacity-75">
-									{isComplete ? "Clique para ver" : `${completed}/${total} concluídos`}
-								</span>
+							<div className="relative z-10 flex items-center gap-2">
+								<div
+									className={cn(
+										"text-xs font-bold px-2 py-1 rounded-full",
+										isComplete ? "bg-green-500/30" : "bg-current/20",
+									)}>
+									{Math.round((completed / total) * 100)}%
+								</div>
+								<ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
 							</div>
 						)}
-					</div>
 
-					{!collapsed && (
-						<div className="relative z-10 flex items-center gap-2">
-							<div className={cn(
-								"text-xs font-bold px-2 py-1 rounded-full",
-								isComplete ? "bg-green-500/30" : "bg-current/20"
-							)}>
-								{Math.round((completed / total) * 100)}%
+						{/* Badge para modo collapsed */}
+						{collapsed && !isComplete && (
+							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507] animate-bounce">
+								{total - completed}
 							</div>
-							<ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-						</div>
-					)}
+						)}
 
-					{/* Badge para modo collapsed */}
-					{collapsed && !isComplete && (
-						<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507] animate-bounce">
-							{total - completed}
-						</div>
-					)}
-
-					{/* Badge de troféu quando completo no collapsed */}
-					{collapsed && isComplete && (
-						<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507]">
-							✓
-						</div>
-					)}
-				</button>
+						{/* Badge de troféu quando completo no collapsed */}
+						{collapsed && isComplete && (
+							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507]">
+								✓
+							</div>
+						)}
+					</button>
 
 					{menuItems.map((item) => (
 						<button
@@ -269,18 +287,18 @@ const SidebarFixed = ({
 							}}
 							className={cn(
 								"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
-								activeView === item.id
-									? "bg-white/10 text-white font-medium"
-									: "text-gray-400 hover:bg-white/5 hover:text-white",
-								collapsed ? "justify-center" : ""
+								activeView === item.id ?
+									"bg-white/10 text-white font-medium"
+								:	"text-gray-400 hover:bg-white/5 hover:text-white",
+								collapsed ? "justify-center" : "",
 							)}
 							title={collapsed ? item.label : ""}>
 							<item.icon
 								className={cn(
 									"h-5 w-5 shrink-0 transition-colors",
-									activeView === item.id
-										? "text-emerald-400"
-										: "group-hover:text-white"
+									activeView === item.id ?
+										"text-emerald-400"
+									:	"group-hover:text-white",
 								)}
 							/>
 							{!collapsed && <span className="text-sm">{item.label}</span>}
@@ -300,7 +318,7 @@ const SidebarFixed = ({
 						className={cn(
 							"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2",
 							activeView === "config" && "bg-white/5 text-white",
-							collapsed ? "justify-center" : ""
+							collapsed ? "justify-center" : "",
 						)}
 						title="Configurações">
 						<Settings className="h-5 w-5 shrink-0" />
@@ -315,7 +333,7 @@ const SidebarFixed = ({
 						}}
 						className={cn(
 							"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2",
-							collapsed ? "justify-center" : ""
+							collapsed ? "justify-center" : "",
 						)}
 						title="Falar com Suporte">
 						<Headphones className="h-5 w-5 shrink-0" />
@@ -325,18 +343,16 @@ const SidebarFixed = ({
 					<div
 						className={cn(
 							"flex items-center gap-3 p-2 rounded-xl border border-white/5 bg-white/5 mt-2",
-							collapsed ? "justify-center border-none bg-transparent p-0" : ""
+							collapsed ? "justify-center border-none bg-transparent p-0" : "",
 						)}>
 						<div className="h-9 w-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
-							{userProfile?.avatar_url ? (
+							{userProfile?.avatar_url ?
 								<img
 									src={userProfile.avatar_url}
 									alt="User"
 									className="h-full w-full object-cover"
 								/>
-							) : (
-								<User className="text-white h-4 w-4" />
-							)}
+							:	<User className="text-white h-4 w-4" />}
 						</div>
 						{!collapsed && (
 							<div className="flex-1 overflow-hidden">
@@ -402,23 +418,23 @@ const ArenaSysStatusHero = ({
 	planPill,
 }: ArenaSysStatusHeroProps) => {
 	const statusConfig =
-		occupancyAvg > 80
-			? {
-					color: "bg-yellow-500",
-					text: "Alta demanda",
-					glow: "shadow-yellow-500/10",
-			  }
-			: occupancyAvg > 20
-			? {
-					color: "bg-emerald-500",
-					text: "ArenaSys Operando Bem",
-					glow: "shadow-emerald-500/10",
-			  }
-			: {
-					color: "bg-gray-500",
-					text: "Movimento Tranquilo",
-					glow: "shadow-gray-500/10",
-			  };
+		occupancyAvg > 80 ?
+			{
+				color: "bg-yellow-500",
+				text: "Alta demanda",
+				glow: "shadow-yellow-500/10",
+			}
+		: occupancyAvg > 20 ?
+			{
+				color: "bg-emerald-500",
+				text: "ArenaSys Operando Bem",
+				glow: "shadow-emerald-500/10",
+			}
+		:	{
+				color: "bg-gray-500",
+				text: "Movimento Tranquilo",
+				glow: "shadow-gray-500/10",
+			};
 
 	return (
 		<div
@@ -481,7 +497,9 @@ const MetricPill = ({ label, value, icon: Icon }: MetricPillProps) => (
 				<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
 			)}
 		</div>
-		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate">{value}</span>
+		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate">
+			{value}
+		</span>
 	</div>
 );
 
@@ -492,7 +510,7 @@ export default function DashboardHome() {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [activeView, setActiveView] = useState("dashboard");
-	
+
 	// Removido: Logs excessivos estavam causando poluição no console
 	const { toast } = useToast();
 	const { tenantId } = useAuth();
@@ -511,13 +529,23 @@ export default function DashboardHome() {
 	const syncErrorShownRef = useRef(false);
 	const [selectedPlan] = useState<"pro">("pro"); // Apenas um plano agora
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
-		"month"
+		"month",
 	);
 
 	// Ler parâmetros da URL para navegação
 	useEffect(() => {
 		const viewParam = searchParams.get("view");
-		if (viewParam && ["dashboard", "agenda", "financeiro", "mensalistas", "folgas", "config"].includes(viewParam)) {
+		if (
+			viewParam &&
+			[
+				"dashboard",
+				"agenda",
+				"financeiro",
+				"mensalistas",
+				"folgas",
+				"config",
+			].includes(viewParam)
+		) {
 			setActiveView(viewParam);
 		}
 	}, [searchParams]);
@@ -559,22 +587,22 @@ export default function DashboardHome() {
 		if (localStorage.getItem(key) === "1") return;
 		localStorage.setItem(key, "1");
 
-		const endsAt = subscription?.trial_ends_at
-			? new Date(subscription.trial_ends_at)
-			: null;
-		const daysLeft = endsAt
-			? Math.max(
+		const endsAt =
+			subscription?.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
+		const daysLeft =
+			endsAt ?
+				Math.max(
 					0,
-					Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-			  )
-			: null;
+					Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+				)
+			:	null;
 
 		toast({
-			title: "Trial do Plano Pro (7 dias) iniciado",
+			title: "Trial ArenaSys (7 dias) iniciado",
 			description:
-				daysLeft != null
-					? `Tudo liberado no Plano Pro. Restam ${daysLeft} dia(s) de trial.`
-					: "Tudo liberado no Plano Pro durante o trial de 7 dias.",
+				daysLeft != null ?
+					`Tudo liberado no ArenaSys. Restam ${daysLeft} dia(s) de trial.`
+				:	"Tudo liberado no ArenaSys durante o trial de 7 dias.",
 		});
 	}, [
 		hasAccess,
@@ -606,7 +634,7 @@ export default function DashboardHome() {
 			});
 			await refetchSubscription();
 			toast({
-				title: "Trial do Plano Pro iniciado",
+				title: "Trial ArenaSys iniciado",
 				description: "Tudo liberado por 7 dias.",
 			});
 		} catch (err: unknown) {
@@ -729,17 +757,19 @@ export default function DashboardHome() {
 					unknown
 				>;
 				const businessNameFromMetadata =
-					(typeof userMetadata.business_name === "string"
-						? userMetadata.business_name
-						: undefined) ||
-					(typeof userMetadata.arena_name === "string"
-						? userMetadata.arena_name
-						: undefined);
+					(typeof userMetadata.business_name === "string" ?
+						userMetadata.business_name
+					:	undefined) ||
+					(typeof userMetadata.arena_name === "string" ?
+						userMetadata.arena_name
+					:	undefined);
 				const desiredBusinessName =
-					typeof businessNameFromMetadata === "string" &&
-					businessNameFromMetadata.trim()
-						? businessNameFromMetadata.trim()
-						: "Minha Arena";
+					(
+						typeof businessNameFromMetadata === "string" &&
+						businessNameFromMetadata.trim()
+					) ?
+						businessNameFromMetadata.trim()
+					:	"Minha Arena";
 
 				const { error: onboardError } = await supabase.rpc("fn_onboard_user", {
 					p_business_name: desiredBusinessName,
@@ -755,7 +785,7 @@ export default function DashboardHome() {
 				if (profileCheckError) throw profileCheckError;
 				if (!profileCheck?.tenant_id) {
 					throw new Error(
-						"Seu perfil ainda está sem tenant_id. Faça logout/login e tente novamente."
+						"Seu perfil ainda está sem tenant_id. Faça logout/login e tente novamente.",
 					);
 				}
 			}
@@ -776,7 +806,7 @@ export default function DashboardHome() {
 						plan_code: selectedPlan,
 						interval: billingInterval,
 					},
-				}
+				},
 			);
 			if (!data?.url) throw new Error("Checkout não retornou URL");
 			localStorage.setItem("asaas_checkout_pending", "1");
@@ -807,14 +837,14 @@ export default function DashboardHome() {
 		const todayStr = formatLocalDate(new Date());
 		// Inclui todos os jogos de hoje (exceto cancelados)
 		const todayBookings = bookings.filter(
-			(b) => b.date === todayStr && b.status !== "cancelled"
+			(b) => b.date === todayStr && b.status !== "cancelled",
 		);
-		
+
 		const monthBookings = bookings.filter((b) => {
 			const d = new Date(b.date + "T00:00:00");
 			const now = new Date();
 			return (
-				d.getMonth() === now.getMonth() && 
+				d.getMonth() === now.getMonth() &&
 				d.getFullYear() === now.getFullYear() &&
 				b.status !== "cancelled"
 			);
@@ -827,12 +857,16 @@ export default function DashboardHome() {
 			}
 			// Verifica se está pago ou se o jogo já aconteceu (in_progress/completed do banco)
 			const statusStr = String(b.status || "");
-			if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+			if (
+				b.paymentStatus === "paid" ||
+				statusStr === "in_progress" ||
+				statusStr === "completed"
+			) {
 				return acc + (b.totalPrice || 0);
 			}
 			return acc;
 		}, 0);
-		
+
 		// Receita do mês: mesma lógica
 		const revenueMonth = monthBookings.reduce((acc, b) => {
 			if (b.paidAmount && b.paidAmount > 0) {
@@ -840,7 +874,11 @@ export default function DashboardHome() {
 			}
 			// Verifica se está pago ou se o jogo já aconteceu (in_progress/completed do banco)
 			const statusStr = String(b.status || "");
-			if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+			if (
+				b.paymentStatus === "paid" ||
+				statusStr === "in_progress" ||
+				statusStr === "completed"
+			) {
 				return acc + (b.totalPrice || 0);
 			}
 			return acc;
@@ -850,41 +888,46 @@ export default function DashboardHome() {
 		const weekDays = getCurrentWeekDays();
 		const chartData = weekDays.map((dateStr) => {
 			const dayBookings = bookings.filter(
-			(b) => b.date === dateStr && b.status !== "cancelled"
+				(b) => b.date === dateStr && b.status !== "cancelled",
 			);
-			
+
 			const total = dayBookings.reduce((acc, b) => {
 				if (b.paidAmount && b.paidAmount > 0) {
 					return acc + b.paidAmount;
 				}
 				// Verifica se está pago ou se o jogo já aconteceu (in_progress/completed do banco)
 				const statusStr = String(b.status || "");
-				if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+				if (
+					b.paymentStatus === "paid" ||
+					statusStr === "in_progress" ||
+					statusStr === "completed"
+				) {
 					return acc + (b.totalPrice || 0);
 				}
 				return acc;
 			}, 0);
-			
-			return { 
-				day: formatDateShort(dateStr), 
+
+			return {
+				day: formatDateShort(dateStr),
 				value: total,
-				date: dateStr // Mantém a data para debug
+				date: dateStr, // Mantém a data para debug
 			};
 		});
 
 		const uniqueCourts = Array.from(
 			new Set(
 				timeSlots.map((s) =>
-					JSON.stringify({ id: s.fieldId, name: s.courtName })
-				)
-			)
+					JSON.stringify({ id: s.fieldId, name: s.courtName }),
+				),
+			),
 		).map((s) => JSON.parse(s));
 		const courtsStats = uniqueCourts.map((court) => {
 			const slots = timeSlots.filter((s) => s.fieldId === court.id);
 			const available = slots.filter((s) => s.status === "available");
-			const occupancy = slots.length
-				? Math.round(((slots.length - available.length) / slots.length) * 100)
-				: 0;
+			const occupancy =
+				slots.length ?
+					Math.round(((slots.length - available.length) / slots.length) * 100)
+				:	0;
 			const nowH = new Date().getHours();
 			const nextSlot = available
 				.filter((s) => parseInt(s.time.split(":")[0]) >= nowH)
@@ -908,7 +951,7 @@ export default function DashboardHome() {
 
 	const occupancyAvg = Math.round(
 		stats.courtsStats.reduce((acc, c) => acc + c.occupancy, 0) /
-			(stats.courtsStats.length || 1)
+			(stats.courtsStats.length || 1),
 	);
 	const focusCourt = stats.courtsStats[0];
 
@@ -929,9 +972,9 @@ export default function DashboardHome() {
 			<div className="min-h-screen bg-gray-950 flex items-center justify-center">
 				<div className="flex items-center gap-2 text-gray-300">
 					<Loader2 className="h-5 w-5 animate-spin" />
-					{syncingCheckout
-						? "Confirmando pagamento..."
-						: "Carregando assinatura..."}
+					{syncingCheckout ?
+						"Confirmando pagamento..."
+					:	"Carregando assinatura..."}
 				</div>
 			</div>
 		);
@@ -988,14 +1031,12 @@ export default function DashboardHome() {
 							onClick={startTrial}
 							disabled={startingTrial}
 							className="w-full bg-white text-gray-950 hover:bg-gray-200 font-bold">
-							{startingTrial ? (
+							{startingTrial ?
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									Iniciando...
 								</>
-							) : (
-								"Começar trial do Plano Pro (7 dias)"
-							)}
+							:	"Começar trial do Plano Pro (7 dias)"}
 						</Button>
 					</CardContent>
 				</Card>
@@ -1100,9 +1141,9 @@ export default function DashboardHome() {
 											key={plan.plan}
 											className={cn(
 												"rounded-3xl border p-5 space-y-4 transition-all",
-												isActive
-													? "border-emerald-400 bg-emerald-500/10 shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
-													: "border-white/10 bg-white/5"
+												isActive ?
+													"border-emerald-400 bg-emerald-500/10 shadow-[0_20px_40px_rgba(16,185,129,0.2)]"
+												:	"border-white/10 bg-white/5",
 											)}>
 											<div className="flex items-start justify-between">
 												<div>
@@ -1140,9 +1181,9 @@ export default function DashboardHome() {
 														key={priceOption.label}
 														className={cn(
 															"rounded-2xl border p-3 text-sm",
-															priceOption.active
-																? "border-emerald-400 bg-emerald-500/10 text-white"
-																: "border-white/10 bg-white/5 text-gray-200"
+															priceOption.active ?
+																"border-emerald-400 bg-emerald-500/10 text-white"
+															:	"border-white/10 bg-white/5 text-gray-200",
 														)}>
 														<p className="uppercase tracking-[0.3em] text-[10px]">
 															{priceOption.label}
@@ -1168,11 +1209,13 @@ export default function DashboardHome() {
 						</section>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 							<div className="w-full p-3 bg-white/5 rounded-lg border border-white/10 text-center">
-								<p className="text-sm font-medium text-white mb-1">Arena System</p>
+								<p className="text-sm font-medium text-white mb-1">
+									Arena System
+								</p>
 								<p className="text-xs text-gray-400">
-									{billingInterval === "year"
-										? "R$ 1.164/ano (12x de R$ 97)"
-										: "R$ 97/mês"}
+									{billingInterval === "year" ?
+										"R$ 1.164/ano (12x de R$ 97)"
+									:	"R$ 97/mês"}
 								</p>
 							</div>
 						</div>
@@ -1182,9 +1225,9 @@ export default function DashboardHome() {
 								variant={billingInterval === "month" ? "default" : "outline"}
 								onClick={() => setBillingInterval("month")}
 								className={
-									billingInterval === "month"
-										? "bg-primary text-primary-foreground w-full"
-										: "border-white/20 hover:bg-white/5 text-white w-full"
+									billingInterval === "month" ?
+										"bg-primary text-primary-foreground w-full"
+									:	"border-white/20 hover:bg-white/5 text-white w-full"
 								}>
 								Mensal
 							</Button>
@@ -1193,9 +1236,9 @@ export default function DashboardHome() {
 								variant={billingInterval === "year" ? "default" : "outline"}
 								onClick={() => setBillingInterval("year")}
 								className={
-									billingInterval === "year"
-										? "bg-primary text-primary-foreground w-full"
-										: "border-white/20 hover:bg-white/5 text-white w-full"
+									billingInterval === "year" ?
+										"bg-primary text-primary-foreground w-full"
+									:	"border-white/20 hover:bg-white/5 text-white w-full"
 								}>
 								Anual
 							</Button>
@@ -1205,14 +1248,12 @@ export default function DashboardHome() {
 							onClick={startCheckout}
 							disabled={startingCheckout}
 							className="w-full bg-white text-gray-950 hover:bg-gray-200 font-bold">
-							{startingCheckout ? (
+							{startingCheckout ?
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									Redirecionando...
 								</>
-							) : (
-								"Assinar com Asaas"
-							)}
+							:	"Assinar com Asaas"}
 						</Button>
 						<p className="text-[11px] text-gray-400">
 							Recomendamos o Pro para usar tudo liberado. Pagamento seguro pelo
@@ -1251,20 +1292,20 @@ export default function DashboardHome() {
 				<div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]" />
 			</div>
 
-		<SidebarFixed
-			mobileOpen={mobileOpen}
-			setMobileOpen={setMobileOpen}
-			collapsed={collapsed}
-			setCollapsed={setCollapsed}
-			activeView={activeView}
-			setActiveView={setActiveView}
-			tenantId={tenantId || ""}
-		/>
+			<SidebarFixed
+				mobileOpen={mobileOpen}
+				setMobileOpen={setMobileOpen}
+				collapsed={collapsed}
+				setCollapsed={setCollapsed}
+				activeView={activeView}
+				setActiveView={setActiveView}
+				tenantId={tenantId || ""}
+			/>
 
 			<div
 				className={cn(
 					"relative z-10 flex flex-col min-h-screen transition-all duration-300 ease-out",
-					collapsed ? "md:pl-20" : "md:pl-72"
+					collapsed ? "md:pl-20" : "md:pl-72",
 				)}>
 				{/* Header Mobile */}
 				<div className="md:hidden sticky top-0 z-30 bg-[#02040a]/80 backdrop-blur-lg border-b border-white/5 px-4 py-3 flex items-center justify-between">
@@ -1284,17 +1325,17 @@ export default function DashboardHome() {
 				<TrialBanner tenantId={tenantId || ""} />
 
 				<main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
-				{activeView === "dashboard" && (
-					<div className="space-y-6">
-						<ArenaSysStatusHero
-							revenueToday={stats.revenueToday}
-							occupancyAvg={occupancyAvg}
-							nextPeak="19:00 — 21:00"
-							planLabel={planLabel}
-							planPill={planPill}
-						/>
+					{activeView === "dashboard" && (
+						<div className="space-y-6">
+							<ArenaSysStatusHero
+								revenueToday={stats.revenueToday}
+								occupancyAvg={occupancyAvg}
+								nextPeak="19:00 — 21:00"
+								planLabel={planLabel}
+								planPill={planPill}
+							/>
 
-						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+							<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
 								<MetricPill
 									label="Hoje"
 									value={formatCurrency(stats.revenueToday)}
@@ -1327,10 +1368,9 @@ export default function DashboardHome() {
 									</CardHeader>
 									<CardContent className="h-[200px] sm:h-[250px] px-2 sm:px-4">
 										<ResponsiveContainer width="100%" height="100%">
-											<AreaChart 
+											<AreaChart
 												data={stats.chartData}
-												margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
-											>
+												margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
 												<defs>
 													<linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
 														<stop

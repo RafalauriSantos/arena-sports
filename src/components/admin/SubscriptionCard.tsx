@@ -4,7 +4,14 @@
  * Focado em clareza, conversão e segurança visual
  */
 
-import { CreditCard, Calendar, CheckCircle2, AlertCircle, Clock, Sparkles } from "lucide-react";
+import {
+	CreditCard,
+	Calendar,
+	CheckCircle2,
+	AlertCircle,
+	Clock,
+	Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -34,7 +41,11 @@ export function SubscriptionCard({
 
 	// Calcular dias restantes do trial
 	const computeTrialDaysLeft = (): number | null => {
-		if (!isTrial || !subscription.trial_started_at || !subscription.trial_ends_at) {
+		if (
+			!isTrial ||
+			!subscription.trial_started_at ||
+			!subscription.trial_ends_at
+		) {
 			return null;
 		}
 		const endsAt = new Date(subscription.trial_ends_at);
@@ -49,7 +60,11 @@ export function SubscriptionCard({
 
 	// Calcular progresso do trial (0-100)
 	const trialProgress = (() => {
-		if (!isTrial || !subscription.trial_started_at || !subscription.trial_ends_at) {
+		if (
+			!isTrial ||
+			!subscription.trial_started_at ||
+			!subscription.trial_ends_at
+		) {
 			return 0;
 		}
 		const started = new Date(subscription.trial_started_at);
@@ -81,7 +96,9 @@ export function SubscriptionCard({
 	};
 
 	const displayPrice = getDisplayPrice();
-	const monthlyPrice = billingInterval === "month" ? displayPrice : Math.round(displayPrice * 12);
+	// Anual tem desconto de 2 meses grátis (paga 10 meses, não 12)
+	const monthlyPrice =
+		billingInterval === "month" ? displayPrice : Math.round(displayPrice * 10);
 	const priceLabel = billingInterval === "month" ? "/mês" : "/ano";
 
 	// Status badge config
@@ -147,7 +164,7 @@ export function SubscriptionCard({
 					<div className="space-y-1">
 						<div className="flex items-center gap-2">
 							<h3 className="text-2xl font-semibold text-gray-900">
-								{subscription.plan_name || "Arena System"}
+								{subscription.plan_name || "ArenaSys"}
 							</h3>
 							{isFounder && (
 								<span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full">
@@ -160,9 +177,8 @@ export function SubscriptionCard({
 					<div
 						className={cn(
 							"flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium",
-							statusConfig.color
-						)}
-					>
+							statusConfig.color,
+						)}>
 						<StatusIcon className={cn("h-3.5 w-3.5", statusConfig.iconColor)} />
 						{statusConfig.label}
 					</div>
@@ -170,7 +186,7 @@ export function SubscriptionCard({
 
 				{/* Preço */}
 				<div className="space-y-2">
-					{isFounder ? (
+					{isFounder ?
 						<div className="space-y-1">
 							{/* Preço com desconto */}
 							<div className="flex items-baseline gap-2">
@@ -183,9 +199,9 @@ export function SubscriptionCard({
 							<div className="flex items-center gap-2">
 								<span className="text-lg text-gray-400 line-through">
 									{formatPrice(
-										billingInterval === "month"
-											? (subscription.monthly_price || 9700)
-											: Math.round((subscription.monthly_price || 9700) * 12)
+										billingInterval === "month" ?
+											subscription.monthly_price || 9700
+										:	Math.round((subscription.monthly_price || 9700) * 10),
 									)}
 								</span>
 								<span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full">
@@ -196,14 +212,13 @@ export function SubscriptionCard({
 								✨ Desconto permanente de Founder aplicado
 							</p>
 						</div>
-					) : (
-						<div className="flex items-baseline gap-2">
+					:	<div className="flex items-baseline gap-2">
 							<span className="text-4xl font-bold text-gray-900">
 								{formatPrice(monthlyPrice)}
 							</span>
 							<span className="text-lg text-gray-500">{priceLabel}</span>
 						</div>
-					)}
+					}
 					{billingInterval === "year" && (
 						<p className="text-sm text-gray-500">
 							Equivale a {formatPrice(Math.round(monthlyPrice / 12))}/mês
@@ -216,19 +231,20 @@ export function SubscriptionCard({
 					<div className="space-y-2">
 						<div className="flex items-center justify-between text-sm">
 							<span className="text-gray-600 font-medium">
-								Restam {trialDaysLeft} dia{trialDaysLeft !== 1 ? "s" : ""} de {trialTotalDays}
+								Restam {trialDaysLeft} dia{trialDaysLeft !== 1 ? "s" : ""} de{" "}
+								{trialTotalDays}
 							</span>
-							<span className="text-gray-500">{Math.round(trialProgress)}% usado</span>
+							<span className="text-gray-500">
+								{Math.round(trialProgress)}% usado
+							</span>
 						</div>
 						<Progress
 							value={trialProgress}
 							className={cn(
 								"h-2",
-								trialDaysLeft <= 2
-									? "bg-red-100 [&>div]:bg-red-500"
-									: trialDaysLeft <= 4
-									? "bg-amber-100 [&>div]:bg-amber-500"
-									: "bg-emerald-100 [&>div]:bg-emerald-500"
+								trialDaysLeft <= 2 ? "bg-red-100 [&>div]:bg-red-500"
+								: trialDaysLeft <= 4 ? "bg-amber-100 [&>div]:bg-amber-500"
+								: "bg-emerald-100 [&>div]:bg-emerald-500",
 							)}
 						/>
 						{trialDaysLeft <= 2 && (
@@ -241,64 +257,58 @@ export function SubscriptionCard({
 				)}
 
 				{/* Botão de Ação */}
-				{isTrial ? (
+				{isTrial ?
 					<Button
 						onClick={onStartCheckout}
 						disabled={isStartingCheckout}
-						className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 font-semibold text-base shadow-sm"
-					>
-						{isStartingCheckout ? (
+						className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 font-semibold text-base shadow-sm">
+						{isStartingCheckout ?
 							<>
 								<Clock className="mr-2 h-4 w-4 animate-spin" />
 								Redirecionando...
 							</>
-						) : (
-							<>
+						:	<>
 								<Sparkles className="mr-2 h-4 w-4" />
 								Assinar Agora e Garantir Preço
 							</>
-						)}
+						}
 					</Button>
-				) : isActive ? (
+				: isActive ?
 					<Button
 						variant="outline"
-						className="w-full h-12 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
-					>
+						className="w-full h-12 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">
 						<CreditCard className="mr-2 h-4 w-4" />
 						Gerenciar Assinatura
 					</Button>
-				) : (
-					<Button
+				:	<Button
 						onClick={onStartCheckout}
 						disabled={isStartingCheckout}
-						className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 font-semibold text-base shadow-sm"
-					>
-						{isStartingCheckout ? (
+						className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 font-semibold text-base shadow-sm">
+						{isStartingCheckout ?
 							<>
 								<Clock className="mr-2 h-4 w-4 animate-spin" />
 								Redirecionando...
 							</>
-						) : (
-							"Reativar Assinatura"
-						)}
+						:	"Reativar Assinatura"}
 					</Button>
-				)}
+				}
 
 				{/* Seletor de Intervalo (apenas se trial ou canceled) */}
 				{(isTrial || isCanceled) && (
 					<div className="pt-4 border-t border-gray-200">
-						<p className="text-sm font-medium text-gray-700 mb-3">Escolha o período:</p>
+						<p className="text-sm font-medium text-gray-700 mb-3">
+							Escolha o período:
+						</p>
 						<div className="grid grid-cols-2 gap-3">
 							<button
 								type="button"
 								onClick={() => onBillingIntervalChange("month")}
 								className={cn(
 									"px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all relative",
-									billingInterval === "month"
-										? "border-gray-900 bg-gray-900 text-white"
-										: "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-								)}
-							>
+									billingInterval === "month" ?
+										"border-gray-900 bg-gray-900 text-white"
+									:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+								)}>
 								Mensal
 								<div className="text-xs mt-0.5 opacity-75">
 									{formatPrice(displayPrice)}/mês
@@ -314,11 +324,10 @@ export function SubscriptionCard({
 								onClick={() => onBillingIntervalChange("year")}
 								className={cn(
 									"px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all relative",
-									billingInterval === "year"
-										? "border-gray-900 bg-gray-900 text-white"
-										: "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-								)}
-							>
+									billingInterval === "year" ?
+										"border-gray-900 bg-gray-900 text-white"
+									:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300",
+								)}>
 								Anual
 								<div className="text-xs mt-0.5 opacity-75">
 									{formatPrice(Math.round(displayPrice * 12))}/ano
@@ -339,7 +348,9 @@ export function SubscriptionCard({
 
 			{/* Bloco 2: Informações de Cobrança */}
 			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-				<h4 className="text-lg font-semibold text-gray-900">Informações de Cobrança</h4>
+				<h4 className="text-lg font-semibold text-gray-900">
+					Informações de Cobrança
+				</h4>
 
 				{/* Próxima Fatura */}
 				{nextBillingDate && (
@@ -374,14 +385,13 @@ export function SubscriptionCard({
 				{/* Histórico Recente */}
 				<div className="space-y-3">
 					<p className="text-sm font-medium text-gray-700">Histórico Recente</p>
-					{isTrial ? (
+					{isTrial ?
 						<div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
 							<p className="text-sm text-amber-800">
 								✨ Sua primeira fatura será gerada ao fim do período de teste.
 							</p>
 						</div>
-					) : (
-						<div className="space-y-2">
+					:	<div className="space-y-2">
 							{/* Placeholder para faturas futuras */}
 							<div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
 								<p className="text-sm text-gray-500 text-center">
@@ -389,13 +399,14 @@ export function SubscriptionCard({
 								</p>
 							</div>
 						</div>
-					)}
+					}
 				</div>
 
 				{/* Segurança */}
 				<div className="pt-4 border-t border-gray-200">
 					<p className="text-xs text-gray-500 text-center">
-						🔒 Pagamento seguro processado pelo Asaas. Você pode cancelar a qualquer momento.
+						🔒 Pagamento seguro processado pelo Asaas. Você pode cancelar a
+						qualquer momento.
 					</p>
 				</div>
 			</div>

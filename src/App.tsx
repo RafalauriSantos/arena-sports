@@ -15,7 +15,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 // Lazy load pages com tratamento de erro
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
-const Welcome = lazy(() => 
+const Welcome = lazy(() =>
 	import("./pages/Welcome").catch((error) => {
 		console.error("Erro ao carregar Welcome.tsx:", error);
 		// Retorna um componente de fallback
@@ -26,19 +26,19 @@ const Welcome = lazy(() =>
 						<p className="text-red-400 mb-4">Erro ao carregar página Welcome</p>
 						<button
 							onClick={() => window.location.reload()}
-							className="px-4 py-2 bg-emerald-500 text-black rounded"
-						>
+							className="px-4 py-2 bg-emerald-500 text-black rounded">
 							Recarregar
 						</button>
 					</div>
 				</div>
 			),
 		};
-	})
+	}),
 );
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Support = lazy(() => import("./pages/Support"));
+const About = lazy(() => import("./pages/About"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
 // BookingPublic - Import direto temporariamente para forçar reload
 import BookingPublicComponent from "./pages/BookingPublic";
@@ -71,21 +71,22 @@ const RouteErrorElement = () => (
 	<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center p-4">
 		<div className="max-w-md w-full space-y-4 text-center">
 			<div className="bg-[#0F1115] border border-red-500/20 rounded-2xl p-6">
-				<h1 className="text-xl font-bold text-white mb-2">Erro ao carregar página</h1>
+				<h1 className="text-xl font-bold text-white mb-2">
+					Erro ao carregar página
+				</h1>
 				<p className="text-gray-400 text-sm mb-4">
-					Não foi possível carregar esta página. Tente recarregar ou voltar para a home.
+					Não foi possível carregar esta página. Tente recarregar ou voltar para
+					a home.
 				</p>
 				<div className="flex gap-3 justify-center">
 					<button
 						onClick={() => window.location.reload()}
-						className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black rounded font-bold text-sm"
-					>
+						className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black rounded font-bold text-sm">
 						Recarregar Página
 					</button>
 					<a
 						href="/"
-						className="px-4 py-2 border border-white/20 hover:bg-white/5 rounded text-sm"
-					>
+						className="px-4 py-2 border border-white/20 hover:bg-white/5 rounded text-sm">
 						Voltar para Home
 					</a>
 				</div>
@@ -96,47 +97,52 @@ const RouteErrorElement = () => (
 
 const router = createBrowserRouter(
 	[
-		{ 
-			path: "/", 
+		{
+			path: "/",
 			element: <Landing />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
-		{ 
-			path: "/login", 
+		{
+			path: "/login",
 			element: <Login />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
-		{ 
-			path: "/welcome", 
+		{
+			path: "/welcome",
 			element: <Welcome />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
-		{ 
-			path: "/privacy", 
+		{
+			path: "/privacy",
 			element: <PrivacyPolicy />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
-		{ 
-			path: "/terms", 
+		{
+			path: "/terms",
 			element: <TermsOfService />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
-		{ 
-			path: "/support", 
+		{
+			path: "/support",
 			element: <Support />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
+		},
+		{
+			path: "/about",
+			element: <About />,
+			errorElement: <RouteErrorElement />,
 		},
 
 		{ path: "/admin", element: <Navigate to="/dashboard" replace /> },
-		{ 
-			path: "/dashboard/*", 
+		{
+			path: "/dashboard/*",
 			element: <AdminIndex />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
-		{ 
-			path: "/agendar/:subdomain", 
+		{
+			path: "/agendar/:subdomain",
 			element: <BookingPublic />,
-			errorElement: <RouteErrorElement />
+			errorElement: <RouteErrorElement />,
 		},
 
 		{ path: "*", element: <NotFound /> },
@@ -146,7 +152,7 @@ const router = createBrowserRouter(
 			v7_startTransition: true,
 			v7_relativeSplatPath: true,
 		},
-	}
+	},
 );
 
 const App = () => (

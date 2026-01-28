@@ -20,8 +20,8 @@ export type TenantSubscription = {
 };
 
 const DEFAULT_SUB: TenantSubscription = {
-    plan_code: "start",
-    plan_name: "Trial do Plano Pro (7 dias) — tudo liberado",
+    plan_code: "arena",
+    plan_name: "ArenaSys - Trial de 7 dias (tudo liberado)",
     monthly_price: 0,
     billing_interval: null,
     status: "trial",
@@ -129,11 +129,13 @@ export function useSubscriptionAccess() {
         // the wrong plan if the database row was written inconsistently.
         const normalizedPlanCode = (() => {
             const planCode = (rawSub.plan_code ?? "").toLowerCase();
-            if (planCode === "start" || planCode === "pro") return planCode;
+            // Accept arena, pro, or start as valid codes - all map to the single plan
+            if (planCode === "arena" || planCode === "pro" || planCode === "start") return "arena";
             const name = (rawSub.plan_name ?? "").toLowerCase();
-            if (name.includes("pro")) return "pro";
-            if (name.includes("start")) return "start";
-            return "start";
+            if (name.includes("arena")) return "arena";
+            if (name.includes("pro")) return "arena";
+            if (name.includes("start")) return "arena";
+            return "arena";
         })();
 
         const normalizedInterval = (() => {
@@ -146,7 +148,7 @@ export function useSubscriptionAccess() {
             plan_code: normalizedPlanCode,
             billing_interval: normalizedInterval,
             plan_name:
-                rawSub.plan_name ?? (normalizedPlanCode === "pro" ? "Arena Pro" : "Arena Start"),
+                rawSub.plan_name ?? "ArenaSys",
             // Preservar is_founder do banco
             is_founder: rawSub.is_founder ?? false,
         };

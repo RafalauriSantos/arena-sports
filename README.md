@@ -1,4 +1,4 @@
-# ⚽ Arena Sports
+# ⚽ ArenaSys
 
 > Plataforma SaaS moderna para gestão inteligente de quadras e complexos esportivos.
 
@@ -12,7 +12,7 @@
 
 ## 💻 Sobre o Projeto
 
-O **Arena Sports** é uma solução B2B/B2C desenvolvida para resolver a dor de cabeça no agendamento de quadras esportivas. O sistema elimina o uso de planilhas e conversas demoradas no WhatsApp, oferecendo:
+O **ArenaSys** é uma solução B2B/B2C desenvolvida para resolver a dor de cabeça no agendamento de quadras esportivas. O sistema elimina o uso de planilhas e conversas demoradas no WhatsApp, oferecendo:
 
 1.  **Para o Dono (Admin):** Um painel de controle completo para gerenciar horários e visualizar a ocupação.
 2.  **Para o Jogador (Cliente Final):** Um link público e rápido para verificar disponibilidade e realizar agendamentos.
@@ -20,7 +20,7 @@ O **Arena Sports** é uma solução B2B/B2C desenvolvida para resolver a dor de 
 ## 🎨 Layout
 
 <div align="center">
-	<img src="https://via.placeholder.com/800x400?text=Print+do+Dashboard+Admin" alt="Dashboard Admin" width="700">
+	<img src="https://via.placeholder.com/800x400?text=ArenaSys+Dashboard" alt="Dashboard Admin" width="700">
 </div>
 
 ## 🏠 Landing Page
