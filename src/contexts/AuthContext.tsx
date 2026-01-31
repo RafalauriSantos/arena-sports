@@ -74,6 +74,15 @@ const isUniqueViolation = (err: unknown) => {
 	return code === "23505" || /duplicate key|unique/i.test(message);
 };
 
+const isRlsOrPolicyError = (err: unknown) => {
+	const code = getStringProp(err, "code") ?? "";
+	const message = getStringProp(err, "message") ?? "";
+	return (
+		code === "42501" ||
+		/row-level security|policy|violates.*policy|permission denied/i.test(message)
+	);
+};
+
 const ensureProfileRowById = async (userId: string, email?: string | null) => {
 	// Verificar se o perfil já existe antes de tentar inserir
 	const existing = await fetchProfile(userId);
@@ -87,13 +96,29 @@ const ensureProfileRowById = async (userId: string, email?: string | null) => {
 			.from("profiles")
 			.upsert(payload, { onConflict: "id" });
 		if (error) {
-			// Se ainda assim der erro de violação única, significa que foi criado em outra thread
 			if (isUniqueViolation(error)) return;
+			// Se falhou por RLS/policy, tentar via RPC (SECURITY DEFINER)
+			if (isRlsOrPolicyError(error)) {
+				const { error: rpcError } = await supabase.rpc("create_profile_if_missing", {
+					p_user_id: userId,
+					p_email: email ?? null,
+				});
+				if (rpcError && !isUniqueViolation(rpcError)) throw rpcError;
+				return;
+			}
 			throw error;
 		}
 	} catch (err) {
-		// Ignorar apenas erros de violação única (registro já existe)
 		if (isUniqueViolation(err)) return;
+		// Fallback: RPC para criar perfil quando cliente falha por RLS
+		if (isRlsOrPolicyError(err)) {
+			const { error: rpcError } = await supabase.rpc("create_profile_if_missing", {
+				p_user_id: userId,
+				p_email: email ?? null,
+			});
+			if (rpcError && !isUniqueViolation(rpcError)) throw rpcError;
+			return;
+		}
 		throw err;
 	}
 };
@@ -249,9 +274,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const hasAccessToken = Boolean(session?.access_token);
 
 			if (!sessionUser || !hasAccessToken) {
+				setUser(null);
+				setUserProfile(null);
 				setTenantId(null);
 				setLoading(false);
 				onboardingState.current = { userId: null, attempts: 0 };
+				// Redireciona para login se estiver em rota protegida (ex.: refresh token expirado/inválido)
+				if (
+					typeof window !== "undefined" &&
+					(window.location.pathname.startsWith("/dashboard") ||
+						window.location.pathname.startsWith("/admin"))
+				) {
+					window.location.replace("/login?session_expired=1");
+				}
 				return;
 			}
 
@@ -324,7 +359,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				}
 				// If something smells like auth/session problems, sign out to stop loops.
 				if (
-					/invalid jwt|jwt expired|not authenticated|unauthorized|invalid refresh token/i.test(
+					/invalid jwt|jwt expired|not authenticated|unauthorized|invalid refresh token|refresh token not found/i.test(
 						message
 					)
 				) {
@@ -335,8 +370,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 					}
 					setUser(null);
 					setUserProfile(null);
+					setTenantId(null);
+					// Redireciona para login em rotas protegidas (evita tela quebrada após token inválido)
+					if (
+						typeof window !== "undefined" &&
+						(window.location.pathname.startsWith("/dashboard") ||
+							window.location.pathname.startsWith("/admin"))
+					) {
+						window.location.replace("/login?session_expired=1");
+					}
+				} else {
+					setTenantId(null);
 				}
-				setTenantId(null);
 			} finally {
 				if (mounted) setLoading(false);
 			}

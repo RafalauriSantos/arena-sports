@@ -30,7 +30,7 @@ import {
 	AreaChart,
 	Area,
 	XAxis,
-	Tooltip,
+	Tooltip as RechartsTooltip,
 	CartesianGrid,
 	ResponsiveContainer,
 } from "recharts";
@@ -51,6 +51,11 @@ import {
 import { TrialBanner } from "@/components/admin/TrialBanner";
 import { TrialCountdown } from "@/components/admin/TrialCountdown";
 import { SupportModal } from "@/components/admin/SupportModal";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const DashboardSkeleton = () => (
 	<div className="min-h-screen w-full flex bg-[#02040a]">
@@ -309,67 +314,110 @@ const SidebarFixed = ({
 						)}
 					</button>
 
-					{menuItems.map((item) => (
-						<button
-							key={item.id}
-							onClick={() => {
-								setActiveView(item.id);
-								setMobileOpen(false);
-							}}
-							className={cn(
-								"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
-								activeView === item.id ?
-									"bg-white/10 text-white font-medium"
-								:	"text-gray-400 hover:bg-white/5 hover:text-white",
-								collapsed ? "justify-center" : "",
-							)}
-							title={collapsed ? item.label : ""}>
-							<item.icon
+					{menuItems.map((item) => {
+						const btn = (
+							<button
+								onClick={() => {
+									setActiveView(item.id);
+									setMobileOpen(false);
+								}}
 								className={cn(
-									"h-5 w-5 shrink-0 transition-colors",
+									"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
 									activeView === item.id ?
-										"text-emerald-400"
-									:	"group-hover:text-white",
+										"bg-white/10 text-white font-medium border-l-emerald-500"
+									:	"text-gray-400 hover:bg-white/5 hover:text-white",
+									collapsed ? "justify-center" : "",
+								)}>
+								<item.icon
+									className={cn(
+										"h-5 w-5 shrink-0 transition-colors",
+										activeView === item.id ?
+											"text-emerald-400"
+										:	"group-hover:text-white",
+									)}
+								/>
+								{!collapsed && <span className="text-sm">{item.label}</span>}
+								{!collapsed && activeView === item.id && (
+									<div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor]" />
 								)}
-							/>
-							{!collapsed && <span className="text-sm">{item.label}</span>}
-							{!collapsed && activeView === item.id && (
-								<div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor]" />
-							)}
-						</button>
-					))}
+							</button>
+						);
+						return collapsed ? (
+							<Tooltip key={item.id} delayDuration={300}>
+								<TooltipTrigger asChild>{btn}</TooltipTrigger>
+								<TooltipContent side="right" className="bg-[#0F1115] border-white/10 text-white">
+									{item.label}
+								</TooltipContent>
+							</Tooltip>
+						) : (
+							<div key={item.id}>{btn}</div>
+						);
+					})}
 				</div>
 
 				<div className="p-3 border-t border-white/5 bg-black/20 backdrop-blur-md">
-					<button
-						onClick={() => {
-							setActiveView("config");
-							setMobileOpen(false);
-						}}
-						className={cn(
-							"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2",
-							activeView === "config" && "bg-white/5 text-white",
-							collapsed ? "justify-center" : "",
-						)}
-						title="Configurações">
-						<Settings className="h-5 w-5 shrink-0" />
-						{!collapsed && <span className="text-sm">Configurações</span>}
-					</button>
+					{collapsed ? (
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									onClick={() => {
+										setActiveView("config");
+										setMobileOpen(false);
+									}}
+									className={cn(
+										"w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+										activeView === "config" && "bg-white/5 text-white border-l-emerald-500",
+									)}>
+									<Settings className="h-5 w-5 shrink-0" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right" className="bg-[#0F1115] border-white/10 text-white">
+								Configurações
+							</TooltipContent>
+						</Tooltip>
+					) : (
+						<button
+							onClick={() => {
+								setActiveView("config");
+								setMobileOpen(false);
+							}}
+							className={cn(
+								"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+								activeView === "config" && "bg-white/5 text-white border-l-emerald-500",
+							)}>
+							<Settings className="h-5 w-5 shrink-0" />
+							<span className="text-sm">Configurações</span>
+						</button>
+					)}
 
 					{/* Botão de Suporte */}
-					<button
-						onClick={() => {
-							setSupportModalOpen(true);
-							setMobileOpen(false);
-						}}
-						className={cn(
-							"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2",
-							collapsed ? "justify-center" : "",
-						)}
-						title="Falar com Suporte">
-						<Headphones className="h-5 w-5 shrink-0" />
-						{!collapsed && <span className="text-sm">Suporte</span>}
-					</button>
+					{collapsed ? (
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									onClick={() => {
+										setSupportModalOpen(true);
+										setMobileOpen(false);
+									}}
+									className="w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
+									<Headphones className="h-5 w-5 shrink-0" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right" className="bg-[#0F1115] border-white/10 text-white">
+								Suporte
+							</TooltipContent>
+						</Tooltip>
+					) : (
+						<button
+							onClick={() => {
+								setSupportModalOpen(true);
+								setMobileOpen(false);
+							}}
+							className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
+							<Headphones className="h-5 w-5 shrink-0" />
+							<span className="text-sm">Suporte</span>
+						</button>
+					)}
 
 					<div
 						className={cn(
@@ -469,11 +517,14 @@ const ArenaSysStatusHero = ({
 
 	return (
 		<div
-			className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#0F1115]/80 border border-white/5 p-4 sm:p-6 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
+			className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#0F1115]/80 border border-white/5 p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
 			{/* Glow Effect Topo */}
 			<div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
 			<div className="relative z-10 flex flex-col items-center text-center space-y-2 sm:space-y-3">
+				<p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 w-full text-left sm:text-center">
+					Visão do dia
+				</p>
 				<div className="inline-flex items-center gap-2 bg-white/5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/5 shadow-inner">
 					<span
 						className={`h-2 w-2 rounded-full ${statusConfig.color} animate-pulse`}
@@ -524,16 +575,16 @@ type MetricPillProps = {
 };
 
 const MetricPill = ({ label, value, icon: Icon }: MetricPillProps) => (
-	<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0F1115]/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all backdrop-blur-md group">
+	<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0F1115]/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 backdrop-blur-md group hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/5">
 		<div className="flex justify-between items-start mb-1 sm:mb-2">
 			<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
 				{label}
 			</span>
 			{Icon && (
-				<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
+				<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 group-hover:text-emerald-400 transition-colors duration-300 flex-shrink-0" />
 			)}
 		</div>
-		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate">
+		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate min-w-0">
 			{value}
 		</span>
 	</div>
@@ -987,11 +1038,13 @@ export default function DashboardHome() {
 			};
 		});
 
+		const chartHasNoData = chartData.every((d) => (d.value ?? 0) === 0);
 		return {
 			revenueToday,
 			revenueMonth,
 			gamesToday: todayBookings.length,
 			chartData,
+			chartHasNoData,
 			courtsStats,
 		};
 	}, [bookings, timeSlots]);
@@ -1426,6 +1479,20 @@ export default function DashboardHome() {
 										</CardTitle>
 									</CardHeader>
 									<CardContent className="h-[200px] sm:h-[250px] px-2 sm:px-4">
+										{stats.chartHasNoData ? (
+											<div className="h-full flex flex-col items-center justify-center text-center gap-3 py-6">
+												<p className="text-gray-500 text-sm">
+													Nenhuma receita nesta semana ainda.
+												</p>
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => setActiveView("agenda")}
+													className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 text-xs font-medium rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1115]">
+													Ver agenda
+												</Button>
+											</div>
+										) : (
 										<ResponsiveContainer width="100%" height="100%">
 											<AreaChart
 												data={stats.chartData}
@@ -1459,7 +1526,7 @@ export default function DashboardHome() {
 													textAnchor="middle"
 													padding={{ left: 5, right: 5 }}
 												/>
-												<Tooltip
+												<RechartsTooltip
 													contentStyle={{
 														backgroundColor: "#18181b",
 														borderRadius: "12px",
@@ -1486,6 +1553,7 @@ export default function DashboardHome() {
 												/>
 											</AreaChart>
 										</ResponsiveContainer>
+										)}
 									</CardContent>
 								</Card>
 
@@ -1495,7 +1563,7 @@ export default function DashboardHome() {
 											<div>
 												<div className="flex justify-between items-start mb-4">
 													<span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
-														Destaque
+														Quadra em destaque
 													</span>
 													<Trophy className="w-5 h-5 text-gray-600" />
 												</div>
@@ -1509,13 +1577,28 @@ export default function DashboardHome() {
 													</span>
 												</p>
 											</div>
-											<div className="mt-4 pt-4 border-t border-white/5">
-												<p className="text-[10px] text-gray-500 uppercase mb-1">
-													Próximo Livre
-												</p>
-												<p className="text-2xl font-mono text-white tracking-tighter">
-													{focusCourt.nextFree}
-												</p>
+											<div className="mt-4 pt-4 border-t border-white/5 space-y-3">
+												<div>
+													<p className="text-[10px] text-gray-500 uppercase mb-1">
+														Próximo Livre
+													</p>
+													<p
+														className={cn(
+															"text-2xl font-mono tracking-tighter",
+															focusCourt.nextFree === "Lotado" ?
+																"text-amber-400 font-bold"
+															:	"text-white",
+														)}>
+														{focusCourt.nextFree}
+													</p>
+												</div>
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => setActiveView("agenda")}
+													className="w-full text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 text-xs font-medium rounded-xl">
+													Ver agenda
+												</Button>
 											</div>
 										</CardContent>
 									</Card>

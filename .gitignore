@@ -68,3 +68,6 @@ supabase/.temp/
 # Environment files
 *.env
 *.env.*
+
+# Agent / Cursor skills (local reference)
+.agent/

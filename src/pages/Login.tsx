@@ -41,8 +41,17 @@ const Login = () => {
 	useEffect(() => {
 		const params = new URLSearchParams(location.search);
 		const qMode = params.get("mode");
+		const sessionExpired = params.get("session_expired");
 		if (qMode === "signup") setMode("signup");
 		if (qMode === "signin") setMode("signin");
+		if (sessionExpired === "1") {
+			setError("Sua sessão expirou ou o token de renovação é inválido. Faça login novamente.");
+			// Remove o parâmetro da URL para não repetir a mensagem ao recarregar
+			const next = new URLSearchParams(location.search);
+			next.delete("session_expired");
+			const clean = location.pathname + (next.toString() ? `?${next.toString()}` : "");
+			navigate(clean, { replace: true });
+		}
 	}, [location.search]);
 
 	// --- LÓGICA DE SESSÃO MANTIDA ---
