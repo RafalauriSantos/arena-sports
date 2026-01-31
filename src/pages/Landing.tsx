@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	TrendingUp,
@@ -17,12 +17,111 @@ import {
 	Wallet,
 	HelpCircle,
 	MessageCircle,
+	Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { SEO } from "@/components/SEO";
 import { PremiumFooter } from "@/components/PremiumFooter";
+
+// --- HOOK: ANIMAÇÃO DE CONTAGEM (Count-Up) ---
+function useCountUp(
+	end: number,
+	duration: number = 2000,
+	shouldStart: boolean = true,
+	decimals: number = 0,
+): number {
+	const [count, setCount] = useState(0);
+	const startTimeRef = useRef<number | null>(null);
+	const hasStartedRef = useRef(false);
+
+	useEffect(() => {
+		if (!shouldStart || hasStartedRef.current) return;
+		hasStartedRef.current = true;
+
+		const startValue = 0;
+
+		const animate = (timestamp: number) => {
+			if (!startTimeRef.current) startTimeRef.current = timestamp;
+			const elapsed = timestamp - startTimeRef.current;
+			const progress = Math.min(elapsed / duration, 1);
+
+			// Ease-out-expo
+			const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+			const current = startValue + (end - startValue) * easeOutExpo;
+
+			// Se decimals=0, arredonda. Se >0, mantém precisão.
+			setCount(decimals === 0 ? Math.round(current) : current);
+
+			if (progress < 1) requestAnimationFrame(animate);
+		};
+
+		requestAnimationFrame(animate);
+	}, [end, duration, shouldStart, decimals]);
+
+	return count;
+}
+
+// --- HOOK: DETECTAR VISIBILIDADE (IntersectionObserver) ---
+function useInView(
+	options?: IntersectionObserverInit,
+): [React.RefObject<HTMLDivElement>, boolean] {
+	const ref = useRef<HTMLDivElement>(null);
+	const [isInView, setIsInView] = useState(false);
+
+	useEffect(() => {
+		const element = ref.current;
+		if (!element) return;
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setIsInView(true);
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.2, ...options },
+		);
+
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, [options]);
+
+	return [ref, isInView];
+}
+
+// --- COMPONENTE: NÚMERO ANIMADO ---
+function AnimatedValue({
+	value,
+	prefix = "",
+	suffix = "",
+	className = "",
+	duration = 2000,
+	decimals = 0,
+}: {
+	value: number;
+	prefix?: string;
+	suffix?: string;
+	className?: string;
+	duration?: number;
+	decimals?: number;
+}) {
+	const [ref, isInView] = useInView();
+	const count = useCountUp(value, duration, isInView, decimals);
+
+	return (
+		<span ref={ref} className={`number-display ${className}`}>
+			{prefix}
+			{count.toLocaleString("pt-BR", {
+				minimumFractionDigits: decimals,
+				maximumFractionDigits: decimals,
+			})}
+			{suffix}
+		</span>
+	);
+}
 
 // --- DEPOIMENTOS REMOVIDOS ---
 // Removidos para manter autenticidade. Adicione depoimentos reais conforme receber feedback dos clientes.
@@ -469,7 +568,7 @@ export default function LandingPage() {
 						<div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
 							<Button
 								onClick={() => navigate("/login")}
-								className="h-11 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
+								className="h-11 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto glow-pulse-delayed btn-press-premium">
 								Começar Grátis por 7 Dias
 							</Button>
 							<a
@@ -509,9 +608,11 @@ export default function LandingPage() {
 					<div className="max-w-5xl mx-auto relative z-10">
 						{/* Badge de Urgência */}
 						<div className="flex justify-center mb-6">
-							<div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/40 rounded-full animate-pulse">
-								<div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-								<p className="text-[10px] text-red-400 font-black tracking-widest uppercase">
+							<div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/40 rounded-full badge-urgent-glow relative overflow-hidden">
+								{/* Shimmer overlay */}
+								<div className="absolute inset-0 shimmer-continuous" />
+								<div className="w-2 h-2 bg-red-500 rounded-full animate-ping relative z-10" />
+								<p className="text-[10px] text-red-400 font-black tracking-widest uppercase relative z-10">
 									⚡ Oferta Limitada - Apenas 20 Vagas
 								</p>
 							</div>
@@ -720,7 +821,7 @@ export default function LandingPage() {
 											Ocupação Média
 										</span>
 										<span className="text-red-400 font-mono font-bold">
-											~45%
+											~<AnimatedValue value={45} suffix="%" duration={1500} />
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
@@ -728,7 +829,7 @@ export default function LandingPage() {
 											Prejuízo Mensal (Vagos)
 										</span>
 										<span className="text-red-400 font-mono font-bold">
-											- R$ 4.800
+											- R$ <AnimatedValue value={4800} duration={1500} />
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
@@ -736,7 +837,8 @@ export default function LandingPage() {
 											Tempo no WhatsApp
 										</span>
 										<span className="text-red-400 font-mono font-bold">
-											4h / dia
+											<AnimatedValue value={4} suffix="h" duration={1000} /> /
+											dia
 										</span>
 									</div>
 								</div>
@@ -750,7 +852,8 @@ export default function LandingPage() {
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
 										<span className="text-white text-sm">Ocupação Média</span>
 										<span className="text-emerald-400 font-mono font-bold">
-											+72% 🚀
+											+<AnimatedValue value={72} suffix="%" duration={2000} />{" "}
+											🚀
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
@@ -758,13 +861,14 @@ export default function LandingPage() {
 											Receita Recuperada
 										</span>
 										<span className="text-emerald-400 font-mono font-bold">
-											+ R$ 6.400
+											+ R$ <AnimatedValue value={6400} duration={2000} />
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
 										<span className="text-white text-sm">Tempo de Gestão</span>
 										<span className="text-emerald-400 font-mono font-bold">
-											15 min / dia
+											<AnimatedValue value={15} suffix=" min" duration={2000} />{" "}
+											/ dia
 										</span>
 									</div>
 								</div>
@@ -774,7 +878,10 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- SEÇÃO "POR QUE NÃO WHATSAPP?" --- */}
-				<section id="comparison" className="py-20 px-6">
+				<section
+					id="comparison"
+					data-animate
+					className={`py-20 px-6 transition-all duration-1000 ease-out ${isVisible("comparison") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
 							<h2 className="text-2xl md:text-4xl font-black text-white">
@@ -946,7 +1053,8 @@ export default function LandingPage() {
 				{/* --- PRICING --- */}
 				<section
 					id="pricing"
-					className="py-20 px-6 bg-white/[0.01] border-t border-white/5">
+					data-animate
+					className={`py-20 px-6 bg-white/[0.01] border-t border-white/5 transition-all duration-1000 ease-out ${isVisible("pricing") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
 					<div className="max-w-5xl mx-auto">
 						<div className="text-center mb-12">
 							<h2 className="text-2xl md:text-4xl font-black text-white mb-3">
@@ -977,12 +1085,13 @@ export default function LandingPage() {
 									<div className="mb-4">
 										<div className="flex items-baseline gap-1 mb-1">
 											<span className="text-4xl font-black text-white">
-												R$ 97
+												R$ <AnimatedValue value={97} duration={1000} />
 											</span>
 											<span className="text-gray-500 text-xs">/mês</span>
 										</div>
 										<p className="text-[10px] text-gray-500">
-											ou R$ 970/ano (2 meses grátis)
+											ou R$ <AnimatedValue value={970} duration={1500} />
+											/ano (2 meses grátis)
 										</p>
 									</div>
 
@@ -999,12 +1108,18 @@ export default function LandingPage() {
 											</div>
 											<div className="flex items-baseline gap-1 mb-1">
 												<span className="text-2xl font-black text-emerald-400">
-													R$ 67,90
+													R${" "}
+													<AnimatedValue
+														value={67.9}
+														decimals={2}
+														duration={1500}
+													/>
 												</span>
 												<span className="text-gray-500 text-xs">/mês</span>
 											</div>
 											<p className="text-[10px] text-gray-400">
-												ou R$ 679/ano (desconto para sempre!)
+												ou R$ <AnimatedValue value={679} duration={1500} />
+												/ano (desconto para sempre!)
 											</p>
 										</div>
 									)}
@@ -1089,7 +1204,10 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- NOVA SEÇÃO DE FAQ (PERGUNTAS FREQUENTES) --- */}
-				<section id="faq" className="py-20 px-6">
+				<section
+					id="faq"
+					data-animate
+					className={`py-20 px-6 transition-all duration-1000 ease-out ${isVisible("faq") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
 							<h2 className="text-2xl md:text-3xl font-black text-white">

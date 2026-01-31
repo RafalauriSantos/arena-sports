@@ -95,65 +95,57 @@ const RouteErrorElement = () => (
 	</div>
 );
 
-const router = createBrowserRouter(
-	[
-		{
-			path: "/",
-			element: <Landing />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/login",
-			element: <Login />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/welcome",
-			element: <Welcome />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/privacy",
-			element: <PrivacyPolicy />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/terms",
-			element: <TermsOfService />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/support",
-			element: <Support />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/about",
-			element: <About />,
-			errorElement: <RouteErrorElement />,
-		},
-
-		{ path: "/admin", element: <Navigate to="/dashboard" replace /> },
-		{
-			path: "/dashboard/*",
-			element: <AdminIndex />,
-			errorElement: <RouteErrorElement />,
-		},
-		{
-			path: "/agendar/:subdomain",
-			element: <BookingPublic />,
-			errorElement: <RouteErrorElement />,
-		},
-
-		{ path: "*", element: <NotFound /> },
-	],
+const router = createBrowserRouter([
 	{
-		future: {
-			v7_startTransition: true,
-			v7_relativeSplatPath: true,
-		},
+		path: "/",
+		element: <Landing />,
+		errorElement: <RouteErrorElement />,
 	},
-);
+	{
+		path: "/login",
+		element: <Login />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/welcome",
+		element: <Welcome />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/privacy",
+		element: <PrivacyPolicy />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/terms",
+		element: <TermsOfService />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/support",
+		element: <Support />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/about",
+		element: <About />,
+		errorElement: <RouteErrorElement />,
+	},
+
+	{ path: "/admin", element: <Navigate to="/dashboard" replace /> },
+	{
+		path: "/dashboard/*",
+		element: <AdminIndex />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/agendar/:subdomain",
+		element: <BookingPublic />,
+		errorElement: <RouteErrorElement />,
+	},
+
+	{ path: "*", element: <NotFound /> },
+]);
 
 const App = () => (
 	<ErrorBoundary>

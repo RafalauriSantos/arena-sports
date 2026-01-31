@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 
 const Login = () => {
 	const [mode, setMode] = useState<"signin" | "signup" | "email-confirmation">(
-		"signin"
+		"signin",
 	);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -31,8 +31,8 @@ const Login = () => {
 
 	// Carregar último email usado (se houver)
 	useEffect(() => {
-		const lastEmail = localStorage.getItem('last-login-email');
-		if (lastEmail && mode === 'signin') {
+		const lastEmail = localStorage.getItem("last-login-email");
+		if (lastEmail && mode === "signin") {
 			setEmail(lastEmail);
 			setRememberMe(true);
 		}
@@ -94,24 +94,26 @@ const Login = () => {
 			if (mode === "signin") {
 				// Salvar email se "Lembrar-me" estiver marcado
 				if (rememberMe) {
-					localStorage.setItem('last-login-email', email);
+					localStorage.setItem("last-login-email", email);
 				} else {
-					localStorage.removeItem('last-login-email');
+					localStorage.removeItem("last-login-email");
 				}
 
-				const { data: signInData, error } = await supabase.auth.signInWithPassword({
-					email,
-					password,
-				});
+				const { data: signInData, error } =
+					await supabase.auth.signInWithPassword({
+						email,
+						password,
+					});
 
 				// Tratar erro específico de email não confirmado
 				if (error) {
-					const isEmailNotConfirmed = /email.*not.*confirmed|confirmation|verify.*email/i.test(
-						error.message
-					);
+					const isEmailNotConfirmed =
+						/email.*not.*confirmed|confirmation|verify.*email/i.test(
+							error.message,
+						);
 					if (isEmailNotConfirmed) {
 						setError(
-							"Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação."
+							"Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação.",
 						);
 						setSignupEmail(email);
 						setMode("email-confirmation");
@@ -158,11 +160,11 @@ const Login = () => {
 			}
 
 			const businessName = arenaName || "Minha ArenaSys";
-			
+
 			// Construir URL de redirect de forma segura
 			const origin = window.location.origin;
 			const redirectUrl = `${origin}/welcome`;
-			
+
 			// SIGNUP: Cria conta e mostra mensagem de confirmação
 			const { data: signUpData, error } = await supabase.auth.signUp({
 				email: email.trim().toLowerCase(),
@@ -181,44 +183,62 @@ const Login = () => {
 			// Tratamento específico de erros do signup
 			if (error) {
 				const errorMsg = error.message.toLowerCase();
-				
+
 				// Email já cadastrado
-				if (errorMsg.includes("already registered") || errorMsg.includes("user already exists")) {
-					setError("Este email já está cadastrado. Faça login ou use outro email.");
+				if (
+					errorMsg.includes("already registered") ||
+					errorMsg.includes("user already exists")
+				) {
+					setError(
+						"Este email já está cadastrado. Faça login ou use outro email.",
+					);
 					setMode("signin");
 					setIsLoading(false);
 					return;
 				}
-				
+
 				// Email inválido
-				if (errorMsg.includes("invalid email") || errorMsg.includes("email format")) {
+				if (
+					errorMsg.includes("invalid email") ||
+					errorMsg.includes("email format")
+				) {
 					setError("Email inválido. Verifique o formato do email.");
 					setIsLoading(false);
 					return;
 				}
-				
+
 				// Senha muito curta
 				if (errorMsg.includes("password") && errorMsg.includes("short")) {
 					setError("Senha muito curta. Use no mínimo 6 caracteres.");
 					setIsLoading(false);
 					return;
 				}
-				
+
 				// Redirect URL não permitida
-				if (errorMsg.includes("redirect") || errorMsg.includes("url") || errorMsg.includes("invalid redirect")) {
+				if (
+					errorMsg.includes("redirect") ||
+					errorMsg.includes("url") ||
+					errorMsg.includes("invalid redirect")
+				) {
 					setError(
-						"URL de redirecionamento não configurada. Configure a URL permitida no Supabase Dashboard (Authentication > URL Configuration > Redirect URLs)."
+						"URL de redirecionamento não configurada. Configure a URL permitida no Supabase Dashboard (Authentication > URL Configuration > Redirect URLs).",
 					);
-					console.error("Redirect URL error:", error, "Tentou usar:", redirectUrl);
+					console.error(
+						"Redirect URL error:",
+						error,
+						"Tentou usar:",
+						redirectUrl,
+					);
 					setIsLoading(false);
 					return;
 				}
-				
+
 				// Erro genérico 400 - pode ser várias coisas
 				// Verificar se é um erro 400 de várias formas possíveis
-				const errorStatus = (error as { status?: number; statusCode?: number }).status || 
-				                    (error as { status?: number; statusCode?: number }).statusCode;
-				
+				const errorStatus =
+					(error as { status?: number; statusCode?: number }).status ||
+					(error as { status?: number; statusCode?: number }).statusCode;
+
 				if (errorStatus === 400 || errorMsg.includes("bad request")) {
 					console.error("Signup 400 error details:", {
 						message: error.message,
@@ -229,12 +249,12 @@ const Login = () => {
 					});
 					// Mostrar mensagem mais útil
 					setError(
-						`Erro ao criar conta: ${error.message || "Verifique se o email é válido e se a senha tem no mínimo 6 caracteres. Se o problema persistir, verifique as configurações de redirect URL no Supabase."}`
+						`Erro ao criar conta: ${error.message || "Verifique se o email é válido e se a senha tem no mínimo 6 caracteres. Se o problema persistir, verifique as configurações de redirect URL no Supabase."}`,
 					);
 					setIsLoading(false);
 					return;
 				}
-				
+
 				// Outros erros
 				throw error;
 			}
@@ -258,27 +278,38 @@ const Login = () => {
 			return;
 		} catch (err: unknown) {
 			let message = "Erro de autenticação";
-			
+
 			if (err instanceof Error) {
 				message = err.message;
-				
+
 				// Tratamento específico de erros comuns
 				const errorLower = message.toLowerCase();
-				
+
 				if (errorLower.includes("network") || errorLower.includes("fetch")) {
-					message = "Erro de conexão. Verifique sua internet e tente novamente.";
-				} else if (errorLower.includes("invalid credentials") || errorLower.includes("wrong password")) {
+					message =
+						"Erro de conexão. Verifique sua internet e tente novamente.";
+				} else if (
+					errorLower.includes("invalid credentials") ||
+					errorLower.includes("wrong password")
+				) {
 					message = "Email ou senha incorretos. Verifique e tente novamente.";
-				} else if (errorLower.includes("too many requests") || errorLower.includes("rate limit")) {
-					message = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+				} else if (
+					errorLower.includes("too many requests") ||
+					errorLower.includes("rate limit")
+				) {
+					message =
+						"Muitas tentativas. Aguarde alguns minutos e tente novamente.";
 				} else if (errorLower.includes("email")) {
 					// Manter mensagem original se já foi tratada acima
-					if (!message.includes("já está cadastrado") && !message.includes("inválido")) {
+					if (
+						!message.includes("já está cadastrado") &&
+						!message.includes("inválido")
+					) {
 						message = `Erro relacionado ao email: ${message}`;
 					}
 				}
 			}
-			
+
 			setError(message);
 			console.error("Auth error:", err);
 		} finally {
@@ -338,7 +369,8 @@ const Login = () => {
 							Programa Founders - Vagas Limitadas
 						</div>
 						<p className="text-gray-400 text-sm mt-3 max-w-md">
-							Seja um dos primeiros arenas a transformar sua gestão. Condições especiais para quem se juntar agora.
+							Seja um dos primeiros arenas a transformar sua gestão. Condições
+							especiais para quem se juntar agora.
 						</p>
 					</div>
 				</div>
@@ -349,9 +381,9 @@ const Login = () => {
 						{/* Glow Effect atrás do card */}
 						<div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
 
-						<div className="relative bg-[#0a0c10]/90 backdrop-blur-2xl border border-white/10 p-2 sm:p-5 rounded-xl sm:rounded-2xl shadow-2xl">
+						<div className="relative bg-[#0a0c10]/90 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-2xl">
 							{/* TELA DE CONFIRMAÇÃO DE EMAIL */}
-							{mode === "email-confirmation" ? (
+							{mode === "email-confirmation" ?
 								<div className="space-y-4 sm:space-y-6 text-center animate-in fade-in slide-in-from-bottom-4">
 									<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-2">
 										<Mail className="w-8 h-8 text-emerald-400" />
@@ -424,13 +456,13 @@ const Login = () => {
 												if (resendError) {
 													setError(
 														resendError.message ||
-															"Erro ao reenviar email. Tente novamente."
+															"Erro ao reenviar email. Tente novamente.",
 													);
 													setSuccessMessage(null);
 												} else {
 													setError(null);
 													setSuccessMessage(
-														"✅ Email reenviado com sucesso! Verifique sua caixa de entrada."
+														"✅ Email reenviado com sucesso! Verifique sua caixa de entrada.",
 													);
 													// Limpar mensagem após 5 segundos
 													setTimeout(() => {
@@ -466,16 +498,15 @@ const Login = () => {
 										</button>
 									</p>
 								</div>
-							) : (
-								<>
+							:	<>
 									<div className="text-center mb-4 sm:mb-6">
 										<h2 className="text-lg sm:text-xl font-bold text-white">
 											{mode === "signin" ? "Acessar Central" : "Começar Agora"}
 										</h2>
 										<p className="text-gray-400 text-[11px] sm:text-xs mt-1">
-											{mode === "signin"
-												? "Digite suas credenciais de gestor."
-												: "Crie sua conta em 30 segundos."}
+											{mode === "signin" ?
+												"Digite suas credenciais de gestor."
+											:	"Crie sua conta em 30 segundos."}
 										</p>
 									</div>
 
@@ -493,7 +524,7 @@ const Login = () => {
 														value={arenaName}
 														onChange={(e) => setArenaName(e.target.value)}
 														autoComplete="organization"
-														className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+														className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20 input-focus-breathing transition-all duration-300"
 														placeholder="Ex: ArenaSys Tatuí"
 													/>
 												</div>
@@ -511,7 +542,7 @@ const Login = () => {
 													value={email}
 													onChange={(e) => setEmail(e.target.value)}
 													autoComplete="email"
-													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20 input-focus-breathing transition-all duration-300"
 													placeholder="gestor@arenasys.com"
 												/>
 											</div>
@@ -528,30 +559,25 @@ const Login = () => {
 													value={password}
 													onChange={(e) => setPassword(e.target.value)}
 													autoComplete={
-														mode === "signin"
-															? "current-password"
-															: "new-password"
+														mode === "signin" ? "current-password" : (
+															"new-password"
+														)
 													}
-													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20"
+													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20 input-focus-breathing transition-all duration-300"
 													placeholder="••••••••"
 												/>
 											</div>
 										</div>
 
-										{/* Checkbox "Lembrar-me" apenas no modo signin */}
+										{/* Checkbox "Lembrar-me" Premium Toggle */}
 										{mode === "signin" && (
-											<div className="flex items-center gap-2 py-1">
-												<input
-													type="checkbox"
-													id="remember-me"
-													checked={rememberMe}
-													onChange={(e) => setRememberMe(e.target.checked)}
-													className="w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/20 focus:ring-offset-0 cursor-pointer"
+											<div
+												className="flex items-center gap-3 py-2 cursor-pointer group"
+												onClick={() => setRememberMe(!rememberMe)}>
+												<div
+													className={`toggle-premium ${rememberMe ? "active" : ""}`}
 												/>
-												<label
-													htmlFor="remember-me"
-													className="text-sm text-gray-400 cursor-pointer select-none hover:text-gray-300 transition-colors"
-												>
+												<label className="text-sm text-gray-400 cursor-pointer select-none group-hover:text-white transition-colors">
 													Lembrar-me neste dispositivo
 												</label>
 											</div>
@@ -567,16 +593,15 @@ const Login = () => {
 											type="submit"
 											disabled={isLoading}
 											className="w-full h-10 sm:h-11 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-sm sm:text-base shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all transform hover:-translate-y-1">
-											{isLoading ? (
+											{isLoading ?
 												"Conectando..."
-											) : (
-												<span className="flex items-center gap-2">
-													{mode === "signin"
-														? "Entrar no Sistema"
-														: "Liberar Meu Acesso"}
+											:	<span className="flex items-center gap-2">
+													{mode === "signin" ?
+														"Entrar no Sistema"
+													:	"Liberar Meu Acesso"}
 													<ArrowRight className="w-5 h-5" />
 												</span>
-											)}
+											}
 										</Button>
 									</form>
 
@@ -589,13 +614,13 @@ const Login = () => {
 												setSignupEmail("");
 											}}
 											className="text-sm text-gray-400 hover:text-white transition-colors">
-											{mode === "signin"
-												? "Não tem conta? Criar acesso grátis"
-												: "Já tem conta? Fazer login"}
+											{mode === "signin" ?
+												"Não tem conta? Criar acesso grátis"
+											:	"Já tem conta? Fazer login"}
 										</button>
 									</div>
 								</>
-							)}
+							}
 						</div>
 
 						{/* Selo de Segurança */}

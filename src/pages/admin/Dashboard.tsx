@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { supabase } from "@/lib/supabaseClient";
 import { invokeEdgeFunction } from "@/lib/edgeFunctions";
+import { AnimatedNumber } from "@/hooks/useCountUp";
 import {
 	SetupChecklistSidebar,
 	useSetupProgress,
@@ -50,6 +51,36 @@ import {
 import { TrialBanner } from "@/components/admin/TrialBanner";
 import { TrialCountdown } from "@/components/admin/TrialCountdown";
 import { SupportModal } from "@/components/admin/SupportModal";
+
+const DashboardSkeleton = () => (
+	<div className="min-h-screen w-full flex bg-[#02040a]">
+		{/* Sidebar Skeleton */}
+		<div className="hidden md:flex w-72 flex-col gap-4 p-4 border-r border-white/10 shrink-0">
+			<div className="h-20 w-full bg-white/5 animate-pulse rounded-xl" />
+			<div className="space-y-3 pt-6">
+				{[1, 2, 3, 4, 5].map((i) => (
+					<div
+						key={i}
+						className="h-12 w-full bg-white/5 animate-pulse rounded-xl"
+					/>
+				))}
+			</div>
+		</div>
+		{/* Content Skeleton */}
+		<div className="flex-1 p-4 md:p-8 space-y-6 overflow-hidden">
+			<div className="h-32 w-full bg-white/5 animate-pulse rounded-2xl" />
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				{[1, 2, 3, 4].map((i) => (
+					<div key={i} className="h-32 bg-white/5 animate-pulse rounded-2xl" />
+				))}
+			</div>
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				<div className="lg:col-span-2 h-96 bg-white/5 animate-pulse rounded-2xl" />
+				<div className="h-96 bg-white/5 animate-pulse rounded-2xl" />
+			</div>
+		</div>
+	</div>
+);
 
 // --- HELPERS (Formatadores) ---
 const formatCurrency = (value: number) =>
@@ -463,7 +494,12 @@ const ArenaSysStatusHero = ({
 							Hoje
 						</span>
 						<span className="text-white font-bold text-lg sm:text-xl">
-							{formatCurrency(revenueToday)}
+							<AnimatedNumber
+								value={revenueToday}
+								prefix="R$ "
+								decimals={2}
+								duration={2000}
+							/>
 						</span>
 					</div>
 					<div className="w-[1px] bg-white/10" />
@@ -472,7 +508,7 @@ const ArenaSysStatusHero = ({
 							Ocupação
 						</span>
 						<span className="text-white font-bold text-lg sm:text-xl">
-							{occupancyAvg}%
+							<AnimatedNumber value={occupancyAvg} suffix="%" duration={2000} />
 						</span>
 					</div>
 				</div>
@@ -509,7 +545,18 @@ export default function DashboardHome() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
-	const [activeView, setActiveView] = useState("dashboard");
+	// Inicializa view com base na URL ou padrão
+	const [activeView, setActiveView] = useState(
+		searchParams.get("view") || "dashboard",
+	);
+
+	// Atualiza view se URL mudar externamente (opcional, mas bom pra navigation)
+	useEffect(() => {
+		const view = searchParams.get("view");
+		if (view && view !== activeView) {
+			setActiveView(view);
+		}
+	}, [searchParams]);
 
 	// Removido: Logs excessivos estavam causando poluição no console
 	const { toast } = useToast();
@@ -955,17 +1002,7 @@ export default function DashboardHome() {
 	);
 	const focusCourt = stats.courtsStats[0];
 
-	if (loading)
-		return (
-			<div className="min-h-screen bg-black flex items-center justify-center">
-				<div className="flex flex-col items-center gap-4">
-					<Activity className="w-10 h-10 text-emerald-500 animate-spin" />
-					<p className="text-gray-500 text-sm animate-pulse">
-						Carregando ArenaSys...
-					</p>
-				</div>
-			</div>
-		);
+	if (loading) return <DashboardSkeleton />;
 
 	if (subLoading || syncingCheckout) {
 		return (
@@ -1338,22 +1375,44 @@ export default function DashboardHome() {
 							<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
 								<MetricPill
 									label="Hoje"
-									value={formatCurrency(stats.revenueToday)}
+									value={
+										<AnimatedNumber
+											value={stats.revenueToday}
+											prefix="R$ "
+											decimals={2}
+											duration={2000}
+										/>
+									}
 									icon={TrendingUp}
 								/>
 								<MetricPill
 									label="Mês"
-									value={formatCurrency(stats.revenueMonth)}
+									value={
+										<AnimatedNumber
+											value={stats.revenueMonth}
+											prefix="R$ "
+											decimals={2}
+											duration={2000}
+										/>
+									}
 									icon={Calendar}
 								/>
 								<MetricPill
 									label="Jogos"
-									value={stats.gamesToday.toString()}
+									value={
+										<AnimatedNumber value={stats.gamesToday} duration={1500} />
+									}
 									icon={Trophy}
 								/>
 								<MetricPill
 									label="Ocupação"
-									value={`${occupancyAvg}%`}
+									value={
+										<AnimatedNumber
+											value={occupancyAvg}
+											suffix="%"
+											duration={2000}
+										/>
+									}
 									icon={User}
 								/>
 							</div>
@@ -1422,6 +1481,8 @@ export default function DashboardHome() {
 													stroke="#10b981"
 													strokeWidth={3}
 													fill="url(#grad)"
+													animationDuration={2000}
+													animationEasing="ease-out"
 												/>
 											</AreaChart>
 										</ResponsiveContainer>

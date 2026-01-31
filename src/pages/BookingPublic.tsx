@@ -22,7 +22,11 @@ import { format, addDays, isSameDay, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toWhatsAppLinkPhone } from "@/lib/phone";
-import { formatPhoneInput, unformatPhone, isValidPhone } from "@/lib/phoneFormat";
+import {
+	formatPhoneInput,
+	unformatPhone,
+	isValidPhone,
+} from "@/lib/phoneFormat";
 import { formatFullAddress } from "@/lib/cep";
 
 // --- Tipos ---
@@ -41,7 +45,11 @@ interface TimeChip {
 }
 
 // Função auxiliar para calcular preço baseado na duração
-const calculatePrice = (basePrice: number, halfHourPrice: number | undefined, duration: 60 | 90): number => {
+const calculatePrice = (
+	basePrice: number,
+	halfHourPrice: number | undefined,
+	duration: 60 | 90,
+): number => {
 	if (duration === 90) {
 		return basePrice + (halfHourPrice || 0);
 	}
@@ -92,6 +100,52 @@ const getStringProp = (value: unknown, key: string): string | undefined => {
 	return typeof v === "string" ? v : undefined;
 };
 
+// Componente de Confete simples (CSS-only)
+function Confetti() {
+	const [show, setShow] = useState(true);
+
+	useEffect(() => {
+		const timer = setTimeout(() => setShow(false), 3000);
+		return () => clearTimeout(timer);
+	}, []);
+
+	if (!show) return null;
+
+	return (
+		<div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+			{[...Array(50)].map((_, i) => (
+				<div
+					key={i}
+					className="absolute animate-confetti"
+					style={{
+						left: `${Math.random() * 100}%`,
+						top: -20,
+						animationDelay: `${Math.random() * 2}s`,
+						animationDuration: `${2 + Math.random() * 2}s`,
+					}}>
+					{["🎉", "✨", "⭐", "⚽", "🎾"][Math.floor(Math.random() * 5)]}
+				</div>
+			))}
+			<style>{`
+				@keyframes confetti {
+					0% {
+						transform: translateY(0) rotate(0deg);
+						opacity: 1;
+					}
+					100% {
+						transform: translateY(100vh) rotate(360deg);
+						opacity: 0;
+					}
+				}
+				.animate-confetti {
+					animation: confetti linear forwards;
+					font-size: 1.5rem;
+				}
+			`}</style>
+		</div>
+	);
+}
+
 export default function BookingPublic() {
 	const { subdomain } = useParams();
 
@@ -128,8 +182,8 @@ export default function BookingPublic() {
 	const [playerName, setPlayerName] = useState("");
 	const [playerPhone, setPlayerPhone] = useState("");
 	const [showBookingModal, setShowBookingModal] = useState(false);
-
-	// Ref para controlar o scroll do carrossel
+	const [showConfetti, setShowConfetti] = useState(false);
+	const [bookingSuccess, setBookingSuccess] = useState(false);
 	const carouselRef = useRef<HTMLDivElement>(null);
 	const dateButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
@@ -155,26 +209,33 @@ export default function BookingPublic() {
 					.select("*")
 					.eq("subdomain", subdomain || "")
 					.maybeSingle();
-				
+
 				if (tErrorOriginal) {
-					console.warn("⚠️ [BookingPublic] Erro na busca original:", tErrorOriginal.message);
+					console.warn(
+						"⚠️ [BookingPublic] Erro na busca original:",
+						tErrorOriginal.message,
+					);
 				}
-				
+
 				let tData = tDataOriginal;
 
 				// Se não encontrou, tenta com o subdomain normalizado
 				if (!tData && cleanSubdomain && cleanSubdomain !== subdomain) {
 					console.log("   Tentativa 2: subdomain normalizado:", cleanSubdomain);
-					const { data: tDataNormalized, error: tErrorNormalized } = await supabase
-						.from("tenants")
-						.select("*")
-						.eq("subdomain", cleanSubdomain)
-						.maybeSingle();
-					
+					const { data: tDataNormalized, error: tErrorNormalized } =
+						await supabase
+							.from("tenants")
+							.select("*")
+							.eq("subdomain", cleanSubdomain)
+							.maybeSingle();
+
 					if (tErrorNormalized) {
-						console.warn("⚠️ [BookingPublic] Erro na busca normalizada:", tErrorNormalized.message);
+						console.warn(
+							"⚠️ [BookingPublic] Erro na busca normalizada:",
+							tErrorNormalized.message,
+						);
 					}
-					
+
 					tData = tDataNormalized;
 				}
 
@@ -187,11 +248,14 @@ export default function BookingPublic() {
 						.select("*")
 						.ilike("subdomain", `%${searchTerm}%`)
 						.maybeSingle();
-					
+
 					if (tErrorIlike) {
-						console.warn("⚠️ [BookingPublic] Erro na busca ilike:", tErrorIlike.message);
+						console.warn(
+							"⚠️ [BookingPublic] Erro na busca ilike:",
+							tErrorIlike.message,
+						);
 					}
-					
+
 					tData = tDataIlike;
 				}
 
@@ -200,61 +264,98 @@ export default function BookingPublic() {
 					console.error("=".repeat(60));
 					console.error("❌ [BookingPublic] Tenant não encontrado!");
 					console.error("=".repeat(60));
-					console.error("🔍 Buscando no banco por:", cleanSubdomain || subdomain);
-					console.error("   Subdomain original da URL:", JSON.stringify(subdomain));
-					console.error("   Subdomain normalizado:", JSON.stringify(cleanSubdomain));
-					
+					console.error(
+						"🔍 Buscando no banco por:",
+						cleanSubdomain || subdomain,
+					);
+					console.error(
+						"   Subdomain original da URL:",
+						JSON.stringify(subdomain),
+					);
+					console.error(
+						"   Subdomain normalizado:",
+						JSON.stringify(cleanSubdomain),
+					);
+
 					const { data: debugList, error: debugError } = await supabase
 						.from("tenants")
 						.select("id, business_name, subdomain")
 						.limit(10);
-					
+
 					if (debugError) {
-						console.error("❌ [BookingPublic] Erro ao buscar lista de debug:", debugError);
+						console.error(
+							"❌ [BookingPublic] Erro ao buscar lista de debug:",
+							debugError,
+						);
 						console.error("   Código:", debugError.code);
 						console.error("   Mensagem:", debugError.message);
 						console.error("   Detalhes:", debugError.details);
 					} else {
 						console.error("📋 [BookingPublic] RESULTADO DA BUSCA:");
 						console.error("   Total encontrado:", debugList?.length || 0);
-						
+
 						if (debugList && debugList.length > 0) {
 							// Forçar expansão do objeto no console
 							console.error("   Dados completos (JSON):");
 							console.error(JSON.stringify(debugList, null, 2));
-							
+
 							console.error("\n   Análise detalhada:");
 							debugList.forEach((t, index) => {
 								console.error(`\n   [${index + 1}] Tenant:`);
 								console.error(`       ID: ${t.id}`);
-								console.error(`       Nome: ${JSON.stringify(t.business_name)}`);
-								console.error(`       Subdomain: ${JSON.stringify(t.subdomain)}`);
-								
+								console.error(
+									`       Nome: ${JSON.stringify(t.business_name)}`,
+								);
+								console.error(
+									`       Subdomain: ${JSON.stringify(t.subdomain)}`,
+								);
+
 								if (t.subdomain && typeof t.subdomain === "string") {
 									console.error(`       Tipo: ${typeof t.subdomain}`);
-									console.error(`       Tamanho: ${t.subdomain.length} caracteres`);
-									console.error(`       Códigos dos caracteres: [${Array.from(t.subdomain).map(c => c.charCodeAt(0)).join(", ")}]`);
-									console.error(`       === "sp-center": ${t.subdomain === "sp-center"}`);
-									console.error(`       === "SP-Center": ${t.subdomain === "SP-Center"}`);
-									console.error(`       .toLowerCase() === "sp-center": ${t.subdomain.toLowerCase() === "sp-center"}`);
-									console.error(`       Comparação exata: "${t.subdomain}" === "${cleanSubdomain || subdomain}": ${t.subdomain === (cleanSubdomain || subdomain)}`);
+									console.error(
+										`       Tamanho: ${t.subdomain.length} caracteres`,
+									);
+									console.error(
+										`       Códigos dos caracteres: [${Array.from(t.subdomain)
+											.map((c) => c.charCodeAt(0))
+											.join(", ")}]`,
+									);
+									console.error(
+										`       === "sp-center": ${t.subdomain === "sp-center"}`,
+									);
+									console.error(
+										`       === "SP-Center": ${t.subdomain === "SP-Center"}`,
+									);
+									console.error(
+										`       .toLowerCase() === "sp-center": ${t.subdomain.toLowerCase() === "sp-center"}`,
+									);
+									console.error(
+										`       Comparação exata: "${t.subdomain}" === "${cleanSubdomain || subdomain}": ${t.subdomain === (cleanSubdomain || subdomain)}`,
+									);
 								} else {
 									console.error(`       ⚠️ Subdomain é NULL ou undefined!`);
 								}
 							});
-							
-							const subdomainsList = debugList.map(t => JSON.stringify(t.subdomain)).join(", ");
+
+							const subdomainsList = debugList
+								.map((t) => JSON.stringify(t.subdomain))
+								.join(", ");
 							console.error("\n   Subdomains encontrados:", subdomainsList);
 						} else {
 							console.error("   ⚠️ Nenhum tenant encontrado no banco!");
 						}
 					}
-					
+
 					console.error("=".repeat(60));
-					throw new Error("Arena não encontrada. Verifique se o link está correto.");
+					throw new Error(
+						"Arena não encontrada. Verifique se o link está correto.",
+					);
 				}
 
-				console.log("✅ [BookingPublic] Tenant encontrado:", tData.business_name || tData.id);
+				console.log(
+					"✅ [BookingPublic] Tenant encontrado:",
+					tData.business_name || tData.id,
+				);
 				setTenant(tData);
 				setTenantId(tData.id);
 
@@ -273,19 +374,36 @@ export default function BookingPublic() {
 					console.error("   Mensagem:", cError.message);
 					console.error("   Detalhes:", cError.details);
 				} else {
-					console.log(`✅ [BookingPublic] ${cData?.length || 0} quadra(s) encontrada(s)`);
+					console.log(
+						`✅ [BookingPublic] ${cData?.length || 0} quadra(s) encontrada(s)`,
+					);
 					if (cData && cData.length > 0) {
-						console.log("   Quadras encontradas:", cData.map(c => ({ id: c.id, name: c.name, active: c.active, base_price: c.base_price })));
+						console.log(
+							"   Quadras encontradas:",
+							cData.map((c) => ({
+								id: c.id,
+								name: c.name,
+								active: c.active,
+								base_price: c.base_price,
+							})),
+						);
 					} else {
-						console.warn("   ⚠️ Nenhuma quadra ativa encontrada para este tenant!");
+						console.warn(
+							"   ⚠️ Nenhuma quadra ativa encontrada para este tenant!",
+						);
 					}
 				}
 
 				if (cData) {
 					setCourts(cData);
-					console.log("✅ [BookingPublic] Quadras carregadas no estado:", cData.length);
+					console.log(
+						"✅ [BookingPublic] Quadras carregadas no estado:",
+						cData.length,
+					);
 				} else {
-					console.warn("⚠️ [BookingPublic] cData é null/undefined, não há quadras para exibir");
+					console.warn(
+						"⚠️ [BookingPublic] cData é null/undefined, não há quadras para exibir",
+					);
 				}
 			} catch (error: unknown) {
 				console.error("Erro fatal:", error);
@@ -324,7 +442,7 @@ export default function BookingPublic() {
 						if (!removedId) return;
 						setCourts((prev) => prev.filter((c) => c.id !== removedId));
 						setSelectedSlot((prev) =>
-							prev?.courtId === removedId ? null : prev
+							prev?.courtId === removedId ? null : prev,
 						);
 						return;
 					}
@@ -345,12 +463,12 @@ export default function BookingPublic() {
 					setCourts((prev) => {
 						const next = [...prev];
 						const index = next.findIndex((c) => c.id === row.id);
-					const normalized: Court = {
-						id: row.id,
-						name: String(row.name ?? ""),
-						base_price: Number(row.base_price ?? 0),
-						half_hour_price: Number(row.half_hour_price ?? 0) || undefined,
-					};
+						const normalized: Court = {
+							id: row.id,
+							name: String(row.name ?? ""),
+							base_price: Number(row.base_price ?? 0),
+							half_hour_price: Number(row.half_hour_price ?? 0) || undefined,
+						};
 
 						if (index >= 0) {
 							next[index] = { ...next[index], ...normalized };
@@ -366,7 +484,9 @@ export default function BookingPublic() {
 					setSelectedSlot((prev) => {
 						if (!prev || prev.courtId !== row.id) return prev;
 						const newPrice = Number(row.base_price ?? prev.slot.price);
-						const newHalfHourPrice = Number(row.half_hour_price ?? prev.halfHourPrice ?? 0);
+						const newHalfHourPrice = Number(
+							row.half_hour_price ?? prev.halfHourPrice ?? 0,
+						);
 						return {
 							...prev,
 							slot: {
@@ -376,7 +496,7 @@ export default function BookingPublic() {
 							halfHourPrice: newHalfHourPrice,
 						};
 					});
-				}
+				},
 			)
 			.subscribe();
 
@@ -389,7 +509,10 @@ export default function BookingPublic() {
 	useEffect(() => {
 		if (!tenantId) return;
 
-		console.log("🔄 [REALTIME] Iniciando escuta de configurações do tenant:", tenantId);
+		console.log(
+			"🔄 [REALTIME] Iniciando escuta de configurações do tenant:",
+			tenantId,
+		);
 
 		const tenantChannel = supabase
 			.channel(`tenant-settings-${tenantId}`)
@@ -402,8 +525,11 @@ export default function BookingPublic() {
 					filter: `id=eq.${tenantId}`,
 				},
 				async (payload) => {
-					console.log("🔥 [REALTIME] Configurações do tenant atualizadas! Recarregando...", payload);
-					
+					console.log(
+						"🔥 [REALTIME] Configurações do tenant atualizadas! Recarregando...",
+						payload,
+					);
+
 					// Recarrega os dados do tenant para pegar os novos settings
 					const { data, error } = await supabase
 						.from("tenants")
@@ -412,12 +538,15 @@ export default function BookingPublic() {
 						.single();
 
 					if (!error && data) {
-						console.log("✅ [REALTIME] Settings atualizados em tempo real:", data.settings);
+						console.log(
+							"✅ [REALTIME] Settings atualizados em tempo real:",
+							data.settings,
+						);
 						setTenant(data);
 					} else {
 						console.error("❌ [REALTIME] Erro ao recarregar settings:", error);
 					}
-				}
+				},
 			)
 			.subscribe((status) => {
 				console.log("📡 [REALTIME] Status da conexão:", status);
@@ -433,7 +562,10 @@ export default function BookingPublic() {
 	useEffect(() => {
 		if (!tenantId || !cleanSubdomain) return;
 
-		console.log("📡 [REALTIME] Conectando canal de bookings para tenant:", tenantId);
+		console.log(
+			"📡 [REALTIME] Conectando canal de bookings para tenant:",
+			tenantId,
+		);
 
 		const bookingsChannel = supabase
 			.channel(`bookings-public-${tenantId}-${Date.now()}`) // Nome único para evitar conflitos
@@ -447,17 +579,19 @@ export default function BookingPublic() {
 				},
 				async (payload) => {
 					console.log("🔥 [REALTIME] Booking alterado!", payload);
-					
+
 					// Se for INSERT ou UPDATE, verifica se é do dia atual
-					if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-						const bookingDate = payload.new?.start_time 
-							? new Date(payload.new.start_time)
-							: null;
-						
+					if (
+						payload.eventType === "INSERT" ||
+						payload.eventType === "UPDATE"
+					) {
+						const bookingDate =
+							payload.new?.start_time ? new Date(payload.new.start_time) : null;
+
 						if (bookingDate) {
 							const bookingDateStr = format(bookingDate, "yyyy-MM-dd");
 							const currentDateStr = format(selectedDate, "yyyy-MM-dd");
-							
+
 							// Só atualiza se for do dia que está sendo visualizado
 							if (bookingDateStr === currentDateStr) {
 								// Recarrega ocupação do dia atual
@@ -466,22 +600,23 @@ export default function BookingPublic() {
 									{
 										p_subdomain: cleanSubdomain,
 										p_date: currentDateStr,
-									}
+									},
 								);
 
 								if (!error && data) {
-									const occupied = (data as Array<{ court_id: string; slot_time: string }> || []).map(
-										(r) => ({
-											court_id: r.court_id,
-											slot_time: r.slot_time.slice(0, 5),
-										})
-									);
+									const occupied = (
+										(data as Array<{ court_id: string; slot_time: string }>) ||
+										[]
+									).map((r) => ({
+										court_id: r.court_id,
+										slot_time: r.slot_time.slice(0, 5),
+									}));
 									setOccupiedSlots(occupied);
 									console.log("✅ [REALTIME] Ocupação atualizada:", occupied);
 								}
 							}
 						}
-					} else if (payload.eventType === 'DELETE') {
+					} else if (payload.eventType === "DELETE") {
 						// Se deletou, recarrega também
 						const dateStr = format(selectedDate, "yyyy-MM-dd");
 						const { data, error } = await supabase.rpc(
@@ -489,26 +624,26 @@ export default function BookingPublic() {
 							{
 								p_subdomain: cleanSubdomain,
 								p_date: dateStr,
-							}
+							},
 						);
 
 						if (!error && data) {
-							const occupied = (data as Array<{ court_id: string; slot_time: string }> || []).map(
-								(r) => ({
-									court_id: r.court_id,
-									slot_time: r.slot_time.slice(0, 5),
-								})
-							);
+							const occupied = (
+								(data as Array<{ court_id: string; slot_time: string }>) || []
+							).map((r) => ({
+								court_id: r.court_id,
+								slot_time: r.slot_time.slice(0, 5),
+							}));
 							setOccupiedSlots(occupied);
 						}
 					}
-				}
+				},
 			)
 			.subscribe((status) => {
 				console.log("📡 [REALTIME] Status do canal de bookings:", status);
-				if (status === 'SUBSCRIBED') {
+				if (status === "SUBSCRIBED") {
 					console.log("✅ [REALTIME] Conectado com sucesso!");
-				} else if (status === 'CHANNEL_ERROR') {
+				} else if (status === "CHANNEL_ERROR") {
 					console.error("❌ [REALTIME] Erro na conexão");
 				}
 			});
@@ -532,7 +667,7 @@ export default function BookingPublic() {
 				{
 					p_subdomain: cleanSubdomain,
 					p_date: dateStr,
-				}
+				},
 			);
 
 			if (error) {
@@ -550,7 +685,7 @@ export default function BookingPublic() {
 						.map((r) => ({
 							court_id: r.court_id,
 							slot_time: r.slot_time.slice(0, 5),
-						}))
+						})),
 				);
 			}
 		}
@@ -571,7 +706,7 @@ export default function BookingPublic() {
 		console.log("   Courts:", courts.length);
 		console.log("   Tenant:", tenant?.business_name || "não carregado");
 		console.log("   Settings:", tenant?.settings ? "existe" : "não existe");
-		
+
 		const now = new Date();
 		const isToday = isSameDay(selectedDate, now);
 		const nowHour = now.getHours();
@@ -585,7 +720,7 @@ export default function BookingPublic() {
 		const applyDiscount = diffDays >= 7;
 
 		const occupied = new Set(
-			occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`)
+			occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`),
 		);
 
 		// Horários de operação por dia da semana
@@ -630,26 +765,28 @@ export default function BookingPublic() {
 			return { ...court, slots };
 		});
 	}, [courts, occupiedSlots, selectedDate, tenant]);
-	
+
 	// Debug: Log quando courtsWithSlots mudar
 	useEffect(() => {
 		console.log("📊 [BookingPublic] courtsWithSlots atualizado:");
 		console.log("   Total de quadras:", courtsWithSlots.length);
 		courtsWithSlots.forEach((court, index) => {
-			console.log(`   [${index + 1}] ${court.name}: ${court.slots.length} horários disponíveis`);
+			console.log(
+				`   [${index + 1}] ${court.name}: ${court.slots.length} horários disponíveis`,
+			);
 		});
 	}, [courtsWithSlots]);
 
 	// Scroll automático para o dia selecionado
 	useEffect(() => {
 		if (!carouselRef.current) return;
-		
+
 		// Encontra o índice do dia selecionado
 		const selectedIndex = Array.from({ length: 21 }).findIndex((_, i) => {
 			const date = addDays(new Date(), i);
 			return isSameDay(date, selectedDate);
 		});
-		
+
 		if (selectedIndex >= 0) {
 			const button = dateButtonRefs.current.get(selectedIndex);
 			if (button && carouselRef.current) {
@@ -669,27 +806,36 @@ export default function BookingPublic() {
 	const handleBooking = (
 		courtId: string,
 		courtName: string,
-		slot: TimeChip
+		slot: TimeChip,
 	) => {
 		setReserveError(null);
 		setReserveSuccess(null);
 		setPlayerName("");
 		setPlayerPhone("");
 		// Busca o court para pegar o half_hour_price
-		const court = courts.find(c => c.id === courtId);
-		setSelectedSlot({ 
-			courtId, 
-			courtName, 
+		const court = courts.find((c) => c.id === courtId);
+		setSelectedSlot({
+			courtId,
+			courtName,
 			slot,
-			halfHourPrice: court?.half_hour_price
+			halfHourPrice: court?.half_hour_price,
 		});
 		setShowBookingModal(false); // Não abre modal automaticamente, só mostra sticky footer
 	};
 
+	// Efeito de sucesso/confetti
+	useEffect(() => {
+		if (bookingSuccess) {
+			setShowConfetti(true);
+			const timer = setTimeout(() => setShowConfetti(false), 5000);
+			return () => clearTimeout(timer);
+		}
+	}, [bookingSuccess]);
+
 	// Nova função: Reservar direto no sistema (pagar no balcão)
 	const handleDirectBooking = async () => {
 		if (!selectedSlot || !tenantId) return;
-		
+
 		// Validações básicas
 		if (!playerName.trim() || playerName.trim().length < 2) {
 			setReserveError("Por favor, informe seu nome");
@@ -709,32 +855,32 @@ export default function BookingPublic() {
 			const startTime = selectedSlot.slot.time;
 			const [hour, minute] = startTime.split(":");
 			const endHour = (parseInt(hour) + 1).toString().padStart(2, "0");
-			
+
 			// Cria Date object no timezone local do navegador
 			const startDate = new Date(selectedDate);
 			startDate.setHours(parseInt(hour), parseInt(minute || "0"), 0, 0);
-			
+
 			const endDate = new Date(startDate);
 			endDate.setMinutes(endDate.getMinutes() + bookingDuration); // Usa a duração escolhida
-			
+
 			// Obtém offset do timezone local em minutos (ex: -180 para UTC-3)
 			const timezoneOffset = startDate.getTimezoneOffset();
 			const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
 			const offsetMinutes = Math.abs(timezoneOffset) % 60;
-			const offsetSign = timezoneOffset <= 0 ? '+' : '-';
-			const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
-			
+			const offsetSign = timezoneOffset <= 0 ? "+" : "-";
+			const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, "0")}:${String(offsetMinutes).padStart(2, "0")}`;
+
 			// Formata timestamp com timezone local explícito
 			const formatWithTimezone = (date: Date) => {
 				const year = date.getFullYear();
-				const month = String(date.getMonth() + 1).padStart(2, '0');
-				const day = String(date.getDate()).padStart(2, '0');
-				const hours = String(date.getHours()).padStart(2, '0');
-				const mins = String(date.getMinutes()).padStart(2, '0');
-				const secs = String(date.getSeconds()).padStart(2, '0');
+				const month = String(date.getMonth() + 1).padStart(2, "0");
+				const day = String(date.getDate()).padStart(2, "0");
+				const hours = String(date.getHours()).padStart(2, "0");
+				const mins = String(date.getMinutes()).padStart(2, "0");
+				const secs = String(date.getSeconds()).padStart(2, "0");
 				return `${year}-${month}-${day} ${hours}:${mins}:${secs}${timezoneString}`;
 			};
-			
+
 			const startTimestamp = formatWithTimezone(startDate);
 			const endTimestamp = formatWithTimezone(endDate);
 
@@ -744,18 +890,21 @@ export default function BookingPublic() {
 				{
 					p_subdomain: cleanSubdomain!,
 					p_date: dateStr,
-				}
+				},
 			);
 
 			const occupied = new Set(
-				(checkData as Array<{ court_id: string; slot_time: string }> || [])
-					.map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`)
+				(
+					(checkData as Array<{ court_id: string; slot_time: string }>) || []
+				).map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`),
 			);
 
 			// Verifica se o slot inicial está livre
 			const slotKey = `${selectedSlot.courtId}-${startTime}`;
 			if (occupied.has(slotKey)) {
-				throw new Error("Horário acabou de ser reservado. Escolha outro horário.");
+				throw new Error(
+					"Horário acabou de ser reservado. Escolha outro horário.",
+				);
 			}
 
 			// Se for 1h30, verifica se o próximo slot também está livre
@@ -764,9 +913,13 @@ export default function BookingPublic() {
 				const nextHour = startHour + 1;
 				const nextTime = `${nextHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
 				const nextSlotKey = `${selectedSlot.courtId}-${nextTime}`;
-				
+
 				if (occupied.has(nextSlotKey)) {
-					throw new Error("O horário das " + nextTime + " já está reservado. Para jogar 1h30, esse horário precisa estar livre.");
+					throw new Error(
+						"O horário das " +
+							nextTime +
+							" já está reservado. Para jogar 1h30, esse horário precisa estar livre.",
+					);
 				}
 			}
 
@@ -777,21 +930,29 @@ export default function BookingPublic() {
 				.select("id, start_time, end_time")
 				.eq("tenant_id", tenantId)
 				.eq("court_id", selectedSlot.courtId)
-				.in("status", ["pending", "paid", "pending_payment", "confirmed", "in_progress"])
+				.in("status", [
+					"pending",
+					"paid",
+					"pending_payment",
+					"confirmed",
+					"in_progress",
+				])
 				.is("cancelled_at", null)
 				.lt("start_time", endTimestamp) // Reserva começa antes do nosso fim
 				.gt("end_time", startTimestamp) // Reserva termina depois do nosso início
 				.maybeSingle();
 
 			if (conflictCheck) {
-				throw new Error("Este horário já está reservado ou conflita com outra reserva. Por favor, escolha outro.");
+				throw new Error(
+					"Este horário já está reservado ou conflita com outra reserva. Por favor, escolha outro.",
+				);
 			}
 
 			// Calcula preço baseado na duração
 			const finalPrice = calculatePrice(
 				selectedSlot.slot.price,
 				selectedSlot.halfHourPrice,
-				bookingDuration
+				bookingDuration,
 			);
 
 			// Debug: Verificar dados antes de inserir
@@ -807,17 +968,21 @@ export default function BookingPublic() {
 			});
 
 			// Cria a reserva
-			const { error, data: newBooking } = await supabase.from("bookings").insert({
-				court_id: selectedSlot.courtId,
-				tenant_id: tenantId,
-				start_time: startTimestamp, // TIMESTAMPTZ
-				end_time: endTimestamp, // TIMESTAMPTZ
-				customer_name: playerName.trim(),
-				customer_phone: unformatPhone(playerPhone),
-				status: "pending_payment", // Status para "pagar no balcão"
-				total_price: finalPrice,
-				notes: `Reserva via calendário público - ${bookingDuration}min - Pagar no balcão`,
-			}).select().single();
+			const { error, data: newBooking } = await supabase
+				.from("bookings")
+				.insert({
+					court_id: selectedSlot.courtId,
+					tenant_id: tenantId,
+					start_time: startTimestamp, // TIMESTAMPTZ
+					end_time: endTimestamp, // TIMESTAMPTZ
+					customer_name: playerName.trim(),
+					customer_phone: unformatPhone(playerPhone),
+					status: "pending_payment", // Status para "pagar no balcão"
+					total_price: finalPrice,
+					notes: `Reserva via calendário público - ${bookingDuration}min - Pagar no balcão`,
+				})
+				.select()
+				.single();
 
 			if (error) {
 				console.error("❌ [BookingPublic] Erro detalhado ao criar reserva:", {
@@ -831,29 +996,48 @@ export default function BookingPublic() {
 
 			// ✅ ATUALIZA IMEDIATAMENTE o estado local (sem esperar real-time)
 			// Marca o slot inicial e, se for 1h30, também o próximo slot como ocupado
-			setOccupiedSlots(prev => {
+			setOccupiedSlots((prev) => {
 				const newSlots = [...prev];
-				
+
 				// Adiciona o slot inicial se não existir
-				if (!newSlots.some(s => s.court_id === selectedSlot.courtId && s.slot_time === startTime)) {
-					newSlots.push({ court_id: selectedSlot.courtId, slot_time: startTime });
+				if (
+					!newSlots.some(
+						(s) =>
+							s.court_id === selectedSlot.courtId && s.slot_time === startTime,
+					)
+				) {
+					newSlots.push({
+						court_id: selectedSlot.courtId,
+						slot_time: startTime,
+					});
 				}
-				
+
 				// Se for 1h30, adiciona o próximo slot também
 				if (bookingDuration === 90) {
 					const [startHour, startMin] = startTime.split(":").map(Number);
 					const nextHour = startHour + 1;
 					const nextTime = `${nextHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
-					if (!newSlots.some(s => s.court_id === selectedSlot.courtId && s.slot_time === nextTime)) {
-						newSlots.push({ court_id: selectedSlot.courtId, slot_time: nextTime });
+					if (
+						!newSlots.some(
+							(s) =>
+								s.court_id === selectedSlot.courtId && s.slot_time === nextTime,
+						)
+					) {
+						newSlots.push({
+							court_id: selectedSlot.courtId,
+							slot_time: nextTime,
+						});
 					}
 				}
-				
+
 				return newSlots;
 			});
 
-			setReserveSuccess(`Reserva confirmada! ${tenant?.business_name || "A arena"} aguarda você no horário marcado.`);
-			
+			setReserveSuccess(
+				`Reserva confirmada! ${tenant?.business_name || "A arena"} aguarda você no horário marcado.`,
+			);
+			setBookingSuccess(true);
+
 			// Limpa form após 3 segundos
 			setTimeout(() => {
 				setSelectedSlot(null);
@@ -862,13 +1046,12 @@ export default function BookingPublic() {
 				setPlayerPhone("");
 				setBookingDuration(60); // Reset para 1h
 			}, 3000);
-
 		} catch (error: unknown) {
 			console.error("Erro ao criar reserva:", error);
-			const message = 
-				error instanceof Error 
-					? error.message 
-					: "Erro ao confirmar reserva. Tente novamente.";
+			const message =
+				error instanceof Error ?
+					error.message
+				:	"Erro ao confirmar reserva. Tente novamente.";
 			setReserveError(message);
 		} finally {
 			setIsReserving(false);
@@ -884,10 +1067,10 @@ export default function BookingPublic() {
 		const finalPrice = calculatePrice(
 			slot.price,
 			selectedSlot?.halfHourPrice,
-			bookingDuration
+			bookingDuration,
 		);
 		const durationText = bookingDuration === 90 ? "1h30" : "1h";
-		
+
 		// Calcula horário de término
 		const [startHour, startMin] = slot.time.split(":").map(Number);
 		const endDate = new Date(selectedDate);
@@ -900,9 +1083,9 @@ export default function BookingPublic() {
 		if (type === "deposit") {
 			const percent = configs.deposit_value || DEFAULT_DEPOSIT_PERCENT;
 			const sinal =
-				configs.deposit_type === "fixed"
-					? configs.deposit_value
-					: finalPrice * (percent / 100);
+				configs.deposit_type === "fixed" ?
+					configs.deposit_value
+				:	finalPrice * (percent / 100);
 			textoPagamento = `*Pagar SINAL via PIX*
 Valor do sinal: R$ ${sinal.toFixed(2)}
 Restante: R$ ${(finalPrice - sinal).toFixed(2)} (no local)
@@ -939,7 +1122,7 @@ Qual a chave PIX?`;
 			// Revalidação rápida: evita mandar o jogador pro WhatsApp com horário que acabou de ser ocupado.
 			const dateStr = format(selectedDate, "yyyy-MM-dd");
 			let occupied = new Set(
-				occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`)
+				occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`),
 			);
 
 			try {
@@ -949,7 +1132,7 @@ Qual a chave PIX?`;
 						{
 							p_subdomain: cleanSubdomain,
 							p_date: dateStr,
-						}
+						},
 					);
 					if (!error) {
 						const rows =
@@ -958,7 +1141,7 @@ Qual a chave PIX?`;
 						occupied = new Set(
 							rows
 								.filter((r) => !!r.court_id && !!r.slot_time)
-								.map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`)
+								.map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`),
 						);
 					}
 				}
@@ -969,14 +1152,14 @@ Qual a chave PIX?`;
 			const slotKey = `${selectedSlot.courtId}-${slot.time}`;
 			if (occupied.has(slotKey)) {
 				setReserveError(
-					"Horário indisponível. Esse horário acabou de ser reservado para esta quadra. Escolha outro horário."
+					"Horário indisponível. Esse horário acabou de ser reservado para esta quadra. Escolha outro horário.",
 				);
 				return;
 			}
 
 			const phoneDigits = toWhatsAppLinkPhone(tenant.phone || "");
 			const link = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(
-				msg
+				msg,
 			)}`;
 			window.open(link, "_blank");
 			setSelectedSlot(null);
@@ -1008,7 +1191,7 @@ Qual a chave PIX?`;
 
 	// Helpers
 	const configs = (tenant.settings?.booking || {}) as BookingConfig;
-	
+
 	// Verificar se está aberto (baseado em horário atual)
 	const now = new Date();
 	const currentHour = now.getHours();
@@ -1018,54 +1201,62 @@ Qual a chave PIX?`;
 	const sundayHours = configs.sunday_hours || { start: 7, end: 23 };
 	const hours = isSunday ? sundayHours : weekdayHours;
 	const isOpen = currentHour >= hours.start && currentHour < hours.end;
-	
+
 	// Endereço formatado para Maps/Waze
-	const fullAddress = tenant.street 
-		? formatFullAddress(
+	const fullAddress =
+		tenant.street ?
+			formatFullAddress(
 				tenant.street,
 				tenant.number || undefined,
 				tenant.complement || undefined,
 				tenant.neighborhood || undefined,
 				tenant.city || undefined,
-				tenant.state || undefined
+				tenant.state || undefined,
 			)
-		: tenant.address || "";
-	
-	const mapsUrl = fullAddress 
-		? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
-		: null;
-	const wazeUrl = fullAddress
-		? `https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`
-		: null;
+		:	tenant.address || "";
+
+	const mapsUrl =
+		fullAddress ?
+			`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
+		:	null;
+	const wazeUrl =
+		fullAddress ?
+			`https://waze.com/ul?q=${encodeURIComponent(fullAddress)}`
+		:	null;
 
 	return (
-		<div className={`min-h-screen bg-white font-sans ${
-			selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
-		}`}>
+		<div
+			className={`min-h-screen bg-white font-sans ${
+				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
+			}`}>
+			{showConfetti && <Confetti />}
 			{/* Header Imersivo (Hero Section) - NOVO DESIGN MOBILE FIRST */}
 			<div className="relative h-64 md:h-80 overflow-hidden">
 				{/* Background com gradiente ou foto de capa (futuro) */}
 				<div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700" />
 				<div className="absolute inset-0 bg-black/40" />
-				
+
 				{/* Conteúdo do Header */}
 				<div className="relative z-10 h-full flex flex-col justify-between p-6 text-white">
 					{/* Top Bar - Botões de Ação */}
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-2">
 							{/* Status Aberto/Fechado */}
-							<div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm ${
-								isOpen 
-									? "bg-green-500/90 text-white" 
-									: "bg-gray-500/90 text-white"
-							}`}>
-								<div className={`w-2 h-2 rounded-full ${isOpen ? "bg-white animate-pulse" : "bg-white"}`} />
+							<div
+								className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm ${
+									isOpen ?
+										"bg-green-500/90 text-white"
+									:	"bg-gray-500/90 text-white"
+								}`}>
+								<div
+									className={`w-2 h-2 rounded-full ${isOpen ? "bg-white animate-pulse" : "bg-white"}`}
+								/>
 								<span className="text-xs font-semibold">
 									{isOpen ? "Aberto Agora" : "Fechado"}
 								</span>
 							</div>
 						</div>
-						
+
 						{/* Botões de Ação */}
 						<div className="flex items-center gap-2">
 							{mapsUrl && (
@@ -1081,7 +1272,10 @@ Qual a chave PIX?`;
 									onClick={() => {
 										const phoneDigits = toWhatsAppLinkPhone(tenant.phone || "");
 										const msg = `Ola! Estou no calendario de *${tenant.business_name}* e gostaria de mais informacoes.`;
-										window.open(`https://wa.me/${phoneDigits}?text=${encodeURIComponent(msg)}`, "_blank");
+										window.open(
+											`https://wa.me/${phoneDigits}?text=${encodeURIComponent(msg)}`,
+											"_blank",
+										);
 									}}
 									className="p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all active:scale-95"
 									aria-label="WhatsApp">
@@ -1090,7 +1284,7 @@ Qual a chave PIX?`;
 							)}
 						</div>
 					</div>
-					
+
 					{/* Nome da Arena e Info */}
 					<div className="space-y-2">
 						<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight capitalize drop-shadow-lg">
@@ -1121,10 +1315,13 @@ Qual a chave PIX?`;
 							const date = addDays(new Date(), i);
 							const isSelected = isSameDay(date, selectedDate);
 							const isToday = i === 0;
-							const dayName = isToday 
-								? "HOJE" 
-								: format(date, "EEE", { locale: ptBR }).toUpperCase().replace(".", "");
-							
+							const dayName =
+								isToday ? "HOJE" : (
+									format(date, "EEE", { locale: ptBR })
+										.toUpperCase()
+										.replace(".", "")
+								);
+
 							return (
 								<button
 									ref={(el) => {
@@ -1133,23 +1330,26 @@ Qual a chave PIX?`;
 									key={i}
 									onClick={() => setSelectedDate(date)}
 									className={`flex-shrink-0 snap-center flex flex-col items-center justify-center min-w-[64px] h-20 rounded-xl border-2 transition-all duration-200 active:scale-95 ${
-										isSelected
-											? "bg-emerald-500 text-white border-emerald-500 shadow-md scale-105"
-											: "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+										isSelected ?
+											"bg-emerald-500 text-white border-emerald-500 shadow-md scale-105"
+										:	"bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
 									}`}>
-									<span className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${
-										isSelected ? "text-white/90" : "text-gray-500"
-									}`}>
+									<span
+										className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${
+											isSelected ? "text-white/90" : "text-gray-500"
+										}`}>
 										{dayName}
 									</span>
-									<span className={`text-2xl font-bold ${
-										isSelected ? "text-white" : "text-gray-900"
-									}`}>
+									<span
+										className={`text-2xl font-bold ${
+											isSelected ? "text-white" : "text-gray-900"
+										}`}>
 										{format(date, "dd")}
 									</span>
-									<span className={`text-[10px] mt-0.5 ${
-										isSelected ? "text-white/80" : "text-gray-400"
-									}`}>
+									<span
+										className={`text-[10px] mt-0.5 ${
+											isSelected ? "text-white/80" : "text-gray-400"
+										}`}>
 										{format(date, "MMM", { locale: ptBR })}
 									</span>
 								</button>
@@ -1172,12 +1372,14 @@ Qual a chave PIX?`;
 								Reserve com 7+ dias de antecedência
 							</p>
 							<p className="text-xs text-emerald-700">
-								E ganhe <strong>{configs.full_payment_discount_percent}% OFF</strong> no pagamento à vista!
+								E ganhe{" "}
+								<strong>{configs.full_payment_discount_percent}% OFF</strong> no
+								pagamento à vista!
 							</p>
 						</div>
 					</div>
 				)}
-				
+
 				{/* Lista de Quadras */}
 				{courtsWithSlots.map((court) => (
 					<div
@@ -1191,38 +1393,54 @@ Qual a chave PIX?`;
 										<Trophy className="w-5 h-5 text-emerald-600" />
 									</div>
 									<div>
-										<h3 className="font-bold text-gray-900 text-lg">{court.name}</h3>
+										<h3 className="font-bold text-gray-900 text-lg">
+											{court.name}
+										</h3>
 										<p className="text-xs text-gray-500">
-											{court.slots.length} {court.slots.length === 1 ? "horário disponível" : "horários disponíveis"}
+											{court.slots.length}{" "}
+											{court.slots.length === 1 ?
+												"horário disponível"
+											:	"horários disponíveis"}
 										</p>
 									</div>
 								</div>
 							</div>
 						</div>
-						
+
 						{/* Grid de Horários */}
 						<div className="p-4">
-							{court.slots.length === 0 ? (
+							{court.slots.length === 0 ?
 								<div className="text-center py-12 text-gray-400">
 									<Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
-									<p className="text-sm font-medium">Sem horários livres para este dia</p>
+									<p className="text-sm font-medium">
+										Sem horários livres para este dia
+									</p>
 								</div>
-							) : (
-								<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-									{court.slots.map((slot) => {
-										const isSelected = selectedSlot?.courtId === court.id && selectedSlot?.slot.time === slot.time;
-										const finalPrice = slot.hasDiscount
-											? Math.round(slot.price * (1 - configs.full_payment_discount_percent / 100))
-											: slot.price;
-										
+							:	<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+									{court.slots.map((slot, index) => {
+										// Stagger effect baseado no índice (máximo 6 delays diferentes)
+										const staggerClass = `stagger-${(index % 6) + 1}`;
+										const isSelected =
+											selectedSlot?.courtId === court.id &&
+											selectedSlot?.slot.time === slot.time;
+										const finalPrice =
+											slot.hasDiscount ?
+												Math.round(
+													slot.price *
+														(1 - configs.full_payment_discount_percent / 100),
+												)
+											:	slot.price;
+
 										return (
 											<button
 												key={slot.time}
-												onClick={() => handleBooking(court.id, court.name, slot)}
-												className={`relative group flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-xl border-2 transition-all duration-200 active:scale-95 ${
-													isSelected
-														? "bg-emerald-500 border-emerald-500 text-white shadow-lg scale-105"
-														: "bg-white border-gray-200 text-gray-900 hover:border-emerald-300 hover:bg-emerald-50"
+												onClick={() =>
+													handleBooking(court.id, court.name, slot)
+												}
+												className={`relative group flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-xl border-2 transition-all duration-200 active:scale-95 animate-reveal-up ${staggerClass} ${
+													isSelected ?
+														"bg-emerald-500 border-emerald-500 text-white shadow-lg scale-105"
+													:	"bg-white border-gray-200 text-gray-900 hover:border-emerald-300 hover:bg-emerald-50"
 												}`}>
 												{/* Badge Promo */}
 												{slot.hasDiscount && !isSelected && (
@@ -1230,14 +1448,15 @@ Qual a chave PIX?`;
 														-{configs.full_payment_discount_percent}%
 													</span>
 												)}
-												
+
 												{/* Horário */}
-												<span className={`text-base font-bold mb-1 ${
-													isSelected ? "text-white" : "text-gray-900"
-												}`}>
+												<span
+													className={`text-base font-bold mb-1 ${
+														isSelected ? "text-white" : "text-gray-900"
+													}`}>
 													{slot.time}
 												</span>
-												
+
 												{/* Preço */}
 												<div className="flex flex-col items-center gap-0.5">
 													{slot.hasDiscount && !isSelected && (
@@ -1245,13 +1464,12 @@ Qual a chave PIX?`;
 															R$ {slot.price}
 														</span>
 													)}
-													<span className={`text-sm font-bold ${
-														isSelected 
-															? "text-white" 
-															: slot.hasDiscount 
-																? "text-emerald-600" 
-																: "text-gray-700"
-													}`}>
+													<span
+														className={`text-sm font-bold ${
+															isSelected ? "text-white"
+															: slot.hasDiscount ? "text-emerald-600"
+															: "text-gray-700"
+														}`}>
 														R$ {finalPrice}
 													</span>
 												</div>
@@ -1259,7 +1477,7 @@ Qual a chave PIX?`;
 										);
 									})}
 								</div>
-							)}
+							}
 						</div>
 					</div>
 				))}
@@ -1278,19 +1496,21 @@ Qual a chave PIX?`;
 								<div className="flex items-center gap-2 mt-0.5">
 									<Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
 									<span className="text-sm text-gray-600">
-										{format(selectedDate, "dd/MM", { locale: ptBR })} • {selectedSlot.slot.time}
+										{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
+										{selectedSlot.slot.time}
 										{bookingDuration === 90 && " - 1h30"}
 									</span>
 								</div>
 								<p className="text-lg font-bold text-emerald-600 mt-1">
-									R$ {calculatePrice(
+									R${" "}
+									{calculatePrice(
 										selectedSlot.slot.price,
 										selectedSlot.halfHourPrice,
-										bookingDuration
+										bookingDuration,
 									).toFixed(2)}
 								</p>
 							</div>
-							
+
 							{/* Botão de Ação */}
 							<button
 								onClick={() => setShowBookingModal(true)}
@@ -1305,7 +1525,7 @@ Qual a chave PIX?`;
 
 			{/* Modal Checkout Completo (Abre quando clica em "Reservar Agora") */}
 			{selectedSlot && showBookingModal && (
-				<div 
+				<div
 					onClick={(e) => {
 						if (e.target === e.currentTarget) {
 							setShowBookingModal(false);
@@ -1318,7 +1538,9 @@ Qual a chave PIX?`;
 								Confirmar Reserva
 							</h3>
 							<p className="text-gray-600 text-sm mt-1.5">
-								{selectedSlot.courtName} • {format(selectedDate, "dd/MM", { locale: ptBR })} • {selectedSlot.slot.time}
+								{selectedSlot.courtName} •{" "}
+								{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
+								{selectedSlot.slot.time}
 								{bookingDuration === 90 && " - 1h30"}
 							</p>
 						</div>
@@ -1329,7 +1551,7 @@ Qual a chave PIX?`;
 									{reserveError}
 								</div>
 							)}
-							
+
 							{reserveSuccess && (
 								<div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-700 text-sm font-medium">
 									✅ {reserveSuccess}
@@ -1349,9 +1571,9 @@ Qual a chave PIX?`;
 												onClick={() => setBookingDuration(60)}
 												disabled={isReserving}
 												className={`py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
-													bookingDuration === 60
-														? "border-primary bg-primary/10 text-primary"
-														: "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+													bookingDuration === 60 ?
+														"border-primary bg-primary/10 text-primary"
+													:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300"
 												} disabled:opacity-50`}>
 												1 hora
 											</button>
@@ -1360,9 +1582,9 @@ Qual a chave PIX?`;
 												onClick={() => setBookingDuration(90)}
 												disabled={isReserving}
 												className={`py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
-													bookingDuration === 90
-														? "border-primary bg-primary/10 text-primary"
-														: "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+													bookingDuration === 90 ?
+														"border-primary bg-primary/10 text-primary"
+													:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300"
 												} disabled:opacity-50`}>
 												1h30
 											</button>
@@ -1409,28 +1631,32 @@ Qual a chave PIX?`;
 										onClick={handleDirectBooking}
 										disabled={isReserving}
 										className="w-full bg-gray-900 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-										{isReserving ? (
+										{isReserving ?
 											<>
 												<Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-												<span className="text-sm sm:text-base">Confirmando...</span>
+												<span className="text-sm sm:text-base">
+													Confirmando...
+												</span>
 											</>
-										) : (
-											<>
+										:	<>
 												<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
-												<span className="text-sm sm:text-base">Reservar e Pagar no Balcão</span>
+												<span className="text-sm sm:text-base">
+													Reservar e Pagar no Balcão
+												</span>
 											</>
-										)}
+										}
 									</button>
 
 									<p className="text-xs text-gray-500 text-center">
-										Você paga quando chegar • R$ {calculatePrice(
+										Você paga quando chegar • R${" "}
+										{calculatePrice(
 											selectedSlot.slot.price,
 											selectedSlot.halfHourPrice,
-											bookingDuration
+											bookingDuration,
 										).toFixed(2)}
-										{bookingDuration === 90 && selectedSlot.halfHourPrice && (
-											` (${selectedSlot.slot.price.toFixed(2)} + ${selectedSlot.halfHourPrice.toFixed(2)})`
-										)}
+										{bookingDuration === 90 &&
+											selectedSlot.halfHourPrice &&
+											` (${selectedSlot.slot.price.toFixed(2)} + ${selectedSlot.halfHourPrice.toFixed(2)})`}
 									</p>
 
 									{/* Divider */}
@@ -1444,7 +1670,7 @@ Qual a chave PIX?`;
 											</span>
 										</div>
 									</div>
-									
+
 									{/* Opção 2: Pagar Sinal via PIX */}
 									{configs.require_deposit && (
 										<button
@@ -1454,17 +1680,20 @@ Qual a chave PIX?`;
 												<p className="font-bold text-gray-900 group-hover:text-green-700">
 													💳 Pagar Sinal (PIX)
 												</p>
-												<p className="text-xs text-gray-500">Garante + enviar comprovante</p>
+												<p className="text-xs text-gray-500">
+													Garante + enviar comprovante
+												</p>
 											</div>
 											<span className="font-bold text-green-600 text-lg">
 												R${" "}
-												{(configs.deposit_type === "fixed"
-													? configs.deposit_value
-													: calculatePrice(
+												{(configs.deposit_type === "fixed" ?
+													configs.deposit_value
+												:	calculatePrice(
 														selectedSlot.slot.price,
 														selectedSlot.halfHourPrice,
-														bookingDuration
-													) * (configs.deposit_value / 100)
+														bookingDuration,
+													) *
+													(configs.deposit_value / 100)
 												).toFixed(2)}
 											</span>
 										</button>
@@ -1482,14 +1711,17 @@ Qual a chave PIX?`;
 												<p className="font-bold text-gray-900 group-hover:text-primary">
 													💎 Pagar Tudo (PIX)
 												</p>
-												<p className="text-xs text-gray-500">Desconto + enviar comprovante</p>
+												<p className="text-xs text-gray-500">
+													Desconto + enviar comprovante
+												</p>
 											</div>
 											<div className="text-right">
 												<p className="text-xs text-gray-400 line-through">
-													R$ {calculatePrice(
+													R${" "}
+													{calculatePrice(
 														selectedSlot.slot.price,
 														selectedSlot.halfHourPrice,
-														bookingDuration
+														bookingDuration,
 													).toFixed(2)}
 												</p>
 												<span className="font-bold text-primary text-lg">
@@ -1498,7 +1730,7 @@ Qual a chave PIX?`;
 														calculatePrice(
 															selectedSlot.slot.price,
 															selectedSlot.halfHourPrice,
-															bookingDuration
+															bookingDuration,
 														) *
 														(1 - configs.full_payment_discount_percent / 100)
 													).toFixed(2)}
@@ -1508,14 +1740,15 @@ Qual a chave PIX?`;
 									)}
 
 									{/* Opção 4: Padrão (sem sinal nem desconto) - enviar comprovante via WhatsApp */}
-									{!configs.require_deposit && !configs.enable_full_payment_discount && (
-										<button
-											onClick={() => sendWhatsapp("standard")}
-											className="w-full bg-gray-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
-											<MessageCircle className="w-5 h-5" />
-											📱 Pagar via PIX e Enviar Comprovante
-										</button>
-									)}
+									{!configs.require_deposit &&
+										!configs.enable_full_payment_discount && (
+											<button
+												onClick={() => sendWhatsapp("standard")}
+												className="w-full bg-gray-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
+												<MessageCircle className="w-5 h-5" />
+												📱 Pagar via PIX e Enviar Comprovante
+											</button>
+										)}
 								</>
 							)}
 						</div>
@@ -1544,11 +1777,62 @@ Qual a chave PIX?`;
 }
 
 // Skeleton Simples
+// Skeleton Premium Mobile-First
 function PublicSkeleton() {
 	return (
-		<div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-			<Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-			<p className="text-gray-400 animate-pulse">Carregando Arena...</p>
+		<div className="min-h-screen bg-gray-50 pb-12 font-sans">
+			{/* Header Skeleton */}
+			<div className="relative h-64 md:h-80 bg-gray-200 animate-pulse">
+				<div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
+				<div className="absolute bottom-0 left-0 w-full p-6 pb-20 md:pb-24">
+					<div className="max-w-4xl mx-auto space-y-4">
+						<Skeleton className="h-6 w-24 bg-white/20 rounded-full" />
+						<Skeleton className="h-10 w-3/4 bg-white/30 rounded-lg" />
+						<div className="flex gap-2">
+							<Skeleton className="h-4 w-1/3 bg-white/20 rounded" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className="max-w-4xl mx-auto px-4 -mt-16 md:-mt-20 relative z-20 space-y-6">
+				{/* Calendar Strip Skeleton */}
+				<div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-4 mb-6">
+					<div className="flex gap-3 overflow-hidden">
+						{[...Array(6)].map((_, i) => (
+							<Skeleton
+								key={i}
+								className="flex-shrink-0 w-16 h-20 rounded-xl bg-gray-100"
+							/>
+						))}
+					</div>
+				</div>
+
+				{/* Courts Skeleton */}
+				{[...Array(3)].map((_, i) => (
+					<div
+						key={i}
+						className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+						<div className="p-4 border-b border-gray-50 flex justify-between items-center">
+							<div className="flex items-center gap-3">
+								<Skeleton className="w-10 h-10 rounded-full bg-gray-100" />
+								<div className="space-y-2">
+									<Skeleton className="h-5 w-32 bg-gray-100 rounded" />
+									<Skeleton className="h-3 w-20 bg-gray-50 rounded" />
+								</div>
+							</div>
+						</div>
+						<div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+							{[...Array(6)].map((_, j) => (
+								<Skeleton
+									key={j}
+									className="h-[72px] rounded-xl bg-gray-50 border-2 border-transparent"
+								/>
+							))}
+						</div>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }

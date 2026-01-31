@@ -71,6 +71,7 @@ interface ChecklistItem {
 	icon: React.ReactNode;
 	completed: boolean;
 	priority: "high" | "medium";
+	xp?: number;
 }
 
 export default function Welcome() {
@@ -90,9 +91,10 @@ export default function Welcome() {
 	const timerRef = useRef<number | null>(null);
 
 	// Nome do usuário (fallback para email se não tiver full_name)
-	const userName = userProfile?.full_name
-		? userProfile.full_name.split(" ")[0]
-		: userProfile?.email?.split("@")[0] || "Arena";
+	const userName =
+		userProfile?.full_name ?
+			userProfile.full_name.split(" ")[0]
+		:	userProfile?.email?.split("@")[0] || "Arena";
 
 	useEffect(() => {
 		const run = async () => {
@@ -142,11 +144,11 @@ export default function Welcome() {
 				const ends = new Date(subscription.trial_ends_at);
 				const now = new Date();
 				const totalDays = Math.ceil(
-					(ends.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)
+					(ends.getTime() - started.getTime()) / (1000 * 60 * 60 * 24),
 				);
 				const currentDay =
 					Math.ceil(
-						(now.getTime() - started.getTime()) / (1000 * 60 * 60 * 24)
+						(now.getTime() - started.getTime()) / (1000 * 60 * 60 * 24),
 					) + 1;
 
 				setTrialDays({
@@ -171,7 +173,8 @@ export default function Welcome() {
 
 			const courts = courtsRes.data || [];
 			const hasCourts = courts.length > 0;
-			const allCourtsPriced = courts.length > 0 && courts.every((c) => c.base_price > 0);
+			const allCourtsPriced =
+				courts.length > 0 && courts.every((c) => c.base_price > 0);
 
 			// Validações do perfil
 			const hasProfileName = !!userProfile?.full_name?.trim();
@@ -179,10 +182,13 @@ export default function Welcome() {
 
 			// Validações do tenant
 			const hasBusinessName = !!tenantData.data?.business_name?.trim();
-			const hasPhone = !!tenantData.data?.phone && tenantData.data.phone.replace(/\D/g, "").length >= 10;
+			const hasPhone =
+				!!tenantData.data?.phone &&
+				tenantData.data.phone.replace(/\D/g, "").length >= 10;
 			const hasAddress = !!tenantData.data?.address?.trim();
 			const cpfCnpjClean = tenantData.data?.cpf_cnpj?.replace(/\D/g, "") || "";
-			const hasCpfCnpj = cpfCnpjClean.length === 11 || cpfCnpjClean.length === 14;
+			const hasCpfCnpj =
+				cpfCnpjClean.length === 11 || cpfCnpjClean.length === 14;
 
 			setChecklist([
 				{
@@ -192,6 +198,7 @@ export default function Welcome() {
 					icon: <User className="w-4 h-4" />,
 					completed: hasProfileName && hasAvatar,
 					priority: "high",
+					xp: 50,
 				},
 				{
 					id: "business",
@@ -200,6 +207,7 @@ export default function Welcome() {
 					icon: <Phone className="w-4 h-4" />,
 					completed: hasBusinessName && hasPhone,
 					priority: "high",
+					xp: 50,
 				},
 				{
 					id: "address",
@@ -208,6 +216,7 @@ export default function Welcome() {
 					icon: <MapPin className="w-4 h-4" />,
 					completed: hasAddress,
 					priority: "high",
+					xp: 50,
 				},
 				{
 					id: "courts",
@@ -216,23 +225,26 @@ export default function Welcome() {
 					icon: <Trophy className="w-4 h-4" />,
 					completed: hasCourts,
 					priority: "high",
+					xp: 100,
 				},
-			{
-				id: "pricing",
-				label: "Configure os preços",
-				description: "Valores para cada quadra",
-				icon: <BadgeDollarSign className="w-4 h-4" />,
-				completed: allCourtsPriced,
-				priority: "high",
-			},
-			{
-				id: "cpf",
-				label: "CPF/CNPJ",
-				description: "Para você receber pagamentos",
-				icon: <CreditCard className="w-4 h-4" />,
-				completed: hasCpfCnpj,
-				priority: "medium",
-			},
+				{
+					id: "pricing",
+					label: "Configure os preços",
+					description: "Valores para cada quadra",
+					icon: <BadgeDollarSign className="w-4 h-4" />,
+					completed: allCourtsPriced,
+					priority: "high",
+					xp: 100,
+				},
+				{
+					id: "cpf",
+					label: "CPF/CNPJ",
+					description: "Para você receber pagamentos",
+					icon: <CreditCard className="w-4 h-4" />,
+					completed: hasCpfCnpj,
+					priority: "medium",
+					xp: 150,
+				},
 			]);
 
 			setLoading(false);
@@ -250,7 +262,13 @@ export default function Welcome() {
 				timerRef.current = null;
 			}
 		};
-	}, [navigate, tenantId, subscription, userProfile?.avatar_url, userProfile?.full_name]);
+	}, [
+		navigate,
+		tenantId,
+		subscription,
+		userProfile?.avatar_url,
+		userProfile?.full_name,
+	]);
 
 	if (loading) {
 		return (
@@ -265,8 +283,30 @@ export default function Welcome() {
 	const totalChecklistItems = checklist.length;
 	const allCompleted = completedCount === totalChecklistItems;
 	const highPriorityIncomplete = checklist.filter(
-		(item) => item.priority === "high" && !item.completed
+		(item) => item.priority === "high" && !item.completed,
 	);
+
+	// Função para marcar onboarding como completo e ir para o dashboard (view específica)
+	const finishOnboarding = async (targetView: string = "dashboard") => {
+		setIsCompletingOnboarding(true);
+		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (user) {
+				await supabase
+					.from("profiles")
+					.update({
+						onboarding_completed_at: new Date().toISOString(),
+					})
+					.eq("id", user.id);
+			}
+			navigate(`/dashboard?view=${targetView}`);
+		} catch (error) {
+			console.error("Erro ao completar onboarding:", error);
+			setIsCompletingOnboarding(false);
+		}
+	};
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
@@ -312,8 +352,7 @@ export default function Welcome() {
 							{/* Mensagem de Trial */}
 							<div className="text-center space-y-2">
 								<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-									<Trophy className="w-3 h-3" />
-									7 dias gratuitos
+									<Trophy className="w-3 h-3" />7 dias gratuitos
 								</div>
 								<p className="text-gray-300 text-sm">
 									Você tem{" "}
@@ -365,55 +404,77 @@ export default function Welcome() {
 									</span>
 								</div>
 
-							{/* Alerta de Prioridade */}
-							{highPriorityIncomplete.length > 0 && (
-								<div className="flex items-start gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-									<Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-									<div className="flex-1 text-xs text-emerald-200">
-										<p className="font-semibold">
-											{highPriorityIncomplete.length} item(ns) essencial(is) pendente(s)
-										</p>
-										<p className="text-emerald-300 mt-0.5">
-											Configure para compartilhar o link de agendamento
-										</p>
+								{/* Alerta de Prioridade */}
+								{highPriorityIncomplete.length > 0 && (
+									<div className="flex items-start gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+										<Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+										<div className="flex-1 text-xs text-emerald-200">
+											<p className="font-semibold">
+												{highPriorityIncomplete.length} item(ns) essencial(is)
+												pendente(s)
+											</p>
+											<p className="text-emerald-300 mt-0.5">
+												Configure para compartilhar o link de agendamento
+											</p>
+										</div>
 									</div>
-								</div>
-							)}
+								)}
 
 								<div className="space-y-2">
 									{checklist.map((item) => (
 										<div
 											key={item.id}
+											onClick={() => {
+												if (!item.completed) {
+													const view =
+														item.id === "cpf" ? "financeiro" : "config";
+													finishOnboarding(view);
+												}
+											}}
 											className={`
-												w-full flex items-center gap-3 p-3 rounded-lg border transition-all
+												w-full flex items-center gap-3 p-3 rounded-lg border transition-all hover:scale-[1.01]
 												${
-													item.completed
-														? "bg-emerald-500/10 border-emerald-500/30"
-														: "bg-white/5 border-white/10"
+													item.completed ?
+														"bg-emerald-500/10 border-emerald-500/30 cursor-default"
+													:	"bg-white/5 border-white/10 hover:bg-white/10 cursor-pointer hover:border-emerald-500/30"
 												}
 											`}>
 											<div
-												className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-													item.completed
-														? "bg-emerald-500 border-emerald-500"
-														: "border-gray-500"
+												className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+													item.completed ?
+														"bg-emerald-500 border-emerald-500 scale-110"
+													:	"border-gray-500 bg-transparent"
 												}`}>
-												{item.completed && (
-													<CheckCircle2 className="w-3 h-3 text-black" />
-												)}
+												{item.completed ?
+													<CheckCircle2 className="w-4 h-4 text-black animate-in zoom-in spin-in-90 duration-300" />
+												:	<span className="text-[10px] text-gray-500 font-bold">
+														XP
+													</span>
+												}
 											</div>
-											<div className="flex-shrink-0">
+											<div className="flex-shrink-0 text-gray-400">
 												{item.icon}
 											</div>
 											<div className="flex-1">
-												<p
-													className={`text-sm font-medium ${
-														item.completed 
-															? "text-white line-through opacity-70" 
-															: "text-gray-200"
-													}`}>
-													{item.label}
-												</p>
+												<div className="flex justify-between items-center">
+													<p
+														className={`text-sm font-medium ${
+															item.completed ?
+																"text-white line-through opacity-70"
+															:	"text-gray-200"
+														}`}>
+														{item.label}
+													</p>
+													{/* XP Badge */}
+													<span
+														className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+															item.completed ?
+																"bg-emerald-500/20 text-emerald-400"
+															:	"bg-white/10 text-gray-400"
+														}`}>
+														+{item.xp || 50} XP
+													</span>
+												</div>
 												<p className="text-xs text-gray-500 mt-0.5">
 													{item.description}
 												</p>
@@ -427,70 +488,47 @@ export default function Welcome() {
 									<div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
 										<div
 											className={`h-full rounded-full transition-all duration-500 ${
-												allCompleted 
-													? "bg-gradient-to-r from-emerald-500 to-green-500"
-													: "bg-gradient-to-r from-emerald-500 to-cyan-500"
+												allCompleted ?
+													"bg-gradient-to-r from-emerald-500 to-green-500"
+												:	"bg-gradient-to-r from-emerald-500 to-cyan-500"
 											}`}
 											style={{
 												width: `${(completedCount / totalChecklistItems) * 100}%`,
 											}}
 										/>
 									</div>
-									{allCompleted ? (
+									{allCompleted ?
 										<p className="text-center text-xs font-semibold text-emerald-400">
 											✓ Arena 100% configurada!
 										</p>
-									) : (
-										<p className="text-center text-xs text-gray-500">
+									:	<p className="text-center text-xs text-gray-500">
 											Complete todas as configurações para começar
 										</p>
-									)}
+									}
 								</div>
 							</div>
 
 							{/* CTA Principal */}
 							<div className="pt-4">
 								<Button
-									onClick={async () => {
-										setIsCompletingOnboarding(true);
-										try {
-											// Marcar onboarding como completo no banco
-											const {
-												data: { user },
-											} = await supabase.auth.getUser();
-											if (user) {
-												await supabase
-													.from("profiles")
-													.update({
-														onboarding_completed_at: new Date().toISOString(),
-													})
-													.eq("id", user.id);
-											}
-											// Ir para dashboard
-											navigate("/dashboard");
-										} catch (error) {
-											console.error("Erro ao completar onboarding:", error);
-											setIsCompletingOnboarding(false);
-										}
-									}}
+									onClick={() => finishOnboarding("dashboard")}
 									disabled={isCompletingOnboarding}
 									className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-									{isCompletingOnboarding ? (
+									{isCompletingOnboarding ?
 										<>
 											<div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
 											Entrando no dashboard...
 										</>
-									) : (
-										<>
+									:	<>
 											{allCompleted ? "Ir para Dashboard" : "Configurar Agora"}
 											<ArrowRight className="w-4 h-4" />
 										</>
-									)}
+									}
 								</Button>
 								<p className="text-center text-xs text-gray-500 mt-3">
-									{allCompleted 
-										? "Sua arena está pronta! 🎉" 
-										: "Configure depois no Dashboard"}
+									{allCompleted ?
+										"Sua arena está pronta! 🎉"
+									:	"Configure depois no Dashboard"}
 								</p>
 							</div>
 						</div>
