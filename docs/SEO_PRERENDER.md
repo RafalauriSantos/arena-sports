@@ -6,39 +6,42 @@ Em React (Vite), o HTML inicial é só `<div id="root"></div>` e um script. O co
 
 ## Solução
 
-A landing é **pré-renderizada no build**: depois do `vite build`, um script abre a página em um navegador headless, espera o React renderizar e salva o HTML completo em `dist/index.html`. Assim, quem acessa (incluindo o Google) recebe o HTML já preenchido.
+Dois modos:
+
+1. **Vercel (deploy)** – `build:vercel`: depois do `vite build`, o script `inject-seo-html.mjs` **injeta** H1 e texto crítico no HTML **sem Puppeteer**. Funciona no ambiente da Vercel (não precisa de Chromium/libnss3).
+2. **Local (opcional)** – `build:seo`: usa Puppeteer para pré-renderizar a landing inteira; só roda onde Chromium estiver disponível.
 
 ## Uso
 
-### Build normal (sem prerender)
+### Build normal (sem SEO no HTML)
 
 ```bash
 bun run build
 ```
 
-### Build com prerender (recomendado para produção)
+### Build para Vercel (injeção de conteúdo, sem Puppeteer)
+
+```bash
+bun run build:vercel
+```
+
+### Build com prerender completo (local, requer Puppeteer)
 
 ```bash
 bun run build:seo
 ```
 
-Ou em dois passos:
-
-```bash
-bun run build
-bun run prerender
-```
-
 ### Deploy (Vercel)
 
-O `vercel.json` está configurado para usar `build:seo`. Cada deploy já gera o `index.html` pré-renderizado.
+O `vercel.json` está configurado para usar `build:vercel`. Cada deploy roda `vite build && node scripts/inject-seo-html.mjs` e não usa Puppeteer.
 
 ## O que foi feito
 
-1. **`scripts/prerender.mjs`** – Sobe um servidor estático com `dist/`, abre a raiz com Puppeteer, espera o seletor `[data-seo-ready]` (na Landing), captura o HTML e grava em `dist/index.html`.
-2. **`data-seo-ready`** – Atributo na raiz da `Landing.tsx` para o script saber quando a página está pronta.
-3. **`build:seo`** – Script no `package.json`: `vite build && node scripts/prerender.mjs`.
-4. **Dependência** – `puppeteer` em devDependencies (só para o prerender).
+1. **`scripts/inject-seo-html.mjs`** – Injeta H1 e parágrafos críticos dentro de `#root` no `dist/index.html` **sem Puppeteer**. Usado na Vercel (`build:vercel`).
+2. **`scripts/prerender.mjs`** – Pré-render completo com Puppeteer (só para uso local; na Vercel falta libnss3).
+3. **`data-seo-ready`** – Atributo na raiz da `Landing.tsx` (usado pelo prerender local).
+4. **`build:vercel`** – `vite build && node scripts/inject-seo-html.mjs` (deploy na Vercel).
+5. **`build:seo`** – `vite build && node scripts/prerender.mjs` (opcional, local).
 
 ## Conferir se está ok
 
