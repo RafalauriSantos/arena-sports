@@ -126,37 +126,37 @@ function AnimatedValue({
 // --- DEPOIMENTOS REMOVIDOS ---
 // Removidos para manter autenticidade. Adicione depoimentos reais conforme receber feedback dos clientes.
 
-// --- DADOS DO FAQ (objeções — guia de copy) ---
+// --- FAQ: linguagem simples (nível 14 anos) ---
 const faqList = [
 	{
-		question: "Funciona para quem tem só 1 quadra?",
+		question: "Só tenho uma quadra. Funciona?",
 		answer:
-			"Sim. O ArenaSys serve para 1 ou várias quadras. Você configura suas quadras, horários e preços; o sistema cuida do resto.",
+			"Sim. Uma ou várias. Você coloca os horários e preços. O resto o sistema faz. Não precisa de nada grande.",
 	},
 	{
-		question: "Preciso instalar algo?",
+		question: "Preciso instalar algo no computador?",
 		answer:
-			"Não. É 100% online. Você acessa pelo navegador no celular, tablet ou computador, de qualquer lugar.",
+			"Não. Tudo na internet: celular, tablet ou PC. Você entra de qualquer lugar. Nada pra instalar.",
 	},
 	{
-		question: "É difícil configurar?",
+		question: "Quanto demora pra ficar pronto?",
 		answer:
-			"O setup leva poucos minutos. É mais simples que organizar tudo no WhatsApp — e muito mais profissional.",
+			"Poucos minutos. Você cadastra as quadras e os preços. Seu link já pode ir pro cliente. Mais rápido que montar grupo no WhatsApp.",
 	},
 	{
-		question: "E o pagamento?",
+		question: "O cliente paga como?",
 		answer:
-			"O cliente paga por Pix na hora da reserva. O dinheiro cai direto na sua conta, sem intermediário segurando valor.",
+			"No balcão, como você já faz. O cliente reserva pelo link. Quando chegar, você cobra. O sistema só organiza a agenda.",
 	},
 	{
-		question: "Tem fidelidade?",
+		question: "Posso cancelar? Tem multa?",
 		answer:
-			"Não. Cancele quando quiser. Sem multa, sem burocracia. Confiamos no produto.",
+			"Pode. Sem multa. A gente acha que você vai gostar e querer ficar.",
 	},
 	{
-		question: "E se eu precisar de ajuda?",
+		question: "Se precisar de ajuda, com quem falo?",
 		answer:
-			"Suporte por WhatsApp com gente do time. Você fala com quem entende do seu negócio, não com robô.",
+			"No WhatsApp, com a gente. Não é robô. É gente que entende de quadra.",
 	},
 ];
 
@@ -308,7 +308,7 @@ function DashboardAppScreen() {
 				</div>
 				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
 					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
-						Pix
+						Mês
 					</p>
 					<p className="text-emerald-400 text-sm font-bold mt-0.5">R$ 8.2k</p>
 				</div>
@@ -435,7 +435,7 @@ export default function LandingPage() {
 							<Button
 								onClick={() => navigate("/login?mode=signup")}
 								className="h-9 px-4 rounded-full text-sm font-bold bg-emerald-500 text-black hover:bg-emerald-400 shadow-emerald-500/10">
-								Começar grátis
+								Testar grátis
 							</Button>
 						</div>
 
@@ -476,7 +476,7 @@ export default function LandingPage() {
 										navigate("/login?mode=signup");
 									}}
 									className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-11 text-base mt-1">
-									Começar grátis
+									Testar grátis
 								</Button>
 							</div>
 						)}
@@ -491,25 +491,25 @@ export default function LandingPage() {
 								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
 								<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
 							</span>
-							Para donos de quadra que querem vender mais
+							Pra quem tem quadra e cansa de apagar incêndio
 						</div>
 
 						<h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-							Sistema de gestão e agendamento de quadras esportivas
+							Duas reservas no mesmo horário. Já passou por isso?
 						</h1>
 
-						<p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-							Evite conflitos de horários, perca menos dinheiro e organize sua arena em um só lugar.
+						<p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+							O ArenaSys acaba com essa bagunça. Cliente reserva pelo link. Você confirma e cobra no balcão.
 						</p>
 						<p className="text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-							Software para quadras esportivas: o cliente reserva e paga sozinho. Você aprova e acompanha. Sem calote, sem caos.
+							Uma agenda. Tudo no lugar. Sem planilha, sem grupo perdido.
 						</p>
 
 						<div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
 							<Button
 								onClick={() => navigate("/login?mode=signup")}
 								className="h-12 md:h-14 px-8 md:px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base md:text-lg shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
-								Começar grátis por 7 dias
+								Quero testar 7 dias grátis
 							</Button>
 							<a
 								href="#solucao"
@@ -520,18 +520,21 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- BENEFÍCIOS (H2 – não funcionalidades, benefícios) --- */}
+				{/* --- BENEFÍCIOS (o que muda na rotina — mensurável) --- */}
 				<section id="beneficios" className="relative py-16 lg:py-20 px-4 border-y border-white/5 bg-[#050507]/50">
 					<div className="max-w-4xl mx-auto">
-						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-10 text-center">
-							Benefícios do sistema de agendamento de quadras
+						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 text-center">
+							O que muda pra você
 						</h2>
+						<p className="text-gray-400 text-base md:text-lg text-center mb-10 max-w-2xl mx-auto">
+							Menos tempo no celular. Mais controle.
+						</p>
 						<ul className="grid sm:grid-cols-2 gap-4 text-left">
 							{[
-								"Pare de anotar reservas no WhatsApp",
-								"Nunca mais dois times no mesmo horário",
-								"Receba pagamentos via PIX automaticamente",
-								"Agenda online 24h para seus clientes",
+								"Você para de perder reserva — o cliente reserva sozinho, o dia todo",
+								"Impossível marcar dois no mesmo horário — uma agenda só",
+								"Cliente reserva pelo link; você só confirma e cobra no balcão",
+								"Você vê quanto faturou no mês sem abrir planilha",
 							].map((item, i) => (
 								<li key={i} className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-xl">
 									<CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
@@ -542,22 +545,22 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- PARA QUEM É (H2 – quem você atende) --- */}
+				{/* --- PARA QUEM É --- */}
 				<section id="para-quem-e" className="relative py-16 lg:py-20 px-4 bg-[#03050c]">
 					<div className="max-w-4xl mx-auto">
-						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-6 text-center">
-							Para quem é o sistema para arenas esportivas
+						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 text-center">
+							Feito pra quem manda na quadra
 						</h2>
 						<p className="text-gray-400 text-base md:text-lg text-center mb-10">
-							Ideal para:
+							Pra donos e gestores que querem coisa simples.
 						</p>
 						<div className="flex flex-wrap justify-center gap-3">
 							{[
-								"Donos de quadras de futebol society",
-								"Arenas esportivas",
-								"Centros esportivos e poliesportivos",
-								"Controle de horários de quadras",
-								"Sistema para aluguel de quadras",
+								"Quadra society",
+								"Arena",
+								"Centro esportivo",
+								"Poliesportivo",
+								"Quem cansa de planilha e WhatsApp",
 							].map((label, i) => (
 								<span
 									key={i}
@@ -569,27 +572,27 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- BLOCOS 1 e 2: DORES + AGITAÇÃO (identificação e custo de não resolver) --- */}
+				{/* --- PROBLEMA: dores (identificação) --- */}
 				<section id="dores" className="relative py-16 lg:py-20 px-4 border-y border-white/5 bg-[#050507]/80">
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-10">
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
-								Você se revê em alguma dessas situações?
+								Você se vê em alguma dessas?
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg">
-								Se marcar 3 ou mais, você está deixando dinheiro e tempo na mesa todo dia.
+								Se sim, não é só você. E dá pra mudar rápido.
 							</p>
 						</div>
 						<div className="grid sm:grid-cols-2 gap-3 md:gap-4">
 							{[
-								"Passa horas respondendo \"tem horário tal dia?\" no WhatsApp.",
-								"Já perdeu reserva porque demorou para responder.",
-								"Cliente marcou e não apareceu — e você ficou no prejuízo.",
-								"Não sabe ao certo quanto faturou no mês passado.",
-								"Tudo em planilha, grupo ou na cabeça — e some uma reserva.",
-								"Horário \"reservado\" mas nunca pagou — e você não cobrou.",
-								"Não consegue tirar férias porque precisa estar sempre disponível.",
-								"Depende de uma pessoa para atender; se ela falta, vira bagunça.",
+								"Passa o dia respondendo “tem horário?” no WhatsApp.",
+								"Já perdeu reserva porque demorou a responder.",
+								"Cliente marcou e não foi — você ficou no prejuízo.",
+								"Não sabe quanto faturou no mês passado.",
+								"Tudo em planilha ou na cabeça — aí some uma reserva.",
+								"Falaram que reservou mas não pagou — e você não cobrou.",
+								"Não pode descansar — tem que estar no celular.",
+								"Se uma pessoa falta, vira bagunça.",
 							].map((pain, i) => (
 								<div
 									key={i}
@@ -601,7 +604,7 @@ export default function LandingPage() {
 							))}
 						</div>
 						<p className="text-center text-white font-semibold text-lg md:text-xl mt-8">
-							O ArenaSys foi feito para acabar com isso.
+							O ArenaSys foi feito pra acabar com isso.
 						</p>
 					</div>
 				</section>
@@ -610,18 +613,18 @@ export default function LandingPage() {
 				<section className="relative py-12 lg:py-16 px-4 bg-[#03050c]">
 					<div className="max-w-3xl mx-auto text-center">
 						<h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
-							O que isso custa por mês?
+							Quanto isso custa por mês?
 						</h2>
 						<div className="grid sm:grid-cols-3 gap-4 text-left sm:text-center">
 							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
 								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Tempo no WhatsApp</p>
 								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">4h/dia ≈ 80h/mês</p>
-								<p className="text-gray-500 text-sm mt-1">que poderiam ir para o seu negócio</p>
+								<p className="text-gray-500 text-sm mt-1">tempo que podia ser seu</p>
 							</div>
 							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
 								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Calotes</p>
-								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">1/semana = ~R$ 400/mês</p>
-								<p className="text-gray-500 text-sm mt-1">em horário de R$ 100 que não entrou</p>
+								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">1/semana ≈ R$ 400/mês</p>
+								<p className="text-gray-500 text-sm mt-1">em horário que não entrou</p>
 							</div>
 							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
 								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Ocupação baixa</p>
@@ -630,12 +633,12 @@ export default function LandingPage() {
 							</div>
 						</div>
 						<p className="text-gray-400 text-base md:text-lg mt-6">
-							Dá para mudar isso em poucos dias, sem complicação.
+							Dá pra mudar isso em poucos dias.
 						</p>
 					</div>
 				</section>
 
-				{/* --- BLOCOS 3 e 4: SOLUÇÃO (ArenaSys) + COMO FUNCIONA --- */}
+				{/* --- SOLUÇÃO: ArenaSys + como funciona --- */}
 				<section id="solucao" className="py-20 px-6 border-y border-white/5 bg-gradient-to-b from-[#050507] via-emerald-500/5 to-[#050507]">
 					<div className="max-w-5xl mx-auto">
 						<div className="text-center mb-12">
@@ -643,10 +646,10 @@ export default function LandingPage() {
 								A solução
 							</p>
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
-								Gestão de arena esportiva: cliente reserva e paga sozinho, você acompanha e recebe.
+								Um sistema fácil
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
-								Sistema para gestão de quadras esportivas. Reserva e Pix integrados; controle de horários em uma agenda; sem calote.
+								Cliente reserva pelo link. Você confirma e cobra no balcão. Simples.
 							</p>
 						</div>
 
@@ -657,36 +660,36 @@ export default function LandingPage() {
 									<Zap className="w-5 h-5 text-emerald-400" />
 								</div>
 								<h3 className="text-white font-bold text-lg mb-2">Menos trabalho</h3>
-								<p className="text-gray-400 text-sm md:text-base">Reserva e pagamento automáticos; você não fica refém do celular.</p>
+								<p className="text-gray-400 text-sm md:text-base">Reserva pelo link, o dia todo. Você para de ficar no celular respondendo &quot;tem horário?&quot;</p>
 							</div>
 							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
 								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
 									<ShieldCheck className="w-5 h-5 text-emerald-400" />
 								</div>
 								<h3 className="text-white font-bold text-lg mb-2">Menos risco</h3>
-								<p className="text-gray-400 text-sm md:text-base">Pagamento antes (Pix); acaba o &quot;marcou e não apareceu&quot;.</p>
+								<p className="text-gray-400 text-sm md:text-base">Uma reserva = um horário bloqueado. Menos confusão.</p>
 							</div>
 							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
 								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
 									<TrendingUp className="w-5 h-5 text-emerald-400" />
 								</div>
 								<h3 className="text-white font-bold text-lg mb-2">Mais controle</h3>
-								<p className="text-gray-400 text-sm md:text-base">Uma agenda, um lugar; sabe quanto faturou e como está a semana.</p>
+								<p className="text-gray-400 text-sm md:text-base">Tudo numa agenda. Você vê quanto faturou e como está a semana.</p>
 							</div>
 						</div>
 
 						{/* 3 passos */}
 						<p className="text-emerald-500 font-bold tracking-widest uppercase text-xs md:text-sm mb-4 text-center">
-							Simples demais
+							Simples de começar
 						</p>
 						<h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-10 text-center">
-							Sua arena online em poucos minutos.
+							Sua arena online em poucos minutos
 						</h3>
 						<div className="grid md:grid-cols-3 gap-6 mb-12">
 							{[
-								{ step: "1", title: "Configure sua arena", text: "Quadras, horários e preços. O sistema monta sua agenda." },
-								{ step: "2", title: "Compartilhe seu link", text: "O cliente vê disponibilidade e preço e reserva sozinho." },
-								{ step: "3", title: "Ele paga por Pix", text: "Você recebe a notificação e o dinheiro na conta." },
+								{ step: "1", title: "Coloque suas quadras e preços", text: "O sistema monta a agenda pra você." },
+								{ step: "2", title: "Manda o link", text: "O cliente vê o que está livre e reserva sozinho." },
+								{ step: "3", title: "Você confirma e cobra no balcão", text: "Como você já faz hoje." },
 							].map((item) => (
 								<div key={item.step} className="p-6 bg-[#0F1115] rounded-2xl border border-white/10 text-center">
 									<div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-emerald-400 font-black text-xl">
@@ -698,7 +701,7 @@ export default function LandingPage() {
 							))}
 						</div>
 						<p className="text-center text-gray-400 text-base md:text-lg mb-12">
-							Em poucos minutos você está vendendo horário 24h, sem depender de resposta no WhatsApp.
+							Em poucos minutos você vende horário o dia todo, sem depender do WhatsApp.
 						</p>
 
 						{/* Mockups */}
@@ -722,21 +725,21 @@ export default function LandingPage() {
 							<Button
 								onClick={() => navigate("/login?mode=signup")}
 								className="h-12 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base">
-								Começar grátis por 7 dias
+								Quero testar 7 dias grátis
 							</Button>
 						</div>
 					</div>
 				</section>
 
-				{/* --- SEÇÃO TRANSFORMAÇÃO (Prova: antes/depois) --- */}
+				{/* --- PROVA: antes/depois --- */}
 				<section className="py-16 bg-[#03050c]">
 					<div className="max-w-5xl mx-auto px-6">
 						<div className="text-center mb-10">
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								Não é mágica. É infraestrutura.
+								Antes e depois
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg mt-2">
-								A diferença entre uma quadra e uma empresa.
+								Com sistema vs. no improviso.
 							</p>
 						</div>
 						<div className="grid md:grid-cols-2 gap-4 relative">
@@ -759,7 +762,7 @@ export default function LandingPage() {
 									</div>
 									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
 										<span className="text-gray-400 text-base">
-											Prejuízo Mensal (Vagos)
+											Dinheiro perdido (vagas vazias)
 										</span>
 										<span className="text-red-400 font-mono font-bold">
 											- R$ <AnimatedValue value={4800} duration={1500} />
@@ -791,14 +794,14 @@ export default function LandingPage() {
 									</div>
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
 										<span className="text-white text-base">
-											Receita Recuperada
+											Ganho a mais
 										</span>
 										<span className="text-emerald-400 font-mono font-bold">
 											+ R$ <AnimatedValue value={6400} duration={2000} />
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-base">Tempo de Gestão</span>
+										<span className="text-white text-base">Tempo no celular</span>
 										<span className="text-emerald-400 font-mono font-bold">
 											<AnimatedValue value={15} suffix=" min" duration={2000} />{" "}
 											/ dia
@@ -818,38 +821,38 @@ export default function LandingPage() {
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								WhatsApp não foi feito para vender horários.
+								WhatsApp não foi feito para vender horário
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg mt-2">
-								A ferramenta que você ama está matando seu crescimento.
+								Bom pra conversa. Ruim pra agenda.
 							</p>
 						</div>
 						<div className="border border-white/10 rounded-2xl overflow-hidden">
 							<div className="grid grid-cols-3 bg-white/5 p-4 text-sm md:text-base font-bold uppercase tracking-wider text-gray-500">
-								<div>Critério</div>
+								<div>O quê</div>
 								<div className="text-center">WhatsApp</div>
 								<div className="text-center text-emerald-400">ArenaSys</div>
 							</div>
 							{[
 								{
-									crit: "Tempo de Resposta",
+									crit: "Resposta",
 									bad: "Até 2 horas",
-									good: "Imediato (Automático)",
+									good: "Na hora",
 								},
 								{
-									crit: "Pagamento",
-									bad: "Manual / Fiado",
-									good: "Pix Antecipado",
+									crit: "Reserva",
+									bad: "Você tem que responder",
+									good: "Cliente reserva pelo link, o dia todo",
 								},
 								{
-									crit: "No-Show (Calote)",
-									bad: "Alto Risco",
-									good: "Zero Risco",
+									crit: "Agenda",
+									bad: "Grupo, planilha ou na cabeça",
+									good: "Uma agenda só",
 								},
 								{
-									crit: "Madrugada/Fim de Semana",
+									crit: "De noite / fim de semana",
 									bad: "Você não atende",
-									good: "Vende 24h",
+									good: "Vende o dia todo",
 								},
 							].map((row, i) => (
 								<div
@@ -880,22 +883,22 @@ export default function LandingPage() {
 								Por que arenas trocam planilha e WhatsApp pelo ArenaSys
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg mt-2">
-								ArenaSys x outros: o que muda na sua rotina.
+								Feito pra quadra. Reserva organizada. Você cobra no balcão.
 							</p>
 						</div>
 						<div className="border border-white/10 rounded-2xl overflow-hidden">
 							<div className="grid grid-cols-3 bg-white/5 p-4 text-sm md:text-base font-bold uppercase tracking-wider text-gray-500">
-								<div>Critério</div>
-								<div className="text-center">Outros (planilha / outros sistemas)</div>
+								<div>O quê</div>
+								<div className="text-center">Outros</div>
 								<div className="text-center text-emerald-400">ArenaSys</div>
 							</div>
 							{[
-								{ crit: "Foco no seu negócio", bad: "Genérico ou manual", good: "Feito para quadra" },
-								{ crit: "Reserva + pagamento", bad: "Separados ou fiado", good: "Pix integrado na reserva" },
-								{ crit: "Cliente reserva sozinho", bad: "Depende de você responder", good: "Link público, reserva 24h" },
-								{ crit: "Investimento", bad: "Caro ou complexo", good: "Menos que 1h de aluguel" },
-								{ crit: "Fidelidade", bad: "Contrato / multa", good: "Cancele quando quiser" },
-								{ crit: "Suporte", bad: "Robô ou demora", good: "WhatsApp, gente do time" },
+								{ crit: "Feito pra quê", bad: "Genérico", good: "Pra quadra" },
+								{ crit: "Reserva", bad: "WhatsApp ou planilha", good: "Link; você cobra no balcão" },
+								{ crit: "Cliente reserva sozinho", bad: "Você tem que responder", good: "Link; reserva o dia todo" },
+								{ crit: "Preço", bad: "Caro", good: "Menos que 1h de aluguel" },
+								{ crit: "Contrato", bad: "Multa se sair", good: "Cancela quando quiser" },
+								{ crit: "Ajuda", bad: "Robô ou demora", good: "Gente no WhatsApp" },
 							].map((row, i) => (
 								<div
 									key={i}
@@ -919,12 +922,10 @@ export default function LandingPage() {
 					<div className="max-w-5xl mx-auto">
 						<div className="text-center mb-12">
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3">
-								Menos que 1 hora de aluguel.
+								Menos que 1 hora de aluguel
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg max-w-lg mx-auto">
-								Se o sistema evitar{" "}
-								<span className="text-white font-bold">1 calote por mês</span>,
-								já se pagou.
+								Menos tempo no WhatsApp, menos confusão. O sistema se paga rápido.
 							</p>
 						</div>
 						<div className="max-w-2xl mx-auto">
@@ -939,7 +940,7 @@ export default function LandingPage() {
 										ArenaSys
 									</h3>
 									<p className="text-gray-400 text-sm md:text-base mb-5">
-										Cliente reserva sozinho. Você só aprova.
+										Tudo num lugar. Você confirma e cobra no balcão.
 									</p>
 
 									{/* Preço Normal */}
@@ -989,48 +990,44 @@ export default function LandingPage() {
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
-												Nunca mais <strong>esqueça de responder</strong> uma
-												reserva
+												Nunca mais <strong>esquece de responder</strong> uma reserva
 											</span>
 										</li>
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
-												Cliente <strong>reserva e paga sozinho</strong> (sem
-												você mexer um dedo)
+												Cliente <strong>reserva pelo link</strong>; você cobra no balcão
 											</span>
 										</li>
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
-												<strong>Acabou o calote</strong> — recebe antes do jogo
-												via Pix
+												<strong>Reserva anotada</strong> — menos confusão
 											</span>
 										</li>
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
-												Gerencie <strong>todas as quadras</strong> num lugar só
+												<strong>Todas as quadras</strong> num lugar só
 											</span>
 										</li>
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
-												<strong>Mensalistas organizados</strong> — fidelidade e
-												receita previsível
+												<strong>Mensalistas</strong> organizados
 											</span>
 										</li>
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
-												Saiba <strong>quanto faturou</strong> sem abrir planilha
+												Você vê <strong>quanto faturou</strong> sem planilha
 											</span>
 										</li>
 									</ul>
 									<Button
 										onClick={() => navigate("/login?mode=signup")}
 										className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
-										Começar Grátis por 7 Dias
+										Testar 7 dias grátis — sem cartão
 									</Button>
 									{foundersProgress && (
 										<div className="mt-3 space-y-2">
@@ -1056,7 +1053,7 @@ export default function LandingPage() {
 										</div>
 									)}
 									<p className="text-center text-sm text-gray-500 mt-3 flex justify-center gap-2 items-center">
-										<ShieldCheck className="w-4 h-4" /> 7 dias de garantia.
+										<ShieldCheck className="w-4 h-4" /> 7 dias grátis. Sem cartão. Cancele quando quiser.
 									</p>
 								</div>
 							</div>
@@ -1072,10 +1069,10 @@ export default function LandingPage() {
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								Dúvidas Frequentes
+								Dúvidas comuns
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg mt-2">
-								Tudo o que você precisa saber para começar sem medo.
+								Respostas curtas.
 							</p>
 						</div>
 
@@ -1107,7 +1104,7 @@ export default function LandingPage() {
 						O que vem por aí
 					</p>
 					<h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-8">
-						Construindo o ecossistema do esporte
+						A gente está construindo mais coisas pro esporte
 					</h2>
 					<div className="flex flex-wrap justify-center gap-4">
 						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
@@ -1131,14 +1128,17 @@ export default function LandingPage() {
 						<div className="relative bg-[#050507] rounded-[2.3rem] p-10 md:p-16 text-center overflow-hidden">
 							<div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
 							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 relative z-10 leading-tight">
-								Pare de deixar <br />{" "}
-								<span className="text-emerald-400">dinheiro na mesa.</span>
+								Sua quadra merece uma agenda <br />{" "}
+								<span className="text-emerald-400">que funcione.</span>
 							</h2>
+							<p className="text-gray-400 text-base md:text-lg mb-6 relative z-10 max-w-md mx-auto">
+								7 dias grátis. Sem cartão. Cancela quando quiser.
+							</p>
 							<div className="flex justify-center relative z-10">
 								<Button
 									onClick={() => navigate("/login?mode=signup")}
 									className="h-12 sm:h-14 w-full sm:w-auto px-6 sm:px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-base sm:text-lg shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-transform sm:hover:scale-105 active:scale-95 flex items-center justify-center gap-2 whitespace-normal text-center">
-									Começar Grátis por 7 Dias <ArrowRight className="w-5 h-5" />
+									Quero testar 7 dias grátis <ArrowRight className="w-5 h-5" />
 								</Button>
 							</div>
 						</div>

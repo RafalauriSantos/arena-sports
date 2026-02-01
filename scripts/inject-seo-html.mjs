@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, "..", "dist", "index.html");
 
-const CRITICAL_HTML = `<div id="root"><div data-seo-ready class="min-h-screen bg-[#02040a] text-white font-sans"><main class="relative z-10"><h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white mt-8">Sistema de gestão e agendamento de quadras esportivas</h1><p class="text-lg md:text-xl text-gray-300 mt-4 max-w-2xl">Evite conflitos de horários, perca menos dinheiro e organize sua arena em um só lugar.</p><p class="text-gray-400 mt-4">Software para quadras esportivas, controle de horários de quadras e sistema para aluguel de quadras. Teste grátis 7 dias.</p></main></div></div>`;
+const CRITICAL_HTML = `<div id="root"><div data-seo-ready class="min-h-screen bg-[#02040a] text-white font-sans"><main class="relative z-10"><h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white mt-8">Duas reservas no mesmo horário. Já passou por isso?</h1><p class="text-lg md:text-xl text-gray-300 mt-4 max-w-2xl">O ArenaSys acaba com essa bagunça. Cliente reserva pelo link. Você confirma e cobra no balcão.</p><p class="text-gray-400 mt-4">Sistema de gestão e agendamento de quadras esportivas. Uma agenda, tudo no lugar. Teste grátis 7 dias.</p></main></div></div>`;
 
 if (!fs.existsSync(distPath)) {
 	console.error("❌ dist/index.html não encontrado. Rode 'vite build' antes.");
