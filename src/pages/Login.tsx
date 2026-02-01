@@ -390,7 +390,7 @@ const Login = () => {
 						{/* Glow Effect atrás do card */}
 						<div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
 
-						<div className="relative bg-[#0a0c10]/90 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-2xl">
+						<div className="relative bg-[#0a0c10]/90 backdrop-blur-2xl border border-white/10 p-8 sm:p-10 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/40 hover:shadow-emerald-500/5 transition-shadow duration-300">
 							{/* TELA DE CONFIRMAÇÃO DE EMAIL */}
 							{mode === "email-confirmation" ?
 								<div className="space-y-4 sm:space-y-6 text-center animate-in fade-in slide-in-from-bottom-4">
@@ -533,7 +533,7 @@ const Login = () => {
 														value={arenaName}
 														onChange={(e) => setArenaName(e.target.value)}
 														autoComplete="organization"
-														className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20 input-focus-breathing transition-all duration-300"
+														className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
 														placeholder="Ex: ArenaSys Tatuí"
 													/>
 												</div>
@@ -545,13 +545,13 @@ const Login = () => {
 												Email Corporativo
 											</Label>
 											<div className="relative">
-												<ShieldCheck className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+												<ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
 												<Input
 													type="email"
 													value={email}
 													onChange={(e) => setEmail(e.target.value)}
 													autoComplete="email"
-													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20 input-focus-breathing transition-all duration-300"
+													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
 													placeholder="gestor@arenasys.com"
 												/>
 											</div>
@@ -562,7 +562,7 @@ const Login = () => {
 												Senha de Acesso
 											</Label>
 											<div className="relative">
-												<Lock className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
 												<Input
 													type="password"
 													value={password}
@@ -572,7 +572,7 @@ const Login = () => {
 															"new-password"
 														)
 													}
-													className="pl-10 bg-white/5 border-white/10 text-white h-10 sm:h-11 focus:border-emerald-500/50 focus:ring-emerald-500/20 input-focus-breathing transition-all duration-300"
+													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
 													placeholder="••••••••"
 												/>
 											</div>
@@ -601,7 +601,7 @@ const Login = () => {
 										<Button
 											type="submit"
 											disabled={isLoading}
-											className="w-full h-10 sm:h-11 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-sm sm:text-base shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all transform hover:-translate-y-1">
+											className="w-full h-11 sm:h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold text-sm sm:text-base shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-200 transform hover:-translate-y-0.5 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]">
 											{isLoading ?
 												"Conectando..."
 											:	<span className="flex items-center gap-2">

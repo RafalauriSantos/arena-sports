@@ -83,11 +83,20 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        surface: {
+          0: "var(--surface-0)",
+          1: "var(--surface-1)",
+          2: "var(--surface-2)",
+          3: "var(--surface-3)",
+          4: "var(--surface-4)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
       },
       keyframes: {
         "accordion-down": {
@@ -127,6 +136,10 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "hero-line": {
+          "0%, 100%": { opacity: "0.35" },
+          "50%": { opacity: "0.9" },
+        },
       },
       boxShadow: {
         neon: '0 0 10px theme("colors.neon.DEFAULT"), 0 0 20px theme("colors.neon.DEFAULT")',
@@ -140,6 +153,7 @@ export default {
         "scale-in": "scale-in 0.2s ease-out",
         "flash": "flash 0.5s ease-in-out",
         "shimmer": "shimmer 2s linear infinite",
+        "hero-line": "hero-line 2.5s ease-in-out infinite",
       },
     },
   },

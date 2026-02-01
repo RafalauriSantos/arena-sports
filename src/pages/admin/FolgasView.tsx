@@ -179,11 +179,11 @@ export default function FolgasView() {
 			{/* Header - Mobile responsive */}
 			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 				<div>
-					<h1 className="text-xl md:text-3xl font-bold text-white tracking-tight">
-						Folgas e Fechamentos
+					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
+						Gerenciar Folgas
 					</h1>
-					<p className="text-xs md:text-sm text-gray-400 mt-1">
-						Bloqueie dias quando a ArenaSys estiver fechada
+					<p className="text-sm text-gray-500 mt-0.5">
+						Bloqueie datas e motive quando fechar
 					</p>
 				</div>
 				<Button
@@ -270,7 +270,7 @@ export default function FolgasView() {
 
 			{/* New Folga Modal */}
 			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-				<DialogContent className="sm:max-w-[600px]">
+				<DialogContent className="sm:max-w-[600px] rounded-2xl border-white/10 bg-surface-2">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
 							<CalendarOff className="h-5 w-5 text-primary" />

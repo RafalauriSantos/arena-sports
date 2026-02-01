@@ -80,8 +80,8 @@ function TabTrigger({
 	return (
 		<TabsTrigger
 			value={value}
-			className="w-full flex items-center gap-2 px-4 py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-gray-400 hover:text-white transition-all">
-			<Icon className="h-4 w-4" />
+			className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 data-[state=active]:bg-emerald-500/20 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-emerald-500/30 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2">
+			<Icon className="h-4 w-4 shrink-0" />
 			<span className="hidden md:inline">{label}</span>
 		</TabsTrigger>
 	);
@@ -97,14 +97,14 @@ function PremiumCard({
 	children: React.ReactNode;
 }) {
 	return (
-		<Card className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl">
-			<CardHeader>
-				<CardTitle className="text-white">{title}</CardTitle>
-				<CardDescription className="text-gray-400">
+		<Card className="bg-surface-2/90 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl hover:border-white/10 transition-colors duration-300">
+			<CardHeader className="pb-4">
+				<CardTitle className="text-lg font-semibold text-white tracking-tight">{title}</CardTitle>
+				<CardDescription className="text-sm text-gray-500">
 					{description}
 				</CardDescription>
 			</CardHeader>
-			<CardContent>{children}</CardContent>
+			<CardContent className="space-y-4">{children}</CardContent>
 		</Card>
 	);
 }
@@ -486,22 +486,22 @@ export default function ConfiguracoesView() {
 	if (loading) return <LoadingSkeleton />;
 
 	return (
-		<div className="min-h-screen bg-gray-950 text-gray-50 pb-20">
+		<div className="min-h-screen bg-surface-0 text-gray-50 pb-20">
 			<div className="max-w-5xl mx-auto p-6 space-y-8">
 				{/* HEADER */}
 				<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 					<div>
-						<h1 className="text-3xl font-bold tracking-tight text-white">
+						<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
 							Configurações
 						</h1>
-						<p className="text-gray-400 mt-1">
-							Gerencie sua ArenaSys, preços e automações.
+						<p className="text-sm text-gray-500 mt-0.5">
+							Arena, perfil, cobrança e integrações
 						</p>
 					</div>
 					<Button
 						onClick={saveSettings}
 						disabled={saving}
-						className="bg-white text-gray-950 hover:bg-gray-200 font-medium px-6 transition-all shadow-lg">
+						className="bg-white text-gray-950 hover:bg-gray-200 font-medium px-6 transition-all shadow-lg rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 h-11">
 						{saving ? (
 							<>
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
@@ -515,12 +515,12 @@ export default function ConfiguracoesView() {
 				</div>
 
 				{/* TABS */}
-				<Tabs 
+				<Tabs
 					value={activeTab}
 					onValueChange={setActiveTab}
 					className="space-y-8"
 				>
-					<TabsList className="w-full h-auto bg-white/5 p-1 rounded-2xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+					<TabsList className="w-full h-auto bg-white/5 p-1.5 rounded-2xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 border border-white/5">
 						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
 						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
 						<TabTrigger value="quadras" icon={Trophy} label="Quadras" />
@@ -537,7 +537,7 @@ export default function ConfiguracoesView() {
 					{/* MEU PERFIL */}
 					<TabsContent
 						value="perfil"
-						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+						className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
 						<div className="max-w-2xl">
 							<PremiumCard
 								title="Meu Perfil"
@@ -550,7 +550,7 @@ export default function ConfiguracoesView() {
 											<Input
 												value={profileName}
 												onChange={(e) => setProfileName(e.target.value)}
-												className="bg-white/5 border-white/10 text-white"
+												className="bg-white/5 border-white/10 text-white h-11 rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2"
 											/>
 										</div>
 										<div className="space-y-2">
@@ -558,7 +558,7 @@ export default function ConfiguracoesView() {
 											<Input
 												value={profileJobTitle}
 												onChange={(e) => setProfileJobTitle(e.target.value)}
-												className="bg-white/5 border-white/10 text-white"
+												className="bg-white/5 border-white/10 text-white h-11 rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2"
 											/>
 										</div>
 										<div className="space-y-2">
@@ -571,7 +571,7 @@ export default function ConfiguracoesView() {
 										</div>
 										<Button
 											onClick={saveProfile}
-											className="w-full bg-primary text-primary-foreground">
+											className="w-full h-11 rounded-xl bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2 active:scale-[0.98]">
 											Salvar Perfil
 										</Button>
 									</div>
@@ -583,9 +583,9 @@ export default function ConfiguracoesView() {
 					{/* IDENTIDADE (TRAVADA) */}
 					<TabsContent
 						value="arena-sys"
-						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<div className="md:col-span-2 space-y-6">
+						className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+							<div className="md:col-span-2 space-y-8">
 								<PremiumCard
 									title="Identidade da ArenaSys"
 									description="Dados visíveis para seu cliente.">

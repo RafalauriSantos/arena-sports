@@ -25,7 +25,11 @@ import { ptBR } from "date-fns/locale";
 import { StatCardSkeleton } from "@/components/admin/StatCardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function FinanceiroView() {
+type FinanceiroViewProps = {
+	onNavigateToAgenda?: () => void;
+};
+
+export default function FinanceiroView({ onNavigateToAgenda }: FinanceiroViewProps) {
 	const { bookings, timeSlots, loading } = useBookings(); // Assumindo que 'loading' existe
 	const [selectedMonth, setSelectedMonth] = useState(() => {
 		return format(new Date(), "yyyy-MM");
@@ -37,7 +41,8 @@ export default function FinanceiroView() {
 		const monthEnd = endOfMonth(new Date(selectedMonth + "-01"));
 
 		const confirmedBookings = bookings.filter((booking) => {
-			if (booking.status !== "confirmed" && booking.status !== "approved")
+			if (booking.status === "cancelled") return false;
+			if (booking.status !== "confirmed" && booking.status !== "pending_approval")
 				return false;
 			const bookingDate = new Date(booking.date);
 			return isWithinInterval(bookingDate, {
@@ -47,7 +52,7 @@ export default function FinanceiroView() {
 		});
 
 		const totalRevenue = confirmedBookings.reduce(
-			(sum, booking) => sum + booking.pricePerPlayer * booking.totalPlayers,
+			(sum, booking) => sum + (booking.totalPrice ?? 0),
 			0
 		);
 		const totalBookings = confirmedBookings.length;
@@ -63,7 +68,7 @@ export default function FinanceiroView() {
 		const revenueByDay: { [key: string]: number } = {};
 		confirmedBookings.forEach((booking) => {
 			const day = booking.date;
-			const revenue = booking.pricePerPlayer * booking.totalPlayers;
+			const revenue = booking.totalPrice ?? 0;
 			revenueByDay[day] = (revenueByDay[day] || 0) + revenue;
 		});
 
@@ -89,7 +94,8 @@ export default function FinanceiroView() {
 		);
 
 		const prevMonthBookings = bookings.filter((booking) => {
-			if (booking.status !== "confirmed" && booking.status !== "approved")
+			if (booking.status === "cancelled") return false;
+			if (booking.status !== "confirmed" && booking.status !== "pending_approval")
 				return false;
 			const bookingDate = new Date(booking.date);
 			return isWithinInterval(bookingDate, {
@@ -99,7 +105,7 @@ export default function FinanceiroView() {
 		});
 
 		const prevRevenue = prevMonthBookings.reduce(
-			(sum, booking) => sum + booking.pricePerPlayer * booking.totalPlayers,
+			(sum, booking) => sum + (booking.totalPrice ?? 0),
 			0
 		);
 		const prevBookingsCount = prevMonthBookings.length;
@@ -183,7 +189,7 @@ export default function FinanceiroView() {
 				format(new Date(booking.date), "dd/MM/yyyy"),
 				booking.time,
 				booking.bookedBy || "N/A",
-				(booking.pricePerPlayer * booking.totalPlayers).toFixed(2),
+				(booking.totalPrice ?? 0).toFixed(2),
 			]),
 		]
 			.map((row) => row.join(","))
@@ -197,18 +203,20 @@ export default function FinanceiroView() {
 	};
 
 	return (
-		<div className="space-y-4 md:space-y-6">
-			{/* Header - Mobile responsive */}
+		<div className="space-y-6 md:space-y-8">
+			{/* Header padronizado: título + subtítulo */}
 			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 				<div>
-					<h1 className="text-xl md:text-3xl font-black">Financeiro</h1>
-					<p className="text-xs md:text-sm text-muted-foreground">
+					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
+						Financeiro
+					</h1>
+					<p className="text-sm text-gray-500 mt-0.5">
 						Acompanhe faturamento e receitas
 					</p>
 				</div>
 				<div className="flex gap-2 md:gap-3 w-full md:w-auto">
 					<Select value={selectedMonth} onValueChange={setSelectedMonth}>
-						<SelectTrigger className="flex-1 md:w-[200px]">
+						<SelectTrigger className="flex-1 md:w-[200px] h-11 rounded-xl border-white/10 bg-surface-2/60 focus:ring-2 focus:ring-emerald-500/30">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -221,7 +229,8 @@ export default function FinanceiroView() {
 					</Select>
 					<Button
 						variant="outline"
-						className="gap-2 border-primary/30 text-primary hover:bg-primary/10 hover:text-primary-foreground hover:border-primary/50 transition-all"
+						size="sm"
+						className="gap-2 h-11 rounded-xl border-white/10 text-gray-300 hover:bg-white/5 hover:text-white transition-all duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1115]"
 						onClick={handleExport}>
 						<Download className="h-4 w-4" />
 						Exportar
@@ -229,8 +238,8 @@ export default function FinanceiroView() {
 				</div>
 			</div>
 
-			{/* KPI Cards */}
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+			{/* KPI Cards — estilo MetricPill (bg, borda, ícone em pill, trend) */}
+			<div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
 				{loading ? (
 					<>
 						<StatCardSkeleton />
@@ -239,12 +248,63 @@ export default function FinanceiroView() {
 						<StatCardSkeleton />
 					</>
 				) : (
-					<>{/* Cards de KPI Reais aqui... */}</>
+					<>
+						<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 backdrop-blur-md group">
+							<div className="flex justify-between items-start mb-1 sm:mb-2">
+								<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">Receita do mês</span>
+								<span className="rounded-lg bg-emerald-500/10 p-1.5 ring-1 ring-white/5">
+									<DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
+								</span>
+							</div>
+							<span className="text-lg sm:text-xl font-bold text-white tracking-tight tabular-nums">
+								{formatCurrency(metrics.totalRevenue)}
+							</span>
+							<div className="mt-1">{renderGrowthIndicator(metrics.revenueGrowth)}</div>
+							<p className="text-[10px] font-medium mt-0.5 text-gray-500">vs mês anterior</p>
+						</div>
+						<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 backdrop-blur-md group">
+							<div className="flex justify-between items-start mb-1 sm:mb-2">
+								<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">Reservas</span>
+								<span className="rounded-lg bg-emerald-500/10 p-1.5 ring-1 ring-white/5">
+									<Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
+								</span>
+							</div>
+							<span className="text-lg sm:text-xl font-bold text-white tracking-tight tabular-nums">
+								{metrics.totalBookings}
+							</span>
+							<div className="mt-1">{renderGrowthIndicator(metrics.bookingsGrowth)}</div>
+							<p className="text-[10px] font-medium mt-0.5 text-gray-500">vs mês anterior</p>
+						</div>
+						<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 backdrop-blur-md group">
+							<div className="flex justify-between items-start mb-1 sm:mb-2">
+								<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">Crescimento receita</span>
+								<span className="rounded-lg bg-emerald-500/10 p-1.5 ring-1 ring-white/5">
+									<TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
+								</span>
+							</div>
+							<span className="text-lg sm:text-xl font-bold text-white tracking-tight tabular-nums">
+								{metrics.revenueGrowth > 0 ? "+" : ""}{metrics.revenueGrowth.toFixed(1)}%
+							</span>
+							<p className="text-[10px] font-medium mt-1 text-gray-500">vs mês anterior</p>
+						</div>
+						<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 backdrop-blur-md group">
+							<div className="flex justify-between items-start mb-1 sm:mb-2">
+								<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">Ocupação</span>
+								<span className="rounded-lg bg-emerald-500/10 p-1.5 ring-1 ring-white/5">
+									<Users className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
+								</span>
+							</div>
+							<span className="text-lg sm:text-xl font-bold text-white tracking-tight tabular-nums">
+								{metrics.occupancyRate.toFixed(0)}%
+							</span>
+							<p className="text-[10px] font-medium mt-1 text-gray-500">slots do mês</p>
+						</div>
+					</>
 				)}
 			</div>
 
 			{/* Revenue Chart */}
-			<Card className="bg-gray-900/40 border-white/5 backdrop-blur-md relative overflow-hidden">
+			<Card className="bg-surface-2/80 border border-white/5 rounded-2xl backdrop-blur-md relative overflow-hidden hover:border-white/10 transition-shadow duration-300 hover:shadow-lg hover:shadow-emerald-500/5">
 				<div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2 text-white">
@@ -260,9 +320,21 @@ export default function FinanceiroView() {
 							<Skeleton className="h-8 w-full bg-gray-800" />
 						</div>
 					) : Object.keys(metrics.revenueByDay).length === 0 ? (
-						<div className="text-center py-12 text-gray-500">
-							<BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-							<p>Nenhuma receita registrada neste período</p>
+						<div className="flex flex-col items-center justify-center py-12 text-center">
+							<div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
+								<BarChart3 className="h-7 w-7 text-gray-500" />
+							</div>
+							<p className="text-sm text-gray-400 mb-1">Nenhuma receita neste período</p>
+							<p className="text-xs text-gray-500 mb-4">As reservas confirmadas aparecem aqui.</p>
+							{onNavigateToAgenda && (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={onNavigateToAgenda}
+									className="border-white/10 text-gray-300 hover:bg-white/5">
+									Ver reservas
+								</Button>
+							)}
 						</div>
 					) : (
 						<div className="space-y-2">
@@ -286,10 +358,12 @@ export default function FinanceiroView() {
 													{formatCurrency(revenue)}
 												</span>
 											</div>
-											<div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+											<div
+												className="w-full bg-gray-800 rounded-full h-2 overflow-hidden"
+												title={`${format(new Date(date), "dd/MM - EEEE", { locale: ptBR })}: ${formatCurrency(revenue)}`}>
 												<div
-													className="h-full bg-gradient-to-r from-primary to-primary/90 transition-all duration-500"
-													style={{ width: `${percentage}%` }}
+													className="h-full min-h-[8px] bg-gradient-to-r from-emerald-500 to-emerald-500/90 transition-all duration-500 rounded-full"
+													style={{ width: `${Math.max(percentage, 4)}%` }}
 												/>
 											</div>
 										</div>
@@ -301,7 +375,7 @@ export default function FinanceiroView() {
 			</Card>
 
 			{/* Recent Bookings Table */}
-			<Card className="bg-gray-900/40 border-white/5 backdrop-blur-md">
+			<Card className="bg-surface-2/80 border border-white/5 rounded-2xl backdrop-blur-md hover:border-white/10 transition-shadow duration-300 hover:shadow-lg hover:shadow-emerald-500/5">
 				<CardHeader>
 					<CardTitle className="text-white">Reservas Recentes</CardTitle>
 				</CardHeader>
@@ -313,9 +387,21 @@ export default function FinanceiroView() {
 							<Skeleton className="h-16 w-full bg-gray-800" />
 						</div>
 					) : metrics.confirmedBookings.length === 0 ? (
-						<div className="text-center py-12 text-gray-500">
-							<Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-							<p>Nenhuma reserva neste período</p>
+						<div className="flex flex-col items-center justify-center py-12 text-center">
+							<div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
+								<Calendar className="h-7 w-7 text-gray-500" />
+							</div>
+							<p className="text-sm text-gray-400 mb-1">Nenhuma reserva neste período</p>
+							<p className="text-xs text-gray-500 mb-4">As reservas confirmadas aparecem aqui.</p>
+							{onNavigateToAgenda && (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={onNavigateToAgenda}
+									className="border-white/10 text-gray-300 hover:bg-white/5">
+									Ver reservas
+								</Button>
+							)}
 						</div>
 					) : (
 						<div className="space-y-3">
@@ -348,10 +434,8 @@ export default function FinanceiroView() {
 											</Badge>
 										</div>
 										<div className="text-right">
-											<div className="font-bold text-primary drop-shadow-[0_0_5px_hsl(var(--primary)/0.4)]">
-												{formatCurrency(
-													booking.pricePerPlayer * booking.totalPlayers
-												)}
+											<div className="font-bold text-primary drop-shadow-[0_0_5px_hsl(var(--primary)/0.4)] tabular-nums">
+												{formatCurrency(booking.totalPrice ?? 0)}
 											</div>
 										</div>
 									</div>

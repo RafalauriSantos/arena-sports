@@ -331,12 +331,12 @@ export default function MensalistasView() {
 		<div className="space-y-6 p-4 md:p-8">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-						<Crown className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
-						Gestão de Mensalistas
+					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight flex items-center gap-2">
+						<Crown className="w-5 h-5 md:w-6 md:h-6 text-amber-500" />
+						Mensalistas
 					</h1>
-					<p className="text-muted-foreground mt-1">
-						Gerencie os horários fixos semanais dos seus mensalistas
+					<p className="text-sm text-gray-500 mt-0.5">
+						Horários recorrentes por quadra e dia
 					</p>
 				</div>
 				<Button
@@ -442,7 +442,7 @@ export default function MensalistasView() {
 
 			{/* Modal de Criar/Editar */}
 			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-				<DialogContent className="sm:max-w-[500px] bg-[#1a1a1a] border-white/10 text-white">
+				<DialogContent className="sm:max-w-[500px] rounded-2xl bg-surface-2 border border-white/10 text-white">
 					<DialogHeader>
 						<DialogTitle className="text-white">
 							{editingSlot ? "Editar Mensalista" : "Novo Mensalista"}

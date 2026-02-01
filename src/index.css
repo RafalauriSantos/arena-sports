@@ -190,6 +190,18 @@
     --ring: 120 100% 50%;
 
     --radius: 0.75rem;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: 1rem;
+    --radius-2xl: 1.25rem;
+
+    /* Surface scale (dashboard/cards) */
+    --surface-0: #02040a;
+    --surface-1: #050507;
+    --surface-2: #0f1115;
+    --surface-3: rgba(255, 255, 255, 0.05);
+    --surface-4: rgba(255, 255, 255, 0.08);
 
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 98%;
@@ -229,6 +241,15 @@
     --input: 0 0% 14%;
     --ring: 120 100% 50%;
   }
+}
+
+/* Dashboard: focus visível consistente (a11y) */
+[data-dashboard] input:focus-visible,
+[data-dashboard] button:focus-visible,
+[data-dashboard] [role="button"]:focus-visible,
+[data-dashboard] a:focus-visible {
+  --tw-ring-color: rgb(16 185 129 / 0.5);
+  --tw-ring-offset-color: var(--surface-2);
 }
 
 @layer base {

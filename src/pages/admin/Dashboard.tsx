@@ -56,9 +56,15 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DashboardSkeleton = () => (
-	<div className="min-h-screen w-full flex bg-[#02040a]">
+	<div className="min-h-screen w-full flex bg-surface-0">
 		{/* Sidebar Skeleton */}
 		<div className="hidden md:flex w-72 flex-col gap-4 p-4 border-r border-white/10 shrink-0">
 			<div className="h-20 w-full bg-white/5 animate-pulse rounded-xl" />
@@ -201,7 +207,7 @@ const SidebarFixed = ({
 		<>
 			<aside
 				className={cn(
-					"fixed top-0 left-0 z-50 h-full bg-[#050507]/95 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out shadow-2xl flex flex-col",
+					"fixed top-0 left-0 z-50 h-full bg-surface-1/95 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out shadow-2xl flex flex-col",
 					mobileOpen ? "translate-x-0 w-72" : (
 						"-translate-x-full md:translate-x-0"
 					),
@@ -244,7 +250,7 @@ const SidebarFixed = ({
 					</button>
 				</div>
 
-				<div className="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
+				<div className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5 custom-scrollbar">
 					{/* Trial Countdown */}
 					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
 
@@ -314,6 +320,11 @@ const SidebarFixed = ({
 						)}
 					</button>
 
+					{!collapsed && (
+						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+							Operação
+						</p>
+					)}
 					{menuItems.map((item) => {
 						const btn = (
 							<button
@@ -324,16 +335,16 @@ const SidebarFixed = ({
 								className={cn(
 									"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
 									activeView === item.id ?
-										"bg-white/10 text-white font-medium border-l-emerald-500"
+										"bg-white/10 text-white font-medium border-l-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.06)]"
 									:	"text-gray-400 hover:bg-white/5 hover:text-white",
 									collapsed ? "justify-center" : "",
 								)}>
 								<item.icon
 									className={cn(
-										"h-5 w-5 shrink-0 transition-colors",
+										"h-5 w-5 shrink-0 transition-all duration-200",
 										activeView === item.id ?
 											"text-emerald-400"
-										:	"group-hover:text-white",
+										:	"group-hover:text-white group-hover:scale-110",
 									)}
 								/>
 								{!collapsed && <span className="text-sm">{item.label}</span>}
@@ -345,7 +356,7 @@ const SidebarFixed = ({
 						return collapsed ? (
 							<Tooltip key={item.id} delayDuration={300}>
 								<TooltipTrigger asChild>{btn}</TooltipTrigger>
-								<TooltipContent side="right" className="bg-[#0F1115] border-white/10 text-white">
+								<TooltipContent side="right" className="bg-surface-2 border-white/10 text-white">
 									{item.label}
 								</TooltipContent>
 							</Tooltip>
@@ -353,6 +364,14 @@ const SidebarFixed = ({
 							<div key={item.id}>{btn}</div>
 						);
 					})}
+
+					{/* Divisor sutil: Operação vs Sistema */}
+					<div className="my-2 border-t border-white/5" aria-hidden />
+					{!collapsed && (
+						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+							Sistema
+						</p>
+					)}
 				</div>
 
 				<div className="p-3 border-t border-white/5 bg-black/20 backdrop-blur-md">
@@ -371,7 +390,7 @@ const SidebarFixed = ({
 									<Settings className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
-							<TooltipContent side="right" className="bg-[#0F1115] border-white/10 text-white">
+							<TooltipContent side="right" className="bg-surface-2 border-white/10 text-white">
 								Configurações
 							</TooltipContent>
 						</Tooltip>
@@ -403,7 +422,7 @@ const SidebarFixed = ({
 									<Headphones className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
-							<TooltipContent side="right" className="bg-[#0F1115] border-white/10 text-white">
+							<TooltipContent side="right" className="bg-surface-2 border-white/10 text-white">
 								Suporte
 							</TooltipContent>
 						</Tooltip>
@@ -419,43 +438,65 @@ const SidebarFixed = ({
 						</button>
 					)}
 
-					<div
-						className={cn(
-							"flex items-center gap-3 p-2 rounded-xl border border-white/5 bg-white/5 mt-2",
-							collapsed ? "justify-center border-none bg-transparent p-0" : "",
-						)}>
-						<div className="h-9 w-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
-							{userProfile?.avatar_url ?
-								<img
-									src={userProfile.avatar_url}
-									alt="User"
-									className="h-full w-full object-cover"
-								/>
-							:	<User className="text-white h-4 w-4" />}
-						</div>
-						{!collapsed && (
-							<div className="flex-1 overflow-hidden">
-								<p className="text-sm font-medium text-white truncate">
-									{userProfile?.full_name?.split(" ")[0] || "Admin"}
-								</p>
-								<p className="text-[10px] text-gray-500 uppercase font-bold truncate">
-									Logado
-								</p>
-							</div>
-						)}
-						{!collapsed && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
 							<button
+								type="button"
+								className={cn(
+									"w-full flex items-center gap-3 p-2 rounded-xl border border-white/5 bg-white/5 mt-2 transition-all duration-200 hover:bg-white/10 hover:border-white/10 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507] active:scale-[0.98]",
+									collapsed ? "justify-center border-none bg-transparent p-0" : "",
+								)}>
+								<div className="h-9 w-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
+									{userProfile?.avatar_url ?
+										<img
+											src={userProfile.avatar_url}
+											alt="User"
+											className="h-full w-full object-cover"
+										/>
+									:	<User className="text-white h-4 w-4" />}
+								</div>
+								{!collapsed && (
+									<div className="flex-1 overflow-hidden text-left">
+										<p className="text-sm font-medium text-white truncate">
+											{userProfile?.full_name?.split(" ")[0] || "Admin"}
+										</p>
+										<p className="text-[10px] text-gray-500 uppercase font-bold truncate">
+											Logado
+										</p>
+									</div>
+								)}
+								{!collapsed && (
+									<ChevronRight className="h-4 w-4 text-gray-500 shrink-0" />
+								)}
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							align={collapsed ? "center" : "end"}
+							side={collapsed ? "right" : "top"}
+							sideOffset={8}
+							className="min-w-[180px] rounded-xl border border-white/10 bg-surface-2 p-1 shadow-xl shadow-black/30">
+							<DropdownMenuItem
+								onClick={() => {
+									setActiveView("config");
+									setMobileOpen(false);
+								}}
+								className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-200 focus:bg-white/10 focus:text-white focus:outline-none cursor-pointer">
+								<User className="h-4 w-4" />
+								Perfil
+							</DropdownMenuItem>
+							<DropdownMenuItem
 								onClick={async () => {
 									if (signOut) {
 										await signOut();
 										window.location.href = "/login";
 									}
 								}}
-								className="text-gray-500 hover:text-red-400 transition-colors p-1">
+								className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-200 focus:bg-red-500/20 focus:text-red-400 focus:outline-none cursor-pointer">
 								<LogOut className="h-4 w-4" />
-							</button>
-						)}
-					</div>
+								Sair
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</aside>
 
@@ -517,9 +558,9 @@ const ArenaSysStatusHero = ({
 
 	return (
 		<div
-			className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#0F1115]/80 border border-white/5 p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
-			{/* Glow Effect Topo */}
-			<div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+			className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-surface-2/80 border border-white/5 p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
+			{/* Linha superior com shimmer sutil (elemento memorável) */}
+			<div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent animate-hero-line" aria-hidden />
 
 			<div className="relative z-10 flex flex-col items-center text-center space-y-2 sm:space-y-3">
 				<p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 w-full text-left sm:text-center">
@@ -572,21 +613,33 @@ type MetricPillProps = {
 	label: string;
 	value: React.ReactNode;
 	icon?: React.ComponentType<{ className?: string }>;
+	trend?: string;
 };
 
-const MetricPill = ({ label, value, icon: Icon }: MetricPillProps) => (
-	<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0F1115]/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 backdrop-blur-md group hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/5">
+const MetricPill = ({ label, value, icon: Icon, trend }: MetricPillProps) => (
+	<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 backdrop-blur-md group hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/5">
 		<div className="flex justify-between items-start mb-1 sm:mb-2">
 			<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
 				{label}
 			</span>
 			{Icon && (
-				<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 group-hover:text-emerald-400 transition-colors duration-300 flex-shrink-0" />
+				<span className="rounded-lg bg-emerald-500/10 p-1.5 ring-1 ring-white/5 transition-colors duration-300 group-hover:bg-emerald-500/20 group-hover:ring-emerald-500/20">
+					<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-emerald-400 transition-colors duration-300 flex-shrink-0" />
+				</span>
 			)}
 		</div>
-		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate min-w-0">
+		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate min-w-0 tabular-nums">
 			{value}
 		</span>
+		{trend && (
+			<p
+				className={cn(
+					"text-[10px] font-medium mt-1",
+					trend.startsWith("+") ? "text-emerald-400" : trend.startsWith("-") ? "text-red-400/90" : "text-gray-500",
+				)}>
+				{trend} vs semana passada
+			</p>
+		)}
 	</div>
 );
 
@@ -932,10 +985,17 @@ export default function DashboardHome() {
 	};
 
 	const stats = useMemo(() => {
-		const todayStr = formatLocalDate(new Date());
+		const today = new Date();
+		const todayStr = formatLocalDate(today);
+		const lastWeekSameDay = new Date(today);
+		lastWeekSameDay.setDate(lastWeekSameDay.getDate() - 7);
+		const lastWeekSameDayStr = formatLocalDate(lastWeekSameDay);
 		// Inclui todos os jogos de hoje (exceto cancelados)
 		const todayBookings = bookings.filter(
 			(b) => b.date === todayStr && b.status !== "cancelled",
+		);
+		const lastWeekSameDayBookings = bookings.filter(
+			(b) => b.date === lastWeekSameDayStr && b.status !== "cancelled",
 		);
 
 		const monthBookings = bookings.filter((b) => {
@@ -1039,6 +1099,20 @@ export default function DashboardHome() {
 		});
 
 		const chartHasNoData = chartData.every((d) => (d.value ?? 0) === 0);
+		const revenueLastWeekSameDay = lastWeekSameDayBookings.reduce((acc, b) => {
+			if (b.paidAmount && b.paidAmount > 0) return acc + b.paidAmount;
+			const statusStr = String(b.status || "");
+			if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+				return acc + (b.totalPrice || 0);
+			}
+			return acc;
+		}, 0);
+		const trendToday =
+			revenueLastWeekSameDay > 0
+				? `${revenueToday >= revenueLastWeekSameDay ? "+" : ""}${(((revenueToday - revenueLastWeekSameDay) / revenueLastWeekSameDay) * 100).toFixed(0)}%`
+				: revenueToday > 0
+				? "+100%"
+				: undefined;
 		return {
 			revenueToday,
 			revenueMonth,
@@ -1046,6 +1120,7 @@ export default function DashboardHome() {
 			chartData,
 			chartHasNoData,
 			courtsStats,
+			trendToday,
 		};
 	}, [bookings, timeSlots]);
 
@@ -1374,7 +1449,7 @@ export default function DashboardHome() {
 	}
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">
+		<div className="min-h-screen bg-surface-0 text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">
 			{/* Background Noise & Gradient (Igual ao Login) */}
 			<div className="absolute inset-0 z-0 pointer-events-none">
 				<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
@@ -1398,7 +1473,7 @@ export default function DashboardHome() {
 					collapsed ? "md:pl-20" : "md:pl-72",
 				)}>
 				{/* Header Mobile */}
-				<div className="md:hidden sticky top-0 z-30 bg-[#02040a]/80 backdrop-blur-lg border-b border-white/5 px-4 py-3 flex items-center justify-between">
+				<div className="md:hidden sticky top-0 z-30 bg-surface-0/80 backdrop-blur-lg border-b border-white/5 px-4 py-3 flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<Activity className="h-5 w-5 text-emerald-500" />
 						<span className="font-bold text-lg tracking-tight">ArenaSys</span>
@@ -1414,7 +1489,7 @@ export default function DashboardHome() {
 				{/* Trial Banner */}
 				<TrialBanner tenantId={tenantId || ""} />
 
-				<main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+				<main data-dashboard className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
 					{activeView === "dashboard" && (
 						<div className="space-y-6">
 							<ArenaSysStatusHero
@@ -1437,6 +1512,7 @@ export default function DashboardHome() {
 										/>
 									}
 									icon={TrendingUp}
+									trend={stats.trendToday}
 								/>
 								<MetricPill
 									label="Mês"
@@ -1471,7 +1547,7 @@ export default function DashboardHome() {
 							</div>
 
 							<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-								<Card className="lg:col-span-2 bg-[#0F1115]/80 border border-white/5 rounded-3xl overflow-hidden shadow-lg backdrop-blur-md">
+								<Card className="lg:col-span-2 bg-surface-2/80 border border-white/5 rounded-3xl overflow-hidden shadow-lg backdrop-blur-md">
 									<CardHeader>
 										<CardTitle className="text-sm font-medium text-white flex items-center gap-2">
 											<Activity className="w-4 h-4 text-emerald-500" />{" "}
@@ -1479,21 +1555,18 @@ export default function DashboardHome() {
 										</CardTitle>
 									</CardHeader>
 									<CardContent className="h-[200px] sm:h-[250px] px-2 sm:px-4">
-										{stats.chartHasNoData ? (
-											<div className="h-full flex flex-col items-center justify-center text-center gap-3 py-6">
-												<p className="text-gray-500 text-sm">
-													Nenhuma receita nesta semana ainda.
-												</p>
-												<Button
-													variant="ghost"
-													size="sm"
+										{stats.chartHasNoData && (
+											<p className="text-gray-500 text-xs mb-2 text-center">
+												Nenhuma receita nesta semana ainda —{" "}
+												<button
+													type="button"
 													onClick={() => setActiveView("agenda")}
-													className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 text-xs font-medium rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1115]">
+													className="text-emerald-400 hover:text-emerald-300 underline">
 													Ver agenda
-												</Button>
-											</div>
-										) : (
-										<ResponsiveContainer width="100%" height="100%">
+												</button>
+											</p>
+										)}
+										<ResponsiveContainer width="100%" height={stats.chartHasNoData ? "calc(100% - 28px)" : "100%"}>
 											<AreaChart
 												data={stats.chartData}
 												margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
@@ -1528,9 +1601,11 @@ export default function DashboardHome() {
 												/>
 												<RechartsTooltip
 													contentStyle={{
-														backgroundColor: "#18181b",
+														backgroundColor: "#0F1115",
 														borderRadius: "12px",
-														border: "1px solid #333",
+														border: "1px solid rgba(255,255,255,0.08)",
+														boxShadow: "0 10px 40px rgba(0,0,0,0.35)",
+														padding: "10px 14px",
 													}}
 													itemStyle={{ color: "#fff" }}
 													formatter={(value: number | string) => {
@@ -1553,12 +1628,11 @@ export default function DashboardHome() {
 												/>
 											</AreaChart>
 										</ResponsiveContainer>
-										)}
 									</CardContent>
 								</Card>
 
 								{focusCourt && (
-									<Card className="bg-[#0F1115]/80 border border-white/5 rounded-3xl relative overflow-hidden group backdrop-blur-md">
+									<Card className="bg-surface-2/80 border border-white/5 rounded-3xl relative overflow-hidden group backdrop-blur-md">
 										<CardContent className="p-6 flex flex-col justify-between h-full">
 											<div>
 												<div className="flex justify-between items-start mb-4">
@@ -1570,17 +1644,28 @@ export default function DashboardHome() {
 												<h3 className="text-xl font-bold text-white mb-1">
 													{focusCourt.name}
 												</h3>
-												<p className="text-sm text-gray-500">
+												<p className="text-sm text-gray-500 mb-2">
 													Ocupação:{" "}
-													<span className="text-white font-bold">
+													<span className="text-white font-bold tabular-nums">
 														{focusCourt.occupancy}%
 													</span>
 												</p>
+												<div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+													<div
+														className={cn(
+															"h-full rounded-full transition-all duration-500",
+															focusCourt.occupancy >= 80 ? "bg-amber-500" :
+															focusCourt.occupancy >= 50 ? "bg-emerald-500" :
+															"bg-emerald-500/70",
+														)}
+														style={{ width: `${Math.min(focusCourt.occupancy, 100)}%` }}
+													/>
+												</div>
 											</div>
 											<div className="mt-4 pt-4 border-t border-white/5 space-y-3">
 												<div>
 													<p className="text-[10px] text-gray-500 uppercase mb-1">
-														Próximo Livre
+														Próximo livre
 													</p>
 													<p
 														className={cn(
@@ -1608,27 +1693,27 @@ export default function DashboardHome() {
 					)}
 
 					{activeView === "agenda" && (
-						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+						<div key="agenda" className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<AgendaMaster />
 						</div>
 					)}
 					{activeView === "financeiro" && (
-						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-							<FinanceiroView />
+						<div key="financeiro" className="animate-in fade-in slide-in-from-right-2 duration-300">
+							<FinanceiroView onNavigateToAgenda={() => setActiveView("agenda")} />
 						</div>
 					)}
 					{activeView === "mensalistas" && (
-						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+						<div key="mensalistas" className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<MensalistasView />
 						</div>
 					)}
 					{activeView === "folgas" && (
-						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+						<div key="folgas" className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<FolgasView />
 						</div>
 					)}
 					{activeView === "config" && (
-						<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+						<div key="config" className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<ConfiguracoesView />
 						</div>
 					)}

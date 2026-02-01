@@ -312,6 +312,14 @@ export default function Welcome() {
 		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
 			{showConfetti && <Confetti />}
 
+			{/* Barra de progresso fininha no topo (elemento memorável) */}
+			<div className="fixed top-0 left-0 right-0 z-40 h-[3px] bg-white/5">
+				<div
+					className="h-full bg-emerald-500 rounded-r-full transition-all duration-700 ease-out"
+					style={{ width: `${(completedCount / totalChecklistItems) * 100}%` }}
+				/>
+			</div>
+
 			{/* Background */}
 			<div className="absolute inset-0 z-0">
 				<div className="absolute inset-0 bg-gradient-to-br from-[#02040a] via-[#03050c] to-[#02040a]" />
@@ -420,7 +428,7 @@ export default function Welcome() {
 									</div>
 								)}
 
-								<div className="space-y-2">
+								<div className="space-y-3">
 									{checklist.map((item) => (
 										<div
 											key={item.id}
@@ -508,22 +516,31 @@ export default function Welcome() {
 								</div>
 							</div>
 
-							{/* CTA Principal */}
-							<div className="pt-4">
+							{/* CTA Principal — em destaque quando tudo completo */}
+							<div className="pt-6">
 								<Button
 									onClick={() => finishOnboarding("dashboard")}
 									disabled={isCompletingOnboarding}
-									className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 disabled:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-									{isCompletingOnboarding ?
+									className={`
+										w-full flex items-center justify-center gap-2 font-semibold text-base rounded-2xl transition-all duration-200
+										focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]
+										disabled:cursor-not-allowed disabled:hover:scale-100
+										${allCompleted
+											? "h-14 bg-emerald-500 hover:bg-emerald-400 text-black shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]"
+											: "h-12 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-black shadow-lg shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.98] disabled:shadow-none"
+										}
+									`}>
+									{isCompletingOnboarding ? (
 										<>
 											<div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
 											Entrando no dashboard...
 										</>
-									:	<>
+									) : (
+										<>
 											{allCompleted ? "Ir para Dashboard" : "Configurar Agora"}
-											<ArrowRight className="w-4 h-4" />
+											<ArrowRight className="w-5 h-5" />
 										</>
-									}
+									)}
 								</Button>
 								<p className="text-center text-xs text-gray-500 mt-3">
 									{allCompleted ?
