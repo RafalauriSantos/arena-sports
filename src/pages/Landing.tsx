@@ -470,7 +470,7 @@ export default function LandingPage() {
 								<a
 									key={item.name}
 									href={item.href}
-									className="px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+									className="px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
 									{item.name}
 								</a>
 							))}
@@ -479,7 +479,7 @@ export default function LandingPage() {
 						<div className="hidden md:flex items-center gap-2">
 							<button
 								onClick={() => navigate("/login")}
-								className="text-sm font-medium text-gray-400 hover:text-white transition-colors px-2">
+								className="text-base font-medium text-gray-400 hover:text-white transition-colors px-2">
 								Login
 							</button>
 							<Button
@@ -487,8 +487,8 @@ export default function LandingPage() {
 								className={cn(
 									"rounded-full font-bold transition-all shadow-lg shadow-emerald-500/10",
 									scrolled ?
-										"h-8 px-4 text-xs bg-white text-black hover:bg-gray-200"
-									:	"h-9 px-5 text-sm bg-emerald-500 text-black hover:bg-emerald-400",
+										"h-9 px-4 text-sm bg-white text-black hover:bg-gray-200"
+									:	"h-10 px-5 text-base bg-emerald-500 text-black hover:bg-emerald-400",
 								)}>
 								Começar grátis
 							</Button>
@@ -516,7 +516,7 @@ export default function LandingPage() {
 										key={item.name}
 										href={item.href}
 										onClick={() => setMobileMenuOpen(false)}
-										className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-sm">
+										className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-base">
 										{item.name}
 									</a>
 								))}
@@ -534,7 +534,7 @@ export default function LandingPage() {
 										setMobileMenuOpen(false);
 										navigate("/login?mode=signup");
 									}}
-									className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-10 text-sm mt-1">
+									className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-11 text-base mt-1">
 									Começar grátis
 								</Button>
 							</div>
@@ -545,7 +545,7 @@ export default function LandingPage() {
 				{/* --- HERO (gancho de dor + CTA) --- */}
 				<section className="relative pt-32 pb-12 lg:pt-40 lg:pb-16 px-4 overflow-hidden flex flex-col items-center">
 					<div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-						<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[10px] font-bold uppercase tracking-wider animate-in fade-in slide-in-from-bottom-4 duration-1000">
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs md:text-sm font-bold uppercase tracking-wider animate-in fade-in slide-in-from-bottom-4 duration-1000">
 							<span className="relative flex h-1.5 w-1.5">
 								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
 								<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
@@ -553,14 +553,14 @@ export default function LandingPage() {
 							Para donos de quadra que querem vender mais
 						</div>
 
-						<h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+						<h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
 							Cada &quot;tem vaga?&quot; que você demora para responder é{" "}
 							<span className="text-transparent bg-clip-text bg-gradient-to-b from-emerald-400 to-emerald-600">
 								dinheiro que não entra.
 							</span>
 						</h1>
 
-						<p className="text-base md:text-lg text-gray-400 max-w-lg mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+						<p className="text-lg md:text-xl text-gray-400 max-w-lg mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
 							Sistema que faz o cliente{" "}
 							<span className="text-white font-medium">reservar e pagar sozinho</span>.
 							Você aprova e acompanha. Sem calote, sem caos.
@@ -569,12 +569,12 @@ export default function LandingPage() {
 						<div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
 							<Button
 								onClick={() => navigate("/login?mode=signup")}
-								className="h-12 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
+								className="h-12 md:h-14 px-8 md:px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base md:text-lg shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
 								Começar grátis por 7 dias
 							</Button>
 							<a
 								href="#solucao"
-								className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-xs">
+								className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-sm md:text-base">
 								Ver como funciona
 							</a>
 						</div>
@@ -585,10 +585,10 @@ export default function LandingPage() {
 				<section id="dores" className="relative py-16 lg:py-20 px-4 border-y border-white/5 bg-[#050507]/80">
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-10">
-							<h2 className="text-2xl md:text-4xl font-black text-white mb-3">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
 								Você se revê em alguma dessas situações?
 							</h2>
-							<p className="text-gray-400 text-sm md:text-base">
+							<p className="text-gray-400 text-base md:text-lg">
 								Se marcar 3 ou mais, você está deixando dinheiro e tempo na mesa todo dia.
 							</p>
 						</div>
@@ -608,11 +608,11 @@ export default function LandingPage() {
 									className="flex items-start gap-3 p-4 bg-red-500/5 border border-red-500/10 rounded-xl text-left"
 								>
 									<XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-									<p className="text-gray-300 text-sm">{pain}</p>
+									<p className="text-gray-300 text-base md:text-lg">{pain}</p>
 								</div>
 							))}
 						</div>
-						<p className="text-center text-white font-semibold mt-8">
+						<p className="text-center text-white font-semibold text-lg md:text-xl mt-8">
 							O ArenaSys foi feito para acabar com isso.
 						</p>
 					</div>
@@ -621,27 +621,27 @@ export default function LandingPage() {
 				{/* --- AGITAÇÃO: custo de não resolver --- */}
 				<section className="relative py-12 lg:py-16 px-4 bg-[#03050c]">
 					<div className="max-w-3xl mx-auto text-center">
-						<h2 className="text-xl md:text-2xl font-bold text-white mb-6">
+						<h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
 							O que isso custa por mês?
 						</h2>
 						<div className="grid sm:grid-cols-3 gap-4 text-left sm:text-center">
 							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
-								<p className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Tempo no WhatsApp</p>
-								<p className="text-red-400 font-mono font-bold">4h/dia ≈ 80h/mês</p>
-								<p className="text-gray-500 text-xs mt-1">que poderiam ir para o seu negócio</p>
+								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Tempo no WhatsApp</p>
+								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">4h/dia ≈ 80h/mês</p>
+								<p className="text-gray-500 text-sm mt-1">que poderiam ir para o seu negócio</p>
 							</div>
 							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
-								<p className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Calotes</p>
-								<p className="text-red-400 font-mono font-bold">1/semana = ~R$ 400/mês</p>
-								<p className="text-gray-500 text-xs mt-1">em horário de R$ 100 que não entrou</p>
+								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Calotes</p>
+								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">1/semana = ~R$ 400/mês</p>
+								<p className="text-gray-500 text-sm mt-1">em horário de R$ 100 que não entrou</p>
 							</div>
 							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
-								<p className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Ocupação baixa</p>
-								<p className="text-red-400 font-mono font-bold">45% vs 70%</p>
-								<p className="text-gray-500 text-xs mt-1">centenas de reais por mês que não entram</p>
+								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Ocupação baixa</p>
+								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">45% vs 70%</p>
+								<p className="text-gray-500 text-sm mt-1">centenas de reais por mês que não entram</p>
 							</div>
 						</div>
-						<p className="text-gray-400 text-sm mt-6">
+						<p className="text-gray-400 text-base md:text-lg mt-6">
 							Dá para mudar isso em poucos dias, sem complicação.
 						</p>
 					</div>
@@ -651,13 +651,13 @@ export default function LandingPage() {
 				<section id="solucao" className="py-20 px-6 border-y border-white/5 bg-gradient-to-b from-[#050507] via-emerald-500/5 to-[#050507]">
 					<div className="max-w-5xl mx-auto">
 						<div className="text-center mb-12">
-							<p className="text-emerald-500 font-bold tracking-widest uppercase text-[10px] mb-3">
+							<p className="text-emerald-500 font-bold tracking-widest uppercase text-xs md:text-sm mb-3">
 								A solução
 							</p>
-							<h2 className="text-2xl md:text-4xl font-black text-white mb-4">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
 								ArenaSys: cliente reserva e paga sozinho, você acompanha e recebe.
 							</h2>
-							<p className="text-gray-400 max-w-2xl mx-auto">
+							<p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
 								Sistema feito para o dono da quadra. Reserva e Pix integrados; uma agenda; sem calote.
 							</p>
 						</div>
@@ -668,30 +668,30 @@ export default function LandingPage() {
 								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
 									<Zap className="w-5 h-5 text-emerald-400" />
 								</div>
-								<h3 className="text-white font-bold mb-1">Menos trabalho</h3>
-								<p className="text-gray-400 text-xs">Reserva e pagamento automáticos; você não fica refém do celular.</p>
+								<h3 className="text-white font-bold text-lg mb-2">Menos trabalho</h3>
+								<p className="text-gray-400 text-sm md:text-base">Reserva e pagamento automáticos; você não fica refém do celular.</p>
 							</div>
 							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
 								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
 									<ShieldCheck className="w-5 h-5 text-emerald-400" />
 								</div>
-								<h3 className="text-white font-bold mb-1">Menos risco</h3>
-								<p className="text-gray-400 text-xs">Pagamento antes (Pix); acaba o &quot;marcou e não apareceu&quot;.</p>
+								<h3 className="text-white font-bold text-lg mb-2">Menos risco</h3>
+								<p className="text-gray-400 text-sm md:text-base">Pagamento antes (Pix); acaba o &quot;marcou e não apareceu&quot;.</p>
 							</div>
 							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
 								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
 									<TrendingUp className="w-5 h-5 text-emerald-400" />
 								</div>
-								<h3 className="text-white font-bold mb-1">Mais controle</h3>
-								<p className="text-gray-400 text-xs">Uma agenda, um lugar; sabe quanto faturou e como está a semana.</p>
+								<h3 className="text-white font-bold text-lg mb-2">Mais controle</h3>
+								<p className="text-gray-400 text-sm md:text-base">Uma agenda, um lugar; sabe quanto faturou e como está a semana.</p>
 							</div>
 						</div>
 
 						{/* 3 passos */}
-						<p className="text-emerald-500 font-bold tracking-widest uppercase text-[10px] mb-4 text-center">
+						<p className="text-emerald-500 font-bold tracking-widest uppercase text-xs md:text-sm mb-4 text-center">
 							Simples demais
 						</p>
-						<h3 className="text-2xl md:text-3xl font-black text-white mb-10 text-center">
+						<h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-10 text-center">
 							Sua arena online em poucos minutos.
 						</h3>
 						<div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -704,12 +704,12 @@ export default function LandingPage() {
 									<div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-emerald-400 font-black text-xl">
 										{item.step}
 									</div>
-									<h4 className="text-white font-bold mb-2">{item.title}</h4>
-									<p className="text-gray-400 text-xs">{item.text}</p>
+									<h4 className="text-white font-bold text-lg mb-2">{item.title}</h4>
+									<p className="text-gray-400 text-sm md:text-base">{item.text}</p>
 								</div>
 							))}
 						</div>
-						<p className="text-center text-gray-400 text-sm mb-12">
+						<p className="text-center text-gray-400 text-base md:text-lg mb-12">
 							Em poucos minutos você está vendendo horário 24h, sem depender de resposta no WhatsApp.
 						</p>
 
@@ -733,7 +733,7 @@ export default function LandingPage() {
 						<div className="flex justify-center mt-10">
 							<Button
 								onClick={() => navigate("/login?mode=signup")}
-								className="h-11 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm">
+								className="h-12 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base">
 								Começar grátis por 7 dias
 							</Button>
 						</div>
@@ -744,10 +744,10 @@ export default function LandingPage() {
 				<section className="py-16 bg-[#03050c]">
 					<div className="max-w-5xl mx-auto px-6">
 						<div className="text-center mb-10">
-							<h2 className="text-2xl md:text-3xl font-black text-white">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
 								Não é mágica. É infraestrutura.
 							</h2>
-							<p className="text-gray-400 text-sm mt-2">
+							<p className="text-gray-400 text-base md:text-lg mt-2">
 								A diferença entre uma quadra e uma empresa.
 							</p>
 						</div>
@@ -757,12 +757,12 @@ export default function LandingPage() {
 							</div>
 							{/* ANTES */}
 							<div className="p-6 rounded-2xl bg-red-500/5 border border-red-500/10 flex flex-col gap-4">
-								<div className="flex items-center gap-2 text-red-400 font-bold text-sm uppercase tracking-wider">
-									<XCircle className="w-4 h-4" /> Antes do ArenaSys
+								<div className="flex items-center gap-2 text-red-400 font-bold text-base uppercase tracking-wider">
+									<XCircle className="w-5 h-5" /> Antes do ArenaSys
 								</div>
 								<div className="space-y-3">
 									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
-										<span className="text-gray-400 text-sm">
+										<span className="text-gray-400 text-base">
 											Ocupação Média
 										</span>
 										<span className="text-red-400 font-mono font-bold">
@@ -770,7 +770,7 @@ export default function LandingPage() {
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
-										<span className="text-gray-400 text-sm">
+										<span className="text-gray-400 text-base">
 											Prejuízo Mensal (Vagos)
 										</span>
 										<span className="text-red-400 font-mono font-bold">
@@ -778,7 +778,7 @@ export default function LandingPage() {
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
-										<span className="text-gray-400 text-sm">
+										<span className="text-gray-400 text-base">
 											Tempo no WhatsApp
 										</span>
 										<span className="text-red-400 font-mono font-bold">
@@ -790,19 +790,19 @@ export default function LandingPage() {
 							</div>
 							{/* DEPOIS */}
 							<div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-4 ring-1 ring-emerald-500/10">
-								<div className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-wider">
-									<CheckCircle2 className="w-4 h-4" /> Com ArenaSys
+								<div className="flex items-center gap-2 text-emerald-400 font-bold text-base uppercase tracking-wider">
+									<CheckCircle2 className="w-5 h-5" /> Com ArenaSys
 								</div>
 								<div className="space-y-3">
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-sm">Ocupação Média</span>
+										<span className="text-white text-base">Ocupação Média</span>
 										<span className="text-emerald-400 font-mono font-bold">
 											+<AnimatedValue value={72} suffix="%" duration={2000} />{" "}
 											🚀
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-sm">
+										<span className="text-white text-base">
 											Receita Recuperada
 										</span>
 										<span className="text-emerald-400 font-mono font-bold">
@@ -810,7 +810,7 @@ export default function LandingPage() {
 										</span>
 									</div>
 									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-sm">Tempo de Gestão</span>
+										<span className="text-white text-base">Tempo de Gestão</span>
 										<span className="text-emerald-400 font-mono font-bold">
 											<AnimatedValue value={15} suffix=" min" duration={2000} />{" "}
 											/ dia
@@ -829,15 +829,15 @@ export default function LandingPage() {
 					className={`py-20 px-6 transition-all duration-1000 ease-out ${isVisible("comparison") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
-							<h2 className="text-2xl md:text-4xl font-black text-white">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
 								WhatsApp não foi feito para vender horários.
 							</h2>
-							<p className="text-gray-400 text-sm mt-2">
+							<p className="text-gray-400 text-base md:text-lg mt-2">
 								A ferramenta que você ama está matando seu crescimento.
 							</p>
 						</div>
 						<div className="border border-white/10 rounded-2xl overflow-hidden">
-							<div className="grid grid-cols-3 bg-white/5 p-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+							<div className="grid grid-cols-3 bg-white/5 p-4 text-sm md:text-base font-bold uppercase tracking-wider text-gray-500">
 								<div>Critério</div>
 								<div className="text-center">WhatsApp</div>
 								<div className="text-center text-emerald-400">ArenaSys</div>
@@ -867,13 +867,13 @@ export default function LandingPage() {
 								<div
 									key={i}
 									className="grid grid-cols-3 p-4 border-t border-white/5 items-center hover:bg-white/[0.02]">
-									<div className="text-sm font-medium text-white">
+									<div className="text-base font-medium text-white">
 										{row.crit}
 									</div>
-									<div className="text-center text-red-400 text-xs">
+									<div className="text-center text-red-400 text-sm md:text-base">
 										{row.bad}
 									</div>
-									<div className="text-center text-emerald-400 text-xs font-bold bg-emerald-500/10 py-1 rounded-full">
+									<div className="text-center text-emerald-400 text-sm font-bold bg-emerald-500/10 py-1.5 rounded-full">
 										{row.good}
 									</div>
 								</div>
@@ -888,15 +888,15 @@ export default function LandingPage() {
 					className="py-20 px-6 bg-[#050507]/80 border-y border-white/5">
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
-							<h2 className="text-2xl md:text-4xl font-black text-white">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
 								Por que arenas trocam planilha e WhatsApp pelo ArenaSys
 							</h2>
-							<p className="text-gray-400 text-sm mt-2">
+							<p className="text-gray-400 text-base md:text-lg mt-2">
 								ArenaSys x outros: o que muda na sua rotina.
 							</p>
 						</div>
 						<div className="border border-white/10 rounded-2xl overflow-hidden">
-							<div className="grid grid-cols-3 bg-white/5 p-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+							<div className="grid grid-cols-3 bg-white/5 p-4 text-sm md:text-base font-bold uppercase tracking-wider text-gray-500">
 								<div>Critério</div>
 								<div className="text-center">Outros (planilha / outros sistemas)</div>
 								<div className="text-center text-emerald-400">ArenaSys</div>
@@ -912,9 +912,9 @@ export default function LandingPage() {
 								<div
 									key={i}
 									className="grid grid-cols-3 p-4 border-t border-white/5 items-center hover:bg-white/[0.02]">
-									<div className="text-sm font-medium text-white">{row.crit}</div>
-									<div className="text-center text-red-400/90 text-xs">{row.bad}</div>
-									<div className="text-center text-emerald-400 text-xs font-bold bg-emerald-500/10 py-1 rounded-full">
+									<div className="text-base font-medium text-white">{row.crit}</div>
+									<div className="text-center text-red-400/90 text-sm md:text-base">{row.bad}</div>
+									<div className="text-center text-emerald-400 text-sm font-bold bg-emerald-500/10 py-1.5 rounded-full">
 										{row.good}
 									</div>
 								</div>
@@ -930,10 +930,10 @@ export default function LandingPage() {
 					className={`py-20 px-6 bg-white/[0.01] border-t border-white/5 transition-all duration-1000 ease-out ${isVisible("pricing") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
 					<div className="max-w-5xl mx-auto">
 						<div className="text-center mb-12">
-							<h2 className="text-2xl md:text-4xl font-black text-white mb-3">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3">
 								Menos que 1 hora de aluguel.
 							</h2>
-							<p className="text-gray-400 text-sm max-w-lg mx-auto">
+							<p className="text-gray-400 text-base md:text-lg max-w-lg mx-auto">
 								Se o sistema evitar{" "}
 								<span className="text-white font-bold">1 calote por mês</span>,
 								já se pagou.
@@ -944,13 +944,13 @@ export default function LandingPage() {
 							<div className="relative group rounded-2xl p-[1px] overflow-hidden transform hover:scale-[1.01] transition-all">
 								<div className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#10b981_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 								<div className="relative h-full bg-[#0F1115] rounded-2xl p-6 md:p-8 border border-white/10 group-hover:border-transparent transition-colors">
-									<div className="absolute top-0 right-0 bg-emerald-500 text-black text-[9px] font-bold px-3 py-1 rounded-bl-lg">
+									<div className="absolute top-0 right-0 bg-emerald-500 text-black text-xs font-bold px-4 py-1.5 rounded-bl-lg">
 										PLANO COMPLETO
 									</div>
-									<h3 className="text-lg font-bold text-white mb-1">
+									<h3 className="text-xl md:text-2xl font-bold text-white mb-2">
 										ArenaSys
 									</h3>
-									<p className="text-gray-400 text-xs mb-5">
+									<p className="text-gray-400 text-sm md:text-base mb-5">
 										Cliente reserva sozinho. Você só aprova.
 									</p>
 
@@ -960,9 +960,9 @@ export default function LandingPage() {
 											<span className="text-4xl font-black text-white">
 												R$ <AnimatedValue value={97} duration={1000} />
 											</span>
-											<span className="text-gray-500 text-xs">/mês</span>
+											<span className="text-gray-500 text-sm">/mês</span>
 										</div>
-										<p className="text-[10px] text-gray-500">
+										<p className="text-sm text-gray-500">
 											ou R$ <AnimatedValue value={970} duration={1500} />
 											/ano (2 meses grátis)
 										</p>
@@ -972,10 +972,10 @@ export default function LandingPage() {
 									{foundersProgress && foundersProgress.remaining > 0 && (
 										<div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
 											<div className="flex items-center gap-2 mb-2">
-												<span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+												<span className="text-sm font-bold text-emerald-400 uppercase tracking-wider">
 													Founders 20 - 30% OFF Permanente
 												</span>
-												<span className="text-[10px] text-gray-400">
+												<span className="text-sm text-gray-400">
 													({foundersProgress.remaining} vagas restantes)
 												</span>
 											</div>
@@ -988,16 +988,16 @@ export default function LandingPage() {
 														duration={1500}
 													/>
 												</span>
-												<span className="text-gray-500 text-xs">/mês</span>
+												<span className="text-gray-500 text-sm">/mês</span>
 											</div>
-											<p className="text-[10px] text-gray-400">
+											<p className="text-sm text-gray-400">
 												ou R$ <AnimatedValue value={679} duration={1500} />
 												/ano (desconto para sempre!)
 											</p>
 										</div>
 									)}
 
-									<ul className="space-y-3 mb-8 text-xs md:text-sm">
+									<ul className="space-y-3 mb-8 text-sm md:text-base">
 										<li className="flex items-center gap-2 text-white">
 											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
 											<span>
@@ -1041,12 +1041,12 @@ export default function LandingPage() {
 									</ul>
 									<Button
 										onClick={() => navigate("/login?mode=signup")}
-										className="w-full h-10 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
+										className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
 										Começar Grátis por 7 Dias
 									</Button>
 									{foundersProgress && (
 										<div className="mt-3 space-y-2">
-											<div className="flex items-center justify-between text-[10px] text-gray-500">
+											<div className="flex items-center justify-between text-sm text-gray-500">
 												<span>Founders 20</span>
 												<span>
 													{Math.max(0, foundersProgress.remaining)} de{" "}
@@ -1067,8 +1067,8 @@ export default function LandingPage() {
 											</div>
 										</div>
 									)}
-									<p className="text-center text-[10px] text-gray-500 mt-3 flex justify-center gap-2 items-center">
-										<ShieldCheck className="w-3 h-3" /> 7 dias de garantia.
+									<p className="text-center text-sm text-gray-500 mt-3 flex justify-center gap-2 items-center">
+										<ShieldCheck className="w-4 h-4" /> 7 dias de garantia.
 									</p>
 								</div>
 							</div>
@@ -1083,10 +1083,10 @@ export default function LandingPage() {
 					className={`py-20 px-6 transition-all duration-1000 ease-out ${isVisible("faq") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
 					<div className="max-w-4xl mx-auto">
 						<div className="text-center mb-12">
-							<h2 className="text-2xl md:text-3xl font-black text-white">
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
 								Dúvidas Frequentes
 							</h2>
-							<p className="text-gray-400 text-sm mt-2">
+							<p className="text-gray-400 text-base md:text-lg mt-2">
 								Tudo o que você precisa saber para começar sem medo.
 							</p>
 						</div>
@@ -1100,11 +1100,11 @@ export default function LandingPage() {
 										<div className="mt-1">
 											<HelpCircle className="w-5 h-5 text-emerald-500" />
 										</div>
-										<h3 className="text-white font-bold text-sm">
+										<h3 className="text-white font-bold text-base md:text-lg">
 											{item.question}
 										</h3>
 									</div>
-									<p className="text-gray-400 text-xs leading-relaxed pl-8">
+									<p className="text-gray-400 text-sm md:text-base leading-relaxed pl-8">
 										{item.answer}
 									</p>
 								</div>
@@ -1115,21 +1115,21 @@ export default function LandingPage() {
 
 				{/* --- ECOSYSTEM TEASER --- */}
 				<section className="py-20 px-6 text-center border-t border-white/5 bg-[#02040a]">
-					<p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-4">
+					<p className="text-xs md:text-sm uppercase tracking-widest text-emerald-500 font-bold mb-4">
 						O que vem por aí
 					</p>
-					<h2 className="text-2xl font-bold text-white mb-8">
+					<h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-8">
 						Construindo o ecossistema do esporte
 					</h2>
 					<div className="flex flex-wrap justify-center gap-4">
-						<div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs text-gray-400 flex items-center gap-2">
-							<Smartphone className="w-3 h-3" /> App Mobile (Em breve)
+						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
+							<Smartphone className="w-4 h-4" /> App Mobile (Em breve)
 						</div>
-						<div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs text-gray-400 flex items-center gap-2">
-							<TrendingUp className="w-3 h-3" /> Torneios (Em breve)
+						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
+							<TrendingUp className="w-4 h-4" /> Torneios (Em breve)
 						</div>
-						<div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-xs text-gray-400 flex items-center gap-2">
-							<Wallet className="w-3 h-3" /> Conta Digital (Em breve)
+						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
+							<Wallet className="w-4 h-4" /> Conta Digital (Em breve)
 						</div>
 					</div>
 				</section>
@@ -1142,7 +1142,7 @@ export default function LandingPage() {
 						</div>
 						<div className="relative bg-[#050507] rounded-[2.3rem] p-10 md:p-16 text-center overflow-hidden">
 							<div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
-							<h2 className="text-3xl md:text-5xl font-black text-white mb-6 relative z-10 leading-tight">
+							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 relative z-10 leading-tight">
 								Pare de deixar <br />{" "}
 								<span className="text-emerald-400">dinheiro na mesa.</span>
 							</h2>
