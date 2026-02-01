@@ -104,7 +104,7 @@ bun run scripts/test-fluxo-completo.ts
 # Testes individuais
 bun run scripts/testAsaasCreateCheckout.ts
 bun run scripts/testAsaasWebhook.ts
-bun run scripts/testTenantIsolation.sql
+bun run test:tenant-isolation
 ```
 
 ### Banco de Dados
