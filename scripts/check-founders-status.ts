@@ -26,6 +26,33 @@ if (!supabaseUrl || !serviceKey) {
 
 const supabase = createClient(supabaseUrl, serviceKey);
 
+interface Subscription {
+  tenant_id: string;
+  is_founder: boolean;
+  status: string;
+  plan_name: string;
+  monthly_price: number;
+}
+
+interface Tenant {
+  id: string;
+  business_name: string;
+  created_at: string;
+  owner_id: string;
+}
+
+interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  tenant_id: string;
+}
+
+interface CombinedData extends Subscription {
+  tenants?: Tenant;
+  profiles?: Profile;
+}
+
 async function checkFoundersStatus() {
   console.log('\n🔍 VERIFICANDO STATUS DOS FOUNDERS...\n');
   console.log('='.repeat(70));
@@ -48,28 +75,28 @@ async function checkFoundersStatus() {
     }
 
     // Buscar tenants e profiles separadamente
-    const tenantIds = subscriptions.map((s: any) => s.tenant_id);
+    const tenantIds = subscriptions.map((s: Subscription) => s.tenant_id);
     const { data: tenants } = await supabase
       .from('tenants')
       .select('id, business_name, created_at, owner_id')
       .in('id', tenantIds);
 
-    const ownerIds = tenants?.map((t: any) => t.owner_id).filter(Boolean) || [];
+    const ownerIds = tenants?.map((t: Tenant) => t.owner_id).filter(Boolean) || [];
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, email, full_name, tenant_id')
       .in('id', ownerIds);
 
     // Combinar os dados
-    const data = subscriptions.map((sub: any) => {
-      const tenant = tenants?.find((t: any) => t.id === sub.tenant_id);
-      const profile = profiles?.find((p: any) => p.id === tenant?.owner_id);
+    const data: CombinedData[] = subscriptions.map((sub: Subscription) => {
+      const tenant = tenants?.find((t: Tenant) => t.id === sub.tenant_id);
+      const profile = profiles?.find((p: Profile) => p.id === tenant?.owner_id);
       return {
         ...sub,
         tenants: tenant,
         profiles: profile,
       };
-    }).sort((a: any, b: any) => {
+    }).sort((a: CombinedData, b: CombinedData) => {
       const dateA = a.tenants?.created_at ? new Date(a.tenants.created_at).getTime() : 0;
       const dateB = b.tenants?.created_at ? new Date(b.tenants.created_at).getTime() : 0;
       return dateA - dateB;
@@ -79,11 +106,11 @@ async function checkFoundersStatus() {
 
     console.log(`\n✅ Total de subscriptions encontradas: ${data.length}\n`);
 
-    const founders = data.filter((sub: any) => sub.is_founder === true);
-    const nonFounders = data.filter((sub: any) => sub.is_founder !== true);
+    const founders = data.filter((sub: CombinedData) => sub.is_founder === true);
+    const nonFounders = data.filter((sub: CombinedData) => sub.is_founder !== true);
 
     console.log(`\n🏆 FOUNDERS (${founders.length}):\n`);
-    founders.forEach((sub: any, index: number) => {
+    founders.forEach((sub: CombinedData, index: number) => {
       const tenant = sub.tenants;
       const profile = sub.profiles;
       console.log(`${index + 1}. ${profile?.email || 'N/A'}`);
@@ -96,7 +123,7 @@ async function checkFoundersStatus() {
     });
 
     console.log(`\n👥 NÃO-FOUNDERS (${nonFounders.length}):\n`);
-    nonFounders.forEach((sub: any, index: number) => {
+    nonFounders.forEach((sub: CombinedData, index: number) => {
       const tenant = sub.tenants;
       const profile = sub.profiles;
       console.log(`${index + 1}. ${profile?.email || 'N/A'}`);
