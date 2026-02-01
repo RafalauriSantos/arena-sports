@@ -268,7 +268,6 @@ export function NewBookingModal({
 			toast({
 				title: "Agendamento Criado!",
 				description: `${formData.customerName} - ${formData.time}`,
-				className: "bg-green-600 text-white border-none",
 			});
 
 			// Diferencial: abre WhatsApp com mensagem pronta para o cliente.
@@ -309,6 +308,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 				phone: "",
 				paymentStatus: "pending",
 				depositPercent: 30,
+				duration: 60,
 			});
 
 			if (onSuccess) onSuccess(); // Atualiza a dashboard/calendário
@@ -335,23 +335,27 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 		}
 	};
 
+	const inputClass =
+		"h-12 rounded-xl bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors";
+	const labelClass = "text-sm text-gray-500 font-medium";
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-						<Plus className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+			<DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl">
+				<DialogHeader className="px-6 pt-8 pb-4">
+					<DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl font-semibold text-white tracking-tight">
+						<Plus className="h-5 w-5 text-primary" />
 						Novo Agendamento
 					</DialogTitle>
-					<DialogDescription className="text-xs sm:text-sm">
+					<DialogDescription className="text-sm text-gray-500 mt-1">
 						Insira os dados para reservar um horário manualmente.
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="space-y-4 py-4">
+				<div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 space-y-5">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="date">Data</Label>
+							<Label htmlFor="date" className={labelClass}>Data</Label>
 							<Input
 								id="date"
 								type="date"
@@ -359,22 +363,23 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								onChange={(e) =>
 									setFormData({ ...formData, date: e.target.value })
 								}
+								className={inputClass}
 							/>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="field">Quadra</Label>
+							<Label htmlFor="field" className={labelClass}>Quadra</Label>
 							<Select
 								value={formData.fieldId}
 								onValueChange={(value) =>
 									setFormData({ ...formData, fieldId: value })
 								}>
-								<SelectTrigger>
+								<SelectTrigger className={inputClass + " border-gray-700/50 data-[placeholder]:text-gray-500"}>
 									<SelectValue placeholder="Selecione..." />
 								</SelectTrigger>
-								<SelectContent>
+								<SelectContent className="bg-gray-900 border-gray-700">
 									{courts.map((court) => (
-										<SelectItem key={court.id} value={court.id}>
+										<SelectItem key={court.id} value={court.id} className="text-white focus:bg-white/10 focus:text-white">
 											{court.name} (R$ {court.base_price})
 										</SelectItem>
 									))}
@@ -390,19 +395,19 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="time">Horário de Início</Label>
+							<Label htmlFor="time" className={labelClass}>Horário de Início</Label>
 							<Select
 								value={formData.time}
 								onValueChange={(value) =>
 									setFormData({ ...formData, time: value })
 								}
 								disabled={!formData.date}>
-								<SelectTrigger>
+								<SelectTrigger className={inputClass + " border-gray-700/50 data-[placeholder]:text-gray-500"}>
 									<SelectValue placeholder="Escolha a hora..." />
 								</SelectTrigger>
-								<SelectContent className="max-h-[200px]">
+								<SelectContent className="max-h-[200px] bg-gray-900 border-gray-700">
 									{HOURS.map((time) => (
-										<SelectItem key={time} value={time}>
+										<SelectItem key={time} value={time} className="text-white focus:bg-white/10 focus:text-white">
 											{time}
 										</SelectItem>
 									))}
@@ -411,39 +416,43 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						</div>
 
 						<div className="space-y-2">
-							<Label>Duração</Label>
+							<Label className={labelClass}>Duração</Label>
 							<Select
 								value={formData.duration.toString()}
 								onValueChange={(value) =>
 									setFormData({ ...formData, duration: Number(value) as 60 | 90 })
 								}>
-								<SelectTrigger>
+								<SelectTrigger className={inputClass + " border-gray-700/50"}>
 									<SelectValue />
 								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="60">1 hora</SelectItem>
-									<SelectItem value="90">1h30</SelectItem>
+								<SelectContent className="bg-gray-900 border-gray-700">
+									<SelectItem value="60" className="text-white focus:bg-white/10 focus:text-white">1 hora</SelectItem>
+									<SelectItem value="90" className="text-white focus:bg-white/10 focus:text-white">1h30</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 					</div>
 
 					{formData.fieldId && formData.duration && (
-						<div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
-							Preço: R$ {(() => {
-								const selectedCourt = courts.find((c) => c.id === formData.fieldId);
-								const basePrice = selectedCourt?.base_price || 0;
-								const halfHourPrice = selectedCourt?.half_hour_price || 0;
-								const finalPrice = formData.duration === 90 
-									? basePrice + halfHourPrice 
-									: basePrice;
-								return finalPrice.toFixed(2);
-							})()} ({formData.duration === 90 ? "1h30" : "1h"})
+						<div className="text-sm text-gray-400 bg-white/5 border border-white/10 p-3 rounded-xl">
+							<span className="text-gray-500">Preço: </span>
+							<span className="font-medium text-white">
+								R$ {(() => {
+									const selectedCourt = courts.find((c) => c.id === formData.fieldId);
+									const basePrice = selectedCourt?.base_price || 0;
+									const halfHourPrice = selectedCourt?.half_hour_price || 0;
+									const finalPrice = formData.duration === 90 
+										? basePrice + halfHourPrice 
+										: basePrice;
+									return finalPrice.toFixed(2);
+								})()}
+							</span>
+							<span className="text-gray-500"> ({formData.duration === 90 ? "1h30" : "1h"})</span>
 						</div>
 					)}
 
 					<div className="space-y-2">
-						<Label htmlFor="customerName">Nome do Cliente / Time</Label>
+						<Label htmlFor="customerName" className={labelClass}>Nome do Cliente / Time</Label>
 						<Input
 							id="customerName"
 							placeholder="Ex: João da Silva / Time A"
@@ -451,12 +460,13 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							onChange={(e) =>
 								setFormData({ ...formData, customerName: e.target.value })
 							}
+							className={inputClass}
 						/>
 					</div>
 
-					<div className="grid grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="phone">Telefone (WhatsApp) *</Label>
+							<Label htmlFor="phone" className={labelClass}>Telefone (WhatsApp) *</Label>
 							<Input
 								id="phone"
 								placeholder="(11) 99999-9999"
@@ -469,24 +479,24 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									const formatted = formatPhoneInput(e.target.value);
 									setFormData({ ...formData, phone: formatted });
 								}}
-								className="bg-white text-gray-900 font-medium"
+								className={inputClass}
 							/>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="payment">Status Pagamento</Label>
+							<Label htmlFor="payment" className={labelClass}>Status Pagamento</Label>
 							<Select
 								value={formData.paymentStatus}
 								onValueChange={(value: "paid" | "pending" | "deposit") =>
 									setFormData({ ...formData, paymentStatus: value })
 								}>
-								<SelectTrigger>
+								<SelectTrigger className={inputClass + " border-gray-700/50"}>
 									<SelectValue />
 								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="pending">Pagar no Local 🕒</SelectItem>
-									<SelectItem value="deposit">Sinal (%) 💰</SelectItem>
-									<SelectItem value="paid">Pago (Pix/Dinheiro) ✅</SelectItem>
+								<SelectContent className="bg-gray-900 border-gray-700">
+									<SelectItem value="pending" className="text-white focus:bg-white/10 focus:text-white">Pagar no Local</SelectItem>
+									<SelectItem value="deposit" className="text-white focus:bg-white/10 focus:text-white">Sinal (%)</SelectItem>
+									<SelectItem value="paid" className="text-white focus:bg-white/10 focus:text-white">Pago</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -494,7 +504,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 
 					{formData.paymentStatus === "deposit" && (
 						<div className="space-y-2">
-							<Label htmlFor="depositPercent">Percentual do sinal (%)</Label>
+							<Label htmlFor="depositPercent" className={labelClass}>Percentual do sinal (%)</Label>
 							<Input
 								id="depositPercent"
 								type="number"
@@ -507,22 +517,27 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										depositPercent: Number(e.target.value),
 									})
 								}
+								className={inputClass}
 							/>
-							<p className="text-xs text-muted-foreground">
+							<p className="text-xs text-gray-500">
 								Ex: 30 para sinal de 30%.
 							</p>
 						</div>
 					)}
 				</div>
 
-				<DialogFooter>
+				<DialogFooter className="flex items-center justify-end gap-3 flex-shrink-0 border-t border-white/5 px-6 py-4">
 					<Button
 						variant="outline"
 						onClick={() => onOpenChange(false)}
-						disabled={loading}>
+						disabled={loading}
+						className="rounded-xl border-gray-600 text-gray-300 hover:bg-white/5 hover:text-white h-11">
 						Cancelar
 					</Button>
-					<Button onClick={handleSubmit} className="gap-2" disabled={loading}>
+					<Button
+						onClick={handleSubmit}
+						className="gap-2 rounded-xl h-11 bg-primary text-white hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 disabled:opacity-50"
+						disabled={loading}>
 						{loading ? (
 							<Loader2 className="h-4 w-4 animate-spin" />
 						) : (

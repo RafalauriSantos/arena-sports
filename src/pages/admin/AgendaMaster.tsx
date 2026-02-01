@@ -9,6 +9,7 @@ import {
 	Square,
 	Clock,
 	Loader2,
+	Calendar,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,8 @@ interface AdminBooking {
 	startedAt?: string | null;
 	completedAt?: string | null;
 	cancelledAt?: string | null;
+	startTime?: Date;
+	endTime?: Date;
 }
 
 type BookingEventAction = "INSERT" | "UPDATE" | "DELETE";
@@ -72,9 +75,27 @@ type BookingEventRow = {
 	created_at: string;
 };
 
+const AgendaSkeleton = () => (
+	<div className="grid gap-3 md:gap-4">
+		{[1, 2, 3, 4].map((i) => (
+			<Card key={i} className="border border-white/5 rounded-xl bg-surface-2/60 overflow-hidden">
+				<CardContent className="p-6">
+					<div className="flex justify-between items-start mb-4">
+						<div className="h-8 w-24 rounded skeleton-premium" />
+						<div className="h-5 w-16 rounded-full skeleton-premium" />
+					</div>
+					<div className="h-5 w-3/4 rounded skeleton-premium mb-4" />
+					<div className="h-4 w-1/2 rounded skeleton-premium" />
+					<div className="mt-4 pt-4 border-t border-white/5 h-4 w-20 rounded skeleton-premium" />
+				</CardContent>
+			</Card>
+		))}
+	</div>
+);
+
 export default function AgendaMaster() {
 	const context = useBookings();
-	const { bookings, updateBooking, deleteBooking, refreshData } = context;
+	const { bookings, updateBooking, deleteBooking, refreshData, loading } = context;
 	const { toast } = useToast();
 	const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(
 		null
@@ -316,6 +337,8 @@ export default function AgendaMaster() {
 				startedAt: b.startedAt,
 				completedAt: b.completedAt,
 				cancelledAt: b.cancelledAt,
+				startTime: b.startTime,
+				endTime: b.endTime,
 			};
 			});
 	}, [bookings]);
@@ -382,16 +405,16 @@ export default function AgendaMaster() {
 			<Card
 				key={booking.id}
 				className={cn(
-					"group cursor-pointer transition-all duration-300 ease-out",
-					"border-l-4 border-r border-t border-b border-white/5",
-					"bg-gray-900/40 backdrop-blur-sm",
-					"hover:bg-gray-900/60 hover:border-white/10",
+					"group cursor-pointer transition-all duration-300 ease-out overflow-hidden",
+					"border border-white/5 border-l-4 rounded-2xl",
+					"bg-surface-2/60 backdrop-blur-sm",
+					"hover:bg-surface-2/80 hover:border-white/10 hover:shadow-lg hover:shadow-black/20",
 					"active:scale-[0.99]",
 					statusColor
 				)}
 				onClick={() => handleBookingClick(booking)}>
-				<CardContent className="p-6">
-					{/* Linha 1: Horário + Status (minimalista) */}
+				<CardContent className="p-5 md:p-6">
+					{/* Linha 1: Horário + Status (dot + label) */}
 					<div className="flex items-start justify-between mb-4">
 						<div className="flex items-baseline gap-3">
 							<span className="text-2xl sm:text-3xl font-light text-white tracking-tight">
@@ -403,13 +426,21 @@ export default function AgendaMaster() {
 								)}
 							</span>
 						</div>
-						{/* Indicador de status - apenas ponto sutil */}
 						<div className={cn(
-							"w-2 h-2 rounded-full mt-2",
-							booking.paymentStatus === "paid" ? "bg-emerald-500/60" :
-							booking.paymentStatus === "deposit" ? "bg-amber-500/60" :
-							"bg-gray-500/40"
-						)} />
+							"flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium border shrink-0",
+							booking.paymentStatus === "paid"
+								? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+								: booking.paymentStatus === "deposit"
+								? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+								: "bg-white/5 text-gray-400 border-white/10"
+						)}>
+							<span className={cn(
+								"w-1.5 h-1.5 rounded-full shrink-0",
+								booking.paymentStatus === "paid" ? "bg-emerald-500" :
+								booking.paymentStatus === "deposit" ? "bg-amber-500" : "bg-gray-500"
+							)} />
+							{booking.paymentStatus === "paid" ? "Pago" : booking.paymentStatus === "deposit" ? "Sinal" : "Pendente"}
+						</div>
 					</div>
 
 					{/* Linha 2: Cliente (essencial) */}
@@ -593,11 +624,11 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			{/* Header - Mobile responsive */}
 			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 				<div>
-					<h1 className="text-xl md:text-3xl font-bold text-white tracking-tight">
+					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
 						Reservas
 					</h1>
-					<p className="text-xs md:text-sm text-gray-400 mt-1">
-						Torre de controle - Anteriores / Hoje / Amanhã
+					<p className="text-sm text-gray-500 mt-0.5">
+						Torre de controle — Anteriores, Hoje, Amanhã
 					</p>
 				</div>
 				<Button
@@ -615,21 +646,38 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 				open={isNewBookingOpen}
 				onOpenChange={setIsNewBookingOpen}
 			/>
-			<div className="grid gap-3 md:gap-4">
-				<Card className="border border-white/10 bg-black/20">
-					<CardHeader className="p-3 md:p-4">
+			{loading ? (
+				<AgendaSkeleton />
+			) : (
+			<div className="grid gap-4 md:gap-5">
+				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+					<CardHeader className="p-4 md:p-5">
 						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg">
+							<CardTitle className="text-white text-base md:text-lg font-medium">
 								Jogos anteriores
 							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5">
+							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
 								{pastBookings.length}
 							</Badge>
 						</div>
 					</CardHeader>
-					<CardContent className="p-3 md:p-4 pt-0">
+					<CardContent className="p-4 md:p-5 pt-0">
 						{pastBookings.length === 0 ? (
-							<p className="text-sm text-gray-400">Nenhum jogo anterior.</p>
+							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
+								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
+									<Calendar className="w-6 h-6 text-gray-500" />
+								</div>
+								<p className="text-sm text-gray-400 mb-1">Nenhum jogo anterior.</p>
+								<p className="text-xs text-gray-500 mb-4">Este período está livre.</p>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setIsNewBookingOpen(true)}
+									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
+									<Plus className="w-3 h-3 mr-1" />
+									Nova reserva
+								</Button>
+							</div>
 						) : (
 							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
 								{pastBookings.map(renderBookingCard)}
@@ -638,20 +686,34 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</CardContent>
 				</Card>
 
-				<Card className="border border-white/10 bg-black/20">
-					<CardHeader className="p-3 md:p-4">
+				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+					<CardHeader className="p-4 md:p-5">
 						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg">
+							<CardTitle className="text-white text-base md:text-lg font-medium">
 								Jogos do dia
 							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5">
+							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
 								{todayBookings.length}
 							</Badge>
 						</div>
 					</CardHeader>
-					<CardContent className="p-3 md:p-4 pt-0">
+					<CardContent className="p-4 md:p-5 pt-0">
 						{todayBookings.length === 0 ? (
-							<p className="text-sm text-gray-400">Nenhum jogo hoje.</p>
+							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
+								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
+									<Clock className="w-6 h-6 text-gray-500" />
+								</div>
+								<p className="text-sm text-gray-400 mb-1">Nenhum jogo hoje.</p>
+								<p className="text-xs text-gray-500 mb-4">Compartilhe seu link ou crie uma reserva manual.</p>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setIsNewBookingOpen(true)}
+									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
+									<Plus className="w-3 h-3 mr-1" />
+									Nova reserva
+								</Button>
+							</div>
 						) : (
 							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
 								{todayBookings.map(renderBookingCard)}
@@ -660,20 +722,34 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</CardContent>
 				</Card>
 
-				<Card className="border border-white/10 bg-black/20">
-					<CardHeader className="p-3 md:p-4">
+				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+					<CardHeader className="p-4 md:p-5">
 						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg">
+							<CardTitle className="text-white text-base md:text-lg font-medium">
 								Jogos de amanhã
 							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5">
+							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
 								{tomorrowBookings.length}
 							</Badge>
 						</div>
 					</CardHeader>
-					<CardContent className="p-3 md:p-4 pt-0">
+					<CardContent className="p-4 md:p-5 pt-0">
 						{tomorrowBookings.length === 0 ? (
-							<p className="text-sm text-gray-400">Nenhum jogo amanhã.</p>
+							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
+								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
+									<Clock className="w-6 h-6 text-gray-500" />
+								</div>
+								<p className="text-sm text-gray-400 mb-1">Nenhum jogo amanhã.</p>
+								<p className="text-xs text-gray-500 mb-4">Compartilhe seu link ou crie uma reserva manual.</p>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setIsNewBookingOpen(true)}
+									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
+									<Plus className="w-3 h-3 mr-1" />
+									Nova reserva
+								</Button>
+							</div>
 						) : (
 							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
 								{tomorrowBookings.map(renderBookingCard)}
@@ -682,20 +758,34 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</CardContent>
 				</Card>
 
-				<Card className="border border-white/10 bg-black/20">
-					<CardHeader className="p-3 md:p-4">
+				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+					<CardHeader className="p-4 md:p-5">
 						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg">
+							<CardTitle className="text-white text-base md:text-lg font-medium">
 								Próximos jogos
 							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5">
+							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
 								{upcomingBookings.length}
 							</Badge>
 						</div>
 					</CardHeader>
-					<CardContent className="p-3 md:p-4 pt-0">
+					<CardContent className="p-4 md:p-5 pt-0">
 						{upcomingBookings.length === 0 ? (
-							<p className="text-sm text-gray-400">Nenhuma reserva agendada.</p>
+							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
+								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
+									<Calendar className="w-6 h-6 text-gray-500" />
+								</div>
+								<p className="text-sm text-gray-400 mb-1">Nenhuma reserva agendada.</p>
+								<p className="text-xs text-gray-500 mb-4">Ainda não há reservas nos próximos dias.</p>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setIsNewBookingOpen(true)}
+									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
+									<Plus className="w-3 h-3 mr-1" />
+									Nova reserva
+								</Button>
+							</div>
 						) : (
 							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
 								{upcomingBookings.map((booking) => renderBookingCard(booking, true))}
@@ -704,11 +794,12 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</CardContent>
 				</Card>
 			</div>
+			)}
 
 			{/* Detail Modal */}
 			{selectedBooking && (
 				<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-					<DialogContent className="w-[95vw] sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-gray-900/95 backdrop-blur-xl border border-white/10">
+					<DialogContent className="w-[95vw] sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl">
 						{/* Header Minimalista */}
 						<DialogHeader className="px-6 pt-8 pb-6">
 							<div className="space-y-1">

@@ -382,7 +382,7 @@ export default function LandingPage() {
 				keywords="sistema gestão quadras, agendamento quadras esportivas, software arena, gestão reservas esportivas, sistema agendamento online, software para quadras, gestão de quadra society, sistema booking esportivo, SaaS quadras, agendamento automático quadras"
 				canonical="/"
 			/>
-			<div className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+			<div data-seo-ready className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
 				{/* Estilos para Animação Marquee */}
 				<style>{`
         @keyframes scroll {
