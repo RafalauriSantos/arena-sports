@@ -338,21 +338,13 @@ export default function LandingPage() {
 	const navigate = useNavigate();
 	const visibleElements = useScrollAnimation();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const [scrolled, setScrolled] = useState(false);
 	const [foundersProgress, setFoundersProgress] = useState<{
 		cap: number;
 		sold: number;
 		remaining: number;
 	} | null>(null);
-	const showBrandTextMobile = !scrolled || mobileMenuOpen;
 
 	const isVisible = (id: string) => visibleElements.has(id);
-
-	useEffect(() => {
-		const handleScroll = () => setScrolled(window.scrollY > 20);
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
 
 	useEffect(() => {
 		let mounted = true;
@@ -377,9 +369,9 @@ export default function LandingPage() {
 	return (
 		<>
 			<SEO
-				title="ArenaSys - Sistema de Gestão e Agendamento de Quadras Esportivas"
-				description="Transforme sua quadra em uma máquina de faturamento. Sistema completo para gestão de reservas, pagamentos via PIX e agenda online. 7 dias grátis para testar."
-				keywords="sistema gestão quadras, agendamento quadras esportivas, software arena, gestão reservas esportivas, sistema agendamento online, software para quadras, gestão de quadra society, sistema booking esportivo, SaaS quadras, agendamento automático quadras"
+				title="Sistema de gestão e agendamento de quadras esportivas | ArenaSys"
+				description="Evite conflitos de horários, perca menos dinheiro e organize sua arena em um só lugar. Software para quadras esportivas, controle de horários e sistema para aluguel de quadras. Teste grátis 7 dias."
+				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
 			<div data-seo-ready className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
@@ -407,89 +399,42 @@ export default function LandingPage() {
 					<div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[100px]" />
 				</div>
 
-				{/* NAVBAR FLUTUANTE */}
-				<header
-					className={cn(
-						"fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-500 ease-in-out px-4",
-						scrolled ? "pt-4" : "pt-6",
-					)}>
-					<nav
-						className={cn(
-							"relative flex items-center justify-between transition-all duration-500 ease-out border backdrop-blur-2xl",
-							scrolled ?
-								"w-full max-w-4xl h-12 rounded-full bg-[#0a0a0a]/80 border-white/10 shadow-lg px-6"
-							:	"w-full max-w-6xl h-16 bg-transparent border-transparent px-2",
-						)}>
+				{/* NAVBAR FLUTUANTE — só o necessário */}
+				<header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
+					<nav className="relative flex items-center justify-between w-full max-w-4xl h-12 rounded-full bg-[#0a0a0a]/80 border border-white/10 backdrop-blur-2xl shadow-lg px-6">
 						<div
-							className="flex items-center gap-2 cursor-pointer group"
+							className="flex items-center gap-2 cursor-pointer"
 							onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-							<div
-								className={cn(
-									"flex items-center justify-center transition-all duration-300",
-									scrolled ?
-										"w-7 h-7 rounded-full bg-emerald-500/10"
-									:	"w-8 h-8 rounded-xl bg-emerald-500/10",
-								)}>
-								<Zap
-									className={cn(
-										"transition-all duration-300 text-emerald-500",
-										scrolled ? "w-3 h-3" : "w-4 h-4",
-									)}
-								/>
+							<div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/10">
+								<Zap className="w-3.5 h-3.5 text-emerald-500" />
 							</div>
-							<span
-								className={cn(
-									"font-bold tracking-tight text-white transition-all",
-									scrolled ? "text-sm" : "text-base",
-									"hidden md:inline",
-								)}>
-								ArenaSys
-							</span>
-							<span
-								className={cn(
-									"md:hidden font-bold tracking-tight text-white",
-									"overflow-hidden whitespace-nowrap",
-									"transition-[max-width,opacity,transform] duration-300 ease-out",
-									showBrandTextMobile ?
-										"max-w-[140px] opacity-100 translate-x-0"
-									:	"max-w-0 opacity-0 -translate-x-2",
-								)}>
+							<span className="font-bold text-sm tracking-tight text-white hidden sm:inline">
 								ArenaSys
 							</span>
 						</div>
 
 						<div className="hidden md:flex items-center gap-1">
-							{[
-								{ name: "Dores", href: "#dores" },
-								{ name: "Solução", href: "#solucao" },
-								{ name: "Preço", href: "#pricing" },
-								{ name: "Comparativo", href: "#comparison" },
-								{ name: "Diferencial", href: "#diferencial" },
-								{ name: "FAQ", href: "#faq" },
-							].map((item) => (
-								<a
-									key={item.name}
-									href={item.href}
-									className="px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
-									{item.name}
-								</a>
-							))}
+							<a
+								href="#pricing"
+								className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+								Preço
+							</a>
+							<a
+								href="#faq"
+								className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+								FAQ
+							</a>
 						</div>
 
 						<div className="hidden md:flex items-center gap-2">
 							<button
 								onClick={() => navigate("/login")}
-								className="text-base font-medium text-gray-400 hover:text-white transition-colors px-2">
+								className="text-sm font-medium text-gray-400 hover:text-white transition-colors px-2">
 								Login
 							</button>
 							<Button
 								onClick={() => navigate("/login?mode=signup")}
-								className={cn(
-									"rounded-full font-bold transition-all shadow-lg shadow-emerald-500/10",
-									scrolled ?
-										"h-9 px-4 text-sm bg-white text-black hover:bg-gray-200"
-									:	"h-10 px-5 text-base bg-emerald-500 text-black hover:bg-emerald-400",
-								)}>
+								className="h-9 px-4 rounded-full text-sm font-bold bg-emerald-500 text-black hover:bg-emerald-400 shadow-emerald-500/10">
 								Começar grátis
 							</Button>
 						</div>
@@ -504,22 +449,18 @@ export default function LandingPage() {
 
 						{mobileMenuOpen && (
 							<div className="absolute top-full left-0 right-0 mt-2 p-4 bg-[#0F1115] border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 md:hidden">
-								{[
-									{ name: "Dores", href: "#dores" },
-									{ name: "Solução", href: "#solucao" },
-									{ name: "Preço", href: "#pricing" },
-									{ name: "Comparativo", href: "#comparison" },
-									{ name: "Diferencial", href: "#diferencial" },
-									{ name: "FAQ", href: "#faq" },
-								].map((item) => (
-									<a
-										key={item.name}
-										href={item.href}
-										onClick={() => setMobileMenuOpen(false)}
-										className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-base">
-										{item.name}
-									</a>
-								))}
+								<a
+									href="#pricing"
+									onClick={() => setMobileMenuOpen(false)}
+									className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-base">
+									Preço
+								</a>
+								<a
+									href="#faq"
+									onClick={() => setMobileMenuOpen(false)}
+									className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-base">
+									FAQ
+								</a>
 								<div className="h-px bg-white/10 my-2" />
 								<button
 									onClick={() => {
@@ -554,16 +495,14 @@ export default function LandingPage() {
 						</div>
 
 						<h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-							Cada &quot;tem vaga?&quot; que você demora para responder é{" "}
-							<span className="text-transparent bg-clip-text bg-gradient-to-b from-emerald-400 to-emerald-600">
-								dinheiro que não entra.
-							</span>
+							Sistema de gestão e agendamento de quadras esportivas
 						</h1>
 
-						<p className="text-lg md:text-xl text-gray-400 max-w-lg mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-							Sistema que faz o cliente{" "}
-							<span className="text-white font-medium">reservar e pagar sozinho</span>.
-							Você aprova e acompanha. Sem calote, sem caos.
+						<p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+							Evite conflitos de horários, perca menos dinheiro e organize sua arena em um só lugar.
+						</p>
+						<p className="text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+							Software para quadras esportivas: o cliente reserva e paga sozinho. Você aprova e acompanha. Sem calote, sem caos.
 						</p>
 
 						<div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
@@ -577,6 +516,55 @@ export default function LandingPage() {
 								className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-sm md:text-base">
 								Ver como funciona
 							</a>
+						</div>
+					</div>
+				</section>
+
+				{/* --- BENEFÍCIOS (H2 – não funcionalidades, benefícios) --- */}
+				<section id="beneficios" className="relative py-16 lg:py-20 px-4 border-y border-white/5 bg-[#050507]/50">
+					<div className="max-w-4xl mx-auto">
+						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-10 text-center">
+							Benefícios do sistema de agendamento de quadras
+						</h2>
+						<ul className="grid sm:grid-cols-2 gap-4 text-left">
+							{[
+								"Pare de anotar reservas no WhatsApp",
+								"Nunca mais dois times no mesmo horário",
+								"Receba pagamentos via PIX automaticamente",
+								"Agenda online 24h para seus clientes",
+							].map((item, i) => (
+								<li key={i} className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-xl">
+									<CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
+									<span className="text-gray-200 text-base md:text-lg font-medium">{item}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				</section>
+
+				{/* --- PARA QUEM É (H2 – quem você atende) --- */}
+				<section id="para-quem-e" className="relative py-16 lg:py-20 px-4 bg-[#03050c]">
+					<div className="max-w-4xl mx-auto">
+						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-6 text-center">
+							Para quem é o sistema para arenas esportivas
+						</h2>
+						<p className="text-gray-400 text-base md:text-lg text-center mb-10">
+							Ideal para:
+						</p>
+						<div className="flex flex-wrap justify-center gap-3">
+							{[
+								"Donos de quadras de futebol society",
+								"Arenas esportivas",
+								"Centros esportivos e poliesportivos",
+								"Controle de horários de quadras",
+								"Sistema para aluguel de quadras",
+							].map((label, i) => (
+								<span
+									key={i}
+									className="px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-300 text-sm md:text-base font-medium">
+									{label}
+								</span>
+							))}
 						</div>
 					</div>
 				</section>
@@ -655,10 +643,10 @@ export default function LandingPage() {
 								A solução
 							</p>
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
-								ArenaSys: cliente reserva e paga sozinho, você acompanha e recebe.
+								Gestão de arena esportiva: cliente reserva e paga sozinho, você acompanha e recebe.
 							</h2>
 							<p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
-								Sistema feito para o dono da quadra. Reserva e Pix integrados; uma agenda; sem calote.
+								Sistema para gestão de quadras esportivas. Reserva e Pix integrados; controle de horários em uma agenda; sem calote.
 							</p>
 						</div>
 
