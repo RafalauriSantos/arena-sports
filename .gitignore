@@ -71,3 +71,7 @@ supabase/.temp/
 
 # Agent / Cursor skills (local reference)
 .agent/
+
+# Documentos internos / auditorias (não versionar)
+ANALISE_*.md
+AUDITORIA_*.md
