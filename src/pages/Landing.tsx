@@ -1,25 +1,39 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import {
+	useEffect,
+	useState,
+	useRef,
+	useCallback,
+	useMemo,
+	lazy,
+	Suspense,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Zap,
-	Menu,
-	X,
 	ShieldCheck,
 	Check,
 	ArrowRight,
+	Sparkles,
 	MessageSquare,
 	BookOpen,
 	CreditCard,
-	Clock,
-	Calendar,
-	TrendingUp,
-	Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { SEO } from "@/components/SEO";
 import { PremiumFooter } from "@/components/PremiumFooter";
+
+// --- CONSTANTES PRÉ-CALCULADAS (evita recálculo a cada render) ---
+const STARS_CONFIG = Array.from({ length: 25 }, (_, i) => ({
+	id: i,
+	width: Math.random() > 0.8 ? 2 : 1,
+	left: Math.random() * 100,
+	top: Math.random() * 100,
+	opacity: 0.1 + Math.random() * 0.4,
+	duration: 3 + Math.random() * 3,
+	delay: Math.random() * 4,
+}));
 
 // --- HOOK: ANIMAÇÃO DE CONTAGEM (Count-Up) ---
 function useCountUp(
@@ -933,8 +947,10 @@ export default function LandingPage() {
 					}}
 				/>
 
-				{/* Aurora Borealis - ondas de luz etéreas */}
-				<div className="fixed inset-0 pointer-events-none overflow-hidden">
+				{/* Aurora Borealis - ondas de luz etéreas (GPU accelerated) */}
+				<div
+					className="fixed inset-0 pointer-events-none overflow-hidden"
+					style={{ willChange: "transform" }}>
 					<div
 						className="absolute -top-[50%] left-1/2 -translate-x-1/2 w-[200%] h-[100%] opacity-30"
 						style={{
@@ -949,6 +965,8 @@ export default function LandingPage() {
 							`,
 							animation: "aurora 15s ease-in-out infinite",
 							filter: "blur(60px)",
+							willChange: "transform",
+							transform: "translateZ(0)",
 						}}
 					/>
 					<div
@@ -964,49 +982,55 @@ export default function LandingPage() {
 							`,
 							animation: "aurora 20s ease-in-out infinite reverse",
 							filter: "blur(80px)",
+							willChange: "transform",
+							transform: "translateZ(0)",
 						}}
 					/>
 				</div>
 
-				{/* Starfield - estrelas piscantes */}
-				<div className="fixed inset-0 pointer-events-none">
-					{[...Array(50)].map((_, i) => (
+				{/* Starfield - estrelas piscantes (otimizado) */}
+				<div
+					className="fixed inset-0 pointer-events-none"
+					style={{ willChange: "opacity" }}>
+					{STARS_CONFIG.map((star) => (
 						<div
-							key={i}
+							key={star.id}
 							className="absolute rounded-full bg-white"
 							style={{
-								width: Math.random() > 0.8 ? "2px" : "1px",
-								height: Math.random() > 0.8 ? "2px" : "1px",
-								left: `${Math.random() * 100}%`,
-								top: `${Math.random() * 100}%`,
-								opacity: 0.1 + Math.random() * 0.5,
-								animation: `twinkle ${2 + Math.random() * 4}s ease-in-out infinite`,
-								animationDelay: `${Math.random() * 5}s`,
+								width: `${star.width}px`,
+								height: `${star.width}px`,
+								left: `${star.left}%`,
+								top: `${star.top}%`,
+								opacity: star.opacity,
+								animation: `twinkle ${star.duration}s ease-in-out infinite`,
+								animationDelay: `${star.delay}s`,
 							}}
 						/>
 					))}
 				</div>
 
-				{/* Shooting stars ocasionais */}
-				<div className="fixed inset-0 pointer-events-none overflow-hidden">
+				{/* Shooting stars ocasionais (GPU optimized) */}
+				<div
+					className="fixed inset-0 pointer-events-none overflow-hidden"
+					style={{ willChange: "transform" }}>
 					<div
 						className="absolute w-[100px] h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-0"
 						style={{
 							top: "20%",
-							left: "-10%",
-							transform: "rotate(-45deg)",
-							animation: "shootingStar 8s linear infinite",
-							animationDelay: "2s",
+							left: "0",
+							animation: "shootingStar 10s linear infinite",
+							animationDelay: "3s",
+							willChange: "transform, opacity",
 						}}
 					/>
 					<div
 						className="absolute w-[80px] h-[1px] bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-0"
 						style={{
-							top: "40%",
-							left: "-10%",
-							transform: "rotate(-35deg)",
-							animation: "shootingStar 12s linear infinite",
-							animationDelay: "7s",
+							top: "50%",
+							left: "0",
+							animation: "shootingStar 15s linear infinite",
+							animationDelay: "8s",
+							willChange: "transform, opacity",
 						}}
 					/>
 				</div>
@@ -1064,48 +1088,57 @@ export default function LandingPage() {
 					}}
 				/>
 
-				{/* Estilos para Animações Apple-level */}
+				{/* Estilos para Animações Apple-level (GPU optimized) */}
 				<style>{`
+        /* GPU Acceleration hints */
+        .gpu-accelerate {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          perspective: 1000px;
+        }
         @keyframes aurora {
-          0%, 100% { transform: translateX(-50%) translateY(0) skewX(0deg); }
-          25% { transform: translateX(-45%) translateY(-5%) skewX(-2deg); }
-          50% { transform: translateX(-55%) translateY(3%) skewX(2deg); }
-          75% { transform: translateX(-48%) translateY(-2%) skewX(-1deg); }
+          0%, 100% { transform: translateX(-50%) translateY(0) skewX(0deg) translateZ(0); }
+          25% { transform: translateX(-45%) translateY(-5%) skewX(-2deg) translateZ(0); }
+          50% { transform: translateX(-55%) translateY(3%) skewX(2deg) translateZ(0); }
+          75% { transform: translateX(-48%) translateY(-2%) skewX(-1deg) translateZ(0); }
         }
         @keyframes twinkle {
-          0%, 100% { opacity: 0.1; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.2); }
+          0%, 100% { opacity: 0.1; }
+          50% { opacity: 0.7; }
         }
         @keyframes shootingStar {
-          0% { left: -10%; opacity: 0; }
+          0% { transform: translateX(0) rotate(-45deg); opacity: 0; }
           5% { opacity: 0.8; }
-          15% { left: 110%; opacity: 0; }
-          100% { left: 110%; opacity: 0; }
+          15% { transform: translateX(120vw) rotate(-45deg); opacity: 0; }
+          100% { transform: translateX(120vw) rotate(-45deg); opacity: 0; }
         }
         @keyframes nebulaPulse {
-          0%, 100% { opacity: 0.03; transform: scale(1); }
-          50% { opacity: 0.06; transform: scale(1.1); }
+          0%, 100% { opacity: 0.03; transform: scale(1) translateZ(0); }
+          50% { opacity: 0.06; transform: scale(1.1) translateZ(0); }
         }
         @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          0% { transform: translateX(0) translateZ(0); }
+          100% { transform: translateX(-50%) translateZ(0); }
         }
         .animate-scroll {
           animation: scroll 40s linear infinite;
+          will-change: transform;
         }
         @keyframes pulse-glow {
-          0%, 100% { opacity: 0.4; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(1.05); }
+          0%, 100% { opacity: 0.4; transform: scale(1) translateZ(0); }
+          50% { opacity: 0.7; transform: scale(1.05) translateZ(0); }
         }
         .animate-pulse-glow {
           animation: pulse-glow 4s ease-in-out infinite;
+          will-change: transform, opacity;
         }
         @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+          0%, 100% { transform: translateY(0px) translateZ(0); }
+          50% { transform: translateY(-10px) translateZ(0); }
         }
         .animate-float {
           animation: float 6s ease-in-out infinite;
+          will-change: transform;
         }
         @keyframes word-rotate-out {
           0% { opacity: 1; transform: translateY(0) rotateX(0); }
