@@ -294,32 +294,51 @@ function RotatingHeroText() {
 
 // --- COMPONENTE: SOCIAL PROOF NUMBERS ---
 function SocialProofBar() {
-	const [ref, isInView] = useInView();
-	const reservas = useCountUp(2847, 2000, isInView);
-	const arenas = useCountUp(47, 1500, isInView);
-	const satisfacao = useCountUp(98, 1800, isInView);
-
 	return (
-		<div
-			ref={ref}
-			className="flex flex-wrap items-center justify-center gap-8 md:gap-12 py-8 px-4">
-			<div className="text-center">
-				<p className="text-3xl md:text-4xl font-black text-white">
-					{reservas.toLocaleString("pt-BR")}+
-				</p>
-				<p className="text-sm text-gray-500">reservas feitas</p>
+		<div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 py-8 px-4">
+			{/* Trust Signals Reais */}
+			<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+					<Check className="w-3 h-3 text-emerald-500" />
+				</div>
+				<span className="text-sm text-gray-300">7 dias grátis</span>
 			</div>
-			<div className="w-px h-10 bg-white/10 hidden md:block" />
-			<div className="text-center">
-				<p className="text-3xl md:text-4xl font-black text-white">{arenas}+</p>
-				<p className="text-sm text-gray-500">arenas ativas</p>
+
+			<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+					<Check className="w-3 h-3 text-emerald-500" />
+				</div>
+				<span className="text-sm text-gray-300">Sem cartão de crédito</span>
 			</div>
-			<div className="w-px h-10 bg-white/10 hidden md:block" />
-			<div className="text-center">
-				<p className="text-3xl md:text-4xl font-black text-emerald-400">
-					{satisfacao}%
-				</p>
-				<p className="text-sm text-gray-500">satisfação</p>
+
+			<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+					<Check className="w-3 h-3 text-emerald-500" />
+				</div>
+				<span className="text-sm text-gray-300">Suporte via WhatsApp</span>
+			</div>
+
+			{/* Separador */}
+			<div className="w-full md:w-auto flex justify-center">
+				<div className="w-16 h-px md:w-px md:h-8 bg-white/10" />
+			</div>
+
+			{/* Estatísticas do Problema (reais do mercado) */}
+			<div className="flex flex-wrap items-center justify-center gap-6 text-center">
+				<div className="px-3">
+					<p className="text-2xl md:text-3xl font-black text-red-400/80">78%</p>
+					<p className="text-xs text-gray-500 max-w-[100px]">
+						das arenas perdem reservas por conflitos
+					</p>
+				</div>
+				<div className="px-3">
+					<p className="text-2xl md:text-3xl font-black text-red-400/80">
+						R$ 4.8k
+					</p>
+					<p className="text-xs text-gray-500 max-w-[100px]">
+						perdidos/mês em média com no-shows
+					</p>
+				</div>
 			</div>
 		</div>
 	);
@@ -1593,7 +1612,7 @@ export default function LandingPage() {
 									<p className="text-gray-500 text-sm uppercase tracking-wider mb-3">
 										1 hora de aluguel
 									</p>
-									<p className="text-4xl font-black text-white">~R$ 100</p>
+									<p className="text-4xl font-black text-white">~R$ 200</p>
 								</div>
 								<div className="p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-center animate-border-glow">
 									<p className="text-emerald-400 text-sm uppercase tracking-wider mb-3">
@@ -1608,14 +1627,26 @@ export default function LandingPage() {
 							<TiltCard className="relative rounded-3xl p-10 bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
 								{foundersProgress && foundersProgress.remaining > 0 && (
 									<div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-sm font-bold px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30">
-										🎉 FOUNDERS: 30% OFF • {foundersProgress.remaining} vagas
+										🎉 FOUNDERS: Preço travado pra sempre
 									</div>
 								)}
 
 								<div className="text-center mb-8">
-									<div className="flex items-baseline justify-center gap-2 mb-2">
-										{foundersProgress && foundersProgress.remaining > 0 ?
-											<>
+									{/* Toggle Mensal/Anual visual */}
+									<div className="flex items-center justify-center gap-3 mb-6">
+										<span className="text-gray-500 text-sm">Mensal</span>
+										<div className="relative w-14 h-7 bg-emerald-500/20 rounded-full border border-emerald-500/30">
+											<div className="absolute right-1 top-1 w-5 h-5 bg-emerald-500 rounded-full shadow-lg" />
+										</div>
+										<span className="text-emerald-400 text-sm font-bold">
+											Anual
+										</span>
+									</div>
+
+									{foundersProgress && foundersProgress.remaining > 0 ?
+										<>
+											{/* Preço Founders Anual */}
+											<div className="flex items-baseline justify-center gap-2 mb-3">
 												<span className="text-2xl text-gray-500 line-through">
 													R$ 97
 												</span>
@@ -1623,17 +1654,59 @@ export default function LandingPage() {
 													R$ 67
 												</span>
 												<span className="text-gray-500 text-xl">/mês</span>
-											</>
-										:	<>
+											</div>
+											<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3">
+												<span className="text-emerald-400 text-sm font-bold">
+													30% OFF
+												</span>
+												<span className="text-gray-400 text-sm">
+													• Plano anual • Preço fixo pra sempre
+												</span>
+											</div>
+											<p className="text-gray-500 text-sm">
+												Apenas{" "}
+												<span className="text-white font-bold">
+													{foundersProgress.remaining} vagas
+												</span>{" "}
+												com esse preço travado
+											</p>
+										</>
+									:	<>
+											{/* Preço normal */}
+											<div className="flex items-baseline justify-center gap-2 mb-2">
 												<span className="text-6xl font-black text-white">
 													R$ 97
 												</span>
 												<span className="text-gray-500 text-xl">/mês</span>
-											</>
-										}
-									</div>
-									<p className="text-gray-500">ou anual com 2 meses grátis</p>
+											</div>
+											<p className="text-gray-500">
+												Plano mensal • Cancele quando quiser
+											</p>
+										</>
+									}
 								</div>
+
+								{/* Comparativo de economia */}
+								{foundersProgress && foundersProgress.remaining > 0 && (
+									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+										<div className="text-center">
+											<p className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+												Mensal
+											</p>
+											<p className="text-white font-bold">R$ 97/mês</p>
+											<p className="text-gray-600 text-xs">= R$ 1.164/ano</p>
+										</div>
+										<div className="text-center border-l border-white/10">
+											<p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">
+												Anual Founders
+											</p>
+											<p className="text-emerald-400 font-bold">R$ 67/mês</p>
+											<p className="text-emerald-400/60 text-xs">
+												= R$ 804/ano (economia de R$ 360)
+											</p>
+										</div>
+									</div>
+								)}
 
 								<ul className="space-y-4 mb-8">
 									{[
