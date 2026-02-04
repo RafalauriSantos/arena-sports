@@ -10,24 +10,30 @@ import {
 	Clock,
 	Loader2,
 	Calendar,
+	ChevronLeft,
+	ChevronRight,
+	X,
+	Zap,
+	Users,
+	CreditCard,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { useBookings } from "@/contexts/BookingsContext";
 import { NewBookingModal } from "@/components/admin/NewBookingModal";
 import { useToast } from "@/hooks/use-toast";
-import { addDays, format, parseISO } from "date-fns";
+import { addDays, format, parseISO, subDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,40 +82,63 @@ type BookingEventRow = {
 };
 
 const AgendaSkeleton = () => (
-	<div className="grid gap-3 md:gap-4">
-		{[1, 2, 3, 4].map((i) => (
-			<Card key={i} className="border border-white/5 rounded-xl bg-surface-2/60 overflow-hidden">
-				<CardContent className="p-6">
-					<div className="flex justify-between items-start mb-4">
-						<div className="h-8 w-24 rounded skeleton-premium" />
-						<div className="h-5 w-16 rounded-full skeleton-premium" />
-					</div>
-					<div className="h-5 w-3/4 rounded skeleton-premium mb-4" />
-					<div className="h-4 w-1/2 rounded skeleton-premium" />
-					<div className="mt-4 pt-4 border-t border-white/5 h-4 w-20 rounded skeleton-premium" />
-				</CardContent>
-			</Card>
-		))}
+	<div className="space-y-6">
+		<div className="h-16 w-full rounded-2xl skeleton-premium" />
+		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+			{[1, 2, 3, 4, 5, 6].map((i) => (
+				<div key={i} className="h-24 rounded-xl skeleton-premium" />
+			))}
+		</div>
 	</div>
 );
 
+// Horários padrão da arena (pode ser dinâmico depois)
+const DEFAULT_SLOTS = [
+	"06:00",
+	"07:00",
+	"08:00",
+	"09:00",
+	"10:00",
+	"11:00",
+	"12:00",
+	"13:00",
+	"14:00",
+	"15:00",
+	"16:00",
+	"17:00",
+	"18:00",
+	"19:00",
+	"20:00",
+	"21:00",
+	"22:00",
+	"23:00",
+];
+
+// Tipo para visualização
+type ViewMode = "dia" | "semana";
+
 export default function AgendaMaster() {
 	const context = useBookings();
-	const { bookings, updateBooking, deleteBooking, refreshData, loading } = context;
+	const { bookings, updateBooking, deleteBooking, refreshData, loading } =
+		context;
 	const { toast } = useToast();
 	const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(
-		null
+		null,
 	);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
 	const [bookingEvents, setBookingEvents] = useState<BookingEventRow[]>([]);
 	const [bookingEventsLoading, setBookingEventsLoading] = useState(false);
 	const [bookingEventsError, setBookingEventsError] = useState<string | null>(
-		null
+		null,
 	);
 	const [editedPhone, setEditedPhone] = useState("");
 	const [savingPhone, setSavingPhone] = useState(false);
 	const [elapsedTime, setElapsedTime] = useState<string>("00:00:00");
+	const [viewMode, setViewMode] = useState<ViewMode>("dia");
+	const [selectedDate, setSelectedDate] = useState(new Date());
+	const [viewStartDate, setViewStartDate] = useState(new Date()); // Início da janela de 7 dias
+	const [preselectedSlot, setPreselectedSlot] = useState<string | null>(null);
 
 	// Timer em tempo real para mostrar tempo decorrido do jogo
 	useEffect(() => {
@@ -166,7 +195,7 @@ export default function AgendaMaster() {
 			const { data, error } = await supabase
 				.from("booking_events")
 				.select(
-					"id, booking_id, actor_user_id, action, old_data, new_data, created_at"
+					"id, booking_id, actor_user_id, action, old_data, new_data, created_at",
 				)
 				.eq("booking_id", bookingId)
 				.order("created_at", { ascending: false })
@@ -177,7 +206,7 @@ export default function AgendaMaster() {
 			if (error) {
 				setBookingEvents([]);
 				setBookingEventsError(
-					"Não foi possível carregar o histórico desta reserva."
+					"Não foi possível carregar o histórico desta reserva.",
 				);
 				setBookingEventsLoading(false);
 				return;
@@ -227,7 +256,7 @@ export default function AgendaMaster() {
 
 		const oldStatus = event.old_data?.status;
 		const newStatus = event.new_data?.status;
-		
+
 		// Mensagens amigáveis para mudanças de status do controle de jogo
 		if (oldStatus && newStatus && oldStatus !== newStatus) {
 			if (newStatus === "in_progress") {
@@ -315,91 +344,133 @@ export default function AgendaMaster() {
 				const isPaidFull = b.paymentStatus === "paid";
 				const isDeposit =
 					!isPaidFull && paidAmount > 0 && paidAmount < totalAmount;
-				const paymentStatus: PaymentStatus = isPaidFull
-					? "paid"
-					: isDeposit
-					? "deposit"
+				const paymentStatus: PaymentStatus =
+					isPaidFull ? "paid"
+					: isDeposit ? "deposit"
 					: "pending";
 
-			return {
-				id: b.id,
-				time: b.time,
-				date: b.date,
-				field: b.fieldName,
-				customerName: b.customerName,
-				phone: b.customerPhone || "",
-				totalAmount,
-				paidAmount,
-				remainingAmount,
-				paymentStatus,
-				depositPercent: b.depositPercent,
-				bookingId: b.id,
-				startedAt: b.startedAt,
-				completedAt: b.completedAt,
-				cancelledAt: b.cancelledAt,
-				startTime: b.startTime,
-				endTime: b.endTime,
-			};
+				return {
+					id: b.id,
+					time: b.time,
+					date: b.date,
+					field: b.fieldName,
+					customerName: b.customerName,
+					phone: b.customerPhone || "",
+					totalAmount,
+					paidAmount,
+					remainingAmount,
+					paymentStatus,
+					depositPercent: b.depositPercent,
+					bookingId: b.id,
+					startedAt: b.startedAt,
+					completedAt: b.completedAt,
+					cancelledAt: b.cancelledAt,
+					startTime: b.startTime,
+					endTime: b.endTime,
+				};
 			});
 	}, [bookings]);
 
 	// Removido: Logs excessivos estavam causando poluição no console
 
-	const { pastBookings, todayBookings, tomorrowBookings, upcomingBookings } = useMemo(() => {
-		const today = format(new Date(), "yyyy-MM-dd");
-		const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+	const { pastBookings, todayBookings, tomorrowBookings, upcomingBookings } =
+		useMemo(() => {
+			const today = format(new Date(), "yyyy-MM-dd");
+			const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
-		const sortTimeAsc = (a: AdminBooking, b: AdminBooking) =>
-			a.time.localeCompare(b.time);
+			const sortTimeAsc = (a: AdminBooking, b: AdminBooking) =>
+				a.time.localeCompare(b.time);
 
-		const sortDateAscTimeAsc = (a: AdminBooking, b: AdminBooking) => {
-			if (a.date !== b.date) return a.date.localeCompare(b.date);
-			return a.time.localeCompare(b.time);
-		};
+			const sortDateAscTimeAsc = (a: AdminBooking, b: AdminBooking) => {
+				if (a.date !== b.date) return a.date.localeCompare(b.date);
+				return a.time.localeCompare(b.time);
+			};
 
-		const sortDateDescTimeDesc = (a: AdminBooking, b: AdminBooking) => {
-			if (a.date !== b.date) return b.date.localeCompare(a.date);
-			return b.time.localeCompare(a.time);
-		};
+			const sortDateDescTimeDesc = (a: AdminBooking, b: AdminBooking) => {
+				if (a.date !== b.date) return b.date.localeCompare(a.date);
+				return b.time.localeCompare(a.time);
+			};
 
-		const past = adminBookingsData
-			.filter((b) => b.date < today)
-			.sort(sortDateDescTimeDesc);
-		const todayList = adminBookingsData
-			.filter((b) => b.date === today)
-			.sort(sortTimeAsc);
-		const tomorrowList = adminBookingsData
-			.filter((b) => b.date === tomorrow)
-			.sort(sortTimeAsc);
-		const upcoming = adminBookingsData
-			.filter((b) => b.date > tomorrow)
-			.sort(sortDateAscTimeAsc);
+			const past = adminBookingsData
+				.filter((b) => b.date < today)
+				.sort(sortDateDescTimeDesc);
+			const todayList = adminBookingsData
+				.filter((b) => b.date === today)
+				.sort(sortTimeAsc);
+			const tomorrowList = adminBookingsData
+				.filter((b) => b.date === tomorrow)
+				.sort(sortTimeAsc);
+			const upcoming = adminBookingsData
+				.filter((b) => b.date > tomorrow)
+				.sort(sortDateAscTimeAsc);
 
-		return {
-			pastBookings: past,
-			todayBookings: todayList,
-			tomorrowBookings: tomorrowList,
-			upcomingBookings: upcoming,
-		};
-	}, [adminBookingsData]);
+			return {
+				pastBookings: past,
+				todayBookings: todayList,
+				tomorrowBookings: tomorrowList,
+				upcomingBookings: upcoming,
+			};
+		}, [adminBookingsData]);
+
+	// Bookings filtrados pela data selecionada
+	const selectedDateBookings = useMemo(() => {
+		const dateStr = format(selectedDate, "yyyy-MM-dd");
+		return adminBookingsData
+			.filter((b) => b.date === dateStr)
+			.sort((a, b) => a.time.localeCompare(b.time));
+	}, [adminBookingsData, selectedDate]);
+
+	// Gera slots para a visualização
+	const timeSlotGrid = useMemo(() => {
+		const dateStr = format(selectedDate, "yyyy-MM-dd");
+		const nowHour = new Date().getHours();
+		const isToday = isSameDay(selectedDate, new Date());
+
+		return DEFAULT_SLOTS.map((slot) => {
+			const slotHour = parseInt(slot.split(":")[0]);
+			const booking = selectedDateBookings.find((b) => b.time === slot);
+			const isPast = isToday && slotHour < nowHour;
+
+			return {
+				time: slot,
+				booking,
+				isPast,
+				isNow: isToday && slotHour === nowHour,
+			};
+		});
+	}, [selectedDate, selectedDateBookings]);
+
+	// Navegação de janela de visualização (move a strip de dias)
+	const goToPrevWeek = () => setViewStartDate((prev) => subDays(prev, 7));
+	const goToNextWeek = () => setViewStartDate((prev) => addDays(prev, 7));
+	const goToToday = () => {
+		setSelectedDate(new Date());
+		setViewStartDate(new Date());
+	};
 
 	const renderBookingCard = (booking: AdminBooking, showDate = false) => {
 		const statusConfig = getStatusConfig(booking.paymentStatus);
-		
+
 		// Calcula horário de término se houver duração > 60min
-		const endTimeDisplay = booking.endTime && booking.startTime && (() => {
-			const duration = Math.round((booking.endTime.getTime() - booking.startTime.getTime()) / (1000 * 60));
-			if (duration > 60) {
-				return format(booking.endTime, "HH:mm");
-			}
-			return null;
-		})();
+		const endTimeDisplay =
+			booking.endTime &&
+			booking.startTime &&
+			(() => {
+				const duration = Math.round(
+					(booking.endTime.getTime() - booking.startTime.getTime()) /
+						(1000 * 60),
+				);
+				if (duration > 60) {
+					return format(booking.endTime, "HH:mm");
+				}
+				return null;
+			})();
 
 		// Status visual minimalista - apenas cor sutil
-		const statusColor = 
-			booking.paymentStatus === "paid" ? "border-l-emerald-500/50" :
-			booking.paymentStatus === "deposit" ? "border-l-amber-500/50" :
-			"border-l-gray-500/30";
+		const statusColor =
+			booking.paymentStatus === "paid" ? "border-l-emerald-500/50"
+			: booking.paymentStatus === "deposit" ? "border-l-amber-500/50"
+			: "border-l-gray-500/30";
 
 		return (
 			<Card
@@ -410,7 +481,7 @@ export default function AgendaMaster() {
 					"bg-surface-2/60 backdrop-blur-sm",
 					"hover:bg-surface-2/80 hover:border-white/10 hover:shadow-lg hover:shadow-black/20",
 					"active:scale-[0.99]",
-					statusColor
+					statusColor,
 				)}
 				onClick={() => handleBookingClick(booking)}>
 				<CardContent className="p-5 md:p-6">
@@ -426,20 +497,28 @@ export default function AgendaMaster() {
 								)}
 							</span>
 						</div>
-						<div className={cn(
-							"flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium border shrink-0",
-							booking.paymentStatus === "paid"
-								? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-								: booking.paymentStatus === "deposit"
-								? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-								: "bg-white/5 text-gray-400 border-white/10"
-						)}>
-							<span className={cn(
-								"w-1.5 h-1.5 rounded-full shrink-0",
-								booking.paymentStatus === "paid" ? "bg-emerald-500" :
-								booking.paymentStatus === "deposit" ? "bg-amber-500" : "bg-gray-500"
-							)} />
-							{booking.paymentStatus === "paid" ? "Pago" : booking.paymentStatus === "deposit" ? "Sinal" : "Pendente"}
+						<div
+							className={cn(
+								"flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium border shrink-0",
+								booking.paymentStatus === "paid" ?
+									"bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+								: booking.paymentStatus === "deposit" ?
+									"bg-amber-500/10 text-amber-400 border-amber-500/20"
+								:	"bg-white/5 text-gray-400 border-white/10",
+							)}>
+							<span
+								className={cn(
+									"w-1.5 h-1.5 rounded-full shrink-0",
+									booking.paymentStatus === "paid" ? "bg-emerald-500"
+									: booking.paymentStatus === "deposit" ? "bg-amber-500"
+									: "bg-gray-500",
+								)}
+							/>
+							{booking.paymentStatus === "paid" ?
+								"Pago"
+							: booking.paymentStatus === "deposit" ?
+								"Sinal"
+							:	"Pendente"}
 						</div>
 					</div>
 
@@ -454,18 +533,19 @@ export default function AgendaMaster() {
 					</div>
 
 					{/* Linha 3: Valor (apenas se houver pendência) */}
-					{booking.remainingAmount > 0 ? (
+					{booking.remainingAmount > 0 ?
 						<div className="flex items-baseline gap-2 pt-3 border-t border-amber-500/20">
-							<span className="text-xs text-amber-400/80 font-light">Falta receber</span>
+							<span className="text-xs text-amber-400/80 font-light">
+								Falta receber
+							</span>
 							<span className="text-lg font-semibold text-amber-400">
 								R$ {booking.remainingAmount.toFixed(0)}
 							</span>
 						</div>
-					) : (
-						<div className="flex items-center gap-2 pt-3 border-t border-white/5">
+					:	<div className="flex items-center gap-2 pt-3 border-t border-white/5">
 							<span className="text-xs text-gray-500 font-light">Pago</span>
 						</div>
-					)}
+					}
 				</CardContent>
 			</Card>
 		);
@@ -518,7 +598,8 @@ export default function AgendaMaster() {
 			console.error("Erro ao iniciar jogo:", error);
 			toast({
 				title: "Erro ao iniciar jogo",
-				description: error instanceof Error ? error.message : "Tente novamente.",
+				description:
+					error instanceof Error ? error.message : "Tente novamente.",
 				variant: "destructive",
 			});
 		}
@@ -578,11 +659,10 @@ export default function AgendaMaster() {
 	const handleWhatsApp = () => {
 		if (selectedBooking?.phone) {
 			const paymentLabel =
-				selectedBooking.paymentStatus === "paid"
-					? "Pago"
-					: selectedBooking.paymentStatus === "deposit"
-					? `Sinal de ${selectedBooking.depositPercent || 0}%`
-					: "Pagar no local";
+				selectedBooking.paymentStatus === "paid" ? "Pago"
+				: selectedBooking.paymentStatus === "deposit" ?
+					`Sinal de ${selectedBooking.depositPercent || 0}%`
+				:	"Pagar no local";
 			const msg = `*Reserva Confirmada!*
 
 Ola *${selectedBooking.customerName}*!
@@ -595,9 +675,9 @@ Ola *${selectedBooking.customerName}*!
 Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			window.open(
 				`https://wa.me/55${selectedBooking.phone}?text=${encodeURIComponent(
-					msg
+					msg,
 				)}`,
-				"_blank"
+				"_blank",
 			);
 		}
 	};
@@ -619,304 +699,514 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 		}
 	};
 
+	const isToday = isSameDay(selectedDate, new Date());
+	const isTomorrow = isSameDay(selectedDate, new Date(Date.now() + 86400000));
+	const isPast = selectedDate < new Date() && !isToday;
+
 	return (
 		<div className="space-y-4 md:space-y-6">
-			{/* Header - Mobile responsive */}
-			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-				<div>
-					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-						Reservas
-					</h1>
-					<p className="text-sm text-gray-500 mt-0.5">
-						Torre de controle — Anteriores, Hoje, Amanhã
-					</p>
+			{/* Header - Modern Command Center */}
+			<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+					<div className="flex items-center gap-4">
+						<div>
+							<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
+								Agenda de Jogos
+							</h1>
+							<p className="text-sm text-gray-500 mt-0.5">
+								{format(
+									selectedDate,
+									selectedDate.getFullYear() === new Date().getFullYear() ?
+										"EEEE, dd 'de' MMMM"
+									:	"EEEE, dd 'de' MMMM 'de' yyyy",
+									{ locale: ptBR },
+								)}
+								{isToday && (
+									<span className="ml-2 text-emerald-400 font-medium">
+										• Hoje
+									</span>
+								)}
+								{isTomorrow && (
+									<span className="ml-2 text-blue-400 font-medium">
+										• Amanhã
+									</span>
+								)}
+							</p>
+						</div>
+					</div>
+					<div className="flex items-center gap-2 md:gap-3">
+						{/* View Toggle */}
+						<div className="hidden md:flex items-center gap-1 p-1 bg-white/5 rounded-xl border border-white/10">
+							<button
+								onClick={() => setViewMode("dia")}
+								className={cn(
+									"px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
+									viewMode === "dia" ?
+										"bg-primary text-white shadow-sm"
+									:	"text-gray-400 hover:text-white",
+								)}>
+								Dia
+							</button>
+							<button
+								onClick={() => setViewMode("semana")}
+								className={cn(
+									"px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
+									viewMode === "semana" ?
+										"bg-primary text-white shadow-sm"
+									:	"text-gray-400 hover:text-white",
+								)}>
+								Semana
+							</button>
+						</div>
+						<Button
+							size="default"
+							className="gap-2 bg-primary text-white hover:bg-primary/90 w-full md:w-auto font-bold shadow-[0_0_20px_hsl(var(--primary)/0.5)] border-0 transition-all hover:scale-105"
+							onClick={() => setIsNewBookingOpen(true)}>
+							<Plus className="h-4 w-4" />
+							<span>Novo Agendamento</span>
+						</Button>
+					</div>
 				</div>
-				<Button
-					size="default"
-					className="gap-2 bg-primary text-white hover:bg-primary/90 w-full md:w-auto font-bold shadow-[0_0_20px_hsl(var(--primary)/0.5)] border-0 transition-all hover:scale-105"
-					onClick={() => setIsNewBookingOpen(true)}>
-					<Plus className="h-4 w-4" />
-					<span className="md:hidden">Novo Agendamento</span>
-					<span className="hidden md:inline">Novo Agendamento Manual</span>
-				</Button>
+
+				{/* Date Navigation Bar */}
+				<div className="flex items-center justify-center gap-2">
+					<button
+						onClick={goToPrevWeek}
+						className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0 hover:scale-105 active:scale-95">
+						<ChevronLeft className="w-5 h-5" />
+					</button>
+					<button
+						onClick={goToToday}
+						className={cn(
+							"px-4 py-2 text-sm font-medium rounded-xl border transition-all flex-shrink-0 hover:scale-105 active:scale-95",
+							isToday ?
+								"bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-500/10"
+							:	"bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10",
+						)}>
+						Hoje
+					</button>
+					<div className="flex items-center gap-2">
+						{[0, 1, 2, 3, 4, 5, 6].map((offset) => {
+							const date = addDays(viewStartDate, offset);
+							const isSelected = isSameDay(date, selectedDate);
+							const dayIsToday = isSameDay(date, new Date());
+							return (
+								<button
+									key={offset}
+									onClick={() => setSelectedDate(date)}
+									className={cn(
+										"group relative flex flex-col items-center justify-center w-14 h-[72px] rounded-2xl border transition-all flex-shrink-0 hover:scale-105 active:scale-95",
+										isSelected ?
+											"bg-primary/20 border-primary/50 text-white shadow-lg shadow-primary/20"
+										: dayIsToday ?
+											"bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10"
+										:	"bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5",
+									)}>
+									{/* Indicador de selecionado */}
+									{isSelected && (
+										<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
+									)}
+									{/* Indicador de hoje */}
+									{dayIsToday && !isSelected && (
+										<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+									)}
+									<span className="text-[10px] uppercase font-medium opacity-50 group-hover:opacity-80 transition-opacity">
+										{format(date, "EEE", { locale: ptBR })}
+									</span>
+									<span className="text-xl font-bold leading-tight">
+										{format(date, "dd")}
+									</span>
+									<span
+										className={cn(
+											"text-[10px] uppercase font-medium leading-none mt-0.5",
+											isSelected ? "text-primary/80" : "text-gray-500",
+										)}>
+										{format(date, "MMM", { locale: ptBR })}
+									</span>
+								</button>
+							);
+						})}
+					</div>
+					<button
+						onClick={goToNextWeek}
+						className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0 hover:scale-105 active:scale-95">
+						<ChevronRight className="w-5 h-5" />
+					</button>
+				</div>
 			</div>
 
 			{/* New Booking Modal */}
 			<NewBookingModal
 				open={isNewBookingOpen}
 				onOpenChange={setIsNewBookingOpen}
+				initialDate={selectedDate}
 			/>
-			{loading ? (
+			{loading ?
 				<AgendaSkeleton />
-			) : (
-			<div className="grid gap-4 md:gap-5">
-				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
-					<CardHeader className="p-4 md:p-5">
-						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg font-medium">
-								Jogos anteriores
-							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
-								{pastBookings.length}
-							</Badge>
+			:	<div className="space-y-4">
+					{/* Summary Stats Row */}
+					<div className="grid grid-cols-3 gap-3">
+						<div className="flex items-center gap-3 p-4 bg-surface-2/60 border border-white/5 rounded-2xl">
+							<div className="p-2.5 bg-emerald-500/10 rounded-xl">
+								<CheckCircle className="w-5 h-5 text-emerald-400" />
+							</div>
+							<div>
+								<p className="text-2xl font-semibold text-white">
+									{
+										selectedDateBookings.filter(
+											(b) => b.paymentStatus === "paid",
+										).length
+									}
+								</p>
+								<p className="text-xs text-gray-500">Pagos</p>
+							</div>
 						</div>
-					</CardHeader>
-					<CardContent className="p-4 md:p-5 pt-0">
-						{pastBookings.length === 0 ? (
-							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
-								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
-									<Calendar className="w-6 h-6 text-gray-500" />
-								</div>
-								<p className="text-sm text-gray-400 mb-1">Nenhum jogo anterior.</p>
-								<p className="text-xs text-gray-500 mb-4">Este período está livre.</p>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setIsNewBookingOpen(true)}
-									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
-									<Plus className="w-3 h-3 mr-1" />
-									Nova reserva
-								</Button>
+						<div className="flex items-center gap-3 p-4 bg-surface-2/60 border border-white/5 rounded-2xl">
+							<div className="p-2.5 bg-amber-500/10 rounded-xl">
+								<Clock className="w-5 h-5 text-amber-400" />
 							</div>
-						) : (
-							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
-								{pastBookings.map(renderBookingCard)}
+							<div>
+								<p className="text-2xl font-semibold text-white">
+									{
+										selectedDateBookings.filter(
+											(b) =>
+												b.paymentStatus === "deposit" ||
+												b.paymentStatus === "pending",
+										).length
+									}
+								</p>
+								<p className="text-xs text-gray-500">Pendentes</p>
 							</div>
-						)}
-					</CardContent>
-				</Card>
-
-				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
-					<CardHeader className="p-4 md:p-5">
-						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg font-medium">
-								Jogos do dia
-							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
-								{todayBookings.length}
-							</Badge>
 						</div>
-					</CardHeader>
-					<CardContent className="p-4 md:p-5 pt-0">
-						{todayBookings.length === 0 ? (
-							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
-								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
-									<Clock className="w-6 h-6 text-gray-500" />
-								</div>
-								<p className="text-sm text-gray-400 mb-1">Nenhum jogo hoje.</p>
-								<p className="text-xs text-gray-500 mb-4">Compartilhe seu link ou crie uma reserva manual.</p>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setIsNewBookingOpen(true)}
-									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
-									<Plus className="w-3 h-3 mr-1" />
-									Nova reserva
-								</Button>
+						<div className="flex items-center gap-3 p-4 bg-surface-2/60 border border-white/5 rounded-2xl">
+							<div className="p-2.5 bg-primary/10 rounded-xl">
+								<Zap className="w-5 h-5 text-primary" />
 							</div>
-						) : (
-							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
-								{todayBookings.map(renderBookingCard)}
+							<div>
+								<p className="text-2xl font-semibold text-white">
+									{selectedDateBookings.length}
+								</p>
+								<p className="text-xs text-gray-500">Total</p>
 							</div>
-						)}
-					</CardContent>
-				</Card>
-
-				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
-					<CardHeader className="p-4 md:p-5">
-						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg font-medium">
-								Jogos de amanhã
-							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
-								{tomorrowBookings.length}
-							</Badge>
 						</div>
-					</CardHeader>
-					<CardContent className="p-4 md:p-5 pt-0">
-						{tomorrowBookings.length === 0 ? (
-							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
-								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
-									<Clock className="w-6 h-6 text-gray-500" />
-								</div>
-								<p className="text-sm text-gray-400 mb-1">Nenhum jogo amanhã.</p>
-								<p className="text-xs text-gray-500 mb-4">Compartilhe seu link ou crie uma reserva manual.</p>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setIsNewBookingOpen(true)}
-									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
-									<Plus className="w-3 h-3 mr-1" />
-									Nova reserva
-								</Button>
-							</div>
-						) : (
-							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
-								{tomorrowBookings.map(renderBookingCard)}
-							</div>
-						)}
-					</CardContent>
-				</Card>
+					</div>
 
-				<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
-					<CardHeader className="p-4 md:p-5">
-						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-white text-base md:text-lg font-medium">
-								Próximos jogos
-							</CardTitle>
-							<Badge variant="outline" className="border-white/10 bg-white/5 text-gray-400 text-xs font-medium">
-								{upcomingBookings.length}
-							</Badge>
-						</div>
-					</CardHeader>
-					<CardContent className="p-4 md:p-5 pt-0">
-						{upcomingBookings.length === 0 ? (
-							<div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-white/[0.02] border border-white/5">
-								<div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
-									<Calendar className="w-6 h-6 text-gray-500" />
+					{/* Time Slot Grid */}
+					<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+						<CardContent className="p-4 md:p-5">
+							{selectedDateBookings.length === 0 ?
+								<div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+									<div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-emerald-500/20 flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
+										<Calendar className="w-10 h-10 text-primary" />
+									</div>
+									<h3 className="text-xl font-semibold text-white mb-2">
+										{isPast ? "Nenhum jogo nesse dia" : "Agenda livre!"}
+									</h3>
+									<p className="text-sm text-gray-400 mb-6 max-w-sm">
+										{isPast ?
+											"Não houve reservas nessa data."
+										: isToday ?
+											"Nenhum jogo agendado para hoje. Que tal compartilhar seu link ou criar uma reserva?"
+										:	"Esse dia está disponível para novos jogos."}
+									</p>
+									{!isPast && (
+										<Button
+											onClick={() => setIsNewBookingOpen(true)}
+											className="gap-2 bg-primary text-white hover:bg-primary/90 font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105">
+											<Plus className="w-4 h-4" />
+											Agendar primeiro jogo
+										</Button>
+									)}
 								</div>
-								<p className="text-sm text-gray-400 mb-1">Nenhuma reserva agendada.</p>
-								<p className="text-xs text-gray-500 mb-4">Ainda não há reservas nos próximos dias.</p>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setIsNewBookingOpen(true)}
-									className="border-white/10 text-gray-300 hover:bg-white/5 rounded-xl">
-									<Plus className="w-3 h-3 mr-1" />
-									Nova reserva
-								</Button>
-							</div>
-						) : (
-							<div className="grid gap-2 md:gap-4 md:grid-cols-2">
-								{upcomingBookings.map((booking) => renderBookingCard(booking, true))}
-							</div>
-						)}
-					</CardContent>
-				</Card>
-			</div>
-			)}
+							:	<div className="space-y-2">
+									{timeSlotGrid.map(({ time, booking }) => (
+										<div
+											key={time}
+											className={cn(
+												"relative group transition-all",
+												booking ? "" : "opacity-50 hover:opacity-100",
+											)}>
+											{booking ?
+												<button
+													onClick={() => handleViewDetails(booking)}
+													className="w-full flex items-center gap-4 p-3 md:p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 transition-all text-left group">
+													{/* Time */}
+													<div className="flex-shrink-0 w-16 md:w-20">
+														<p className="text-lg md:text-xl font-semibold text-white">
+															{booking.time}
+														</p>
+														{booking.endTime && (
+															<p className="text-xs text-gray-500">
+																até {format(booking.endTime, "HH:mm")}
+															</p>
+														)}
+													</div>
 
-			{/* Detail Modal */}
+													{/* Status Indicator */}
+													<div
+														className={cn(
+															"w-1.5 h-12 rounded-full flex-shrink-0",
+															booking.paymentStatus === "paid" ?
+																"bg-emerald-500"
+															: booking.paymentStatus === "deposit" ?
+																"bg-amber-500"
+															:	"bg-gray-500",
+														)}
+													/>
+
+													{/* Content */}
+													<div className="flex-1 min-w-0">
+														<div className="flex items-center gap-2 mb-1">
+															<p className="font-medium text-white truncate">
+																{booking.customerName}
+															</p>
+															{booking.startedAt && !booking.completedAt && (
+																<Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px] px-1.5 py-0">
+																	EM JOGO
+																</Badge>
+															)}
+														</div>
+														<div className="flex items-center gap-3 text-sm text-gray-400">
+															<span className="truncate">{booking.field}</span>
+															<span className="text-gray-600">•</span>
+															<span>R$ {booking.totalAmount.toFixed(0)}</span>
+														</div>
+													</div>
+
+													{/* Payment Badge */}
+													<div className="flex-shrink-0 hidden md:block">
+														<Badge
+															variant="outline"
+															className={cn(
+																"text-xs font-medium border-0",
+																booking.paymentStatus === "paid" ?
+																	"bg-emerald-500/10 text-emerald-400"
+																: booking.paymentStatus === "deposit" ?
+																	"bg-amber-500/10 text-amber-400"
+																:	"bg-gray-500/10 text-gray-400",
+															)}>
+															{booking.paymentStatus === "paid" ?
+																"Pago"
+															: booking.paymentStatus === "deposit" ?
+																`Sinal ${booking.depositPercent || 0}%`
+															:	"Pendente"}
+														</Badge>
+													</div>
+
+													{/* Arrow */}
+													<ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors flex-shrink-0" />
+												</button>
+											:	<button
+													onClick={() => setIsNewBookingOpen(true)}
+													className="w-full flex items-center gap-4 p-3 rounded-xl border border-dashed border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all text-left group">
+													<div className="flex-shrink-0 w-16 md:w-20">
+														<p className="text-base font-medium text-gray-500 group-hover:text-gray-400">
+															{time}
+														</p>
+													</div>
+													<div className="w-1.5 h-8 rounded-full bg-white/5 flex-shrink-0" />
+													<div className="flex-1 min-w-0">
+														<p className="text-sm text-gray-600 group-hover:text-gray-400 transition-colors">
+															Horário disponível
+														</p>
+													</div>
+													<Plus className="w-4 h-4 text-gray-600 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
+												</button>
+											}
+										</div>
+									))}
+								</div>
+							}
+						</CardContent>
+					</Card>
+				</div>
+			}
+
+			{/* Detail Sheet (Drawer) */}
 			{selectedBooking && (
-				<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-					<DialogContent className="w-[95vw] sm:max-w-[520px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl">
-						{/* Header Minimalista */}
-						<DialogHeader className="px-6 pt-8 pb-6">
-							<div className="space-y-1">
-								<DialogTitle className="text-3xl font-light text-white tracking-tight">
-									{selectedBooking.time}
-									{selectedBooking.endTime && selectedBooking.startTime && (() => {
-										const duration = Math.round((selectedBooking.endTime.getTime() - selectedBooking.startTime.getTime()) / (1000 * 60));
-										if (duration > 60) {
-											const endTimeStr = format(selectedBooking.endTime, "HH:mm");
-											return <span className="text-2xl text-gray-500 font-light ml-2">{endTimeStr}</span>;
-										}
-										return null;
-									})()}
-								</DialogTitle>
-								<DialogDescription className="text-base text-gray-400 font-light">
-									{selectedBooking.field}
-								</DialogDescription>
+				<Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+					<SheetContent className="w-full sm:max-w-[440px] p-0 overflow-hidden bg-gray-900/98 backdrop-blur-xl border-l border-white/10">
+						{/* Header */}
+						<SheetHeader className="px-6 pt-6 pb-4 border-b border-white/5">
+							<div className="flex items-start justify-between">
+								<div className="space-y-1">
+									<SheetTitle className="text-2xl font-semibold text-white tracking-tight flex items-center gap-2">
+										{selectedBooking.time}
+										{selectedBooking.endTime && (
+											<span className="text-lg text-gray-500 font-normal">
+												→ {format(selectedBooking.endTime, "HH:mm")}
+											</span>
+										)}
+									</SheetTitle>
+									<SheetDescription className="text-sm text-gray-400">
+										{selectedBooking.field}
+									</SheetDescription>
+								</div>
+								<Badge
+									className={cn(
+										"text-xs font-medium border-0",
+										selectedBooking.paymentStatus === "paid" ?
+											"bg-emerald-500/20 text-emerald-400"
+										: selectedBooking.paymentStatus === "deposit" ?
+											"bg-amber-500/20 text-amber-400"
+										:	"bg-gray-500/20 text-gray-400",
+									)}>
+									{selectedBooking.paymentStatus === "paid" ?
+										"Pago"
+									: selectedBooking.paymentStatus === "deposit" ?
+										`Sinal ${selectedBooking.depositPercent || 0}%`
+									:	"Pendente"}
+								</Badge>
 							</div>
-						</DialogHeader>
+						</SheetHeader>
 
-						<div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 space-y-8">
-							{/* Cliente - Minimalista */}
-							<div className="space-y-3">
-								<p className="text-sm text-gray-500 font-light uppercase tracking-wider">
-									Cliente
-								</p>
-								<p className="text-xl font-medium text-white leading-tight">
-									{selectedBooking.customerName}
-								</p>
+						<div className="px-6 py-5 overflow-y-auto flex-1 min-h-0 space-y-6">
+							{/* Cliente */}
+							<div className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-xl border border-white/5">
+								<div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+									<Users className="w-5 h-5 text-primary" />
+								</div>
+								<div className="flex-1 min-w-0">
+									<p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">
+										Cliente
+									</p>
+									<p className="text-base font-medium text-white truncate">
+										{selectedBooking.customerName}
+									</p>
+								</div>
 							</div>
 
 							{/* Telefone - Editável */}
-							<div className="space-y-3">
-								<Label htmlFor="editPhone" className="text-sm text-gray-500 font-light uppercase tracking-wider">
+							<div className="space-y-2">
+								<Label
+									htmlFor="editPhone"
+									className="text-xs text-gray-500 uppercase tracking-wider">
 									Telefone
 								</Label>
-								<Input
-									id="editPhone"
-									placeholder="(11) 99999-9999"
-									autoComplete="tel"
-									inputMode="numeric"
-									maxLength={15}
-									required
-									value={editedPhone}
-									onChange={(e) => {
-										const formatted = formatPhoneInput(e.target.value);
-										setEditedPhone(formatted);
-									}}
-									className="bg-gray-800/50 border-gray-700/50 text-white text-base font-light h-12 focus:border-primary/50 focus:bg-gray-800 transition-colors"
-								/>
+								<div className="flex gap-2">
+									<Input
+										id="editPhone"
+										placeholder="(11) 99999-9999"
+										autoComplete="tel"
+										inputMode="numeric"
+										maxLength={15}
+										required
+										value={editedPhone}
+										onChange={(e) => {
+											const formatted = formatPhoneInput(e.target.value);
+											setEditedPhone(formatted);
+										}}
+										className="flex-1 bg-white/5 border-white/10 text-white text-sm h-10 focus:border-primary/50 focus:bg-white/10 transition-colors rounded-xl"
+									/>
+									<Button
+										variant="outline"
+										size="sm"
+										className="h-10 px-4 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl"
+										disabled={savingPhone}
+										onClick={handleSavePhone}>
+										{savingPhone ?
+											<Loader2 className="h-3.5 w-3.5 animate-spin" />
+										:	"Salvar"}
+									</Button>
+								</div>
 							</div>
 
-							{/* Valores - Grid Minimalista */}
-							<div className="grid grid-cols-3 gap-6 py-6 border-y border-white/5">
-								<div>
-									<p className="text-xs text-gray-500 font-light mb-2">Total</p>
-									<p className="text-lg font-medium text-white">
+							{/* Valores */}
+							<div className="grid grid-cols-3 gap-3">
+								<div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 text-center">
+									<p className="text-xs text-gray-500 mb-1">Total</p>
+									<p className="text-lg font-semibold text-white">
 										R$ {selectedBooking.totalAmount.toFixed(0)}
 									</p>
 								</div>
-								<div>
-									<p className="text-xs text-gray-500 font-light mb-2">Pago</p>
-									<p className="text-lg font-medium text-gray-400">
+								<div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 text-center">
+									<p className="text-xs text-gray-500 mb-1">Pago</p>
+									<p className="text-lg font-semibold text-gray-400">
 										R$ {selectedBooking.paidAmount.toFixed(0)}
 									</p>
 								</div>
-								<div className={cn(
-									selectedBooking.remainingAmount > 0 && "bg-amber-500/10 rounded-lg p-3 -m-3"
-								)}>
-									<p className={cn(
-										"text-xs font-light mb-2",
-										selectedBooking.remainingAmount > 0 ? "text-amber-400/90" : "text-gray-500"
+								<div
+									className={cn(
+										"p-3 rounded-xl border text-center",
+										selectedBooking.remainingAmount > 0 ?
+											"bg-amber-500/10 border-amber-500/20"
+										:	"bg-white/[0.02] border-white/5",
 									)}>
+									<p
+										className={cn(
+											"text-xs mb-1",
+											selectedBooking.remainingAmount > 0 ?
+												"text-amber-400/80"
+											:	"text-gray-500",
+										)}>
 										Pendente
 									</p>
-									<p className={cn(
-										"text-lg font-medium",
-										selectedBooking.remainingAmount > 0 ? "text-amber-400" : "text-gray-500"
-									)}>
+									<p
+										className={cn(
+											"text-lg font-semibold",
+											selectedBooking.remainingAmount > 0 ?
+												"text-amber-400"
+											:	"text-gray-500",
+										)}>
 										R$ {selectedBooking.remainingAmount.toFixed(0)}
 									</p>
 								</div>
 							</div>
 
-							{/* Status Pagamento - Sutil */}
-							<div className="flex items-center gap-3">
-								<div className={cn(
-									"w-2 h-2 rounded-full",
-									selectedBooking.paymentStatus === "paid" ? "bg-emerald-500/60" :
-									selectedBooking.paymentStatus === "deposit" ? "bg-amber-500/60" :
-									"bg-gray-500/40"
-								)} />
-								<p className="text-sm text-gray-400 font-light">
-									{selectedBooking.paymentStatus === "paid" ? "Pagamento confirmado" :
-									 selectedBooking.paymentStatus === "deposit" ? `Sinal ${selectedBooking.depositPercent ? `(${selectedBooking.depositPercent}%)` : ""}` :
-									 "Aguardando pagamento"}
-								</p>
-							</div>
+							{/* Controle de Jogo */}
+							{!selectedBooking.completedAt && !selectedBooking.cancelledAt && (
+								<div className="p-4 bg-white/[0.02] rounded-xl border border-white/5 space-y-4">
+									{selectedBooking.startedAt ?
+										<>
+											<div className="flex items-center justify-between">
+												<span className="text-sm text-gray-400">
+													Tempo decorrido
+												</span>
+												<p className="text-2xl font-semibold text-white font-mono tracking-tight">
+													{elapsedTime}
+												</p>
+											</div>
+											<Button
+												size="lg"
+												className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl"
+												onClick={handleCompleteGame}>
+												<CheckCircle className="w-4 h-4 mr-2" />
+												Finalizar Jogo
+											</Button>
+										</>
+									:	<Button
+											size="lg"
+											className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl shadow-lg shadow-primary/30"
+											onClick={handleStartGame}>
+											<Play className="w-4 h-4 mr-2" />
+											Iniciar Jogo
+										</Button>
+									}
+								</div>
+							)}
 
-							{/* Histórico - Apenas se houver eventos */}
+							{/* Histórico */}
 							{bookingEvents.length > 0 && (
-								<div className="space-y-4 pt-4 border-t border-white/5">
-									<p className="text-sm text-gray-500 font-light uppercase tracking-wider">
+								<div className="space-y-3">
+									<p className="text-xs text-gray-500 uppercase tracking-wider">
 										Histórico
 									</p>
-									<div className="space-y-3">
+									<div className="space-y-2">
 										{bookingEvents.map((event) => (
 											<div
 												key={event.id}
-												className="flex items-start gap-3 text-sm">
-												<div className="w-1 h-1 rounded-full bg-gray-600 mt-2 flex-shrink-0" />
+												className="flex items-start gap-3 p-3 bg-white/[0.02] rounded-lg text-sm">
+												<div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-1.5 flex-shrink-0" />
 												<div className="flex-1 min-w-0">
-													<p className="text-white/80 font-light">
+													<p className="text-white/80">
 														{summarizeEvent(event)}
 													</p>
-													<p className="text-xs text-gray-500 font-light mt-0.5">
-														{format(new Date(event.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+													<p className="text-xs text-gray-500 mt-0.5">
+														{format(
+															new Date(event.created_at),
+															"dd/MM 'às' HH:mm",
+															{ locale: ptBR },
+														)}
 													</p>
 												</div>
 											</div>
@@ -926,64 +1216,23 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							)}
 						</div>
 
-						{/* Controle de Jogo - Minimalista */}
-						{!selectedBooking.completedAt && !selectedBooking.cancelledAt && (
-							<div className="px-6 py-4 border-t border-white/5">
-								{selectedBooking.startedAt ? (
-									<div className="space-y-4">
-										<div className="flex items-center justify-between">
-											<span className="text-sm text-gray-500 font-light">Tempo decorrido</span>
-											<p className="text-2xl font-light text-white font-mono tracking-tight">
-												{elapsedTime}
-											</p>
-										</div>
-										<Button
-											size="lg"
-											className="w-full h-12 bg-emerald-600/90 hover:bg-emerald-600 text-white font-light text-base"
-											onClick={handleCompleteGame}>
-											Finalizar
-										</Button>
-									</div>
-								) : (
-									<Button
-										size="lg"
-										className="w-full h-12 bg-primary/90 hover:bg-primary text-white font-light text-base"
-										onClick={handleStartGame}>
-										Iniciar Jogo
-									</Button>
-								)}
-							</div>
-						)}
-
-						{/* Footer Minimalista */}
-						<DialogFooter className="flex items-center justify-between gap-3 flex-shrink-0 border-t border-white/5 px-6 py-4">
-							<div className="flex items-center gap-2">
+						{/* Footer Actions */}
+						<SheetFooter className="flex-col gap-3 border-t border-white/5 px-6 py-4">
+							<div className="flex gap-2 w-full">
 								<Button
-									variant="ghost"
-									size="sm"
-									className="h-9 px-3 text-gray-400 hover:text-white hover:bg-white/5 font-light text-sm"
-									disabled={savingPhone}
-									onClick={handleSavePhone}>
-									{savingPhone ? (
-										<Loader2 className="h-3.5 w-3.5 animate-spin" />
-									) : (
-										"Salvar"
-									)}
-								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									className="h-9 px-3 text-emerald-400/80 hover:text-emerald-400 hover:bg-emerald-500/10 font-light text-sm"
+									variant="outline"
+									className="flex-1 h-10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 rounded-xl"
 									disabled={!selectedBooking.phone}
 									onClick={handleWhatsApp}>
+									<MessageCircle className="w-4 h-4 mr-2" />
 									WhatsApp
 								</Button>
 								{selectedBooking.paymentStatus !== "paid" &&
 									selectedBooking.remainingAmount > 0 && (
 										<Button
-											size="sm"
-											className="h-9 px-4 bg-primary/80 hover:bg-primary text-white font-light text-sm"
+											className="flex-1 h-10 bg-primary hover:bg-primary/90 text-white rounded-xl"
 											onClick={handleConfirmPayment}>
+											<CreditCard className="w-4 h-4 mr-2" />
 											Confirmar Pagamento
 										</Button>
 									)}
@@ -991,13 +1240,13 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<Button
 								variant="ghost"
 								size="sm"
-								className="h-9 px-3 text-gray-500 hover:text-red-400 hover:bg-red-500/10 font-light text-sm"
+								className="w-full h-9 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl"
 								onClick={handleCancelBooking}>
-								Cancelar
+								Cancelar Reserva
 							</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
+						</SheetFooter>
+					</SheetContent>
+				</Sheet>
 			)}
 		</div>
 	);

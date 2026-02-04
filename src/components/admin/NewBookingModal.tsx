@@ -38,6 +38,7 @@ interface NewBookingModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSuccess?: () => void; // Callback para atualizar a lista ao fechar
+	initialDate?: Date; // Data inicial para pré-preencher o formulário
 }
 
 interface Court {
@@ -57,12 +58,21 @@ export function NewBookingModal({
 	open,
 	onOpenChange,
 	onSuccess,
+	initialDate,
 }: NewBookingModalProps) {
 	const { toast } = useToast();
 	const { tenantId } = useAuth();
 	const { refreshData } = useBookings();
 	const [loading, setLoading] = useState(false);
 	const [courts, setCourts] = useState<Court[]>([]);
+
+	// Formata data para yyyy-MM-dd
+	const formatDateForInput = (date: Date) => {
+		const y = date.getFullYear();
+		const m = String(date.getMonth() + 1).padStart(2, "0");
+		const d = String(date.getDate()).padStart(2, "0");
+		return `${y}-${m}-${d}`;
+	};
 
 	const fetchCourts = useCallback(async () => {
 		// Resolve tenant_id (evita listar quadras de outras arenas)
@@ -104,7 +114,7 @@ export function NewBookingModal({
 	}, [open, fetchCourts]);
 
 	const [formData, setFormData] = useState({
-		date: "",
+		date: initialDate ? formatDateForInput(initialDate) : "",
 		time: "",
 		fieldId: "", // ID da quadra (UUID)
 		customerName: "", // Antigo 'captain'
@@ -113,6 +123,16 @@ export function NewBookingModal({
 		depositPercent: 30,
 		duration: 60 as 60 | 90, // Duração em minutos: 60 (1h) ou 90 (1h30)
 	});
+
+	// Atualiza a data quando initialDate mudar e o modal abrir
+	useEffect(() => {
+		if (open && initialDate) {
+			setFormData((prev) => ({
+				...prev,
+				date: formatDateForInput(initialDate),
+			}));
+		}
+	}, [open, initialDate]);
 
 	const isBookingOverlapError = (err: unknown) => {
 		const code = getStringProp(err, "code");
@@ -165,30 +185,32 @@ export function NewBookingModal({
 		try {
 			// 2. Preparar Dados para o Supabase
 			// Cria Date object no timezone local
-			const [year, month, day] = formData.date.split('-').map(Number);
-			const [hour, minute] = formData.time.split(':').map(Number);
-			
+			const [year, month, day] = formData.date.split("-").map(Number);
+			const [hour, minute] = formData.time.split(":").map(Number);
+
 			const startDateObj = new Date(year, month - 1, day, hour, minute, 0);
-			const endDateObj = new Date(startDateObj.getTime() + formData.duration * 60 * 1000);
-			
+			const endDateObj = new Date(
+				startDateObj.getTime() + formData.duration * 60 * 1000,
+			);
+
 			// Obtém offset do timezone local
 			const timezoneOffset = startDateObj.getTimezoneOffset();
 			const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
 			const offsetMinutes = Math.abs(timezoneOffset) % 60;
-			const offsetSign = timezoneOffset <= 0 ? '+' : '-';
-			const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
-			
+			const offsetSign = timezoneOffset <= 0 ? "+" : "-";
+			const timezoneString = `${offsetSign}${String(offsetHours).padStart(2, "0")}:${String(offsetMinutes).padStart(2, "0")}`;
+
 			// Formata timestamp com timezone local explícito
 			const formatWithTimezone = (date: Date) => {
 				const y = date.getFullYear();
-				const m = String(date.getMonth() + 1).padStart(2, '0');
-				const d = String(date.getDate()).padStart(2, '0');
-				const h = String(date.getHours()).padStart(2, '0');
-				const min = String(date.getMinutes()).padStart(2, '0');
-				const s = String(date.getSeconds()).padStart(2, '0');
+				const m = String(date.getMonth() + 1).padStart(2, "0");
+				const d = String(date.getDate()).padStart(2, "0");
+				const h = String(date.getHours()).padStart(2, "0");
+				const min = String(date.getMinutes()).padStart(2, "0");
+				const s = String(date.getSeconds()).padStart(2, "0");
 				return `${y}-${m}-${d} ${h}:${min}:${s}${timezoneString}`;
 			};
-			
+
 			const startDateTime = formatWithTimezone(startDateObj);
 			const endDateTime = formatWithTimezone(endDateObj);
 
@@ -217,14 +239,22 @@ export function NewBookingModal({
 				.select("id, start_time, end_time")
 				.eq("tenant_id", profile.tenant_id)
 				.eq("court_id", formData.fieldId)
-				.in("status", ["pending", "paid", "pending_payment", "confirmed", "in_progress"])
+				.in("status", [
+					"pending",
+					"paid",
+					"pending_payment",
+					"confirmed",
+					"in_progress",
+				])
 				.is("cancelled_at", null)
 				.lt("start_time", endDateTime) // Reserva começa antes do nosso fim
 				.gt("end_time", startDateTime) // Reserva termina depois do nosso início
 				.maybeSingle();
 
 			if (conflictCheck) {
-				throw new Error("Este horário já está reservado ou conflita com outra reserva. Escolha outro horário.");
+				throw new Error(
+					"Este horário já está reservado ou conflita com outra reserva. Escolha outro horário.",
+				);
 			}
 
 			const depositPercent = Number(formData.depositPercent);
@@ -241,10 +271,9 @@ export function NewBookingModal({
 			// 3. INSERT na tabela 'bookings'
 			const isPaidFull = formData.paymentStatus === "paid";
 			const isDeposit = formData.paymentStatus === "deposit";
-			const paidAmount = isPaidFull
-				? price
-				: isDeposit
-				? (price * depositPercent) / 100
+			const paidAmount =
+				isPaidFull ? price
+				: isDeposit ? (price * depositPercent) / 100
 				: 0;
 
 			const { error } = await supabase.from("bookings").insert({
@@ -272,11 +301,10 @@ export function NewBookingModal({
 
 			// Diferencial: abre WhatsApp com mensagem pronta para o cliente.
 			const paymentLabel =
-				formData.paymentStatus === "paid"
-					? "Pago"
-					: formData.paymentStatus === "deposit"
-					? `Sinal de ${Number(formData.depositPercent) || 0}%`
-					: "Pagar no local";
+				formData.paymentStatus === "paid" ? "Pago"
+				: formData.paymentStatus === "deposit" ?
+					`Sinal de ${Number(formData.depositPercent) || 0}%`
+				:	"Pagar no local";
 			// Calcula horário de término
 			const [startHour, startMin] = formData.time.split(":").map(Number);
 			const endDate = new Date(formData.date + "T" + formData.time);
@@ -296,7 +324,7 @@ Ola *${formData.customerName}*! Sua reserva foi registrada com sucesso.
 Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			window.open(
 				`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(msg)}`,
-				"_blank"
+				"_blank",
 			);
 
 			// 4. Limpar e Fechar
@@ -355,7 +383,9 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 				<div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 space-y-5">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="date" className={labelClass}>Data</Label>
+							<Label htmlFor="date" className={labelClass}>
+								Data
+							</Label>
 							<Input
 								id="date"
 								type="date"
@@ -368,18 +398,27 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="field" className={labelClass}>Quadra</Label>
+							<Label htmlFor="field" className={labelClass}>
+								Quadra
+							</Label>
 							<Select
 								value={formData.fieldId}
 								onValueChange={(value) =>
 									setFormData({ ...formData, fieldId: value })
 								}>
-								<SelectTrigger className={inputClass + " border-gray-700/50 data-[placeholder]:text-gray-500"}>
+								<SelectTrigger
+									className={
+										inputClass +
+										" border-gray-700/50 data-[placeholder]:text-gray-500"
+									}>
 									<SelectValue placeholder="Selecione..." />
 								</SelectTrigger>
 								<SelectContent className="bg-gray-900 border-gray-700">
 									{courts.map((court) => (
-										<SelectItem key={court.id} value={court.id} className="text-white focus:bg-white/10 focus:text-white">
+										<SelectItem
+											key={court.id}
+											value={court.id}
+											className="text-white focus:bg-white/10 focus:text-white">
 											{court.name} (R$ {court.base_price})
 										</SelectItem>
 									))}
@@ -395,19 +434,28 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="time" className={labelClass}>Horário de Início</Label>
+							<Label htmlFor="time" className={labelClass}>
+								Horário de Início
+							</Label>
 							<Select
 								value={formData.time}
 								onValueChange={(value) =>
 									setFormData({ ...formData, time: value })
 								}
 								disabled={!formData.date}>
-								<SelectTrigger className={inputClass + " border-gray-700/50 data-[placeholder]:text-gray-500"}>
+								<SelectTrigger
+									className={
+										inputClass +
+										" border-gray-700/50 data-[placeholder]:text-gray-500"
+									}>
 									<SelectValue placeholder="Escolha a hora..." />
 								</SelectTrigger>
 								<SelectContent className="max-h-[200px] bg-gray-900 border-gray-700">
 									{HOURS.map((time) => (
-										<SelectItem key={time} value={time} className="text-white focus:bg-white/10 focus:text-white">
+										<SelectItem
+											key={time}
+											value={time}
+											className="text-white focus:bg-white/10 focus:text-white">
 											{time}
 										</SelectItem>
 									))}
@@ -420,14 +468,25 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<Select
 								value={formData.duration.toString()}
 								onValueChange={(value) =>
-									setFormData({ ...formData, duration: Number(value) as 60 | 90 })
+									setFormData({
+										...formData,
+										duration: Number(value) as 60 | 90,
+									})
 								}>
 								<SelectTrigger className={inputClass + " border-gray-700/50"}>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent className="bg-gray-900 border-gray-700">
-									<SelectItem value="60" className="text-white focus:bg-white/10 focus:text-white">1 hora</SelectItem>
-									<SelectItem value="90" className="text-white focus:bg-white/10 focus:text-white">1h30</SelectItem>
+									<SelectItem
+										value="60"
+										className="text-white focus:bg-white/10 focus:text-white">
+										1 hora
+									</SelectItem>
+									<SelectItem
+										value="90"
+										className="text-white focus:bg-white/10 focus:text-white">
+										1h30
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -437,22 +496,31 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						<div className="text-sm text-gray-400 bg-white/5 border border-white/10 p-3 rounded-xl">
 							<span className="text-gray-500">Preço: </span>
 							<span className="font-medium text-white">
-								R$ {(() => {
-									const selectedCourt = courts.find((c) => c.id === formData.fieldId);
+								R${" "}
+								{(() => {
+									const selectedCourt = courts.find(
+										(c) => c.id === formData.fieldId,
+									);
 									const basePrice = selectedCourt?.base_price || 0;
 									const halfHourPrice = selectedCourt?.half_hour_price || 0;
-									const finalPrice = formData.duration === 90 
-										? basePrice + halfHourPrice 
-										: basePrice;
+									const finalPrice =
+										formData.duration === 90 ?
+											basePrice + halfHourPrice
+										:	basePrice;
 									return finalPrice.toFixed(2);
 								})()}
 							</span>
-							<span className="text-gray-500"> ({formData.duration === 90 ? "1h30" : "1h"})</span>
+							<span className="text-gray-500">
+								{" "}
+								({formData.duration === 90 ? "1h30" : "1h"})
+							</span>
 						</div>
 					)}
 
 					<div className="space-y-2">
-						<Label htmlFor="customerName" className={labelClass}>Nome do Cliente / Time</Label>
+						<Label htmlFor="customerName" className={labelClass}>
+							Nome do Cliente / Time
+						</Label>
 						<Input
 							id="customerName"
 							placeholder="Ex: João da Silva / Time A"
@@ -466,7 +534,9 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="phone" className={labelClass}>Telefone (WhatsApp) *</Label>
+							<Label htmlFor="phone" className={labelClass}>
+								Telefone (WhatsApp) *
+							</Label>
 							<Input
 								id="phone"
 								placeholder="(11) 99999-9999"
@@ -484,7 +554,9 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="payment" className={labelClass}>Status Pagamento</Label>
+							<Label htmlFor="payment" className={labelClass}>
+								Status Pagamento
+							</Label>
 							<Select
 								value={formData.paymentStatus}
 								onValueChange={(value: "paid" | "pending" | "deposit") =>
@@ -494,9 +566,21 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent className="bg-gray-900 border-gray-700">
-									<SelectItem value="pending" className="text-white focus:bg-white/10 focus:text-white">Pagar no Local</SelectItem>
-									<SelectItem value="deposit" className="text-white focus:bg-white/10 focus:text-white">Sinal (%)</SelectItem>
-									<SelectItem value="paid" className="text-white focus:bg-white/10 focus:text-white">Pago</SelectItem>
+									<SelectItem
+										value="pending"
+										className="text-white focus:bg-white/10 focus:text-white">
+										Pagar no Local
+									</SelectItem>
+									<SelectItem
+										value="deposit"
+										className="text-white focus:bg-white/10 focus:text-white">
+										Sinal (%)
+									</SelectItem>
+									<SelectItem
+										value="paid"
+										className="text-white focus:bg-white/10 focus:text-white">
+										Pago
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -504,7 +588,9 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 
 					{formData.paymentStatus === "deposit" && (
 						<div className="space-y-2">
-							<Label htmlFor="depositPercent" className={labelClass}>Percentual do sinal (%)</Label>
+							<Label htmlFor="depositPercent" className={labelClass}>
+								Percentual do sinal (%)
+							</Label>
 							<Input
 								id="depositPercent"
 								type="number"
@@ -519,9 +605,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								}
 								className={inputClass}
 							/>
-							<p className="text-xs text-gray-500">
-								Ex: 30 para sinal de 30%.
-							</p>
+							<p className="text-xs text-gray-500">Ex: 30 para sinal de 30%.</p>
 						</div>
 					)}
 				</div>
@@ -538,11 +622,9 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						onClick={handleSubmit}
 						className="gap-2 rounded-xl h-11 bg-primary text-white hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 disabled:opacity-50"
 						disabled={loading}>
-						{loading ? (
+						{loading ?
 							<Loader2 className="h-4 w-4 animate-spin" />
-						) : (
-							<Plus className="h-4 w-4" />
-						)}
+						:	<Plus className="h-4 w-4" />}
 						Confirmar Agendamento
 					</Button>
 				</DialogFooter>

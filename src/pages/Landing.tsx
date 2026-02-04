@@ -1,23 +1,19 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-	TrendingUp,
 	Zap,
-	Play,
 	Menu,
 	X,
 	ShieldCheck,
-	XCircle,
-	CheckCircle2,
-	AlertTriangle,
-	Lock,
 	Check,
 	ArrowRight,
-	Smartphone,
-	Wallet,
-	HelpCircle,
-	MessageCircle,
-	Users,
+	MessageSquare,
+	BookOpen,
+	CreditCard,
+	Clock,
+	Calendar,
+	TrendingUp,
+	Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -92,6 +88,243 @@ function useInView(
 	return [ref, isInView];
 }
 
+// --- HOOK: ROTATING TEXT (Apple-style) ---
+function useRotatingText(words: string[], interval: number = 3000) {
+	const [currentIndex, setCurrentIndex] = useState(0);
+	const [isAnimating, setIsAnimating] = useState(false);
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setIsAnimating(true);
+			setTimeout(() => {
+				setCurrentIndex((prev) => (prev + 1) % words.length);
+				setIsAnimating(false);
+			}, 300);
+		}, interval);
+		return () => clearInterval(timer);
+	}, [words.length, interval]);
+
+	return { word: words[currentIndex], isAnimating };
+}
+
+// --- HOOK: 3D TILT EFFECT ---
+function useTilt(intensity: number = 15) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [style, setStyle] = useState({
+		transform: "perspective(1000px) rotateX(0deg) rotateY(0deg)",
+	});
+
+	const handleMouseMove = useCallback(
+		(e: MouseEvent) => {
+			if (!ref.current) return;
+			const rect = ref.current.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const y = e.clientY - rect.top;
+			const centerX = rect.width / 2;
+			const centerY = rect.height / 2;
+			const rotateX = ((y - centerY) / centerY) * -intensity;
+			const rotateY = ((x - centerX) / centerX) * intensity;
+			setStyle({
+				transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`,
+			});
+		},
+		[intensity],
+	);
+
+	const handleMouseLeave = useCallback(() => {
+		setStyle({
+			transform: "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)",
+		});
+	}, []);
+
+	useEffect(() => {
+		const element = ref.current;
+		if (!element) return;
+		element.addEventListener("mousemove", handleMouseMove);
+		element.addEventListener("mouseleave", handleMouseLeave);
+		return () => {
+			element.removeEventListener("mousemove", handleMouseMove);
+			element.removeEventListener("mouseleave", handleMouseLeave);
+		};
+	}, [handleMouseMove, handleMouseLeave]);
+
+	return { ref, style };
+}
+
+// --- COMPONENTE: TILT CARD ---
+function TiltCard({
+	children,
+	className = "",
+}: {
+	children: React.ReactNode;
+	className?: string;
+}) {
+	const { ref, style } = useTilt(8);
+	return (
+		<div
+			ref={ref}
+			style={{ ...style, transition: "transform 0.15s ease-out" }}
+			className={className}>
+			{children}
+		</div>
+	);
+}
+
+// --- COMPONENTE: SHIMMER BUTTON ---
+function ShimmerButton({
+	children,
+	onClick,
+	className = "",
+}: {
+	children: React.ReactNode;
+	onClick: () => void;
+	className?: string;
+}) {
+	return (
+		<button
+			onClick={onClick}
+			className={`relative overflow-hidden group ${className}`}>
+			<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+			{children}
+		</button>
+	);
+}
+
+// --- COMPONENTE: SCROLL REVEAL ---
+function ScrollReveal({
+	children,
+	delay = 0,
+	className = "",
+}: {
+	children: React.ReactNode;
+	delay?: number;
+	className?: string;
+}) {
+	const [ref, isInView] = useInView();
+	return (
+		<div
+			ref={ref}
+			className={`transition-all duration-1000 ease-out ${className}`}
+			style={{
+				transform: isInView ? "translateY(0)" : "translateY(40px)",
+				opacity: isInView ? 1 : 0,
+				transitionDelay: `${delay}ms`,
+			}}>
+			{children}
+		</div>
+	);
+}
+
+// --- HOOK: TYPEWRITER EFFECT ---
+function useTypewriter(
+	words: string[],
+	typingSpeed = 100,
+	deletingSpeed = 50,
+	pauseDuration = 2000,
+) {
+	const [currentWordIndex, setCurrentWordIndex] = useState(0);
+	const [currentText, setCurrentText] = useState("");
+	const [isDeleting, setIsDeleting] = useState(false);
+	const [isPaused, setIsPaused] = useState(false);
+
+	useEffect(() => {
+		const currentWord = words[currentWordIndex];
+
+		if (isPaused) {
+			const pauseTimer = setTimeout(() => {
+				setIsPaused(false);
+				setIsDeleting(true);
+			}, pauseDuration);
+			return () => clearTimeout(pauseTimer);
+		}
+
+		if (isDeleting) {
+			if (currentText === "") {
+				setIsDeleting(false);
+				setCurrentWordIndex((prev) => (prev + 1) % words.length);
+			} else {
+				const deleteTimer = setTimeout(() => {
+					setCurrentText(currentText.slice(0, -1));
+				}, deletingSpeed);
+				return () => clearTimeout(deleteTimer);
+			}
+		} else {
+			if (currentText === currentWord) {
+				setIsPaused(true);
+			} else {
+				const typeTimer = setTimeout(() => {
+					setCurrentText(currentWord.slice(0, currentText.length + 1));
+				}, typingSpeed);
+				return () => clearTimeout(typeTimer);
+			}
+		}
+	}, [
+		currentText,
+		isDeleting,
+		isPaused,
+		currentWordIndex,
+		words,
+		typingSpeed,
+		deletingSpeed,
+		pauseDuration,
+	]);
+
+	return { text: currentText, isTyping: !isDeleting && !isPaused };
+}
+
+// --- COMPONENTE: HERO COM EFEITO TYPEWRITER ---
+function RotatingHeroText() {
+	const words = ["confusão.", "calote.", "bagunça.", "estresse."];
+	const { text } = useTypewriter(words, 80, 40, 1800);
+
+	return (
+		<h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.0] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
+			Sua arena cheia.
+			<br />
+			<span className="text-emerald-400">
+				Sem{" "}
+				<span className="inline-block min-w-[200px] md:min-w-[320px] lg:min-w-[400px] text-left">
+					{text}
+					<span className="inline-block w-[3px] md:w-[4px] h-[0.9em] bg-emerald-400 ml-1 animate-blink align-middle" />
+				</span>
+			</span>
+		</h1>
+	);
+}
+
+// --- COMPONENTE: SOCIAL PROOF NUMBERS ---
+function SocialProofBar() {
+	const [ref, isInView] = useInView();
+	const reservas = useCountUp(2847, 2000, isInView);
+	const arenas = useCountUp(47, 1500, isInView);
+	const satisfacao = useCountUp(98, 1800, isInView);
+
+	return (
+		<div
+			ref={ref}
+			className="flex flex-wrap items-center justify-center gap-8 md:gap-12 py-8 px-4">
+			<div className="text-center">
+				<p className="text-3xl md:text-4xl font-black text-white">
+					{reservas.toLocaleString("pt-BR")}+
+				</p>
+				<p className="text-sm text-gray-500">reservas feitas</p>
+			</div>
+			<div className="w-px h-10 bg-white/10 hidden md:block" />
+			<div className="text-center">
+				<p className="text-3xl md:text-4xl font-black text-white">{arenas}+</p>
+				<p className="text-sm text-gray-500">arenas ativas</p>
+			</div>
+			<div className="w-px h-10 bg-white/10 hidden md:block" />
+			<div className="text-center">
+				<p className="text-3xl md:text-4xl font-black text-emerald-400">
+					{satisfacao}%
+				</p>
+				<p className="text-sm text-gray-500">satisfação</p>
+			</div>
+		</div>
+	);
+}
+
 // --- COMPONENTE: NÚMERO ANIMADO ---
 function AnimatedValue({
 	value,
@@ -126,37 +359,27 @@ function AnimatedValue({
 // --- DEPOIMENTOS REMOVIDOS ---
 // Removidos para manter autenticidade. Adicione depoimentos reais conforme receber feedback dos clientes.
 
-// --- FAQ: linguagem simples (nível 14 anos) ---
+// --- FAQ: linguagem simples ---
 const faqList = [
 	{
-		question: "Só tenho uma quadra. Funciona?",
+		question: "Quanto tempo leva pra configurar?",
 		answer:
-			"Sim. Uma ou várias. Você coloca os horários e preços. O resto o sistema faz. Não precisa de nada grande.",
+			"Menos de 15 minutos. Você cadastra as quadras, os preços, e seu link já está pronto pra mandar pro cliente.",
 	},
 	{
-		question: "Preciso instalar algo no computador?",
+		question: "Preciso instalar algo?",
 		answer:
-			"Não. Tudo na internet: celular, tablet ou PC. Você entra de qualquer lugar. Nada pra instalar.",
+			"Não. Tudo funciona no navegador — celular, tablet ou computador. Nada pra baixar.",
 	},
 	{
-		question: "Quanto demora pra ficar pronto?",
+		question: "Como o cliente paga?",
 		answer:
-			"Poucos minutos. Você cadastra as quadras e os preços. Seu link já pode ir pro cliente. Mais rápido que montar grupo no WhatsApp.",
+			"Você cobra como sempre fez: no balcão. O ArenaSys só organiza a agenda.",
 	},
 	{
-		question: "O cliente paga como?",
+		question: "Posso cancelar quando quiser?",
 		answer:
-			"No balcão, como você já faz. O cliente reserva pelo link. Quando chegar, você cobra. O sistema só organiza a agenda.",
-	},
-	{
-		question: "Posso cancelar? Tem multa?",
-		answer:
-			"Pode. Sem multa. A gente acha que você vai gostar e querer ficar.",
-	},
-	{
-		question: "Se precisar de ajuda, com quem falo?",
-		answer:
-			"No WhatsApp, com a gente. Não é robô. É gente que entende de quadra.",
+			"Pode. Sem multa, sem burocracia. A gente confia que você vai gostar.",
 	},
 ];
 
@@ -224,109 +447,406 @@ function MacBookMockup({ children }: { children: React.ReactNode }) {
 	);
 }
 
-// --- TELAS FAKE ---
+// --- TELAS FAKE — ULTRA REALISTAS ---
+
+// Tela do iPhone: App de Reservas do Cliente
 function CalendarAppScreen() {
+	const [selectedTime, setSelectedTime] = useState<string | null>("19:00");
+
 	return (
-		<div className="h-full bg-[#050507] p-3 font-sans flex flex-col">
-			<div className="flex justify-between items-center mb-3">
-				<div>
-					<h3 className="text-white font-bold text-xs">ArenaSys Central</h3>
-					<p className="text-emerald-500 text-[9px] font-medium flex items-center gap-1">
-						<span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />{" "}
-						Online
-					</p>
-				</div>
-				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-[10px]">
-					⚽
+		<div className="h-full bg-[#0a0a0a] font-sans flex flex-col overflow-hidden">
+			{/* Header com Arena Info */}
+			<div className="relative px-4 pt-2 pb-3 border-b border-white/5">
+				<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent" />
+				<div className="relative flex items-center gap-3">
+					<div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+						<span className="text-lg">⚽</span>
+					</div>
+					<div className="flex-1">
+						<h3 className="text-white font-bold text-[11px] leading-tight">
+							Arena Gol de Placa
+						</h3>
+						<div className="flex items-center gap-1.5 mt-0.5">
+							<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+							<span className="text-emerald-400 text-[8px] font-medium">
+								Aberto agora
+							</span>
+							<span className="text-gray-500 text-[8px]">• 4.9 ⭐</span>
+						</div>
+					</div>
+					<div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+						<span className="text-[10px]">💬</span>
+					</div>
 				</div>
 			</div>
-			<div className="flex gap-1.5 overflow-x-auto pb-2 hide-scrollbar">
-				{[14, 15, 16, 17].map((d, i) => (
-					<div
-						key={d}
-						className={`min-w-[30px] h-[45px] rounded-lg flex flex-col items-center justify-center transition-all ${
-							i === 2 ?
-								"bg-emerald-500 text-black shadow-lg shadow-emerald-500/20"
-							:	"bg-white/5 text-white"
+
+			{/* Seletor de Quadra */}
+			<div className="px-3 py-2 flex gap-2 overflow-x-auto hide-scrollbar">
+				{["Quadra 1", "Quadra 2", "Society"].map((q, i) => (
+					<button
+						key={q}
+						className={`px-3 py-1.5 rounded-full text-[8px] font-bold whitespace-nowrap transition-all ${
+							i === 0 ?
+								"bg-emerald-500 text-black shadow-lg shadow-emerald-500/30"
+							:	"bg-white/5 text-gray-400 border border-white/10"
 						}`}>
-						<span className="text-[7px] opacity-70">SEG</span>
-						<span className="font-bold text-xs">{d}</span>
-					</div>
+						{q}
+					</button>
 				))}
 			</div>
-			<div className="space-y-2 flex-1 overflow-hidden relative mt-1">
-				<div className="p-2 rounded-lg flex justify-between items-center bg-white/5 border border-white/5">
-					<div>
-						<span className="text-white font-bold block text-xs">18:00</span>
-						<span className="text-emerald-400 text-[8px]">Livre</span>
-					</div>
-					<div className="px-2 py-0.5 bg-emerald-500 text-black text-[8px] font-bold rounded">
-						Reservar
-					</div>
-				</div>
-				<div className="p-2 rounded-lg flex justify-between items-center bg-emerald-500/5 border border-emerald-500/10 opacity-60">
-					<div>
-						<span className="text-white font-bold block text-xs">19:00</span>
-						<span className="text-white/40 text-[8px]">Ocupado</span>
-					</div>
-				</div>
-				<div className="p-2 rounded-lg flex justify-between items-center bg-white/5 border border-white/5">
-					<div>
-						<span className="text-white font-bold block text-xs">20:00</span>
-						<span className="text-emerald-400 text-[8px]">Livre</span>
-					</div>
-					<div className="px-2 py-0.5 bg-emerald-500 text-black text-[8px] font-bold rounded">
-						Reservar
+
+			{/* Calendário Mini */}
+			<div className="px-3 py-2">
+				<div className="flex items-center justify-between mb-2">
+					<span className="text-[9px] text-gray-400 font-medium">
+						Janeiro 2026
+					</span>
+					<div className="flex gap-1">
+						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-400">
+							←
+						</div>
+						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-400">
+							→
+						</div>
 					</div>
 				</div>
+				<div className="flex gap-1">
+					{[
+						{ day: "SEG", date: "13", available: true },
+						{ day: "TER", date: "14", available: true },
+						{ day: "QUA", date: "15", available: false },
+						{ day: "QUI", date: "16", available: true, selected: true },
+						{ day: "SEX", date: "17", available: true },
+					].map((d, i) => (
+						<div
+							key={i}
+							className={`flex-1 py-1.5 rounded-lg flex flex-col items-center transition-all ${
+								d.selected ? "bg-emerald-500 shadow-lg shadow-emerald-500/40"
+								: d.available ? "bg-white/5 hover:bg-white/10"
+								: "bg-white/[0.02] opacity-40"
+							}`}>
+							<span
+								className={`text-[6px] font-medium ${d.selected ? "text-black/60" : "text-gray-500"}`}>
+								{d.day}
+							</span>
+							<span
+								className={`text-[11px] font-bold ${d.selected ? "text-black" : "text-white"}`}>
+								{d.date}
+							</span>
+							{!d.available && (
+								<span className="text-[5px] text-red-400">Lotado</span>
+							)}
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Horários Disponíveis */}
+			<div className="flex-1 px-3 overflow-hidden">
+				<span className="text-[8px] text-gray-500 font-medium uppercase tracking-wider">
+					Horários disponíveis
+				</span>
+				<div className="mt-2 space-y-1.5 overflow-y-auto max-h-[140px] hide-scrollbar">
+					{[
+						{ time: "18:00", price: "R$ 120", status: "available" },
+						{ time: "19:00", price: "R$ 120", status: "selected" },
+						{
+							time: "20:00",
+							price: "R$ 150",
+							status: "available",
+							tag: "🔥 Último",
+						},
+						{
+							time: "21:00",
+							price: "R$ 150",
+							status: "occupied",
+							occupant: "João M.",
+						},
+						{ time: "22:00", price: "R$ 100", status: "available" },
+					].map((slot) => (
+						<div
+							key={slot.time}
+							onClick={() =>
+								slot.status !== "occupied" && setSelectedTime(slot.time)
+							}
+							className={`p-2 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
+								slot.status === "selected" || selectedTime === slot.time ?
+									"bg-emerald-500/20 border-2 border-emerald-500 shadow-lg shadow-emerald-500/10"
+								: slot.status === "occupied" ?
+									"bg-white/[0.02] border border-white/5 opacity-50"
+								:	"bg-white/5 border border-white/5 hover:border-white/20"
+							}`}>
+							<div className="flex items-center gap-2">
+								<div
+									className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+										slot.status === "selected" || selectedTime === slot.time ?
+											"bg-emerald-500 text-black"
+										: slot.status === "occupied" ? "bg-red-500/20 text-red-400"
+										: "bg-white/10 text-white"
+									}`}>
+									<span className="text-[10px] font-bold">
+										{slot.time.split(":")[0]}
+									</span>
+								</div>
+								<div>
+									<span className="text-white font-bold text-[10px] block">
+										{slot.time}
+									</span>
+									<span className="text-gray-500 text-[7px]">
+										{slot.status === "occupied" ?
+											`Reservado • ${slot.occupant}`
+										:	"1h de jogo"}
+									</span>
+								</div>
+							</div>
+							<div className="text-right">
+								{slot.tag && (
+									<span className="text-[6px] text-orange-400 font-bold block mb-0.5">
+										{slot.tag}
+									</span>
+								)}
+								<span
+									className={`font-bold text-[10px] ${
+										slot.status === "selected" || selectedTime === slot.time ?
+											"text-emerald-400"
+										:	"text-white"
+									}`}>
+									{slot.price}
+								</span>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Bottom CTA */}
+			<div className="p-3 border-t border-white/5 bg-[#0a0a0a]/80 backdrop-blur">
+				<button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-bold text-[11px] flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 active:scale-[0.98] transition-transform">
+					Confirmar Reserva • R$ 120
+					<span className="text-[10px]">→</span>
+				</button>
 			</div>
 		</div>
 	);
 }
 
+// Tela do MacBook: Dashboard Admin
 function DashboardAppScreen() {
 	return (
-		<div className="h-full bg-[#02040a] p-4 font-sans relative overflow-hidden">
-			<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
-			<div className="flex justify-between items-center mb-4 relative z-10">
-				<div className="flex gap-2 items-center">
-					<div className="w-5 h-5 bg-emerald-500 rounded flex items-center justify-center text-black font-bold text-[10px]">
-						A
-					</div>
-					<h3 className="text-white font-bold text-xs">Faturamento</h3>
+		<div className="h-full bg-[#050507] font-sans relative overflow-hidden flex">
+			{/* Sidebar Mini */}
+			<div className="w-12 md:w-14 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-3 gap-3">
+				<div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+					<Zap className="w-3 h-3 md:w-4 md:h-4 text-black" />
 				</div>
-				<div className="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
-					+27% este mês
-				</div>
-			</div>
-			<div className="grid grid-cols-3 gap-3 mb-4 relative z-10">
-				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
-					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
-						Hoje
-					</p>
-					<p className="text-white text-sm font-bold mt-0.5">R$ 1.850</p>
-				</div>
-				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
-					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
-						Mês
-					</p>
-					<p className="text-emerald-400 text-sm font-bold mt-0.5">R$ 8.2k</p>
-				</div>
-				<div className="bg-white/5 p-2 rounded-lg border border-white/10">
-					<p className="text-gray-400 text-[7px] uppercase font-bold tracking-wider">
-						Projeção
-					</p>
-					<p className="text-white text-sm font-bold mt-0.5">R$ 42k</p>
-				</div>
-			</div>
-			<div className="bg-white/5 rounded-lg border border-white/10 h-28 relative overflow-hidden flex items-end p-2 gap-1.5 z-10">
-				{[40, 70, 50, 90, 60, 80, 100].map((h, i) => (
+				<div className="w-6 h-[1px] bg-white/10 my-1" />
+				{[
+					{ icon: "📊", active: true },
+					{ icon: "📅", active: false },
+					{ icon: "👥", active: false },
+					{ icon: "💰", active: false },
+					{ icon: "⚙️", active: false },
+				].map((item, i) => (
 					<div
 						key={i}
-						className="flex-1 bg-gradient-to-t from-emerald-500/20 to-emerald-500/60 rounded-t-[2px]"
-						style={{ height: `${h}%` }}
-					/>
+						className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] transition-all cursor-pointer ${
+							item.active ?
+								"bg-emerald-500/20 shadow-lg shadow-emerald-500/10"
+							:	"hover:bg-white/5"
+						}`}>
+						{item.icon}
+					</div>
 				))}
+			</div>
+
+			{/* Main Content */}
+			<div className="flex-1 overflow-hidden">
+				{/* Top Bar */}
+				<div className="h-10 md:h-12 border-b border-white/5 flex items-center justify-between px-4">
+					<div className="flex items-center gap-2">
+						<h1 className="text-white font-bold text-[11px] md:text-xs">
+							Dashboard
+						</h1>
+						<span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-bold border border-emerald-500/30">
+							Tempo real
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<div className="relative">
+							<div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-[10px]">
+								🔔
+							</div>
+							<div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+						</div>
+						<div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[8px] font-bold text-black">
+							RL
+						</div>
+					</div>
+				</div>
+
+				{/* Stats Grid */}
+				<div className="p-3 md:p-4">
+					{/* KPIs */}
+					<div className="grid grid-cols-4 gap-2 md:gap-3 mb-4">
+						{[
+							{
+								label: "Hoje",
+								value: "R$ 2.340",
+								change: "+18%",
+								up: true,
+								icon: "💰",
+							},
+							{
+								label: "Reservas",
+								value: "23",
+								change: "+5",
+								up: true,
+								icon: "📅",
+							},
+							{
+								label: "Ocupação",
+								value: "87%",
+								change: "+12%",
+								up: true,
+								icon: "📈",
+							},
+							{
+								label: "Cancelamentos",
+								value: "2",
+								change: "-3",
+								up: false,
+								icon: "❌",
+							},
+						].map((kpi, i) => (
+							<div
+								key={i}
+								className="p-2 md:p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group">
+								<div className="flex items-center justify-between mb-1">
+									<span className="text-[7px] md:text-[8px] text-gray-500 font-medium uppercase tracking-wider">
+										{kpi.label}
+									</span>
+									<span className="text-[10px] opacity-60 group-hover:opacity-100 transition-opacity">
+										{kpi.icon}
+									</span>
+								</div>
+								<p className="text-white font-bold text-sm md:text-lg">
+									{kpi.value}
+								</p>
+								<span
+									className={`text-[7px] md:text-[8px] font-bold ${kpi.up ? "text-emerald-400" : "text-red-400"}`}>
+									{kpi.change}
+								</span>
+							</div>
+						))}
+					</div>
+
+					{/* Chart + Agenda Row */}
+					<div className="grid grid-cols-5 gap-3">
+						{/* Chart */}
+						<div className="col-span-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+							<div className="flex items-center justify-between mb-3">
+								<span className="text-[9px] text-gray-400 font-medium">
+									Faturamento Semanal
+								</span>
+								<div className="flex gap-1">
+									{["D", "S", "M"].map((p, i) => (
+										<button
+											key={p}
+											className={`px-2 py-0.5 rounded text-[7px] font-bold ${
+												i === 1 ?
+													"bg-emerald-500/20 text-emerald-400"
+												:	"text-gray-500"
+											}`}>
+											{p}
+										</button>
+									))}
+								</div>
+							</div>
+							<div className="h-16 md:h-24 flex items-end gap-1">
+								{[45, 65, 40, 80, 70, 95, 85].map((h, i) => (
+									<div
+										key={i}
+										className="flex-1 flex flex-col items-center gap-1">
+										<div
+											className={`w-full rounded-t transition-all ${
+												i === 5 ?
+													"bg-gradient-to-t from-emerald-500 to-emerald-400 shadow-lg shadow-emerald-500/30"
+												:	"bg-gradient-to-t from-white/10 to-white/20"
+											}`}
+											style={{ height: `${h}%` }}
+										/>
+										<span className="text-[6px] text-gray-600">
+											{["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"][i]}
+										</span>
+									</div>
+								))}
+							</div>
+						</div>
+
+						{/* Próximas Reservas */}
+						<div className="col-span-2 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+							<span className="text-[9px] text-gray-400 font-medium block mb-2">
+								Próximas Reservas
+							</span>
+							<div className="space-y-1.5">
+								{[
+									{
+										time: "14:00",
+										client: "Carlos S.",
+										court: "Quadra 1",
+										status: "confirmed",
+									},
+									{
+										time: "15:00",
+										client: "Ana M.",
+										court: "Society",
+										status: "pending",
+									},
+									{
+										time: "16:00",
+										client: "Pedro L.",
+										court: "Quadra 2",
+										status: "confirmed",
+									},
+								].map((res, i) => (
+									<div
+										key={i}
+										className="flex items-center gap-2 p-1.5 rounded-lg bg-white/[0.02] border border-white/5">
+										<div
+											className={`w-1 h-6 rounded-full ${
+												res.status === "confirmed" ?
+													"bg-emerald-500"
+												:	"bg-yellow-500"
+											}`}
+										/>
+										<div className="flex-1 min-w-0">
+											<div className="flex items-center gap-1">
+												<span className="text-white font-bold text-[9px]">
+													{res.time}
+												</span>
+												<span className="text-gray-600 text-[7px]">•</span>
+												<span className="text-gray-400 text-[8px] truncate">
+													{res.client}
+												</span>
+											</div>
+											<span className="text-gray-600 text-[7px]">
+												{res.court}
+											</span>
+										</div>
+										<div
+											className={`px-1.5 py-0.5 rounded text-[6px] font-bold ${
+												res.status === "confirmed" ?
+													"bg-emerald-500/20 text-emerald-400"
+												:	"bg-yellow-500/20 text-yellow-400"
+											}`}>
+											{res.status === "confirmed" ? "✓" : "⏳"}
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
@@ -374,9 +894,179 @@ export default function LandingPage() {
 				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
-			<div data-seo-ready className="min-h-screen bg-[#02040a] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
-				{/* Estilos para Animação Marquee */}
+			<div
+				data-seo-ready
+				className="relative min-h-screen bg-[#020205] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+				{/* ═══════════════════════════════════════════════════════════════════
+				    🌌 COSMIC BACKGROUND — De cair o queixo
+				    ═══════════════════════════════════════════════════════════════════ */}
+
+				{/* Base: Gradiente profundo do cosmos */}
+				<div
+					className="fixed inset-0 pointer-events-none"
+					style={{
+						background: `
+							radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+							radial-gradient(ellipse 60% 40% at 100% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+							radial-gradient(ellipse 60% 40% at 0% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
+							linear-gradient(180deg, #020205 0%, #030308 50%, #020205 100%)
+						`,
+					}}
+				/>
+
+				{/* Aurora Borealis - ondas de luz etéreas */}
+				<div className="fixed inset-0 pointer-events-none overflow-hidden">
+					<div
+						className="absolute -top-[50%] left-1/2 -translate-x-1/2 w-[200%] h-[100%] opacity-30"
+						style={{
+							background: `
+								linear-gradient(180deg, 
+									transparent 0%,
+									rgba(16, 185, 129, 0.1) 20%,
+									rgba(6, 182, 212, 0.08) 40%,
+									rgba(16, 185, 129, 0.05) 60%,
+									transparent 100%
+								)
+							`,
+							animation: "aurora 15s ease-in-out infinite",
+							filter: "blur(60px)",
+						}}
+					/>
+					<div
+						className="absolute -top-[30%] left-1/3 w-[150%] h-[80%] opacity-20"
+						style={{
+							background: `
+								linear-gradient(160deg, 
+									transparent 0%,
+									rgba(6, 182, 212, 0.12) 30%,
+									rgba(16, 185, 129, 0.08) 60%,
+									transparent 100%
+								)
+							`,
+							animation: "aurora 20s ease-in-out infinite reverse",
+							filter: "blur(80px)",
+						}}
+					/>
+				</div>
+
+				{/* Starfield - estrelas piscantes */}
+				<div className="fixed inset-0 pointer-events-none">
+					{[...Array(50)].map((_, i) => (
+						<div
+							key={i}
+							className="absolute rounded-full bg-white"
+							style={{
+								width: Math.random() > 0.8 ? "2px" : "1px",
+								height: Math.random() > 0.8 ? "2px" : "1px",
+								left: `${Math.random() * 100}%`,
+								top: `${Math.random() * 100}%`,
+								opacity: 0.1 + Math.random() * 0.5,
+								animation: `twinkle ${2 + Math.random() * 4}s ease-in-out infinite`,
+								animationDelay: `${Math.random() * 5}s`,
+							}}
+						/>
+					))}
+				</div>
+
+				{/* Shooting stars ocasionais */}
+				<div className="fixed inset-0 pointer-events-none overflow-hidden">
+					<div
+						className="absolute w-[100px] h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-0"
+						style={{
+							top: "20%",
+							left: "-10%",
+							transform: "rotate(-45deg)",
+							animation: "shootingStar 8s linear infinite",
+							animationDelay: "2s",
+						}}
+					/>
+					<div
+						className="absolute w-[80px] h-[1px] bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-0"
+						style={{
+							top: "40%",
+							left: "-10%",
+							transform: "rotate(-35deg)",
+							animation: "shootingStar 12s linear infinite",
+							animationDelay: "7s",
+						}}
+					/>
+				</div>
+
+				{/* Nebula clouds - nuvens de gás cósmico */}
+				<div className="fixed inset-0 pointer-events-none">
+					<div
+						className="absolute top-[10%] right-[5%] w-[500px] h-[500px] rounded-full opacity-[0.04]"
+						style={{
+							background:
+								"radial-gradient(circle, rgba(16, 185, 129, 0.8) 0%, transparent 70%)",
+							filter: "blur(60px)",
+							animation: "nebulaPulse 8s ease-in-out infinite",
+						}}
+					/>
+					<div
+						className="absolute bottom-[20%] left-[10%] w-[400px] h-[400px] rounded-full opacity-[0.03]"
+						style={{
+							background:
+								"radial-gradient(circle, rgba(6, 182, 212, 0.8) 0%, transparent 70%)",
+							filter: "blur(50px)",
+							animation: "nebulaPulse 10s ease-in-out infinite",
+							animationDelay: "-5s",
+						}}
+					/>
+				</div>
+
+				{/* Horizon glow - linha do horizonte */}
+				<div
+					className="fixed bottom-0 left-0 right-0 h-[300px] pointer-events-none"
+					style={{
+						background: `
+							linear-gradient(0deg, 
+								rgba(16, 185, 129, 0.03) 0%,
+								transparent 100%
+							)
+						`,
+					}}
+				/>
+
+				{/* Perspective grid - grade 3D no fundo */}
+				<div
+					className="fixed inset-0 pointer-events-none opacity-[0.03]"
+					style={{
+						backgroundImage: `
+							linear-gradient(rgba(16, 185, 129, 0.5) 1px, transparent 1px)
+						`,
+						backgroundSize: "80px 80px",
+						transform: "perspective(500px) rotateX(60deg)",
+						transformOrigin: "center top",
+						maskImage:
+							"linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%)",
+						WebkitMaskImage:
+							"linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%)",
+					}}
+				/>
+
+				{/* Estilos para Animações Apple-level */}
 				<style>{`
+        @keyframes aurora {
+          0%, 100% { transform: translateX(-50%) translateY(0) skewX(0deg); }
+          25% { transform: translateX(-45%) translateY(-5%) skewX(-2deg); }
+          50% { transform: translateX(-55%) translateY(3%) skewX(2deg); }
+          75% { transform: translateX(-48%) translateY(-2%) skewX(-1deg); }
+        }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.2); }
+        }
+        @keyframes shootingStar {
+          0% { left: -10%; opacity: 0; }
+          5% { opacity: 0.8; }
+          15% { left: 110%; opacity: 0; }
+          100% { left: 110%; opacity: 0; }
+        }
+        @keyframes nebulaPulse {
+          0%, 100% { opacity: 0.03; transform: scale(1); }
+          50% { opacity: 0.06; transform: scale(1.1); }
+        }
         @keyframes scroll {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
@@ -384,765 +1074,692 @@ export default function LandingPage() {
         .animate-scroll {
           animation: scroll 40s linear infinite;
         }
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.05); }
         }
-        .animate-shimmer {
-          animation: shimmer 2s infinite;
+        .animate-pulse-glow {
+          animation: pulse-glow 4s ease-in-out infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        @keyframes word-rotate-out {
+          0% { opacity: 1; transform: translateY(0) rotateX(0); }
+          100% { opacity: 0; transform: translateY(-20px) rotateX(-90deg); }
+        }
+        @keyframes word-rotate-in {
+          0% { opacity: 0; transform: translateY(20px) rotateX(90deg); }
+          100% { opacity: 1; transform: translateY(0) rotateX(0); }
+        }
+        .word-animating {
+          animation: word-rotate-out 0.3s ease-in forwards;
+        }
+        .word-entering {
+          animation: word-rotate-in 0.3s ease-out forwards;
+        }
+        @keyframes border-glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.2); }
+          50% { box-shadow: 0 0 40px rgba(16,185,129,0.4), 0 0 60px rgba(16,185,129,0.2); }
+        }
+        .animate-border-glow {
+          animation: border-glow 3s ease-in-out infinite;
+        }
+        @keyframes shine {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          100% { transform: translateX(200%) skewX(-15deg); }
+        }
+        .btn-shine::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+          animation: shine 3s ease-in-out infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+        .animate-blink {
+          animation: blink 0.8s step-end infinite;
+        }
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient-shift 8s ease infinite;
+        }
+        @keyframes orbit {
+          0% { transform: rotate(0deg) translateX(12px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(12px) rotate(-360deg); }
+        }
+        .animate-orbit {
+          animation: orbit 3s linear infinite;
+        }
+        @keyframes orbit-reverse {
+          0% { transform: rotate(0deg) translateX(16px) rotate(0deg); }
+          100% { transform: rotate(-360deg) translateX(16px) rotate(360deg); }
+        }
+        .animate-orbit-reverse {
+          animation: orbit-reverse 4s linear infinite;
+        }
+        @keyframes text-shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        .animate-text-shimmer {
+          background: linear-gradient(90deg, #fff 0%, #fff 40%, #10b981 50%, #fff 60%, #fff 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: text-shimmer 3s linear infinite;
+        }
+        .nav-link {
+          position: relative;
+          overflow: hidden;
+        }
+        .nav-link::before {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #10b981, transparent);
+          transition: all 0.3s ease;
+          transform: translateX(-50%);
+        }
+        .nav-link:hover::before {
+          width: 100%;
+        }
+        .magnetic-btn {
+          transition: transform 0.2s ease-out;
+        }
+        @keyframes pulse-ring {
+          0% { transform: scale(1); opacity: 0.8; }
+          100% { transform: scale(1.5); opacity: 0; }
+        }
+        .pulse-ring::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          border: 2px solid #10b981;
+          animation: pulse-ring 2s ease-out infinite;
         }
       `}</style>
 
-				{/* Background Global */}
+				{/* Background Global - Apple-style pulsing glow */}
 				<div className="fixed inset-0 z-0 pointer-events-none">
-					<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
-					<div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[100px]" />
+					<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02]" />
+					<div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/8 rounded-full blur-[120px] animate-pulse-glow" />
+					<div
+						className="absolute top-[60%] -right-[200px] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] animate-pulse-glow"
+						style={{ animationDelay: "2s" }}
+					/>
+					<div
+						className="absolute top-[30%] -left-[200px] w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px] animate-pulse-glow"
+						style={{ animationDelay: "1s" }}
+					/>
 				</div>
 
-				{/* NAVBAR FLUTUANTE — só o necessário */}
+				{/* ═══════════════════════════════════════════════════════════════════
+				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
+				    ═══════════════════════════════════════════════════════════════════ */}
 				<header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
-					<nav className="relative flex items-center justify-between w-full max-w-4xl h-12 rounded-full bg-[#0a0a0a]/80 border border-white/10 backdrop-blur-2xl shadow-lg px-6">
-						<div
-							className="flex items-center gap-2 cursor-pointer"
-							onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-							<div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/10">
-								<Zap className="w-3.5 h-3.5 text-emerald-500" />
+					{/* Outer glow layer */}
+					<div className="absolute inset-0 flex justify-center pt-4 px-4 pointer-events-none">
+						<div className="w-full max-w-4xl h-12 rounded-full bg-emerald-500/5 blur-xl" />
+					</div>
+
+					<nav className="relative flex items-center justify-between w-full max-w-4xl h-14 rounded-full overflow-hidden px-2">
+						{/* Animated gradient border */}
+						<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/50 via-cyan-500/50 to-emerald-500/50 animate-gradient opacity-60" />
+						<div className="absolute inset-[1px] rounded-full bg-[#0a0a0a]/95 backdrop-blur-2xl" />
+
+						{/* Inner content */}
+						<div className="relative z-10 flex items-center justify-between w-full px-4">
+							{/* Logo com órbitas */}
+							<div
+								className="flex items-center gap-3 cursor-pointer group"
+								onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+								<div className="relative flex items-center justify-center w-9 h-9">
+									{/* Orbiting particles */}
+									<div className="absolute inset-0 flex items-center justify-center">
+										<div className="absolute w-1.5 h-1.5 bg-emerald-400 rounded-full animate-orbit" />
+										<div className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-orbit-reverse opacity-60" />
+									</div>
+									{/* Core logo */}
+									<div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-shadow duration-300">
+										<Zap className="w-4 h-4 text-black" />
+									</div>
+								</div>
+								<span className="font-black text-base tracking-tight hidden sm:inline animate-text-shimmer">
+									ArenaSys
+								</span>
 							</div>
-							<span className="font-bold text-sm tracking-tight text-white hidden sm:inline">
-								ArenaSys
-							</span>
-						</div>
 
-						<div className="hidden md:flex items-center gap-1">
-							<a
-								href="#pricing"
-								className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
-								Preço
-							</a>
-							<a
-								href="#faq"
-								className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
-								FAQ
-							</a>
-						</div>
-
-						<div className="hidden md:flex items-center gap-2">
-							<button
-								onClick={() => navigate("/login")}
-								className="text-sm font-medium text-gray-400 hover:text-white transition-colors px-2">
-								Login
-							</button>
-							<Button
-								onClick={() => navigate("/login?mode=signup")}
-								className="h-9 px-4 rounded-full text-sm font-bold bg-emerald-500 text-black hover:bg-emerald-400 shadow-emerald-500/10">
-								Testar grátis
-							</Button>
-						</div>
-
-						<button
-							className="md:hidden p-2 text-gray-400 hover:text-white"
-							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-							{mobileMenuOpen ?
-								<X size={18} />
-							:	<Menu size={18} />}
-						</button>
-
-						{mobileMenuOpen && (
-							<div className="absolute top-full left-0 right-0 mt-2 p-4 bg-[#0F1115] border border-white/10 rounded-2xl shadow-2xl flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 md:hidden">
+							{/* Navigation links com efeito especial */}
+							<div className="hidden md:flex items-center gap-1">
 								<a
 									href="#pricing"
-									onClick={() => setMobileMenuOpen(false)}
-									className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-base">
+									className="nav-link px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors duration-300">
 									Preço
 								</a>
 								<a
 									href="#faq"
-									onClick={() => setMobileMenuOpen(false)}
-									className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-base">
+									className="nav-link px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors duration-300">
 									FAQ
 								</a>
-								<div className="h-px bg-white/10 my-2" />
+							</div>
+
+							{/* CTAs */}
+							<div className="hidden md:flex items-center gap-3">
 								<button
-									onClick={() => {
-										setMobileMenuOpen(false);
-										navigate("/login");
-									}}
-									className="p-3 hover:bg-white/5 rounded-xl text-gray-300 text-sm text-left">
+									onClick={() => navigate("/login")}
+									className="text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 px-3 py-2 rounded-full hover:bg-white/5">
 									Login
 								</button>
-								<Button
-									onClick={() => {
-										setMobileMenuOpen(false);
-										navigate("/login?mode=signup");
-									}}
-									className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-11 text-base mt-1">
-									Testar grátis
-								</Button>
+								<button
+									onClick={() => navigate("/login?mode=signup")}
+									className="relative h-10 px-5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 text-black overflow-hidden group magnetic-btn shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow duration-300">
+									<span className="relative z-10 flex items-center gap-1">
+										Testar grátis
+										<Sparkles className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+									</span>
+									<div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+								</button>
+							</div>
+
+							{/* Mobile menu button */}
+							<button
+								className="md:hidden relative p-2 text-gray-400 hover:text-white transition-colors"
+								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+								<div
+									className={`w-5 h-0.5 bg-current transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[3px]" : ""}`}
+								/>
+								<div
+									className={`w-5 h-0.5 bg-current mt-1.5 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-[5px]" : ""}`}
+								/>
+							</button>
+						</div>
+
+						{/* Mobile menu */}
+						{mobileMenuOpen && (
+							<div className="absolute top-full left-0 right-0 mt-3 mx-2 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden">
+								<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent opacity-50" />
+								<div className="relative p-5 bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/10 rounded-3xl">
+									<a
+										href="#pricing"
+										onClick={() => setMobileMenuOpen(false)}
+										className="block p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-lg font-medium transition-colors">
+										Preço
+									</a>
+									<a
+										href="#faq"
+										onClick={() => setMobileMenuOpen(false)}
+										className="block p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-lg font-medium transition-colors">
+										FAQ
+									</a>
+									<div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-3" />
+									<button
+										onClick={() => {
+											setMobileMenuOpen(false);
+											navigate("/login");
+										}}
+										className="w-full p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-base text-left transition-colors">
+										Login
+									</button>
+									<button
+										onClick={() => {
+											setMobileMenuOpen(false);
+											navigate("/login?mode=signup");
+										}}
+										className="w-full mt-2 h-14 bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-bold text-lg rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+										Testar grátis
+										<Sparkles className="w-4 h-4" />
+									</button>
+								</div>
 							</div>
 						)}
 					</nav>
 				</header>
 
-				{/* --- HERO (gancho de dor + CTA) --- */}
-				<section className="relative pt-32 pb-12 lg:pt-40 lg:pb-16 px-4 overflow-hidden flex flex-col items-center">
-					<div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs md:text-sm font-bold uppercase tracking-wider animate-in fade-in slide-in-from-bottom-4 duration-1000">
-							<span className="relative flex h-1.5 w-1.5">
-								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-								<span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+				{/* --- HERO: Apple-style com texto rotativo --- */}
+				<section className="relative pt-32 pb-24 lg:pt-44 lg:pb-32 px-4 overflow-hidden flex flex-col items-center">
+					{/* Floating sparkles */}
+					<div
+						className="absolute top-40 left-[15%] w-2 h-2 bg-emerald-500/40 rounded-full animate-float"
+						style={{ animationDelay: "0s" }}
+					/>
+					<div
+						className="absolute top-60 right-[20%] w-1.5 h-1.5 bg-emerald-400/30 rounded-full animate-float"
+						style={{ animationDelay: "1s" }}
+					/>
+					<div
+						className="absolute bottom-40 left-[25%] w-1 h-1 bg-cyan-400/30 rounded-full animate-float"
+						style={{ animationDelay: "2s" }}
+					/>
+
+					<div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+						{/* Badge */}
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+							<Sparkles className="w-4 h-4 text-emerald-400" />
+							<span className="text-sm text-gray-300">
+								Sistema #1 para arenas esportivas
 							</span>
-							Pra quem tem quadra e cansa de apagar incêndio
 						</div>
 
-						<h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[1.1] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
-							Duas reservas no mesmo horário. Já passou por isso?
-						</h1>
+						<RotatingHeroText />
 
-						<p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-							O ArenaSys acaba com essa bagunça. Cliente reserva pelo link. Você confirma e cobra no balcão.
-						</p>
-						<p className="text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-							Uma agenda. Tudo no lugar. Sem planilha, sem grupo perdido.
+						<p className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 font-light">
+							O cliente reserva pelo link. Você confirma e cobra no balcão.
+							<br className="hidden md:block" />
+							<span className="text-white font-medium">
+								Acabou a bagunça no WhatsApp.
+							</span>
 						</p>
 
-						<div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-							<Button
+						<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+							<button
 								onClick={() => navigate("/login?mode=signup")}
-								className="h-12 md:h-14 px-8 md:px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base md:text-lg shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95 w-full sm:w-auto">
-								Quero testar 7 dias grátis
-							</Button>
-							<a
-								href="#solucao"
-								className="flex items-center gap-2 text-gray-400 hover:text-white transition font-medium px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 text-sm md:text-base">
-								Ver como funciona
-							</a>
+								className="relative overflow-hidden h-16 px-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_60px_-10px_rgba(16,185,129,0.7)] active:scale-95 w-full sm:w-auto animate-border-glow btn-shine flex items-center justify-center gap-2">
+								Testar grátis agora
+								<ArrowRight className="w-5 h-5" />
+							</button>
 						</div>
+
+						<div className="flex items-center justify-center gap-6 pt-2 animate-in fade-in duration-1000 delay-500">
+							<span className="flex items-center gap-2 text-sm text-gray-500">
+								<Check className="w-4 h-4 text-emerald-500/70" /> 7 dias grátis
+							</span>
+							<span className="flex items-center gap-2 text-sm text-gray-500">
+								<Check className="w-4 h-4 text-emerald-500/70" /> Sem cartão
+							</span>
+							<span className="flex items-center gap-2 text-sm text-gray-500">
+								<Check className="w-4 h-4 text-emerald-500/70" /> Cancele quando
+								quiser
+							</span>
+						</div>
+					</div>
+
+					{/* Social Proof Numbers */}
+					<div className="mt-16 border-t border-white/5 pt-8">
+						<SocialProofBar />
 					</div>
 				</section>
 
-				{/* --- BENEFÍCIOS (o que muda na rotina — mensurável) --- */}
-				<section id="beneficios" className="relative py-16 lg:py-20 px-4 border-y border-white/5 bg-[#050507]/50">
-					<div className="max-w-4xl mx-auto">
-						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 text-center">
-							O que muda pra você
-						</h2>
-						<p className="text-gray-400 text-base md:text-lg text-center mb-10 max-w-2xl mx-auto">
-							Menos tempo no celular. Mais controle.
-						</p>
-						<ul className="grid sm:grid-cols-2 gap-4 text-left">
-							{[
-								"Você para de perder reserva — o cliente reserva sozinho, o dia todo",
-								"Impossível marcar dois no mesmo horário — uma agenda só",
-								"Cliente reserva pelo link; você só confirma e cobra no balcão",
-								"Você vê quanto faturou no mês sem abrir planilha",
-							].map((item, i) => (
-								<li key={i} className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-xl">
-									<CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
-									<span className="text-gray-200 text-base md:text-lg font-medium">{item}</span>
-								</li>
-							))}
-						</ul>
-					</div>
-				</section>
-
-				{/* --- PARA QUEM É --- */}
-				<section id="para-quem-e" className="relative py-16 lg:py-20 px-4 bg-[#03050c]">
-					<div className="max-w-4xl mx-auto">
-						<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 text-center">
-							Feito pra quem manda na quadra
-						</h2>
-						<p className="text-gray-400 text-base md:text-lg text-center mb-10">
-							Pra donos e gestores que querem coisa simples.
-						</p>
-						<div className="flex flex-wrap justify-center gap-3">
-							{[
-								"Quadra society",
-								"Arena",
-								"Centro esportivo",
-								"Poliesportivo",
-								"Quem cansa de planilha e WhatsApp",
-							].map((label, i) => (
-								<span
-									key={i}
-									className="px-5 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-300 text-sm md:text-base font-medium">
-									{label}
-								</span>
-							))}
-						</div>
-					</div>
-				</section>
-
-				{/* --- PROBLEMA: dores (identificação) --- */}
-				<section id="dores" className="relative py-16 lg:py-20 px-4 border-y border-white/5 bg-[#050507]/80">
-					<div className="max-w-4xl mx-auto">
-						<div className="text-center mb-10">
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
-								Você se vê em alguma dessas?
-							</h2>
-							<p className="text-gray-400 text-base md:text-lg">
-								Se sim, não é só você. E dá pra mudar rápido.
-							</p>
-						</div>
-						<div className="grid sm:grid-cols-2 gap-3 md:gap-4">
-							{[
-								"Passa o dia respondendo “tem horário?” no WhatsApp.",
-								"Já perdeu reserva porque demorou a responder.",
-								"Cliente marcou e não foi — você ficou no prejuízo.",
-								"Não sabe quanto faturou no mês passado.",
-								"Tudo em planilha ou na cabeça — aí some uma reserva.",
-								"Falaram que reservou mas não pagou — e você não cobrou.",
-								"Não pode descansar — tem que estar no celular.",
-								"Se uma pessoa falta, vira bagunça.",
-							].map((pain, i) => (
-								<div
-									key={i}
-									className="flex items-start gap-3 p-4 bg-red-500/5 border border-red-500/10 rounded-xl text-left"
-								>
-									<XCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-									<p className="text-gray-300 text-base md:text-lg">{pain}</p>
-								</div>
-							))}
-						</div>
-						<p className="text-center text-white font-semibold text-lg md:text-xl mt-8">
-							O ArenaSys foi feito pra acabar com isso.
-						</p>
-					</div>
-				</section>
-
-				{/* --- AGITAÇÃO: custo de não resolver --- */}
-				<section className="relative py-12 lg:py-16 px-4 bg-[#03050c]">
-					<div className="max-w-3xl mx-auto text-center">
-						<h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
-							Quanto isso custa por mês?
-						</h2>
-						<div className="grid sm:grid-cols-3 gap-4 text-left sm:text-center">
-							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
-								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Tempo no WhatsApp</p>
-								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">4h/dia ≈ 80h/mês</p>
-								<p className="text-gray-500 text-sm mt-1">tempo que podia ser seu</p>
-							</div>
-							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
-								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Calotes</p>
-								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">1/semana ≈ R$ 400/mês</p>
-								<p className="text-gray-500 text-sm mt-1">em horário que não entrou</p>
-							</div>
-							<div className="p-4 bg-white/5 border border-white/10 rounded-xl">
-								<p className="text-gray-400 text-sm uppercase font-bold tracking-wider mb-1">Ocupação baixa</p>
-								<p className="text-red-400 font-mono font-bold text-lg md:text-xl">45% vs 70%</p>
-								<p className="text-gray-500 text-sm mt-1">centenas de reais por mês que não entram</p>
-							</div>
-						</div>
-						<p className="text-gray-400 text-base md:text-lg mt-6">
-							Dá pra mudar isso em poucos dias.
-						</p>
-					</div>
-				</section>
-
-				{/* --- SOLUÇÃO: ArenaSys + como funciona --- */}
-				<section id="solucao" className="py-20 px-6 border-y border-white/5 bg-gradient-to-b from-[#050507] via-emerald-500/5 to-[#050507]">
+				{/* --- SEÇÃO PROBLEMA: com cards 3D tilt --- */}
+				<section className="relative py-28 px-4 bg-[#03050c]">
 					<div className="max-w-5xl mx-auto">
-						<div className="text-center mb-12">
-							<p className="text-emerald-500 font-bold tracking-widest uppercase text-xs md:text-sm mb-3">
+						<ScrollReveal className="text-center mb-16">
+							<p className="text-red-400/80 text-sm font-bold uppercase tracking-widest mb-3">
+								Parece familiar?
+							</p>
+							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
+								O caos de todo dono de quadra
+							</h2>
+						</ScrollReveal>
+
+						<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+							{[
+								{
+									icon: MessageSquare,
+									enemy: "WhatsApp",
+									pain: '"Tem horário amanhã às 19h?" — 47 mensagens por dia',
+								},
+								{
+									icon: BookOpen,
+									enemy: "Caderno",
+									pain: '"Anota aí que eu vejo depois" — e some uma reserva',
+								},
+								{
+									icon: CreditCard,
+									enemy: "Calote",
+									pain: '"Ele sempre paga" — mas não pagou e você ficou no prejuízo',
+								},
+							].map((item, i) => (
+								<ScrollReveal key={i} delay={i * 100}>
+									<TiltCard className="h-full p-8 rounded-3xl bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-colors duration-300">
+										<div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mb-5">
+											<item.icon className="w-7 h-7 text-red-400" />
+										</div>
+										<h3 className="text-white font-bold text-xl mb-3">
+											{item.enemy}
+										</h3>
+										<p className="text-gray-400 text-base leading-relaxed">
+											{item.pain}
+										</p>
+									</TiltCard>
+								</ScrollReveal>
+							))}
+						</div>
+					</div>
+				</section>
+
+				{/* --- SEÇÃO SOLUÇÃO: com parallax mockups --- */}
+				<section
+					id="solucao"
+					className="relative py-32 px-4 border-y border-white/5 bg-gradient-to-b from-[#050507] via-emerald-500/5 to-[#050507] overflow-hidden">
+					<div className="max-w-5xl mx-auto">
+						<ScrollReveal className="text-center mb-16">
+							<p className="text-emerald-400 text-sm font-bold uppercase tracking-widest mb-4">
 								A solução
 							</p>
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
-								Um sistema fácil
+							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
+								Uma agenda que funciona sozinha
 							</h2>
-							<p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
-								Cliente reserva pelo link. Você confirma e cobra no balcão. Simples.
+							<p className="text-gray-400 text-xl max-w-2xl mx-auto">
+								Você para de apagar incêndio. O sistema organiza tudo.
 							</p>
-						</div>
+						</ScrollReveal>
 
-						{/* 3 pilares */}
-						<div className="grid md:grid-cols-3 gap-4 mb-16">
-							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
-								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-									<Zap className="w-5 h-5 text-emerald-400" />
-								</div>
-								<h3 className="text-white font-bold text-lg mb-2">Menos trabalho</h3>
-								<p className="text-gray-400 text-sm md:text-base">Reserva pelo link, o dia todo. Você para de ficar no celular respondendo &quot;tem horário?&quot;</p>
-							</div>
-							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
-								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-									<ShieldCheck className="w-5 h-5 text-emerald-400" />
-								</div>
-								<h3 className="text-white font-bold text-lg mb-2">Menos risco</h3>
-								<p className="text-gray-400 text-sm md:text-base">Uma reserva = um horário bloqueado. Menos confusão.</p>
-							</div>
-							<div className="p-5 bg-[#0F1115] border border-white/10 rounded-2xl text-center">
-								<div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-									<TrendingUp className="w-5 h-5 text-emerald-400" />
-								</div>
-								<h3 className="text-white font-bold text-lg mb-2">Mais controle</h3>
-								<p className="text-gray-400 text-sm md:text-base">Tudo numa agenda. Você vê quanto faturou e como está a semana.</p>
-							</div>
-						</div>
-
-						{/* 3 passos */}
-						<p className="text-emerald-500 font-bold tracking-widest uppercase text-xs md:text-sm mb-4 text-center">
-							Simples de começar
-						</p>
-						<h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-10 text-center">
-							Sua arena online em poucos minutos
-						</h3>
-						<div className="grid md:grid-cols-3 gap-6 mb-12">
-							{[
-								{ step: "1", title: "Coloque suas quadras e preços", text: "O sistema monta a agenda pra você." },
-								{ step: "2", title: "Manda o link", text: "O cliente vê o que está livre e reserva sozinho." },
-								{ step: "3", title: "Você confirma e cobra no balcão", text: "Como você já faz hoje." },
-							].map((item) => (
-								<div key={item.step} className="p-6 bg-[#0F1115] rounded-2xl border border-white/10 text-center">
-									<div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-4 text-emerald-400 font-black text-xl">
-										{item.step}
-									</div>
-									<h4 className="text-white font-bold text-lg mb-2">{item.title}</h4>
-									<p className="text-gray-400 text-sm md:text-base">{item.text}</p>
-								</div>
-							))}
-						</div>
-						<p className="text-center text-gray-400 text-base md:text-lg mb-12">
-							Em poucos minutos você vende horário o dia todo, sem depender do WhatsApp.
-						</p>
-
-						{/* Mockups */}
-						<div className="relative w-full max-w-4xl mx-auto">
-							<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[40%] bg-emerald-500/10 rounded-full blur-[80px]" />
-							<div className="relative flex flex-col items-center md:flex-row md:items-end md:justify-center gap-4 md:gap-0">
-								<div className="relative z-10 shadow-2xl">
-									<MacBookMockup>
-										<DashboardAppScreen />
-									</MacBookMockup>
-								</div>
-								<div className="relative z-20 transform scale-[0.7] md:scale-[0.8] md:ml-[-56px] lg:ml-[-72px] md:mb-6">
-									<IPhoneMockup>
-										<CalendarAppScreen />
-									</IPhoneMockup>
-								</div>
-							</div>
-						</div>
-
-						<div className="flex justify-center mt-10">
-							<Button
-								onClick={() => navigate("/login?mode=signup")}
-								className="h-12 px-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base">
-								Quero testar 7 dias grátis
-							</Button>
-						</div>
-					</div>
-				</section>
-
-				{/* --- PROVA: antes/depois --- */}
-				<section className="py-16 bg-[#03050c]">
-					<div className="max-w-5xl mx-auto px-6">
-						<div className="text-center mb-10">
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								Antes e depois
-							</h2>
-							<p className="text-gray-400 text-base md:text-lg mt-2">
-								Com sistema vs. no improviso.
-							</p>
-						</div>
-						<div className="grid md:grid-cols-2 gap-4 relative">
-							<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-[#02040a] p-2 rounded-full border border-white/10 hidden md:block">
-								<ArrowRight className="text-gray-500 w-5 h-5" />
-							</div>
-							{/* ANTES */}
-							<div className="p-6 rounded-2xl bg-red-500/5 border border-red-500/10 flex flex-col gap-4">
-								<div className="flex items-center gap-2 text-red-400 font-bold text-base uppercase tracking-wider">
-									<XCircle className="w-5 h-5" /> Antes do ArenaSys
-								</div>
-								<div className="space-y-3">
-									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
-										<span className="text-gray-400 text-base">
-											Ocupação Média
-										</span>
-										<span className="text-red-400 font-mono font-bold">
-											~<AnimatedValue value={45} suffix="%" duration={1500} />
-										</span>
-									</div>
-									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
-										<span className="text-gray-400 text-base">
-											Dinheiro perdido (vagas vazias)
-										</span>
-										<span className="text-red-400 font-mono font-bold">
-											- R$ <AnimatedValue value={4800} duration={1500} />
-										</span>
-									</div>
-									<div className="flex justify-between items-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
-										<span className="text-gray-400 text-base">
-											Tempo no WhatsApp
-										</span>
-										<span className="text-red-400 font-mono font-bold">
-											<AnimatedValue value={4} suffix="h" duration={1000} /> /
-											dia
-										</span>
-									</div>
-								</div>
-							</div>
-							{/* DEPOIS */}
-							<div className="p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-4 ring-1 ring-emerald-500/10">
-								<div className="flex items-center gap-2 text-emerald-400 font-bold text-base uppercase tracking-wider">
-									<CheckCircle2 className="w-5 h-5" /> Com ArenaSys
-								</div>
-								<div className="space-y-3">
-									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-base">Ocupação Média</span>
-										<span className="text-emerald-400 font-mono font-bold">
-											+<AnimatedValue value={72} suffix="%" duration={2000} />{" "}
-											🚀
-										</span>
-									</div>
-									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-base">
-											Ganho a mais
-										</span>
-										<span className="text-emerald-400 font-mono font-bold">
-											+ R$ <AnimatedValue value={6400} duration={2000} />
-										</span>
-									</div>
-									<div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-										<span className="text-white text-base">Tempo no celular</span>
-										<span className="text-emerald-400 font-mono font-bold">
-											<AnimatedValue value={15} suffix=" min" duration={2000} />{" "}
-											/ dia
-										</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
-
-				{/* --- SEÇÃO "POR QUE NÃO WHATSAPP?" --- */}
-				<section
-					id="comparison"
-					data-animate
-					className={`py-20 px-6 transition-all duration-1000 ease-out ${isVisible("comparison") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
-					<div className="max-w-4xl mx-auto">
-						<div className="text-center mb-12">
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								WhatsApp não foi feito para vender horário
-							</h2>
-							<p className="text-gray-400 text-base md:text-lg mt-2">
-								Bom pra conversa. Ruim pra agenda.
-							</p>
-						</div>
-						<div className="border border-white/10 rounded-2xl overflow-hidden">
-							<div className="grid grid-cols-3 bg-white/5 p-4 text-sm md:text-base font-bold uppercase tracking-wider text-gray-500">
-								<div>O quê</div>
-								<div className="text-center">WhatsApp</div>
-								<div className="text-center text-emerald-400">ArenaSys</div>
-							</div>
+						<div className="grid sm:grid-cols-2 gap-4 mb-20">
 							{[
 								{
-									crit: "Resposta",
-									bad: "Até 2 horas",
-									good: "Na hora",
+									before: "WhatsApp o dia todo",
+									after: "Cliente reserva pelo link",
 								},
 								{
-									crit: "Reserva",
-									bad: "Você tem que responder",
-									good: "Cliente reserva pelo link, o dia todo",
+									before: "Planilha ou na cabeça",
+									after: "Uma agenda centralizada",
 								},
 								{
-									crit: "Agenda",
-									bad: "Grupo, planilha ou na cabeça",
-									good: "Uma agenda só",
+									before: "Não sabe quanto faturou",
+									after: "Relatório financeiro pronto",
 								},
 								{
-									crit: "De noite / fim de semana",
-									bad: "Você não atende",
-									good: "Vende o dia todo",
+									before: "Conflito de horários",
+									after: "Impossível marcar 2 no mesmo slot",
 								},
-							].map((row, i) => (
-								<div
-									key={i}
-									className="grid grid-cols-3 p-4 border-t border-white/5 items-center hover:bg-white/[0.02]">
-									<div className="text-base font-medium text-white">
-										{row.crit}
-									</div>
-									<div className="text-center text-red-400 text-sm md:text-base">
-										{row.bad}
-									</div>
-									<div className="text-center text-emerald-400 text-sm font-bold bg-emerald-500/10 py-1.5 rounded-full">
-										{row.good}
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				</section>
-
-				{/* --- DIFERENCIAL: ArenaSys vs outros sistemas --- */}
-				<section
-					id="diferencial"
-					className="py-20 px-6 bg-[#050507]/80 border-y border-white/5">
-					<div className="max-w-4xl mx-auto">
-						<div className="text-center mb-12">
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								Por que arenas trocam planilha e WhatsApp pelo ArenaSys
-							</h2>
-							<p className="text-gray-400 text-base md:text-lg mt-2">
-								Feito pra quadra. Reserva organizada. Você cobra no balcão.
-							</p>
-						</div>
-						<div className="border border-white/10 rounded-2xl overflow-hidden">
-							<div className="grid grid-cols-3 bg-white/5 p-4 text-sm md:text-base font-bold uppercase tracking-wider text-gray-500">
-								<div>O quê</div>
-								<div className="text-center">Outros</div>
-								<div className="text-center text-emerald-400">ArenaSys</div>
-							</div>
-							{[
-								{ crit: "Feito pra quê", bad: "Genérico", good: "Pra quadra" },
-								{ crit: "Reserva", bad: "WhatsApp ou planilha", good: "Link; você cobra no balcão" },
-								{ crit: "Cliente reserva sozinho", bad: "Você tem que responder", good: "Link; reserva o dia todo" },
-								{ crit: "Preço", bad: "Caro", good: "Menos que 1h de aluguel" },
-								{ crit: "Contrato", bad: "Multa se sair", good: "Cancela quando quiser" },
-								{ crit: "Ajuda", bad: "Robô ou demora", good: "Gente no WhatsApp" },
-							].map((row, i) => (
-								<div
-									key={i}
-									className="grid grid-cols-3 p-4 border-t border-white/5 items-center hover:bg-white/[0.02]">
-									<div className="text-base font-medium text-white">{row.crit}</div>
-									<div className="text-center text-red-400/90 text-sm md:text-base">{row.bad}</div>
-									<div className="text-center text-emerald-400 text-sm font-bold bg-emerald-500/10 py-1.5 rounded-full">
-										{row.good}
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				</section>
-
-				{/* --- PRICING --- */}
-				<section
-					id="pricing"
-					data-animate
-					className={`py-20 px-6 bg-white/[0.01] border-t border-white/5 transition-all duration-1000 ease-out ${isVisible("pricing") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
-					<div className="max-w-5xl mx-auto">
-						<div className="text-center mb-12">
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3">
-								Menos que 1 hora de aluguel
-							</h2>
-							<p className="text-gray-400 text-base md:text-lg max-w-lg mx-auto">
-								Menos tempo no WhatsApp, menos confusão. O sistema se paga rápido.
-							</p>
-						</div>
-						<div className="max-w-2xl mx-auto">
-							{/* PLANO ÚNICO */}
-							<div className="relative group rounded-2xl p-[1px] overflow-hidden transform hover:scale-[1.01] transition-all">
-								<div className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#10b981_100%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-								<div className="relative h-full bg-[#0F1115] rounded-2xl p-6 md:p-8 border border-white/10 group-hover:border-transparent transition-colors">
-									<div className="absolute top-0 right-0 bg-emerald-500 text-black text-xs font-bold px-4 py-1.5 rounded-bl-lg">
-										PLANO COMPLETO
-									</div>
-									<h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-										ArenaSys
-									</h3>
-									<p className="text-gray-400 text-sm md:text-base mb-5">
-										Tudo num lugar. Você confirma e cobra no balcão.
-									</p>
-
-									{/* Preço Normal */}
-									<div className="mb-4">
-										<div className="flex items-baseline gap-1 mb-1">
-											<span className="text-4xl font-black text-white">
-												R$ <AnimatedValue value={97} duration={1000} />
-											</span>
-											<span className="text-gray-500 text-sm">/mês</span>
-										</div>
-										<p className="text-sm text-gray-500">
-											ou R$ <AnimatedValue value={970} duration={1500} />
-											/ano (2 meses grátis)
-										</p>
-									</div>
-
-									{/* Preço Founders (se houver vagas) */}
-									{foundersProgress && foundersProgress.remaining > 0 && (
-										<div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-											<div className="flex items-center gap-2 mb-2">
-												<span className="text-sm font-bold text-emerald-400 uppercase tracking-wider">
-													Founders 20 - 30% OFF Permanente
-												</span>
-												<span className="text-sm text-gray-400">
-													({foundersProgress.remaining} vagas restantes)
-												</span>
-											</div>
-											<div className="flex items-baseline gap-1 mb-1">
-												<span className="text-2xl font-black text-emerald-400">
-													R${" "}
-													<AnimatedValue
-														value={67.9}
-														decimals={2}
-														duration={1500}
-													/>
-												</span>
-												<span className="text-gray-500 text-sm">/mês</span>
-											</div>
-											<p className="text-sm text-gray-400">
-												ou R$ <AnimatedValue value={679} duration={1500} />
-												/ano (desconto para sempre!)
+							].map((item, i) => (
+								<ScrollReveal key={i} delay={i * 75}>
+									<div className="p-6 rounded-2xl bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 flex items-center gap-4 transition-all duration-300 hover:bg-[#0F1115]/80">
+										<div className="flex-1">
+											<p className="text-red-400/70 text-sm line-through mb-2">
+												{item.before}
+											</p>
+											<p className="text-emerald-400 font-semibold text-lg">
+												{item.after}
 											</p>
 										</div>
-									)}
-
-									<ul className="space-y-3 mb-8 text-sm md:text-base">
-										<li className="flex items-center gap-2 text-white">
-											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-											<span>
-												Nunca mais <strong>esquece de responder</strong> uma reserva
-											</span>
-										</li>
-										<li className="flex items-center gap-2 text-white">
-											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-											<span>
-												Cliente <strong>reserva pelo link</strong>; você cobra no balcão
-											</span>
-										</li>
-										<li className="flex items-center gap-2 text-white">
-											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-											<span>
-												<strong>Reserva anotada</strong> — menos confusão
-											</span>
-										</li>
-										<li className="flex items-center gap-2 text-white">
-											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-											<span>
-												<strong>Todas as quadras</strong> num lugar só
-											</span>
-										</li>
-										<li className="flex items-center gap-2 text-white">
-											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-											<span>
-												<strong>Mensalistas</strong> organizados
-											</span>
-										</li>
-										<li className="flex items-center gap-2 text-white">
-											<Check className="w-4 h-4 text-emerald-500 shrink-0" />{" "}
-											<span>
-												Você vê <strong>quanto faturou</strong> sem planilha
-											</span>
-										</li>
-									</ul>
-									<Button
-										onClick={() => navigate("/login?mode=signup")}
-										className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base rounded-lg shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all">
-										Testar 7 dias grátis — sem cartão
-									</Button>
-									{foundersProgress && (
-										<div className="mt-3 space-y-2">
-											<div className="flex items-center justify-between text-sm text-gray-500">
-												<span>Founders 20</span>
-												<span>
-													{Math.max(0, foundersProgress.remaining)} de{" "}
-													{foundersProgress.cap} vagas restantes
-												</span>
-											</div>
-											<div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
-												<div
-													className="h-full bg-emerald-500"
-													style={{
-														width: `${Math.min(
-															100,
-															(foundersProgress.sold / foundersProgress.cap) *
-																100,
-														)}%`,
-													}}
-												/>
-											</div>
+										<div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+											<Check className="w-5 h-5 text-emerald-500" />
 										</div>
-									)}
-									<p className="text-center text-sm text-gray-500 mt-3 flex justify-center gap-2 items-center">
-										<ShieldCheck className="w-4 h-4" /> 7 dias grátis. Sem cartão. Cancele quando quiser.
-									</p>
+									</div>
+								</ScrollReveal>
+							))}
+						</div>
+
+						{/* Mockups com parallax */}
+						<ScrollReveal>
+							<div className="relative w-full max-w-4xl mx-auto">
+								<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] bg-emerald-500/15 rounded-full blur-[100px] animate-pulse-glow" />
+								<div className="relative flex flex-col items-center md:flex-row md:items-end md:justify-center gap-4 md:gap-0">
+									<div
+										className="relative z-10 shadow-2xl animate-float"
+										style={{ animationDelay: "0s" }}>
+										<MacBookMockup>
+											<DashboardAppScreen />
+										</MacBookMockup>
+									</div>
+									<div
+										className="relative z-20 transform scale-[0.7] md:scale-[0.8] md:ml-[-56px] lg:ml-[-72px] md:mb-6 animate-float"
+										style={{ animationDelay: "1s" }}>
+										<IPhoneMockup>
+											<CalendarAppScreen />
+										</IPhoneMockup>
+									</div>
 								</div>
 							</div>
-						</div>
+						</ScrollReveal>
 					</div>
 				</section>
 
-				{/* --- NOVA SEÇÃO DE FAQ (PERGUNTAS FREQUENTES) --- */}
-				<section
-					id="faq"
-					data-animate
-					className={`py-20 px-6 transition-all duration-1000 ease-out ${isVisible("faq") ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"}`}>
-					<div className="max-w-4xl mx-auto">
-						<div className="text-center mb-12">
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								Dúvidas comuns
+				{/* --- COMO FUNCIONA: 3 passos com reveal --- */}
+				<section className="relative py-32 px-4 bg-[#03050c]">
+					<div className="max-w-5xl mx-auto">
+						<ScrollReveal className="text-center mb-16">
+							<h2 className="text-3xl md:text-5xl font-black text-white mb-4">
+								Funciona em 3 passos
 							</h2>
-							<p className="text-gray-400 text-base md:text-lg mt-2">
-								Respostas curtas.
-							</p>
-						</div>
+						</ScrollReveal>
 
-						<div className="grid md:grid-cols-2 gap-6">
-							{faqList.map((item, i) => (
-								<div
-									key={i}
-									className="p-6 bg-[#0F1115] border border-white/10 rounded-2xl hover:border-white/20 transition-colors">
-									<div className="flex gap-3 mb-3">
-										<div className="mt-1">
-											<HelpCircle className="w-5 h-5 text-emerald-500" />
+						<div className="grid md:grid-cols-3 gap-8">
+							{[
+								{
+									step: "1",
+									title: "Cadastre sua arena",
+									desc: "Quadras, horários e preços. 15 minutos.",
+								},
+								{
+									step: "2",
+									title: "Mande o link",
+									desc: "Cliente vê disponibilidade e reserva sozinho.",
+								},
+								{
+									step: "3",
+									title: "Receba e confirme",
+									desc: "Você cobra no balcão, como sempre fez.",
+								},
+							].map((item, i) => (
+								<ScrollReveal key={item.step} delay={i * 150}>
+									<TiltCard className="text-center p-8 rounded-3xl bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
+										<div className="w-20 h-20 bg-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-emerald-400 font-black text-3xl border border-emerald-500/30">
+											{item.step}
 										</div>
-										<h3 className="text-white font-bold text-base md:text-lg">
-											{item.question}
+										<h3 className="text-white font-bold text-xl mb-3">
+											{item.title}
 										</h3>
-									</div>
-									<p className="text-gray-400 text-sm md:text-base leading-relaxed pl-8">
-										{item.answer}
-									</p>
-								</div>
+										<p className="text-gray-400 text-base">{item.desc}</p>
+									</TiltCard>
+								</ScrollReveal>
 							))}
 						</div>
 					</div>
 				</section>
 
-				{/* --- ECOSYSTEM TEASER --- */}
-				<section className="py-20 px-6 text-center border-t border-white/5 bg-[#02040a]">
-					<p className="text-xs md:text-sm uppercase tracking-widest text-emerald-500 font-bold mb-4">
-						O que vem por aí
-					</p>
-					<h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-8">
-						A gente está construindo mais coisas pro esporte
-					</h2>
-					<div className="flex flex-wrap justify-center gap-4">
-						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
-							<Smartphone className="w-4 h-4" /> App Mobile (Em breve)
+				{/* --- SEÇÃO PREÇO: com glow e animações --- */}
+				<section
+					id="pricing"
+					className="relative py-32 px-4 border-y border-white/5 overflow-hidden">
+					{/* Background glow */}
+					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[150px] animate-pulse-glow" />
+
+					<div className="max-w-4xl mx-auto relative z-10">
+						<ScrollReveal className="text-center mb-16">
+							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
+								Custa menos que 1 hora da sua quadra
+							</h2>
+							<p className="text-gray-400 text-xl max-w-2xl mx-auto">
+								Com apenas uma reserva no mês, o sistema já se paga. O resto é
+								lucro.
+							</p>
+						</ScrollReveal>
+
+						<ScrollReveal delay={100}>
+							<div className="grid sm:grid-cols-2 gap-6 mb-10">
+								<div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center">
+									<p className="text-gray-500 text-sm uppercase tracking-wider mb-3">
+										1 hora de aluguel
+									</p>
+									<p className="text-4xl font-black text-white">~R$ 100</p>
+								</div>
+								<div className="p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-center animate-border-glow">
+									<p className="text-emerald-400 text-sm uppercase tracking-wider mb-3">
+										ArenaSys / mês
+									</p>
+									<p className="text-4xl font-black text-emerald-400">R$ 97</p>
+								</div>
+							</div>
+						</ScrollReveal>
+
+						<ScrollReveal delay={200}>
+							<TiltCard className="relative rounded-3xl p-10 bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
+								{foundersProgress && foundersProgress.remaining > 0 && (
+									<div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-sm font-bold px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30">
+										🎉 FOUNDERS: 30% OFF • {foundersProgress.remaining} vagas
+									</div>
+								)}
+
+								<div className="text-center mb-8">
+									<div className="flex items-baseline justify-center gap-2 mb-2">
+										{foundersProgress && foundersProgress.remaining > 0 ?
+											<>
+												<span className="text-2xl text-gray-500 line-through">
+													R$ 97
+												</span>
+												<span className="text-6xl font-black text-emerald-400">
+													R$ 67
+												</span>
+												<span className="text-gray-500 text-xl">/mês</span>
+											</>
+										:	<>
+												<span className="text-6xl font-black text-white">
+													R$ 97
+												</span>
+												<span className="text-gray-500 text-xl">/mês</span>
+											</>
+										}
+									</div>
+									<p className="text-gray-500">ou anual com 2 meses grátis</p>
+								</div>
+
+								<ul className="space-y-4 mb-8">
+									{[
+										"Agenda organizada — acabou conflito de horário",
+										"Cliente reserva pelo link, 24h por dia",
+										"Relatório financeiro — veja quanto faturou",
+										"Mensalistas controlados",
+										"Suporte no WhatsApp — gente de verdade",
+									].map((item, i) => (
+										<li
+											key={i}
+											className="flex items-center gap-3 text-white text-lg">
+											<div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+												<Check className="w-4 h-4 text-emerald-500" />
+											</div>
+											<span>{item}</span>
+										</li>
+									))}
+								</ul>
+
+								<button
+									onClick={() => navigate("/login?mode=signup")}
+									className="relative overflow-hidden w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] btn-shine">
+									Começar teste grátis
+								</button>
+
+								{foundersProgress && (
+									<div className="mt-6">
+										<div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+											<div
+												className="h-full bg-emerald-500 transition-all duration-500"
+												style={{
+													width: `${Math.min(100, (foundersProgress.sold / foundersProgress.cap) * 100)}%`,
+												}}
+											/>
+										</div>
+										<p className="text-center text-sm text-gray-500 mt-3">
+											{foundersProgress.remaining} de {foundersProgress.cap}{" "}
+											vagas Founders restantes
+										</p>
+									</div>
+								)}
+							</TiltCard>
+						</ScrollReveal>
+					</div>
+				</section>
+
+				{/* --- SEÇÃO RISCO ZERO --- */}
+				<section className="relative py-24 px-4 bg-[#03050c]">
+					<ScrollReveal>
+						<div className="max-w-4xl mx-auto">
+							<div className="p-12 rounded-3xl bg-gradient-to-br from-[#0F1115] to-[#0a0c10] border border-white/10 text-center">
+								<div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+									<ShieldCheck className="w-10 h-10 text-emerald-500" />
+								</div>
+								<h3 className="text-3xl md:text-4xl font-black text-white mb-6">
+									Risco zero pra você
+								</h3>
+								<div className="flex flex-wrap justify-center gap-4 text-gray-300">
+									<span className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-full text-base border border-white/10 hover:border-emerald-500/30 transition-colors">
+										<Check className="w-5 h-5 text-emerald-500" /> Sem cartão de
+										crédito
+									</span>
+									<span className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-full text-base border border-white/10 hover:border-emerald-500/30 transition-colors">
+										<Check className="w-5 h-5 text-emerald-500" /> Cancele
+										quando quiser
+									</span>
+									<span className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-full text-base border border-white/10 hover:border-emerald-500/30 transition-colors">
+										<Check className="w-5 h-5 text-emerald-500" /> 7 dias grátis
+									</span>
+								</div>
+							</div>
 						</div>
-						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
-							<TrendingUp className="w-4 h-4" /> Torneios (Em breve)
-						</div>
-						<div className="px-5 py-3 bg-white/5 rounded-full border border-white/10 text-sm md:text-base text-gray-400 flex items-center gap-2">
-							<Wallet className="w-4 h-4" /> Conta Digital (Em breve)
+					</ScrollReveal>
+				</section>
+
+				{/* --- FAQ --- */}
+				<section
+					id="faq"
+					className="relative py-28 px-4 border-t border-white/5">
+					<div className="max-w-3xl mx-auto">
+						<ScrollReveal className="text-center mb-16">
+							<h2 className="text-3xl md:text-5xl font-black text-white">
+								Dúvidas rápidas
+							</h2>
+						</ScrollReveal>
+
+						<div className="space-y-4">
+							{faqList.map((item, i) => (
+								<ScrollReveal key={i} delay={i * 75}>
+									<div className="p-6 bg-[#0F1115] border border-white/10 rounded-2xl hover:border-white/20 transition-colors duration-300">
+										<h3 className="text-white font-bold text-lg mb-2">
+											{item.question}
+										</h3>
+										<p className="text-gray-400">{item.answer}</p>
+									</div>
+								</ScrollReveal>
+							))}
 						</div>
 					</div>
 				</section>
 
-				{/* --- CTA FINAL --- */}
-				<section className="py-20 px-6">
-					<div className="max-w-3xl mx-auto relative group">
-						<div className="absolute -inset-[2px] rounded-[2.5rem] overflow-hidden">
-							<div className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#10b981_100%)] opacity-100" />
-						</div>
-						<div className="relative bg-[#050507] rounded-[2.3rem] p-10 md:p-16 text-center overflow-hidden">
-							<div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
-							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 relative z-10 leading-tight">
-								Sua quadra merece uma agenda <br />{" "}
+				{/* --- CTA FINAL: Apple-style grand finale --- */}
+				<section className="relative py-32 px-4 overflow-hidden">
+					{/* Background drama */}
+					<div className="absolute inset-0">
+						<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] animate-pulse-glow" />
+					</div>
+
+					<ScrollReveal>
+						<div className="max-w-3xl mx-auto text-center relative z-10">
+							<h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
+								Sua quadra merece uma agenda
+								<br />
 								<span className="text-emerald-400">que funcione.</span>
 							</h2>
-							<p className="text-gray-400 text-base md:text-lg mb-6 relative z-10 max-w-md mx-auto">
-								7 dias grátis. Sem cartão. Cancela quando quiser.
+							<p className="text-gray-400 text-xl mb-10 max-w-xl mx-auto">
+								7 dias grátis. Sem cartão. Cancele quando quiser.
 							</p>
-							<div className="flex justify-center relative z-10">
-								<Button
-									onClick={() => navigate("/login?mode=signup")}
-									className="h-12 sm:h-14 w-full sm:w-auto px-6 sm:px-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-base sm:text-lg shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-transform sm:hover:scale-105 active:scale-95 flex items-center justify-center gap-2 whitespace-normal text-center">
-									Quero testar 7 dias grátis <ArrowRight className="w-5 h-5" />
-								</Button>
-							</div>
+							<button
+								onClick={() => navigate("/login?mode=signup")}
+								className="relative overflow-hidden h-16 px-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_60px_-10px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.8)] active:scale-95 animate-border-glow btn-shine inline-flex items-center gap-3">
+								Organizar minha arena agora <ArrowRight className="w-5 h-5" />
+							</button>
 						</div>
-					</div>
+					</ScrollReveal>
 				</section>
 
 				<PremiumFooter />

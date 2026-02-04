@@ -250,7 +250,7 @@ const SidebarFixed = ({
 					</button>
 				</div>
 
-				<div className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5 custom-scrollbar">
+				<div className="flex-1 overflow-y-auto py-6 px-3 space-y-2 custom-scrollbar">
 					{/* Trial Countdown */}
 					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
 
@@ -333,10 +333,10 @@ const SidebarFixed = ({
 									setMobileOpen(false);
 								}}
 								className={cn(
-									"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+									"w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group relative outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
 									activeView === item.id ?
-										"bg-white/10 text-white font-medium border-l-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.06)]"
-									:	"text-gray-400 hover:bg-white/5 hover:text-white",
+										"bg-emerald-500/15 text-white font-semibold border border-emerald-500/30 shadow-lg shadow-emerald-500/10"
+									:	"text-gray-400 hover:bg-white/5 hover:text-white border border-transparent",
 									collapsed ? "justify-center" : "",
 								)}>
 								<item.icon
@@ -353,16 +353,16 @@ const SidebarFixed = ({
 								)}
 							</button>
 						);
-						return collapsed ? (
-							<Tooltip key={item.id} delayDuration={300}>
-								<TooltipTrigger asChild>{btn}</TooltipTrigger>
-								<TooltipContent side="right" className="bg-surface-2 border-white/10 text-white">
-									{item.label}
-								</TooltipContent>
-							</Tooltip>
-						) : (
-							<div key={item.id}>{btn}</div>
-						);
+						return collapsed ?
+								<Tooltip key={item.id} delayDuration={300}>
+									<TooltipTrigger asChild>{btn}</TooltipTrigger>
+									<TooltipContent
+										side="right"
+										className="bg-surface-2 border-white/10 text-white">
+										{item.label}
+									</TooltipContent>
+								</Tooltip>
+							:	<div key={item.id}>{btn}</div>;
 					})}
 
 					{/* Divisor sutil: Operação vs Sistema */}
@@ -375,7 +375,7 @@ const SidebarFixed = ({
 				</div>
 
 				<div className="p-3 border-t border-white/5 bg-black/20 backdrop-blur-md">
-					{collapsed ? (
+					{collapsed ?
 						<Tooltip delayDuration={300}>
 							<TooltipTrigger asChild>
 								<button
@@ -385,32 +385,35 @@ const SidebarFixed = ({
 									}}
 									className={cn(
 										"w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
-										activeView === "config" && "bg-white/5 text-white border-l-emerald-500",
+										activeView === "config" &&
+											"bg-white/5 text-white border-l-emerald-500",
 									)}>
 									<Settings className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
-							<TooltipContent side="right" className="bg-surface-2 border-white/10 text-white">
+							<TooltipContent
+								side="right"
+								className="bg-surface-2 border-white/10 text-white">
 								Configurações
 							</TooltipContent>
 						</Tooltip>
-					) : (
-						<button
+					:	<button
 							onClick={() => {
 								setActiveView("config");
 								setMobileOpen(false);
 							}}
 							className={cn(
 								"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
-								activeView === "config" && "bg-white/5 text-white border-l-emerald-500",
+								activeView === "config" &&
+									"bg-white/5 text-white border-l-emerald-500",
 							)}>
 							<Settings className="h-5 w-5 shrink-0" />
 							<span className="text-sm">Configurações</span>
 						</button>
-					)}
+					}
 
 					{/* Botão de Suporte */}
-					{collapsed ? (
+					{collapsed ?
 						<Tooltip delayDuration={300}>
 							<TooltipTrigger asChild>
 								<button
@@ -422,12 +425,13 @@ const SidebarFixed = ({
 									<Headphones className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
-							<TooltipContent side="right" className="bg-surface-2 border-white/10 text-white">
+							<TooltipContent
+								side="right"
+								className="bg-surface-2 border-white/10 text-white">
 								Suporte
 							</TooltipContent>
 						</Tooltip>
-					) : (
-						<button
+					:	<button
 							onClick={() => {
 								setSupportModalOpen(true);
 								setMobileOpen(false);
@@ -436,7 +440,7 @@ const SidebarFixed = ({
 							<Headphones className="h-5 w-5 shrink-0" />
 							<span className="text-sm">Suporte</span>
 						</button>
-					)}
+					}
 
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -444,7 +448,9 @@ const SidebarFixed = ({
 								type="button"
 								className={cn(
 									"w-full flex items-center gap-3 p-2 rounded-xl border border-white/5 bg-white/5 mt-2 transition-all duration-200 hover:bg-white/10 hover:border-white/10 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507] active:scale-[0.98]",
-									collapsed ? "justify-center border-none bg-transparent p-0" : "",
+									collapsed ?
+										"justify-center border-none bg-transparent p-0"
+									:	"",
 								)}>
 								<div className="h-9 w-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
 									{userProfile?.avatar_url ?
@@ -560,7 +566,10 @@ const ArenaSysStatusHero = ({
 		<div
 			className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-surface-2/80 border border-white/5 p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-md ${statusConfig.glow}`}>
 			{/* Linha superior com shimmer sutil (elemento memorável) */}
-			<div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent animate-hero-line" aria-hidden />
+			<div
+				className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent animate-hero-line"
+				aria-hidden
+			/>
 
 			<div className="relative z-10 flex flex-col items-center text-center space-y-2 sm:space-y-3">
 				<p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 w-full text-left sm:text-center">
@@ -616,32 +625,57 @@ type MetricPillProps = {
 	trend?: string;
 };
 
-const MetricPill = ({ label, value, icon: Icon, trend }: MetricPillProps) => (
-	<div className="flex flex-col p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 backdrop-blur-md group hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/5">
-		<div className="flex justify-between items-start mb-1 sm:mb-2">
-			<span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
-				{label}
-			</span>
-			{Icon && (
-				<span className="rounded-lg bg-emerald-500/10 p-1.5 ring-1 ring-white/5 transition-colors duration-300 group-hover:bg-emerald-500/20 group-hover:ring-emerald-500/20">
-					<Icon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-emerald-400 transition-colors duration-300 flex-shrink-0" />
+const MetricPill = ({
+	label,
+	value,
+	icon: Icon,
+	trend,
+	emptyAction,
+}: MetricPillProps & {
+	emptyAction?: { label: string; onClick: () => void };
+}) => {
+	// Check if value is zero-ish (for empty state)
+	const isZero =
+		value?.toString?.().includes("0,00") ||
+		value?.toString?.().includes("0%") ||
+		value === 0;
+
+	return (
+		<div className="flex flex-col p-4 sm:p-5 rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 backdrop-blur-md group hover:scale-[1.02] shadow-sm hover:shadow-lg hover:shadow-emerald-500/5">
+			<div className="flex justify-between items-start mb-2">
+				<span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
+					{label}
 				</span>
+				{Icon && (
+					<span className="rounded-xl bg-emerald-500/10 p-2 ring-1 ring-emerald-500/20 transition-colors duration-300 group-hover:bg-emerald-500/20 group-hover:ring-emerald-500/30">
+						<Icon className="w-4 h-4 text-emerald-400 transition-colors duration-300 flex-shrink-0" />
+					</span>
+				)}
+			</div>
+			<span className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate min-w-0 tabular-nums">
+				{value}
+			</span>
+			{trend && (
+				<p
+					className={cn(
+						"text-[10px] font-medium mt-1.5",
+						trend.startsWith("+") ? "text-emerald-400"
+						: trend.startsWith("-") ? "text-red-400/90"
+						: "text-gray-500",
+					)}>
+					{trend} vs semana passada
+				</p>
+			)}
+			{isZero && emptyAction && (
+				<button
+					onClick={emptyAction.onClick}
+					className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+					{emptyAction.label} →
+				</button>
 			)}
 		</div>
-		<span className="text-lg sm:text-xl font-bold text-white tracking-tight truncate min-w-0 tabular-nums">
-			{value}
-		</span>
-		{trend && (
-			<p
-				className={cn(
-					"text-[10px] font-medium mt-1",
-					trend.startsWith("+") ? "text-emerald-400" : trend.startsWith("-") ? "text-red-400/90" : "text-gray-500",
-				)}>
-				{trend} vs semana passada
-			</p>
-		)}
-	</div>
-);
+	);
+};
 
 // --- TELA PRINCIPAL (Layout Controller) ---
 export default function DashboardHome() {
@@ -1102,17 +1136,20 @@ export default function DashboardHome() {
 		const revenueLastWeekSameDay = lastWeekSameDayBookings.reduce((acc, b) => {
 			if (b.paidAmount && b.paidAmount > 0) return acc + b.paidAmount;
 			const statusStr = String(b.status || "");
-			if (b.paymentStatus === "paid" || statusStr === "in_progress" || statusStr === "completed") {
+			if (
+				b.paymentStatus === "paid" ||
+				statusStr === "in_progress" ||
+				statusStr === "completed"
+			) {
 				return acc + (b.totalPrice || 0);
 			}
 			return acc;
 		}, 0);
 		const trendToday =
-			revenueLastWeekSameDay > 0
-				? `${revenueToday >= revenueLastWeekSameDay ? "+" : ""}${(((revenueToday - revenueLastWeekSameDay) / revenueLastWeekSameDay) * 100).toFixed(0)}%`
-				: revenueToday > 0
-				? "+100%"
-				: undefined;
+			revenueLastWeekSameDay > 0 ?
+				`${revenueToday >= revenueLastWeekSameDay ? "+" : ""}${(((revenueToday - revenueLastWeekSameDay) / revenueLastWeekSameDay) * 100).toFixed(0)}%`
+			: revenueToday > 0 ? "+100%"
+			: undefined;
 		return {
 			revenueToday,
 			revenueMonth,
@@ -1489,7 +1526,9 @@ export default function DashboardHome() {
 				{/* Trial Banner */}
 				<TrialBanner tenantId={tenantId || ""} />
 
-				<main data-dashboard className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+				<main
+					data-dashboard
+					className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
 					{activeView === "dashboard" && (
 						<div className="space-y-6">
 							<ArenaSysStatusHero
@@ -1500,9 +1539,9 @@ export default function DashboardHome() {
 								planPill={planPill}
 							/>
 
-							<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+							<div className="grid grid-cols-3 gap-4">
 								<MetricPill
-									label="Hoje"
+									label="Receita Hoje"
 									value={
 										<AnimatedNumber
 											value={stats.revenueToday}
@@ -1515,26 +1554,14 @@ export default function DashboardHome() {
 									trend={stats.trendToday}
 								/>
 								<MetricPill
-									label="Mês"
-									value={
-										<AnimatedNumber
-											value={stats.revenueMonth}
-											prefix="R$ "
-											decimals={2}
-											duration={2000}
-										/>
-									}
-									icon={Calendar}
-								/>
-								<MetricPill
-									label="Jogos"
+									label="Jogos Hoje"
 									value={
 										<AnimatedNumber value={stats.gamesToday} duration={1500} />
 									}
 									icon={Trophy}
 								/>
 								<MetricPill
-									label="Ocupação"
+									label="Ocupação Hoje"
 									value={
 										<AnimatedNumber
 											value={occupancyAvg}
@@ -1556,17 +1583,29 @@ export default function DashboardHome() {
 									</CardHeader>
 									<CardContent className="h-[200px] sm:h-[250px] px-2 sm:px-4">
 										{stats.chartHasNoData && (
-											<p className="text-gray-500 text-xs mb-2 text-center">
-												Nenhuma receita nesta semana ainda —{" "}
+											<div className="flex flex-col items-center justify-center py-6 text-center">
+												<div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3">
+													<Activity className="w-7 h-7 text-emerald-400/50" />
+												</div>
+												<p className="text-gray-400 text-sm font-medium mb-1">
+													Tudo pronto para começar!
+												</p>
+												<p className="text-gray-500 text-xs mb-3">
+													Agende o primeiro jogo e veja a mágica acontecer
+												</p>
 												<button
 													type="button"
 													onClick={() => setActiveView("agenda")}
-													className="text-emerald-400 hover:text-emerald-300 underline">
-													Ver agenda
+													className="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-medium rounded-full transition-colors">
+													Agendar primeiro jogo +
 												</button>
-											</p>
+											</div>
 										)}
-										<ResponsiveContainer width="100%" height={stats.chartHasNoData ? "calc(100% - 28px)" : "100%"}>
+										<ResponsiveContainer
+											width="100%"
+											height={
+												stats.chartHasNoData ? "calc(100% - 28px)" : "100%"
+											}>
 											<AreaChart
 												data={stats.chartData}
 												margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
@@ -1632,7 +1671,7 @@ export default function DashboardHome() {
 								</Card>
 
 								{focusCourt && (
-									<Card className="bg-surface-2/80 border border-white/5 rounded-3xl relative overflow-hidden group backdrop-blur-md">
+									<Card className="bg-surface-2/80 border border-white/5 rounded-2xl relative overflow-hidden group backdrop-blur-md shadow-sm hover:shadow-lg transition-shadow">
 										<CardContent className="p-6 flex flex-col justify-between h-full">
 											<div>
 												<div className="flex justify-between items-start mb-4">
@@ -1654,15 +1693,17 @@ export default function DashboardHome() {
 													<div
 														className={cn(
 															"h-full rounded-full transition-all duration-500",
-															focusCourt.occupancy >= 80 ? "bg-amber-500" :
-															focusCourt.occupancy >= 50 ? "bg-emerald-500" :
-															"bg-emerald-500/70",
+															focusCourt.occupancy >= 80 ? "bg-amber-500"
+															: focusCourt.occupancy >= 50 ? "bg-emerald-500"
+															: "bg-emerald-500/70",
 														)}
-														style={{ width: `${Math.min(focusCourt.occupancy, 100)}%` }}
+														style={{
+															width: `${Math.min(focusCourt.occupancy, 100)}%`,
+														}}
 													/>
 												</div>
 											</div>
-											<div className="mt-4 pt-4 border-t border-white/5 space-y-3">
+											<div className="mt-4 pt-4 border-t border-white/[0.08] space-y-3">
 												<div>
 													<p className="text-[10px] text-gray-500 uppercase mb-1">
 														Próximo livre
@@ -1693,27 +1734,39 @@ export default function DashboardHome() {
 					)}
 
 					{activeView === "agenda" && (
-						<div key="agenda" className="animate-in fade-in slide-in-from-right-2 duration-300">
+						<div
+							key="agenda"
+							className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<AgendaMaster />
 						</div>
 					)}
 					{activeView === "financeiro" && (
-						<div key="financeiro" className="animate-in fade-in slide-in-from-right-2 duration-300">
-							<FinanceiroView onNavigateToAgenda={() => setActiveView("agenda")} />
+						<div
+							key="financeiro"
+							className="animate-in fade-in slide-in-from-right-2 duration-300">
+							<FinanceiroView
+								onNavigateToAgenda={() => setActiveView("agenda")}
+							/>
 						</div>
 					)}
 					{activeView === "mensalistas" && (
-						<div key="mensalistas" className="animate-in fade-in slide-in-from-right-2 duration-300">
+						<div
+							key="mensalistas"
+							className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<MensalistasView />
 						</div>
 					)}
 					{activeView === "folgas" && (
-						<div key="folgas" className="animate-in fade-in slide-in-from-right-2 duration-300">
+						<div
+							key="folgas"
+							className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<FolgasView />
 						</div>
 					)}
 					{activeView === "config" && (
-						<div key="config" className="animate-in fade-in slide-in-from-right-2 duration-300">
+						<div
+							key="config"
+							className="animate-in fade-in slide-in-from-right-2 duration-300">
 							<ConfiguracoesView />
 						</div>
 					)}

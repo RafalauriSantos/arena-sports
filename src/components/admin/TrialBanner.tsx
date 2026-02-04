@@ -11,124 +11,78 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 interface TrialBannerProps {
-  tenantId: string;
+	tenantId: string;
 }
 
 export function TrialBanner({ tenantId }: TrialBannerProps) {
-  const trial = useTrialStatus(tenantId);
-  const navigate = useNavigate();
-  const [dismissed, setDismissed] = useState(false);
+	const trial = useTrialStatus(tenantId);
+	const navigate = useNavigate();
+	const [dismissed, setDismissed] = useState(false);
 
-  // Não mostra se não há trial ativo ou foi dismissado
-  if (!trial?.isActive || dismissed) return null;
+	// Não mostra se não há trial ativo ou foi dismissado
+	if (!trial?.isActive || dismissed) return null;
 
-  const isUrgent = trial.daysRemaining <= 2;
-  const isCritical = trial.hoursRemaining <= 24;
-  const isLastHours = trial.hoursRemaining <= 3;
+	const isUrgent = trial.daysRemaining <= 2;
+	const isCritical = trial.hoursRemaining <= 24;
+	const isLastHours = trial.hoursRemaining <= 3;
 
-  // Permite fechar apenas se não for crítico
-  const canDismiss = !isCritical;
+	// Permite fechar apenas se não for crítico
+	const canDismiss = !isCritical;
 
-  const handleBannerClick = () => {
-    navigate("/dashboard?view=config&tab=billing");
-  };
+	const handleBannerClick = () => {
+		navigate("/dashboard?view=config&tab=billing");
+	};
 
-  return (
-    <div
-      onClick={handleBannerClick}
-      className={cn(
-        "w-full px-4 py-3 flex items-center justify-between gap-4",
-        "border-b transition-all duration-300",
-        "cursor-pointer hover:opacity-90",
-        isLastHours
-          ? "bg-red-600/20 border-red-500/50 animate-pulse"
-          : isCritical
-          ? "bg-red-500/10 border-red-500/30"
-          : isUrgent
-          ? "bg-orange-500/10 border-orange-500/30"
-          : "bg-blue-500/10 border-blue-500/30"
-      )}
-    >
-      <div className="flex items-center gap-3 flex-1">
-        {isLastHours ? (
-          <AlertCircle className="h-5 w-5 text-red-500 animate-pulse" />
-        ) : isCritical ? (
-          <AlertCircle className="h-5 w-5 text-red-500" />
-        ) : isUrgent ? (
-          <Clock className="h-5 w-5 text-orange-500" />
-        ) : (
-          <Sparkles className="h-5 w-5 text-blue-500" />
-        )}
+	return (
+		<div className="w-full flex justify-center py-2 px-4">
+			<div
+				onClick={handleBannerClick}
+				className={cn(
+					"inline-flex items-center gap-2 px-4 py-1.5 rounded-full cursor-pointer transition-all duration-300 hover:scale-[1.02]",
+					isLastHours ?
+						"bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/40 animate-pulse"
+					: isCritical ?
+						"bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30"
+					: isUrgent ?
+						"bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30"
+					:	"bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/30",
+				)}>
+				{isLastHours ?
+					<AlertCircle className="h-3.5 w-3.5 text-red-400 animate-pulse" />
+				: isCritical ?
+					<AlertCircle className="h-3.5 w-3.5 text-red-400" />
+				: isUrgent ?
+					<Clock className="h-3.5 w-3.5 text-orange-400" />
+				:	<Sparkles className="h-3.5 w-3.5 text-amber-400" />}
 
-        <div className="flex-1">
-          <p className="font-semibold text-sm">
-            {isLastHours ? (
-              <>
-                🚨 <span className="text-red-500">ÚLTIMAS HORAS!</span> Seu trial expira em{" "}
-                <span className="text-red-500 font-bold">{trial.hoursRemaining}h</span>
-              </>
-            ) : isCritical ? (
-              <>
-                ⚠️ <span className="text-red-500">ÚLTIMO DIA DE TRIAL!</span> Expira hoje às 23:59
-              </>
-            ) : isUrgent ? (
-              <>
-                ⏰ Faltam apenas{" "}
-                <span className="text-orange-500 font-bold">
-                  {trial.daysRemaining} dia{trial.daysRemaining !== 1 ? "s" : ""}
-                </span>{" "}
-                de trial
-              </>
-            ) : (
-              <>
-                🎉 Você tem{" "}
-                <span className="text-blue-500 font-bold">
-                  {trial.daysRemaining} dias
-                </span>{" "}
-                grátis para testar tudo
-              </>
-            )}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {isCritical ? (
-              "Assine agora e não perca seu progresso! 💳"
-            ) : (
-              <>
-                Trial de 7 dias •{" "}
-                Expira em {new Date(trial.trialEndsAt).toLocaleDateString("pt-BR")}
-              </>
-            )}
-          </p>
-        </div>
-      </div>
+				<span className="text-xs font-medium">
+					{isLastHours ?
+						<span className="text-red-300">
+							🚨 Últimas {trial.hoursRemaining}h de trial
+						</span>
+					: isCritical ?
+						<span className="text-red-300">⚠️ Último dia de trial</span>
+					: isUrgent ?
+						<span className="text-orange-300">
+							⏰ {trial.daysRemaining} dias restantes
+						</span>
+					:	<span className="text-amber-300">
+							💎 Trial: {trial.daysRemaining} dias restantes
+						</span>
+					}
+				</span>
 
-      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-        <Button
-          onClick={handleBannerClick}
-          variant={isCritical ? "destructive" : isUrgent ? "default" : "outline"}
-          size="sm"
-          className={cn(
-            "shrink-0 font-semibold",
-            isLastHours && "animate-pulse"
-          )}
-        >
-          {isCritical ? "Assinar Agora!" : isUrgent ? "Ver Planos" : "Upgrade"}
-        </Button>
-
-        {canDismiss && (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              setDismissed(true);
-            }}
-            variant="ghost"
-            size="sm"
-            className="shrink-0 p-1 h-auto text-gray-400 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
+				{canDismiss && (
+					<button
+						onClick={(e) => {
+							e.stopPropagation();
+							setDismissed(true);
+						}}
+						className="ml-1 p-0.5 rounded-full hover:bg-white/10 transition-colors">
+						<X className="h-3 w-3 text-gray-400 hover:text-white" />
+					</button>
+				)}
+			</div>
+		</div>
+	);
 }
