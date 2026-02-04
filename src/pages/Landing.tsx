@@ -929,7 +929,7 @@ export default function LandingPage() {
 			/>
 			<div
 				data-seo-ready
-				className="relative min-h-screen bg-[#020205] text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+				className="relative min-h-screen text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
 				{/* ═══════════════════════════════════════════════════════════════════
 				    🌌 COSMIC BACKGROUND — De cair o queixo
 				    ═══════════════════════════════════════════════════════════════════ */}
@@ -1348,9 +1348,9 @@ export default function LandingPage() {
 
 						{/* Mobile menu */}
 						{mobileMenuOpen && (
-							<div className="absolute top-full left-0 right-0 mt-3 mx-2 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden">
+							<div className="absolute top-full left-0 right-0 mt-3 mx-2 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden z-[100]">
 								<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent opacity-50" />
-								<div className="relative p-5 bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/10 rounded-3xl">
+								<div className="relative p-5 bg-[#0a0a0a] backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl shadow-black/50">
 									<a
 										href="#pricing"
 										onClick={() => setMobileMenuOpen(false)}
@@ -1452,7 +1452,7 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- SEÇÃO PROBLEMA: com cards 3D tilt --- */}
-				<section className="relative py-28 px-4 bg-[#03050c]">
+				<section className="relative py-28 px-4">
 					<div className="max-w-5xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
 							<p className="text-red-400/80 text-sm font-bold uppercase tracking-widest mb-3">
@@ -1536,7 +1536,7 @@ export default function LandingPage() {
 								},
 							].map((item, i) => (
 								<ScrollReveal key={i} delay={i * 75}>
-									<div className="p-6 rounded-2xl bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 flex items-center gap-4 transition-all duration-300 hover:bg-[#0F1115]/80">
+									<div className="p-6 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 flex items-center gap-4 transition-all duration-300 hover:bg-white/[0.06]">
 										<div className="flex-1">
 											<p className="text-red-400/70 text-sm line-through mb-2">
 												{item.before}
@@ -1579,7 +1579,7 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- COMO FUNCIONA: 3 passos com reveal --- */}
-				<section className="relative py-32 px-4 bg-[#03050c]">
+				<section className="relative py-32 px-4">
 					<div className="max-w-5xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
 							<h2 className="text-3xl md:text-5xl font-black text-white mb-4">
@@ -1606,7 +1606,7 @@ export default function LandingPage() {
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.step} delay={i * 150}>
-									<TiltCard className="text-center p-8 rounded-3xl bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
+									<TiltCard className="text-center p-8 rounded-3xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
 										<div className="w-20 h-20 bg-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-emerald-400 font-black text-3xl border border-emerald-500/30">
 											{item.step}
 										</div>
@@ -1657,9 +1657,9 @@ export default function LandingPage() {
 						</ScrollReveal>
 
 						<ScrollReveal delay={200}>
-							<TiltCard className="relative rounded-3xl p-10 bg-[#0F1115] border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
+							<TiltCard className="relative rounded-3xl p-10 pt-14 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
 								{foundersProgress && foundersProgress.remaining > 0 && (
-									<div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-sm font-bold px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30">
+									<div className="absolute -top-4 md:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs md:text-sm font-bold px-4 md:px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
 										🎉 FOUNDERS: Preço travado pra sempre
 									</div>
 								)}
@@ -1788,10 +1788,10 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- SEÇÃO RISCO ZERO --- */}
-				<section className="relative py-24 px-4 bg-[#03050c]">
+				<section className="relative py-24 px-4">
 					<ScrollReveal>
 						<div className="max-w-4xl mx-auto">
-							<div className="p-12 rounded-3xl bg-gradient-to-br from-[#0F1115] to-[#0a0c10] border border-white/10 text-center">
+							<div className="p-12 rounded-3xl bg-black/30 backdrop-blur-md border border-white/10 text-center">
 								<div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
 									<ShieldCheck className="w-10 h-10 text-emerald-500" />
 								</div>
@@ -1830,7 +1830,7 @@ export default function LandingPage() {
 						<div className="space-y-4">
 							{faqList.map((item, i) => (
 								<ScrollReveal key={i} delay={i * 75}>
-									<div className="p-6 bg-[#0F1115] border border-white/10 rounded-2xl hover:border-white/20 transition-colors duration-300">
+									<div className="p-6 bg-white/[0.03] backdrop-blur-sm border border-white/10 rounded-2xl hover:border-white/20 transition-colors duration-300">
 										<h3 className="text-white font-bold text-lg mb-2">
 											{item.question}
 										</h3>

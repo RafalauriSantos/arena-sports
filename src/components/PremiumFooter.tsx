@@ -4,7 +4,7 @@ import { Zap, Lock, ShieldCheck } from "lucide-react";
 
 export function PremiumFooter() {
 	return (
-		<footer className="bg-[#0a0a0a] border-t border-white/[0.04]">
+		<footer className="relative z-50 bg-[#050507] border-t border-emerald-500/10">
 			{/* Newsletter Section */}
 			<div className="border-b border-white/[0.04]">
 				<div className="max-w-6xl mx-auto px-6 py-12">
