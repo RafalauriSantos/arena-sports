@@ -18,22 +18,22 @@ import { useToast } from "@/hooks/use-toast";
 const PaymentDrawer = lazy(() =>
 	import("@/components/PaymentDrawer").then((module) => ({
 		default: module.PaymentDrawer,
-	}))
+	})),
 );
 const SuccessScreen = lazy(() =>
 	import("@/components/SuccessScreen").then((module) => ({
 		default: module.SuccessScreen,
-	}))
+	})),
 );
 const BookingConfirmation = lazy(() =>
 	import("@/components/BookingConfirmation").then((module) => ({
 		default: module.BookingConfirmation,
-	}))
+	})),
 );
 const BookingHistory = lazy(() =>
 	import("@/components/BookingHistory").then((module) => ({
 		default: module.BookingHistory,
-	}))
+	})),
 );
 
 type View = "login" | "player" | "success" | "confirmation" | "history";
@@ -60,16 +60,16 @@ const Index = () => {
 
 	const filteredSlots = useMemo(() => {
 		return timeSlots.filter(
-			(slot) => slot.fieldId === selectedField && slot.date === selectedDateStr
+			(slot) => slot.fieldId === selectedField && slot.date === selectedDateStr,
 		);
 	}, [timeSlots, selectedField, selectedDateStr]);
 
 	const userBookings = useMemo(
 		() =>
 			bookings.filter(
-				(b) => b.bookedBy === userPhone || b.players.includes(userPhone)
+				(b) => b.bookedBy === userPhone || b.players.includes(userPhone),
 			),
-		[bookings, userPhone]
+		[bookings, userPhone],
 	);
 
 	const displayDate = format(selectedDate, "EEEE, d 'de' MMMM", {
@@ -85,7 +85,7 @@ const Index = () => {
 				description: "Escolha seu horário para jogar",
 			});
 		},
-		[toast]
+		[toast],
 	);
 
 	const handleSlotClick = useCallback((slot: TimeSlot) => {
@@ -131,23 +131,23 @@ const Index = () => {
 
 			toast({
 				title:
-					paymentType === "pix"
-						? "Reserva confirmada!"
-						: "Solicitação enviada!",
+					paymentType === "pix" ?
+						"Reserva confirmada!"
+					:	"Solicitação enviada!",
 				description:
-					paymentType === "pix"
-						? "Seu horário está garantido."
-						: "Aguardando aprovação do dono da arena.",
+					paymentType === "pix" ?
+						"Seu horário está garantido."
+					:	"Aguardando aprovação do dono da arena.",
 			});
 		},
-		[addBooking, toast, updateTimeSlot]
+		[addBooking, toast, updateTimeSlot],
 	);
 
 	const handlePaymentSelection = useCallback(
 		(slot: TimeSlot, paymentType: PaymentType, name: string) => {
 			handleBookingConfirm(slot, paymentType, name);
 		},
-		[handleBookingConfirm]
+		[handleBookingConfirm],
 	);
 
 	const handleUpdatePlayers = useCallback(
@@ -157,7 +157,7 @@ const Index = () => {
 			setCurrentBooking((prev) => (prev ? { ...prev, players } : null));
 			updateBooking(currentBooking.id, { players });
 		},
-		[currentBooking, updateBooking]
+		[currentBooking, updateBooking],
 	);
 
 	const handleCancelBooking = useCallback(
@@ -170,7 +170,7 @@ const Index = () => {
 				description: `A reserva de ${booking?.bookedBy} foi cancelada.`,
 			});
 		},
-		[bookings, deleteBooking, toast]
+		[bookings, deleteBooking, toast],
 	);
 
 	const handleBackFromSuccess = useCallback(() => {

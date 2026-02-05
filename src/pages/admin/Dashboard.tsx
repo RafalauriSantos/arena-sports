@@ -1511,7 +1511,7 @@ export default function DashboardHome() {
 
 			<div
 				className={cn(
-					"relative z-10 flex flex-col min-h-screen transition-all duration-300 ease-out",
+					"relative z-10 flex flex-col transition-all duration-300 ease-out",
 					collapsed ? "md:pl-20" : "md:pl-72",
 				)}>
 				{/* Header Mobile */}

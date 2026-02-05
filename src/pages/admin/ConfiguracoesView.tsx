@@ -48,7 +48,12 @@ import AvatarUpload from "@/components/admin/AvatarUpload";
 import { OperatingHoursSettings } from "@/components/settings/OperatingHoursSettings";
 import { CpfCnpjInput } from "@/components/ui/CpfCnpjInput";
 import { formatPhoneInput } from "@/lib/phoneFormat";
-import { formatCep, unformatCep, fetchAddressByCep, isValidCep } from "@/lib/cep";
+import {
+	formatCep,
+	unformatCep,
+	fetchAddressByCep,
+	isValidCep,
+} from "@/lib/cep";
 
 // --- Componentes Auxiliares ---
 const StatusBadge = ({
@@ -60,9 +65,9 @@ const StatusBadge = ({
 }) => (
 	<span
 		className={`px-2 py-1 rounded-full text-xs font-bold ${
-			status === "success"
-				? "bg-green-500/20 text-green-400"
-				: "bg-yellow-500/20 text-yellow-400"
+			status === "success" ?
+				"bg-green-500/20 text-green-400"
+			:	"bg-yellow-500/20 text-yellow-400"
 		}`}>
 		{children}
 	</span>
@@ -99,7 +104,9 @@ function PremiumCard({
 	return (
 		<Card className="bg-surface-2/90 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl hover:border-white/10 transition-colors duration-300">
 			<CardHeader className="pb-4">
-				<CardTitle className="text-lg font-semibold text-white tracking-tight">{title}</CardTitle>
+				<CardTitle className="text-lg font-semibold text-white tracking-tight">
+					{title}
+				</CardTitle>
 				<CardDescription className="text-sm text-gray-500">
 					{description}
 				</CardDescription>
@@ -111,7 +118,7 @@ function PremiumCard({
 
 function LoadingSkeleton() {
 	return (
-		<div className="min-h-screen bg-gray-950 p-6 space-y-8">
+		<div className="bg-gray-950 p-6 space-y-8">
 			<div className="max-w-5xl mx-auto space-y-8">
 				<Skeleton className="h-12 w-48 bg-gray-800" />
 				<Skeleton className="h-12 w-full bg-gray-800" />
@@ -130,7 +137,7 @@ export default function ConfiguracoesView() {
 	const [searchParams] = useSearchParams();
 	const tabParam = searchParams.get("tab");
 	const [activeTab, setActiveTab] = useState(tabParam || "arena-sys");
-	
+
 	const {
 		loading,
 		saving,
@@ -153,7 +160,18 @@ export default function ConfiguracoesView() {
 
 	// Atualizar tab quando o parâmetro da URL mudar
 	useEffect(() => {
-		if (tabParam && ["perfil", "arena-sys", "quadras", "horarios", "cobranca", "marketing", "billing"].includes(tabParam)) {
+		if (
+			tabParam &&
+			[
+				"perfil",
+				"arena-sys",
+				"quadras",
+				"horarios",
+				"cobranca",
+				"marketing",
+				"billing",
+			].includes(tabParam)
+		) {
 			setActiveTab(tabParam);
 		}
 	}, [tabParam]);
@@ -163,7 +181,7 @@ export default function ConfiguracoesView() {
 	const [copied, setCopied] = useState(false);
 	const [selectedPlan] = useState<"pro">("pro"); // Apenas um plano agora
 	const [billingInterval, setBillingInterval] = useState<"month" | "year">(
-		"month"
+		"month",
 	);
 	const [startingCheckout, setStartingCheckout] = useState(false);
 	const [syncingCheckout, setSyncingCheckout] = useState(false);
@@ -177,21 +195,21 @@ export default function ConfiguracoesView() {
 	// Função para buscar CEP automaticamente
 	const handleCepSearch = async (cep: string) => {
 		const cleanCep = unformatCep(cep);
-		
+
 		if (cleanCep.length !== 8) return;
-		
+
 		setSearchingCep(true);
-		
+
 		try {
 			const data = await fetchAddressByCep(cleanCep);
-			
+
 			if (data) {
 				// Atualiza os campos automaticamente
 				updateTenant("street", data.logradouro);
 				updateTenant("neighborhood", data.bairro);
 				updateTenant("city", data.localidade);
 				updateTenant("state", data.uf);
-				
+
 				toast({
 					title: "CEP encontrado!",
 					description: `${data.logradouro}, ${data.bairro} - ${data.localidade}/${data.uf}`,
@@ -200,7 +218,8 @@ export default function ConfiguracoesView() {
 		} catch (error) {
 			toast({
 				title: "Erro ao buscar CEP",
-				description: error instanceof Error ? error.message : "Tente novamente.",
+				description:
+					error instanceof Error ? error.message : "Tente novamente.",
 				variant: "destructive",
 			});
 		} finally {
@@ -210,24 +229,26 @@ export default function ConfiguracoesView() {
 
 	const computeTrialDaysLeft = () => {
 		if (subscription.status !== "trial") return null;
-		const startedAt = subscription.trial_started_at
-			? new Date(subscription.trial_started_at)
-			: null;
+		const startedAt =
+			subscription.trial_started_at ?
+				new Date(subscription.trial_started_at)
+			:	null;
 		// SEMPRE usar 7 dias (não mais 21)
-		const endsAt = subscription.trial_ends_at
-			? new Date(subscription.trial_ends_at)
-			: startedAt
-			? new Date(new Date(startedAt).setDate(startedAt.getDate() + 7))
-			: null;
+		const endsAt =
+			subscription.trial_ends_at ? new Date(subscription.trial_ends_at)
+			: startedAt ?
+				new Date(new Date(startedAt).setDate(startedAt.getDate() + 7))
+			:	null;
 		if (!endsAt) return null;
 		// Garantir que não seja mais que 7 dias a partir de startedAt
-		const maxEndsAt = startedAt 
-			? new Date(new Date(startedAt).setDate(startedAt.getDate() + 7))
-			: endsAt;
+		const maxEndsAt =
+			startedAt ?
+				new Date(new Date(startedAt).setDate(startedAt.getDate() + 7))
+			:	endsAt;
 		const finalEndsAt = endsAt > maxEndsAt ? maxEndsAt : endsAt;
 		return Math.max(
 			0,
-			Math.ceil((finalEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+			Math.ceil((finalEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
 		);
 	};
 
@@ -356,7 +377,7 @@ export default function ConfiguracoesView() {
 			const cpfCnpj = formData.tenant.cpf_cnpj?.replace(/\D/g, "") || "";
 			if (!cpfCnpj || (cpfCnpj.length !== 11 && cpfCnpj.length !== 14)) {
 				throw new Error(
-					"CPF/CNPJ é obrigatório para realizar a assinatura. Preencha seus dados cadastrais antes de continuar."
+					"CPF/CNPJ é obrigatório para realizar a assinatura. Preencha seus dados cadastrais antes de continuar.",
 				);
 			}
 
@@ -376,7 +397,7 @@ export default function ConfiguracoesView() {
 			if (!data?.url) {
 				console.error("❌ Checkout não retornou URL. Resposta completa:", data);
 				throw new Error(
-					"Checkout não retornou URL. Verifique os logs da Edge Function."
+					"Checkout não retornou URL. Verifique os logs da Edge Function.",
 				);
 			}
 
@@ -399,9 +420,10 @@ export default function ConfiguracoesView() {
 				/failed to fetch|networkerror|load failed/i.test(message);
 			toast({
 				title: "Não foi possível iniciar a assinatura",
-				description: isNetworkError
-					? "Falha de conexão com a Edge Function. Verifique se a função 'asaas-create-checkout' está deployada e se VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY estão corretas no ambiente."
-					: message,
+				description:
+					isNetworkError ?
+						"Falha de conexão com a Edge Function. Verifique se a função 'asaas-create-checkout' está deployada e se VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY estão corretas no ambiente."
+					:	message,
 				variant: "destructive",
 			});
 		} finally {
@@ -429,16 +451,20 @@ export default function ConfiguracoesView() {
 
 	const getPublicLink = () => {
 		// Sempre usar domínio de produção para links compartilháveis
-		const isLocalhost = window.location.hostname === "localhost" || 
-		                     window.location.hostname.includes("127.0.0.1") ||
-		                     window.location.hostname.includes("192.168.");
-		
+		const isLocalhost =
+			window.location.hostname === "localhost" ||
+			window.location.hostname.includes("127.0.0.1") ||
+			window.location.hostname.includes("192.168.");
+
 		// Em produção, sempre usar o domínio atual
 		// Em dev, tentar variável de ambiente, senão usar o domínio de produção
-		const origin = isLocalhost
-			? (import.meta.env.VITE_PUBLIC_URL || import.meta.env.VITE_APP_URL || "https://arenasys.com.br")
-			: window.location.origin;
-		
+		const origin =
+			isLocalhost ?
+				import.meta.env.VITE_PUBLIC_URL ||
+				import.meta.env.VITE_APP_URL ||
+				"https://arenasys.com.br"
+			:	window.location.origin;
+
 		const slug = formData.tenant.subdomain || "sua-arenasys";
 		return `${origin}/agendar/${slug}`;
 	};
@@ -502,15 +528,14 @@ export default function ConfiguracoesView() {
 						onClick={saveSettings}
 						disabled={saving}
 						className="bg-white text-gray-950 hover:bg-gray-200 font-medium px-6 transition-all shadow-lg rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 h-11">
-						{saving ? (
+						{saving ?
 							<>
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
 							</>
-						) : (
-							<>
+						:	<>
 								<Save className="mr-2 h-4 w-4" /> Salvar Alterações
 							</>
-						)}
+						}
 					</Button>
 				</div>
 
@@ -518,8 +543,7 @@ export default function ConfiguracoesView() {
 				<Tabs
 					value={activeTab}
 					onValueChange={setActiveTab}
-					className="space-y-8"
-				>
+					className="space-y-8">
 					<TabsList className="w-full h-auto bg-white/5 p-1.5 rounded-2xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 border border-white/5">
 						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
 						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
@@ -668,15 +692,15 @@ export default function ConfiguracoesView() {
 												className="bg-white/5 border-white/10 text-white"
 											/>
 										</div>
-									<div className="md:col-span-2">
-										<CpfCnpjInput
-											value={formData.tenant.cpf_cnpj || ""}
-											onChange={(value) => updateTenant("cpf_cnpj", value)}
-										/>
-										<p className="text-xs text-gray-500 mt-2">
-											Obrigatório para processar pagamentos via Asaas.
-										</p>
-									</div>
+										<div className="md:col-span-2">
+											<CpfCnpjInput
+												value={formData.tenant.cpf_cnpj || ""}
+												onChange={(value) => updateTenant("cpf_cnpj", value)}
+											/>
+											<p className="text-xs text-gray-500 mt-2">
+												Obrigatório para processar pagamentos via Asaas.
+											</p>
+										</div>
 									</div>
 								</PremiumCard>
 
@@ -707,13 +731,13 @@ export default function ConfiguracoesView() {
 												<Button
 													variant="outline"
 													onClick={() => handleCepSearch(formData.tenant.cep)}
-													disabled={searchingCep || !isValidCep(formData.tenant.cep)}
+													disabled={
+														searchingCep || !isValidCep(formData.tenant.cep)
+													}
 													className="shrink-0">
-													{searchingCep ? (
+													{searchingCep ?
 														<Loader2 className="h-4 w-4 animate-spin" />
-													) : (
-														"Buscar"
-													)}
+													:	"Buscar"}
 												</Button>
 											</div>
 										</div>
@@ -724,7 +748,9 @@ export default function ConfiguracoesView() {
 												<Label>Rua/Avenida</Label>
 												<Input
 													value={formData.tenant.street}
-													onChange={(e) => updateTenant("street", e.target.value)}
+													onChange={(e) =>
+														updateTenant("street", e.target.value)
+													}
 													placeholder="Av. Paulista"
 													className="bg-white/5 border-white/10 text-white"
 												/>
@@ -733,7 +759,9 @@ export default function ConfiguracoesView() {
 												<Label>Número</Label>
 												<Input
 													value={formData.tenant.number}
-													onChange={(e) => updateTenant("number", e.target.value)}
+													onChange={(e) =>
+														updateTenant("number", e.target.value)
+													}
 													placeholder="1000"
 													className="bg-white/5 border-white/10 text-white"
 												/>
@@ -745,7 +773,9 @@ export default function ConfiguracoesView() {
 											<Label>Complemento (opcional)</Label>
 											<Input
 												value={formData.tenant.complement}
-												onChange={(e) => updateTenant("complement", e.target.value)}
+												onChange={(e) =>
+													updateTenant("complement", e.target.value)
+												}
 												placeholder="Sala 10, Bloco A, etc"
 												className="bg-white/5 border-white/10 text-white"
 											/>
@@ -757,7 +787,9 @@ export default function ConfiguracoesView() {
 												<Label>Bairro</Label>
 												<Input
 													value={formData.tenant.neighborhood}
-													onChange={(e) => updateTenant("neighborhood", e.target.value)}
+													onChange={(e) =>
+														updateTenant("neighborhood", e.target.value)
+													}
 													placeholder="Centro"
 													className="bg-white/5 border-white/10 text-white"
 												/>
@@ -775,7 +807,9 @@ export default function ConfiguracoesView() {
 												<Label>UF</Label>
 												<Input
 													value={formData.tenant.state}
-													onChange={(e) => updateTenant("state", e.target.value.toUpperCase())}
+													onChange={(e) =>
+														updateTenant("state", e.target.value.toUpperCase())
+													}
 													placeholder="SP"
 													maxLength={2}
 													className="bg-white/5 border-white/10 text-white uppercase"
@@ -788,10 +822,14 @@ export default function ConfiguracoesView() {
 											<div className="p-3 bg-white/5 border border-white/10 rounded-lg">
 												<p className="text-xs text-gray-400 mb-1">Preview:</p>
 												<p className="text-sm text-white font-medium">
-													{formData.tenant.street && `${formData.tenant.street}`}
-													{formData.tenant.number && `, ${formData.tenant.number}`}
-													{formData.tenant.complement && ` - ${formData.tenant.complement}`}
-													{formData.tenant.neighborhood && ` - ${formData.tenant.neighborhood}`}
+													{formData.tenant.street &&
+														`${formData.tenant.street}`}
+													{formData.tenant.number &&
+														`, ${formData.tenant.number}`}
+													{formData.tenant.complement &&
+														` - ${formData.tenant.complement}`}
+													{formData.tenant.neighborhood &&
+														` - ${formData.tenant.neighborhood}`}
 													{formData.tenant.city && `, ${formData.tenant.city}`}
 													{formData.tenant.state && `/${formData.tenant.state}`}
 												</p>
@@ -817,7 +855,7 @@ export default function ConfiguracoesView() {
 											<span className="text-xs text-gray-500 uppercase font-bold tracking-wider">
 												URL Oficial
 											</span>
-											{formData.tenant.subdomain ? (
+											{formData.tenant.subdomain ?
 												<a
 													href={getPublicLink()}
 													target="_blank"
@@ -825,26 +863,25 @@ export default function ConfiguracoesView() {
 													className="text-sm font-mono text-white break-all cursor-pointer hover:text-primary transition-colors flex items-center gap-2 underline"
 													onClick={(e) => {
 														// Se clicar no ícone, copia ao invés de abrir
-														if ((e.target as HTMLElement).closest('svg')) {
+														if ((e.target as HTMLElement).closest("svg")) {
 															e.preventDefault();
 															handleCopyLink();
 														}
 													}}>
 													<span>
-														{getPublicLink().replace(/\/agendar\/.*$/, "")}/agendar/
+														{getPublicLink().replace(/\/agendar\/.*$/, "")}
+														/agendar/
 														{formData.tenant.subdomain}
 													</span>
-													{copied ? (
+													{copied ?
 														<Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-													) : (
-														<Copy className="h-4 w-4 text-gray-500 flex-shrink-0" />
-													)}
+													:	<Copy className="h-4 w-4 text-gray-500 flex-shrink-0" />
+													}
 												</a>
-											) : (
-												<div className="text-sm font-mono text-gray-600 flex items-center gap-2">
+											:	<div className="text-sm font-mono text-gray-600 flex items-center gap-2">
 													<span>Preencha o nome...</span>
 												</div>
-											)}
+											}
 										</div>
 										<div className="space-y-3">
 											<Button
@@ -874,9 +911,7 @@ export default function ConfiguracoesView() {
 						value="horarios"
 						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
 						<div className="max-w-3xl">
-							<OperatingHoursSettings 
-								tenantId={userProfile?.tenant_id || ''} 
-							/>
+							<OperatingHoursSettings tenantId={userProfile?.tenant_id || ""} />
 						</div>
 					</TabsContent>
 
@@ -938,7 +973,7 @@ export default function ConfiguracoesView() {
 															updateCourt(
 																index,
 																"base_price",
-																Number(e.target.value) || 0
+																Number(e.target.value) || 0,
 															)
 														}
 														placeholder="Ex: 100, 150, 200"
@@ -951,20 +986,28 @@ export default function ConfiguracoesView() {
 													</Label>
 													<Input
 														type="number"
-														value={court.half_hour_price !== undefined ? court.half_hour_price : ""}
+														value={
+															court.half_hour_price !== undefined ?
+																court.half_hour_price
+															:	""
+														}
 														onChange={(e) => {
 															const value = e.target.value;
 															updateCourt(
 																index,
 																"half_hour_price",
-																value === "" ? 0 : Number(value) || 0
+																value === "" ? 0 : Number(value) || 0,
 															);
 														}}
 														placeholder="Ex: 50, 75, 100"
 														className="bg-white/5 border-white/10 text-white"
 													/>
 													<p className="text-xs text-gray-500 mt-1">
-														Total 1h30: R$ {((court.base_price || 0) + (court.half_hour_price || 0)).toFixed(2)}
+														Total 1h30: R${" "}
+														{(
+															(court.base_price || 0) +
+															(court.half_hour_price || 0)
+														).toFixed(2)}
 													</p>
 												</div>
 											</div>
@@ -1013,7 +1056,7 @@ export default function ConfiguracoesView() {
 														onChange={(e) =>
 															updateBookingSettings(
 																"deposit_type",
-																e.target.value
+																e.target.value,
 															)
 														}>
 														<option value="percent">Porcentagem (%)</option>
@@ -1031,7 +1074,7 @@ export default function ConfiguracoesView() {
 														onChange={(e) =>
 															updateBookingSettings(
 																"deposit_value",
-																Number(e.target.value)
+																Number(e.target.value),
 															)
 														}
 													/>
@@ -1082,7 +1125,7 @@ export default function ConfiguracoesView() {
 													onValueChange={([v]) =>
 														updateBookingSettings(
 															"full_payment_discount_percent",
-															v
+															v,
 														)
 													}
 												/>
@@ -1104,9 +1147,11 @@ export default function ConfiguracoesView() {
 								{/* Overlay com cadeado */}
 								<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-900/50 rounded-xl z-10">
 									<Lock className="h-8 w-8 text-gray-400" />
-									<p className="text-gray-400 font-medium">Em Desenvolvimento</p>
+									<p className="text-gray-400 font-medium">
+										Em Desenvolvimento
+									</p>
 								</div>
-								
+
 								{/* Conteúdo original (desabilitado visualmente) */}
 								<div className="flex items-center justify-between">
 									<div className="space-y-1">
@@ -1126,16 +1171,9 @@ export default function ConfiguracoesView() {
 								<div className="mt-6 space-y-4 p-4 bg-gray-950/30 rounded-xl border border-white/5">
 									<div className="flex justify-between">
 										<Label className="text-gray-200">Porcentagem</Label>
-										<span className="text-primary font-bold">
-											0% OFF
-										</span>
+										<span className="text-primary font-bold">0% OFF</span>
 									</div>
-									<Slider
-										value={[0]}
-										max={50}
-										step={5}
-										disabled
-									/>
+									<Slider value={[0]} max={50} step={5} disabled />
 								</div>
 							</div>
 						</PremiumCard>
