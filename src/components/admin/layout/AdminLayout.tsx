@@ -51,11 +51,9 @@ export function AdminLayout({
 					size="icon"
 					onClick={() => setSidebarOpen(!sidebarOpen)}
 					data-testid="button-sidebar-mobile-toggle">
-					{sidebarOpen ? (
+					{sidebarOpen ?
 						<X className="h-5 w-5" />
-					) : (
-						<Menu className="h-5 w-5" />
-					)}
+					:	<Menu className="h-5 w-5" />}
 				</Button>
 			</div>
 

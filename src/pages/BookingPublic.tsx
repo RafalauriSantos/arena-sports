@@ -1065,7 +1065,7 @@ Qual a chave PIX?`;
 
 	if (errorMsg || !tenant) {
 		return (
-			<div className="min-h-dvh bg-gray-50 flex items-center justify-center p-6 text-center">
+			<div className="bg-gray-50 flex items-center justify-center p-6 text-center">
 				<div className="max-w-md space-y-4">
 					<Frown className="h-16 w-16 text-gray-300 mx-auto" />
 					<h1 className="text-xl font-bold text-gray-900">
@@ -1120,7 +1120,7 @@ Qual a chave PIX?`;
 
 	return (
 		<div
-			className={`min-h-dvh bg-white font-sans ${
+			className={`bg-white font-sans ${
 				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 			}`}>
 			{showConfetti && <Confetti />}
