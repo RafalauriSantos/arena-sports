@@ -266,7 +266,8 @@
   :root {
     /* Altura dinâmica do viewport - resolve problema mobile */
     --vh-fix: 100vh;
-    --vh-fix: 100dvh; /* Override para navegadores modernos */
+    --vh-fix: 100dvh;
+    /* Override para navegadores modernos */
   }
 
   html {
@@ -288,12 +289,12 @@
     overflow-y: auto;
     /* Altura mínima usando variável CSS */
     min-height: 100vh;
-    min-height: 100dvh; /* Override para navegadores modernos */
+    min-height: 100dvh;
+    /* Override para navegadores modernos */
     /* Previne expansão além do viewport */
     width: 100%;
     max-width: 100vw;
-    /* Cor de fundo consistente */
-    background-color: #02040a;
+    /* Background herdado de cada página via bg-background ou bg-white */
   }
 
   /* Root do React - garante altura correta */
@@ -324,13 +325,17 @@
      - Use estas classes em vez de min-h-screen para melhor suporte mobile
      ═══════════════════════════════════════════════════════════════════ */
   .min-h-dvh {
-    min-height: 100vh; /* Fallback */
-    min-height: 100dvh; /* Modern browsers */
+    min-height: 100vh;
+    /* Fallback */
+    min-height: 100dvh;
+    /* Modern browsers */
   }
 
   .h-dvh {
-    height: 100vh; /* Fallback */
-    height: 100dvh; /* Modern browsers */
+    height: 100vh;
+    /* Fallback */
+    height: 100dvh;
+    /* Modern browsers */
   }
 
   /* Safe area insets para dispositivos com notch */
