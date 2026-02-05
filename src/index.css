@@ -271,8 +271,6 @@
     /* Evita espaço em branco extra no mobile */
     overflow-x: hidden;
     position: relative;
-    min-height: 100dvh;
-    /* Use dynamic viewport height */
   }
 }
 
