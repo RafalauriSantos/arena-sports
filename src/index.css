@@ -257,23 +257,52 @@
     @apply border-border;
   }
 
+  /* ═══════════════════════════════════════════════════════════════════
+     🔧 CRITICAL FIX: Mobile Viewport Height
+     - 100vh no mobile inclui a barra de endereço, causando overflow
+     - Usamos 100dvh (dynamic viewport height) como padrão moderno
+     - Fallback para 100vh em navegadores antigos
+     ═══════════════════════════════════════════════════════════════════ */
+  :root {
+    /* Altura dinâmica do viewport - resolve problema mobile */
+    --vh-fix: 100vh;
+    --vh-fix: 100dvh; /* Override para navegadores modernos */
+  }
+
   html {
-    /* Evita espaço em branco extra no mobile */
+    /* CRITICAL: Evita scroll horizontal e define altura correta */
     overflow-x: hidden;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
     height: 100%;
+    /* Força a cor de fundo para evitar flash branco */
+    background-color: #02040a;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    /* Removido background-color fixo para evitar gap escuro em telas com fundo branco */
     font-family: 'Inter', sans-serif;
-    /* CRITICAL: Evita espaço em branco extra no mobile */
+    /* CRITICAL: Bloqueia overflow horizontal */
     overflow-x: hidden;
-    position: relative;
+    overflow-y: auto;
+    /* Altura mínima usando variável CSS */
+    min-height: 100vh;
+    min-height: 100dvh; /* Override para navegadores modernos */
+    /* Previne expansão além do viewport */
     width: 100%;
     max-width: 100vw;
+    /* Cor de fundo consistente */
+    background-color: #02040a;
+  }
+
+  /* Root do React - garante altura correta */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -288,12 +317,29 @@
       0 0 60px hsl(var(--primary) / 0.25);
   }
 
-  /* Suporte para min-h-dvh em navegadores antigos */
+  /* ═══════════════════════════════════════════════════════════════════
+     🔧 MOBILE VIEWPORT HEIGHT UTILITIES
+     - Usa 100dvh (dynamic) como padrão para evitar problema da barra de endereço
+     - Fallback para 100vh em navegadores antigos
+     - Use estas classes em vez de min-h-screen para melhor suporte mobile
+     ═══════════════════════════════════════════════════════════════════ */
   .min-h-dvh {
-    min-height: 100vh;
-    /* Fallback para navegadores antigos */
-    min-height: 100dvh;
-    /* Dynamic viewport height - melhor para mobile */
+    min-height: 100vh; /* Fallback */
+    min-height: 100dvh; /* Modern browsers */
+  }
+
+  .h-dvh {
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Modern browsers */
+  }
+
+  /* Safe area insets para dispositivos com notch */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* neon accent glow for landing elements */

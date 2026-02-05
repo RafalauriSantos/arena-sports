@@ -98,6 +98,15 @@ export default {
         xl: "var(--radius-xl)",
         "2xl": "var(--radius-2xl)",
       },
+      /* ═══════════════════════════════════════════════════════════════════
+         🔧 MOBILE VIEWPORT FIX - Substitui 100vh por 100dvh
+         ═══════════════════════════════════════════════════════════════════ */
+      minHeight: {
+        screen: ["100vh", "100dvh"], // min-h-screen agora usa dvh
+      },
+      height: {
+        screen: ["100vh", "100dvh"], // h-screen agora usa dvh
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
