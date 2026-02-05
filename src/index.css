@@ -265,8 +265,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-color: #09090b;
-    /* Deep dark - Zinc 950 */
+    /* Removido background-color fixo para evitar gap escuro em telas com fundo branco */
     font-family: 'Inter', sans-serif;
     /* Evita espaço em branco extra no mobile */
     overflow-x: hidden;
