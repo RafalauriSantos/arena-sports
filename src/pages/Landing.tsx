@@ -931,7 +931,7 @@ export default function LandingPage() {
 			/>
 			<div
 				data-seo-ready
-				className="relative min-h-screen text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+				className="relative min-h-dvh text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
 				{/* ═══════════════════════════════════════════════════════════════════
 				    🌌 COSMIC BACKGROUND — De cair o queixo
 				    ═══════════════════════════════════════════════════════════════════ */}

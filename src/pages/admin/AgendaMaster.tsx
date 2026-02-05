@@ -140,6 +140,12 @@ export default function AgendaMaster() {
 	const [viewStartDate, setViewStartDate] = useState(new Date()); // Início da janela de 7 dias
 	const [preselectedSlot, setPreselectedSlot] = useState<string | null>(null);
 
+	// Função para abrir os detalhes de uma reserva
+	const handleViewDetails = (booking: AdminBooking) => {
+		setSelectedBooking(booking);
+		setIsModalOpen(true);
+	};
+
 	// Timer em tempo real para mostrar tempo decorrido do jogo
 	useEffect(() => {
 		if (!selectedBooking?.startedAt || selectedBooking.completedAt) {
@@ -1025,11 +1031,11 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			{/* Detail Sheet (Drawer) */}
 			{selectedBooking && (
 				<Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-					<SheetContent className="w-full sm:max-w-[440px] p-0 overflow-hidden bg-gray-900/98 backdrop-blur-xl border-l border-white/10">
+					<SheetContent className="w-full sm:max-w-[440px] h-full max-h-screen p-0 bg-gray-900/98 backdrop-blur-xl border-l border-white/10 flex flex-col">
 						{/* Header */}
-						<SheetHeader className="px-6 pt-6 pb-4 border-b border-white/5">
-							<div className="flex items-start justify-between">
-								<div className="space-y-1">
+						<SheetHeader className="px-6 pt-6 pb-4 border-b border-white/5 flex-shrink-0">
+							<div className="flex items-start justify-between gap-3">
+								<div className="space-y-1 flex-1">
 									<SheetTitle className="text-2xl font-semibold text-white tracking-tight flex items-center gap-2">
 										{selectedBooking.time}
 										{selectedBooking.endTime && (
@@ -1042,25 +1048,36 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										{selectedBooking.field}
 									</SheetDescription>
 								</div>
-								<Badge
-									className={cn(
-										"text-xs font-medium border-0",
-										selectedBooking.paymentStatus === "paid" ?
-											"bg-emerald-500/20 text-emerald-400"
+								<div className="flex items-center gap-2">
+									{/* Botão WhatsApp - apenas ícone */}
+									{selectedBooking.phone && (
+										<button
+											onClick={handleWhatsApp}
+											className="p-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 transition-colors"
+											title="Enviar mensagem no WhatsApp">
+											<MessageCircle className="w-4 h-4" />
+										</button>
+									)}
+									<Badge
+										className={cn(
+											"text-xs font-medium border-0",
+											selectedBooking.paymentStatus === "paid" ?
+												"bg-emerald-500/20 text-emerald-400"
+											: selectedBooking.paymentStatus === "deposit" ?
+												"bg-amber-500/20 text-amber-400"
+											:	"bg-gray-500/20 text-gray-400",
+										)}>
+										{selectedBooking.paymentStatus === "paid" ?
+											"Pago"
 										: selectedBooking.paymentStatus === "deposit" ?
-											"bg-amber-500/20 text-amber-400"
-										:	"bg-gray-500/20 text-gray-400",
-									)}>
-									{selectedBooking.paymentStatus === "paid" ?
-										"Pago"
-									: selectedBooking.paymentStatus === "deposit" ?
-										`Sinal ${selectedBooking.depositPercent || 0}%`
-									:	"Pendente"}
-								</Badge>
+											`Sinal ${selectedBooking.depositPercent || 0}%`
+										:	"Pendente"}
+									</Badge>
+								</div>
 							</div>
 						</SheetHeader>
 
-						<div className="px-6 py-5 overflow-y-auto flex-1 min-h-0 space-y-6">
+						<div className="px-6 py-5 overflow-y-auto flex-1 space-y-6">
 							{/* Cliente */}
 							<div className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-xl border border-white/5">
 								<div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -1216,31 +1233,21 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							)}
 						</div>
 
-						{/* Footer Actions */}
-						<SheetFooter className="flex-col gap-3 border-t border-white/5 px-6 py-4">
-							<div className="flex gap-2 w-full">
-								<Button
-									variant="outline"
-									className="flex-1 h-10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 rounded-xl"
-									disabled={!selectedBooking.phone}
-									onClick={handleWhatsApp}>
-									<MessageCircle className="w-4 h-4 mr-2" />
-									WhatsApp
-								</Button>
-								{selectedBooking.paymentStatus !== "paid" &&
-									selectedBooking.remainingAmount > 0 && (
-										<Button
-											className="flex-1 h-10 bg-primary hover:bg-primary/90 text-white rounded-xl"
-											onClick={handleConfirmPayment}>
-											<CreditCard className="w-4 h-4 mr-2" />
-											Confirmar Pagamento
-										</Button>
-									)}
-							</div>
+						{/* Footer Actions - Simplificado */}
+						<SheetFooter className="flex-col gap-2 border-t border-white/5 px-6 py-4 flex-shrink-0">
+							{selectedBooking.paymentStatus !== "paid" &&
+								selectedBooking.remainingAmount > 0 && (
+									<Button
+										className="w-full h-11 bg-primary hover:bg-primary/90 text-white rounded-xl font-semibold"
+										onClick={handleConfirmPayment}>
+										<CreditCard className="w-4 h-4 mr-2" />
+										Confirmar Pagamento
+									</Button>
+								)}
 							<Button
 								variant="ghost"
 								size="sm"
-								className="w-full h-9 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl"
+								className="w-full h-10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl"
 								onClick={handleCancelBooking}>
 								Cancelar Reserva
 							</Button>

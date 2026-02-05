@@ -52,27 +52,59 @@ export function DivulgacaoCard() {
 
 		loadTenant();
 
+		// 🔥 REALTIME: Atualiza nome da arena, subdomain e telefone em tempo real
+		const channel = supabase
+			.channel(`divulgacao-tenant-${tenantId}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "UPDATE",
+					schema: "public",
+					table: "tenants",
+					filter: `id=eq.${tenantId}`,
+				},
+				(payload) => {
+					if (!active) return;
+					const updated = payload.new as {
+						business_name?: string;
+						subdomain?: string;
+						phone?: string;
+					};
+					if (updated.business_name) setArenaName(updated.business_name);
+					if (updated.subdomain) setSubdomain(updated.subdomain);
+					if (updated.phone) setWhatsapp(updated.phone);
+					console.log(
+						"✅ [DivulgacaoCard] Nome da arena atualizado em tempo real:",
+						updated.business_name,
+					);
+				},
+			)
+			.subscribe();
+
 		return () => {
 			active = false;
+			supabase.removeChannel(channel);
 		};
 	}, [tenantId]);
 
 	const { shareLink } = useMemo(() => {
 		const isBrowser = typeof window !== "undefined";
-		
+
 		// Sempre usar domínio de produção para links compartilháveis
 		// Se estiver em desenvolvimento, usar variável de ambiente ou detectar automaticamente
 		let origin = "";
-		
+
 		if (isBrowser) {
-				// Detectar se está em produção ou desenvolvimento
-			const isLocalhost = window.location.hostname === "localhost" || 
-			                    window.location.hostname.includes("127.0.0.1") ||
-			                    window.location.hostname.includes("192.168.");
-			
+			// Detectar se está em produção ou desenvolvimento
+			const isLocalhost =
+				window.location.hostname === "localhost" ||
+				window.location.hostname.includes("127.0.0.1") ||
+				window.location.hostname.includes("192.168.");
+
 			if (isLocalhost) {
 				// Em desenvolvimento: usar variável de ambiente ou domínio de produção
-				const prodUrl = import.meta.env.VITE_PUBLIC_URL || import.meta.env.VITE_APP_URL;
+				const prodUrl =
+					import.meta.env.VITE_PUBLIC_URL || import.meta.env.VITE_APP_URL;
 				origin = prodUrl || "https://arenasys.com.br"; // Sempre usar domínio de produção em dev
 			} else {
 				// Em produção: sempre usar o domínio atual (já está em produção)
@@ -102,10 +134,10 @@ export function DivulgacaoCard() {
 
 	const clickableLink = useMemo(
 		() =>
-			shareLink.startsWith("https://")
-				? shareLink
-				: shareLink.replace("http://", "https://"),
-		[shareLink]
+			shareLink.startsWith("https://") ? shareLink : (
+				shareLink.replace("http://", "https://")
+			),
+		[shareLink],
 	);
 
 	const message = useMemo(
@@ -113,7 +145,7 @@ export function DivulgacaoCard() {
 			`${
 				arenaName ? `Bora reservar na ${arenaName}!` : "Fala galera!"
 			} Link oficial: ${clickableLink}`,
-		[arenaName, clickableLink]
+		[arenaName, clickableLink],
 	);
 
 	const copyToClipboard = async () => {
@@ -133,7 +165,7 @@ export function DivulgacaoCard() {
 			// Usa o telefone do tenant se disponível para abrir o chat direto, ou share genérico
 			const targetPhone = whatsapp ? whatsapp.replace(/\D/g, "") : "";
 			const whatsappUrl = `https://wa.me/${targetPhone}?text=${encodeURIComponent(
-				message
+				message,
 			)}`;
 			window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 		} catch (error) {

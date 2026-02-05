@@ -63,4 +63,9 @@ $$;
 COMMENT ON FUNCTION public.fn_public_get_occupied_slots(text, date) IS 
 'Retorna todos os slots ocupados considerando a duração das reservas. Se uma reserva vai das 7h às 8h30, retorna tanto 7h quanto 8h como ocupados.';
 
+-- ============================================================================
+-- GRANT: Permitir acesso público (anon) e autenticado
+-- ============================================================================
+GRANT EXECUTE ON FUNCTION public.fn_public_get_occupied_slots(text, date) TO anon, authenticated;
+
 COMMIT;

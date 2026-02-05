@@ -1,6 +1,12 @@
+// BookingPublic - Link Público para Jogadores
+// Versão: 2.1.0 - Mostra horários ocupados como "Reservado"
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+
+console.log(
+	"🔥🔥🔥 BOOKINGPUBLIC.TSX CARREGADO - VERSÃO NOVA 2026-02-05! 🔥🔥🔥",
+);
 import {
 	MapPin,
 	Clock,
@@ -14,6 +20,7 @@ import {
 	ChevronRight,
 	Navigation,
 	ChevronRight as ChevronRightIcon,
+	Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +49,7 @@ interface TimeChip {
 	price: number;
 	originalPrice?: number;
 	hasDiscount: boolean;
+	isOccupied?: boolean; // Novo: indica se o slot está ocupado
 }
 
 // Função auxiliar para calcular preço baseado na duração
@@ -417,6 +425,16 @@ export default function BookingPublic() {
 					filter: `tenant_id=eq.${tenantId}`,
 				},
 				async (payload) => {
+					console.log(
+						"🔥 [BookingPublic] Evento de reserva recebido:",
+						payload.eventType,
+						{
+							id: payload.new?.id || payload.old?.id,
+							customer: payload.new?.customer_name,
+							time: payload.new?.start_time,
+						},
+					);
+
 					// Se for INSERT ou UPDATE, verifica se é do dia atual
 					if (
 						payload.eventType === "INSERT" ||
@@ -429,8 +447,17 @@ export default function BookingPublic() {
 							const bookingDateStr = format(bookingDate, "yyyy-MM-dd");
 							const currentDateStr = format(selectedDate, "yyyy-MM-dd");
 
+							console.log("📅 [BookingPublic] Comparando datas:", {
+								booking: bookingDateStr,
+								visualizando: currentDateStr,
+								mesmaData: bookingDateStr === currentDateStr,
+							});
+
 							// Só atualiza se for do dia que está sendo visualizado
 							if (bookingDateStr === currentDateStr) {
+								console.log(
+									"✅ [BookingPublic] Atualizando ocupação do dia...",
+								);
 								// Recarrega ocupação do dia atual
 								const { data, error } = await supabase.rpc(
 									"fn_public_get_occupied_slots",
@@ -449,10 +476,16 @@ export default function BookingPublic() {
 										slot_time: r.slot_time.slice(0, 5),
 									}));
 									setOccupiedSlots(occupied);
+									console.log(
+										"✅ [BookingPublic] Ocupação atualizada!",
+										occupied.length,
+										"slots ocupados",
+									);
 								}
 							}
 						}
 					} else if (payload.eventType === "DELETE") {
+						console.log("🗑️ [BookingPublic] Reserva deletada, recarregando...");
 						// Se deletou, recarrega também
 						const dateStr = format(selectedDate, "yyyy-MM-dd");
 						const { data, error } = await supabase.rpc(
@@ -471,6 +504,9 @@ export default function BookingPublic() {
 								slot_time: r.slot_time.slice(0, 5),
 							}));
 							setOccupiedSlots(occupied);
+							console.log(
+								"✅ [BookingPublic] Ocupação atualizada após delete!",
+							);
 						}
 					}
 				},
@@ -478,11 +514,19 @@ export default function BookingPublic() {
 			.subscribe((status) => {
 				if (status === "SUBSCRIBED") {
 					realtimeErrorCountRef.current.bookings = 0;
+					console.log("✅ [BookingPublic] CONECTADO ao realtime de reservas!");
 				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
 					realtimeErrorCountRef.current.bookings++;
+					console.error(
+						"❌ [BookingPublic] Erro no realtime de reservas:",
+						status,
+					);
 					if (realtimeErrorCountRef.current.bookings >= MAX_REALTIME_ERRORS) {
 						realtimeDisabledRef.current.bookings = true;
 						supabase.removeChannel(bookingsChannel);
+						console.error(
+							"❌ [BookingPublic] Realtime de reservas DESABILITADO após múltiplos erros",
+						);
 					}
 				}
 			});
@@ -497,6 +541,10 @@ export default function BookingPublic() {
 		async function loadOccupancy() {
 			if (!cleanSubdomain) return;
 			const dateStr = format(selectedDate, "yyyy-MM-dd");
+
+			console.log("📅 [DEBUG] Carregando ocupação para:", dateStr);
+			console.log("🔑 [DEBUG] Subdomain:", cleanSubdomain);
+
 			const { data, error } = await supabase.rpc(
 				"fn_public_get_occupied_slots",
 				{
@@ -505,44 +553,66 @@ export default function BookingPublic() {
 				},
 			);
 
+			console.log("📦 [DEBUG] Resposta RPC:", {
+				data,
+				error,
+				totalSlots: data?.length || 0,
+			});
+
 			if (error) {
-				if (import.meta.env.DEV) {
-					console.warn("Erro ao carregar ocupação:", error);
-				}
 				setOccupiedSlots([]);
 				return;
 			}
 
 			const rows =
 				(data as Array<{ court_id: string; slot_time: string }> | null) ?? [];
-			setOccupiedSlots(
-				rows
-					.filter((r) => !!r.court_id && !!r.slot_time)
-					.map((r) => ({
-						court_id: r.court_id,
-						slot_time: r.slot_time.slice(0, 5),
-					})),
-			);
+
+			const processed = rows
+				.filter((r) => !!r.court_id && !!r.slot_time)
+				.map((r) => ({
+					court_id: r.court_id,
+					slot_time: r.slot_time.slice(0, 5),
+				}));
+
+			console.log("✅ [DEBUG] Slots processados:", processed);
+			setOccupiedSlots(processed);
 		}
 		loadOccupancy();
 	}, [cleanSubdomain, selectedDate]);
 
 	// 2. Carregar slots disponíveis (com descontos e bloqueios) - Otimizado com useMemo
 	const courtsWithSlots = useMemo(() => {
+		// ⚠️ IMPORTANTE: Só processa se tiver quadras carregadas
+		if (!courts || courts.length === 0) {
+			return [];
+		}
+
 		const now = new Date();
 		const isToday = isSameDay(selectedDate, now);
 		const nowHour = now.getHours();
 
 		const bookingConfigs = (tenant?.settings?.booking || {}) as BookingConfig;
-		console.log("   Booking configs:", bookingConfigs);
 
 		// Regra de Desconto por Antecedência (7 dias)
 		const diffTime = selectedDate.getTime() - now.getTime();
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 		const applyDiscount = diffDays >= 7;
 
+		// 🔍 DEBUG: Log dos slots ocupados [BUILD: 2026-02-05T10:30]
+		console.log("🔍 [DEBUG v2] Slots ocupados RAW:", occupiedSlots);
+		console.log(
+			"🔍 [DEBUG v2] Courts disponíveis:",
+			courts.map((c) => ({ id: c.id, name: c.name })),
+		);
+
 		const occupied = new Set(
 			occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`),
+		);
+		console.log(
+			"🔍 [DEBUG v2] Set de ocupados (total:",
+			occupied.size,
+			"):",
+			Array.from(occupied),
 		);
 
 		// Horários de operação por dia da semana
@@ -573,15 +643,28 @@ export default function BookingPublic() {
 				if (isToday && h < nowHour) continue;
 
 				// Bloqueio 2: Ocupado (avulso ou mensalista)
-				if (occupied.has(slotKey)) continue;
+				const isOccupied = occupied.has(slotKey);
 
-				// Livre
+				// Log APENAS dos horários 12:00 e 20:00
+				if (time === "12:00" || time === "20:00") {
+					console.log(`🔎 Slot ${time} na quadra ${court.name}:`, {
+						slotKey,
+						courtId: court.id,
+						isOccupied,
+						existeNoSet: occupied.has(slotKey),
+					});
+				}
+
+				// Mostra TODOS os horários, mas marca os ocupados
 				slots.push({
 					time,
 					price: court.base_price,
 					originalPrice: undefined,
 					hasDiscount:
-						applyDiscount && !!bookingConfigs.enable_full_payment_discount,
+						!isOccupied &&
+						applyDiscount &&
+						!!bookingConfigs.enable_full_payment_discount,
+					isOccupied, // Marca se está ocupado
 				});
 			}
 			return { ...court, slots };
@@ -982,7 +1065,7 @@ Qual a chave PIX?`;
 
 	if (errorMsg || !tenant) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+			<div className="min-h-dvh bg-gray-50 flex items-center justify-center p-6 text-center">
 				<div className="max-w-md space-y-4">
 					<Frown className="h-16 w-16 text-gray-300 mx-auto" />
 					<h1 className="text-xl font-bold text-gray-900">
@@ -1037,7 +1120,7 @@ Qual a chave PIX?`;
 
 	return (
 		<div
-			className={`min-h-screen bg-white font-sans ${
+			className={`min-h-dvh bg-white font-sans ${
 				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 			}`}>
 			{showConfetti && <Confetti />}
@@ -1208,10 +1291,21 @@ Qual a chave PIX?`;
 											{court.name}
 										</h3>
 										<p className="text-xs text-gray-500">
-											{court.slots.length}{" "}
-											{court.slots.length === 1 ?
+											{court.slots.filter((s) => !s.isOccupied).length}{" "}
+											{court.slots.filter((s) => !s.isOccupied).length === 1 ?
 												"horário disponível"
 											:	"horários disponíveis"}
+											{court.slots.filter((s) => s.isOccupied).length > 0 && (
+												<span className="text-gray-400 ml-1">
+													• {court.slots.filter((s) => s.isOccupied).length}{" "}
+													reservado
+													{(
+														court.slots.filter((s) => s.isOccupied).length !== 1
+													) ?
+														"s"
+													:	""}
+												</span>
+											)}
 										</p>
 									</div>
 								</div>
@@ -1241,6 +1335,28 @@ Qual a chave PIX?`;
 														(1 - configs.full_payment_discount_percent / 100),
 												)
 											:	slot.price;
+
+										// Se está ocupado, mostra com estilo diferente
+										if (slot.isOccupied) {
+											return (
+												<div
+													key={slot.time}
+													className={`relative flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-xl border-2 bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed animate-reveal-up ${staggerClass}`}>
+													{/* Ícone de cadeado */}
+													<Lock className="w-4 h-4 text-gray-500 mb-1" />
+
+													{/* Horário */}
+													<span className="text-base font-bold text-gray-500 line-through">
+														{slot.time}
+													</span>
+
+													{/* Label "Reservado" */}
+													<span className="text-[10px] text-gray-500 font-semibold mt-0.5">
+														Reservado
+													</span>
+												</div>
+											);
+										}
 
 										return (
 											<button
@@ -1591,7 +1707,7 @@ Qual a chave PIX?`;
 // Skeleton Premium Mobile-First
 function PublicSkeleton() {
 	return (
-		<div className="min-h-screen bg-gray-50 pb-12 font-sans">
+		<div className="min-h-dvh bg-gray-50 pb-12 font-sans">
 			{/* Header Skeleton */}
 			<div className="relative h-64 md:h-80 bg-gray-200 animate-pulse">
 				<div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
