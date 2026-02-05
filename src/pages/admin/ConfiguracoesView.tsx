@@ -486,7 +486,7 @@ export default function ConfiguracoesView() {
 	if (loading) return <LoadingSkeleton />;
 
 	return (
-		<div className="min-h-screen bg-surface-0 text-gray-50 pb-20">
+		<div className="bg-surface-0 text-gray-50 pb-20">
 			<div className="max-w-5xl mx-auto p-6 space-y-8">
 				{/* HEADER */}
 				<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

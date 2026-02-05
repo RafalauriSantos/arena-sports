@@ -1281,7 +1281,7 @@ export default function LandingPage() {
 						<div className="w-full max-w-4xl h-12 rounded-full bg-emerald-500/5 blur-xl" />
 					</div>
 
-<nav className="relative flex items-center justify-between w-full max-w-4xl h-14 rounded-full">
+					<nav className="relative flex items-center justify-between w-full max-w-4xl h-14 rounded-full">
 						{/* Animated gradient border */}
 						<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/50 via-cyan-500/50 to-emerald-500/50 animate-gradient opacity-60" />
 						<div className="absolute inset-[1px] rounded-full bg-[#0a0a0a]/95 backdrop-blur-2xl" />

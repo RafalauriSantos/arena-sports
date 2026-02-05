@@ -64,7 +64,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const DashboardSkeleton = () => (
-	<div className="min-h-screen w-full flex bg-surface-0">
+	<div className="w-full flex bg-surface-0">
 		{/* Sidebar Skeleton */}
 		<div className="hidden md:flex w-72 flex-col gap-4 p-4 border-r border-white/10 shrink-0">
 			<div className="h-20 w-full bg-white/5 animate-pulse rounded-xl" />
@@ -1486,7 +1486,7 @@ export default function DashboardHome() {
 	}
 
 	return (
-		<div className="min-h-screen bg-surface-0 text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">
+		<div className="bg-surface-0 text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">
 			{/* Background Noise & Gradient (Igual ao Login) */}
 			<div className="absolute inset-0 z-0 pointer-events-none">
 				<div

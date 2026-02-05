@@ -1707,7 +1707,7 @@ Qual a chave PIX?`;
 // Skeleton Premium Mobile-First
 function PublicSkeleton() {
 	return (
-		<div className="min-h-dvh bg-gray-50 pb-12 font-sans">
+		<div className="bg-gray-50 pb-12 font-sans">
 			{/* Header Skeleton */}
 			<div className="relative h-64 md:h-80 bg-gray-200 animate-pulse">
 				<div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
