@@ -331,8 +331,8 @@ const Login = () => {
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
-			{/* 1. FUNDO IMERSIVO (Imagem de Arena Sports + Overlay) */}
-			<div className="absolute inset-0 z-0">
+			{/* 1. FUNDO IMERSIVO - FIXED para evitar espaço extra no mobile */}
+			<div className="fixed inset-0 z-0">
 				{/* Imagem de fundo de alta qualidade (Esportes) */}
 				<div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center" />
 				{/* Gradiente pesado para escurecer e focar no conteúdo */}

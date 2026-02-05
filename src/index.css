@@ -261,15 +261,19 @@
     /* Evita espaço em branco extra no mobile */
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
+    height: 100%;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
     /* Removido background-color fixo para evitar gap escuro em telas com fundo branco */
     font-family: 'Inter', sans-serif;
-    /* Evita espaço em branco extra no mobile */
+    /* CRITICAL: Evita espaço em branco extra no mobile */
     overflow-x: hidden;
     position: relative;
+    width: 100%;
+    max-width: 100vw;
   }
 }
 

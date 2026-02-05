@@ -1487,8 +1487,8 @@ export default function DashboardHome() {
 
 	return (
 		<div className="min-h-screen bg-surface-0 text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">
-			{/* Background Noise & Gradient (Igual ao Login) */}
-			<div className="absolute inset-0 z-0 pointer-events-none">
+			{/* Background Noise & Gradient - FIXED para evitar espaço extra no mobile */}
+			<div className="fixed inset-0 z-0 pointer-events-none">
 				<div
 					className="absolute inset-0 opacity-[0.03]"
 					style={{

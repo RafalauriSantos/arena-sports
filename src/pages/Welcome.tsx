@@ -320,8 +320,8 @@ export default function Welcome() {
 				/>
 			</div>
 
-			{/* Background */}
-			<div className="absolute inset-0 z-0">
+			{/* Background - FIXED para evitar espaço extra no mobile */}
+			<div className="fixed inset-0 z-0">
 				<div className="absolute inset-0 bg-gradient-to-br from-[#02040a] via-[#03050c] to-[#02040a]" />
 				<div
 					className="absolute inset-0 opacity-[0.03]"
