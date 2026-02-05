@@ -1120,7 +1120,7 @@ Qual a chave PIX?`;
 
 	return (
 		<div
-			className={`bg-white font-sans ${
+			className={`min-h-screen bg-white font-sans ${
 				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 			}`}>
 			{showConfetti && <Confetti />}
