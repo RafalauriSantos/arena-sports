@@ -45,11 +45,14 @@ const Login = () => {
 		if (qMode === "signup") setMode("signup");
 		if (qMode === "signin") setMode("signin");
 		if (sessionExpired === "1") {
-			setError("Sua sessão expirou ou o token de renovação é inválido. Faça login novamente.");
+			setError(
+				"Sua sessão expirou ou o token de renovação é inválido. Faça login novamente.",
+			);
 			// Remove o parâmetro da URL para não repetir a mensagem ao recarregar
 			const next = new URLSearchParams(location.search);
 			next.delete("session_expired");
-			const clean = location.pathname + (next.toString() ? `?${next.toString()}` : "");
+			const clean =
+				location.pathname + (next.toString() ? `?${next.toString()}` : "");
 			navigate(clean, { replace: true });
 		}
 	}, [location.search]);
@@ -335,7 +338,12 @@ const Login = () => {
 				{/* Gradiente pesado para escurecer e focar no conteúdo */}
 				<div className="absolute inset-0 bg-gradient-to-r from-[#02040a] via-[#02040a]/95 to-[#02040a]/40" />
 				{/* Efeito de granulação (Noise) para textura premium */}
-				<div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+				<div
+					className="absolute inset-0 opacity-[0.03]"
+					style={{
+						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+					}}
+				/>
 			</div>
 
 			{/* 2. CONTEÚDO PRINCIPAL (Z-Index alto) */}

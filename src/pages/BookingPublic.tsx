@@ -187,226 +187,56 @@ export default function BookingPublic() {
 	const carouselRef = useRef<HTMLDivElement>(null);
 	const dateButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
+	// Controle de erros do Realtime para evitar loops infinitos
+	const realtimeErrorCountRef = useRef({ courts: 0, tenant: 0, bookings: 0 });
+	const realtimeDisabledRef = useRef({
+		courts: false,
+		tenant: false,
+		bookings: false,
+	});
+	const MAX_REALTIME_ERRORS = 3;
+
 	// 1. Carregar Dados Iniciais (Empresa e Quadras)
 	useEffect(() => {
 		async function loadShell() {
-			if (!cleanSubdomain) {
-				console.warn("⚠️ cleanSubdomain é null/undefined");
-				return;
-			}
-			console.log("🔍 [BookingPublic] Iniciando busca...");
-			console.log("   Subdomain da URL:", subdomain);
-			console.log("   Subdomain limpo:", cleanSubdomain);
+			if (!cleanSubdomain) return;
+
 			setLoading(true);
 			setErrorMsg(null);
 
 			try {
-				// Primeiro, tenta buscar pelo subdomain original (sem normalização)
-				console.log("📡 [BookingPublic] Buscando tenant no Supabase...");
-				console.log("   Tentativa 1: subdomain original:", subdomain);
-				const { data: tDataOriginal, error: tErrorOriginal } = await supabase
-					.from("tenants")
-					.select("*")
-					.eq("subdomain", subdomain || "")
+				// 🚀 OTIMIZADO: 1 chamada RPC ao invés de 3-4 queries sequenciais
+				const { data: tData, error: tError } = await supabase
+					.rpc("fn_public_get_tenant_by_subdomain", {
+						p_subdomain: cleanSubdomain,
+					})
 					.maybeSingle();
 
-				if (tErrorOriginal) {
-					console.warn(
-						"⚠️ [BookingPublic] Erro na busca original:",
-						tErrorOriginal.message,
-					);
-				}
-
-				let tData = tDataOriginal;
-
-				// Se não encontrou, tenta com o subdomain normalizado
-				if (!tData && cleanSubdomain && cleanSubdomain !== subdomain) {
-					console.log("   Tentativa 2: subdomain normalizado:", cleanSubdomain);
-					const { data: tDataNormalized, error: tErrorNormalized } =
-						await supabase
-							.from("tenants")
-							.select("*")
-							.eq("subdomain", cleanSubdomain)
-							.maybeSingle();
-
-					if (tErrorNormalized) {
-						console.warn(
-							"⚠️ [BookingPublic] Erro na busca normalizada:",
-							tErrorNormalized.message,
-						);
-					}
-
-					tData = tDataNormalized;
-				}
-
-				// FALLBACK: Busca case-insensitive (ilike)
-				if (!tData) {
-					console.log("   Tentativa 3: busca case-insensitive (ilike)");
-					const searchTerm = cleanSubdomain || subdomain || "";
-					const { data: tDataIlike, error: tErrorIlike } = await supabase
-						.from("tenants")
-						.select("*")
-						.ilike("subdomain", `%${searchTerm}%`)
-						.maybeSingle();
-
-					if (tErrorIlike) {
-						console.warn(
-							"⚠️ [BookingPublic] Erro na busca ilike:",
-							tErrorIlike.message,
-						);
-					}
-
-					tData = tDataIlike;
-				}
-
-				if (!tData) {
-					// Debug: Buscar TODOS os tenants para ver o que tem no banco
-					console.error("=".repeat(60));
-					console.error("❌ [BookingPublic] Tenant não encontrado!");
-					console.error("=".repeat(60));
-					console.error(
-						"🔍 Buscando no banco por:",
-						cleanSubdomain || subdomain,
-					);
-					console.error(
-						"   Subdomain original da URL:",
-						JSON.stringify(subdomain),
-					);
-					console.error(
-						"   Subdomain normalizado:",
-						JSON.stringify(cleanSubdomain),
-					);
-
-					const { data: debugList, error: debugError } = await supabase
-						.from("tenants")
-						.select("id, business_name, subdomain")
-						.limit(10);
-
-					if (debugError) {
-						console.error(
-							"❌ [BookingPublic] Erro ao buscar lista de debug:",
-							debugError,
-						);
-						console.error("   Código:", debugError.code);
-						console.error("   Mensagem:", debugError.message);
-						console.error("   Detalhes:", debugError.details);
-					} else {
-						console.error("📋 [BookingPublic] RESULTADO DA BUSCA:");
-						console.error("   Total encontrado:", debugList?.length || 0);
-
-						if (debugList && debugList.length > 0) {
-							// Forçar expansão do objeto no console
-							console.error("   Dados completos (JSON):");
-							console.error(JSON.stringify(debugList, null, 2));
-
-							console.error("\n   Análise detalhada:");
-							debugList.forEach((t, index) => {
-								console.error(`\n   [${index + 1}] Tenant:`);
-								console.error(`       ID: ${t.id}`);
-								console.error(
-									`       Nome: ${JSON.stringify(t.business_name)}`,
-								);
-								console.error(
-									`       Subdomain: ${JSON.stringify(t.subdomain)}`,
-								);
-
-								if (t.subdomain && typeof t.subdomain === "string") {
-									console.error(`       Tipo: ${typeof t.subdomain}`);
-									console.error(
-										`       Tamanho: ${t.subdomain.length} caracteres`,
-									);
-									console.error(
-										`       Códigos dos caracteres: [${Array.from(t.subdomain)
-											.map((c) => c.charCodeAt(0))
-											.join(", ")}]`,
-									);
-									console.error(
-										`       === "sp-center": ${t.subdomain === "sp-center"}`,
-									);
-									console.error(
-										`       === "SP-Center": ${t.subdomain === "SP-Center"}`,
-									);
-									console.error(
-										`       .toLowerCase() === "sp-center": ${t.subdomain.toLowerCase() === "sp-center"}`,
-									);
-									console.error(
-										`       Comparação exata: "${t.subdomain}" === "${cleanSubdomain || subdomain}": ${t.subdomain === (cleanSubdomain || subdomain)}`,
-									);
-								} else {
-									console.error(`       ⚠️ Subdomain é NULL ou undefined!`);
-								}
-							});
-
-							const subdomainsList = debugList
-								.map((t) => JSON.stringify(t.subdomain))
-								.join(", ");
-							console.error("\n   Subdomains encontrados:", subdomainsList);
-						} else {
-							console.error("   ⚠️ Nenhum tenant encontrado no banco!");
-						}
-					}
-
-					console.error("=".repeat(60));
+				if (tError || !tData) {
 					throw new Error(
 						"Arena não encontrada. Verifique se o link está correto.",
 					);
 				}
 
-				console.log(
-					"✅ [BookingPublic] Tenant encontrado:",
-					tData.business_name || tData.id,
-				);
 				setTenant(tData);
 				setTenantId(tData.id);
 
-				// B. Busca Quadras Ativas
-				console.log("📡 [BookingPublic] Buscando quadras ativas...");
+				// Busca Quadras Ativas
 				const { data: cData, error: cError } = await supabase
 					.from("courts")
-					.select("*")
+					.select("id, name, base_price, half_hour_price")
 					.eq("tenant_id", tData.id)
 					.eq("active", true)
 					.order("base_price");
 
 				if (cError) {
-					console.error("❌ [BookingPublic] Erro ao buscar quadras:", cError);
-					console.error("   Código:", cError.code);
-					console.error("   Mensagem:", cError.message);
-					console.error("   Detalhes:", cError.details);
-				} else {
-					console.log(
-						`✅ [BookingPublic] ${cData?.length || 0} quadra(s) encontrada(s)`,
-					);
-					if (cData && cData.length > 0) {
-						console.log(
-							"   Quadras encontradas:",
-							cData.map((c) => ({
-								id: c.id,
-								name: c.name,
-								active: c.active,
-								base_price: c.base_price,
-							})),
-						);
-					} else {
-						console.warn(
-							"   ⚠️ Nenhuma quadra ativa encontrada para este tenant!",
-						);
-					}
+					console.error("Erro ao buscar quadras:", cError);
 				}
 
 				if (cData) {
 					setCourts(cData);
-					console.log(
-						"✅ [BookingPublic] Quadras carregadas no estado:",
-						cData.length,
-					);
-				} else {
-					console.warn(
-						"⚠️ [BookingPublic] cData é null/undefined, não há quadras para exibir",
-					);
 				}
 			} catch (error: unknown) {
-				console.error("Erro fatal:", error);
 				const message =
 					getStringProp(error, "message") ||
 					"Não foi possível carregar a agenda.";
@@ -416,15 +246,18 @@ export default function BookingPublic() {
 			}
 		}
 		loadShell();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [cleanSubdomain]); // cleanSubdomain já depende de subdomain via useMemo
+	}, [cleanSubdomain]);
 
 	// 1b. Realtime: manter preços/quadras atualizados sem refresh
 	useEffect(() => {
-		if (!tenantId) return;
+		if (!tenantId || realtimeDisabledRef.current.courts) return;
 
 		const channel = supabase
-			.channel(`public-courts-${tenantId}`)
+			.channel(`public-courts-${tenantId}`, {
+				config: {
+					broadcast: { self: true },
+				},
+			})
 			.on(
 				"postgres_changes",
 				{
@@ -498,7 +331,22 @@ export default function BookingPublic() {
 					});
 				},
 			)
-			.subscribe();
+			.subscribe((status, err) => {
+				if (status === "SUBSCRIBED") {
+					realtimeErrorCountRef.current.courts = 0;
+				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+					realtimeErrorCountRef.current.courts++;
+					if (realtimeErrorCountRef.current.courts >= MAX_REALTIME_ERRORS) {
+						if (import.meta.env.DEV) {
+							console.warn(
+								`⚠️ Canal de quadras desabilitado após ${MAX_REALTIME_ERRORS} falhas`,
+							);
+						}
+						realtimeDisabledRef.current.courts = true;
+						supabase.removeChannel(channel);
+					}
+				}
+			});
 
 		return () => {
 			supabase.removeChannel(channel);
@@ -507,15 +355,14 @@ export default function BookingPublic() {
 
 	// 1c. 🔥 Realtime: escuta mudanças nas CONFIGURAÇÕES do tenant (horários, preços, etc)
 	useEffect(() => {
-		if (!tenantId) return;
-
-		console.log(
-			"🔄 [REALTIME] Iniciando escuta de configurações do tenant:",
-			tenantId,
-		);
+		if (!tenantId || realtimeDisabledRef.current.tenant) return;
 
 		const tenantChannel = supabase
-			.channel(`tenant-settings-${tenantId}`)
+			.channel(`tenant-settings-${tenantId}`, {
+				config: {
+					broadcast: { self: true },
+				},
+			})
 			.on(
 				"postgres_changes",
 				{
@@ -524,48 +371,40 @@ export default function BookingPublic() {
 					table: "tenants",
 					filter: `id=eq.${tenantId}`,
 				},
-				async (payload) => {
-					console.log(
-						"🔥 [REALTIME] Configurações do tenant atualizadas! Recarregando...",
-						payload,
-					);
-
+				async () => {
 					// Recarrega os dados do tenant para pegar os novos settings
 					const { data, error } = await supabase
-						.from("tenants")
-						.select("*")
-						.eq("id", tenantId)
-						.single();
+						.rpc("fn_public_get_tenant_by_subdomain", {
+							p_subdomain: cleanSubdomain!,
+						})
+						.maybeSingle();
 
 					if (!error && data) {
-						console.log(
-							"✅ [REALTIME] Settings atualizados em tempo real:",
-							data.settings,
-						);
 						setTenant(data);
-					} else {
-						console.error("❌ [REALTIME] Erro ao recarregar settings:", error);
 					}
 				},
 			)
 			.subscribe((status) => {
-				console.log("📡 [REALTIME] Status da conexão:", status);
+				if (status === "SUBSCRIBED") {
+					realtimeErrorCountRef.current.tenant = 0;
+				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+					realtimeErrorCountRef.current.tenant++;
+					if (realtimeErrorCountRef.current.tenant >= MAX_REALTIME_ERRORS) {
+						realtimeDisabledRef.current.tenant = true;
+						supabase.removeChannel(tenantChannel);
+					}
+				}
 			});
 
 		return () => {
-			console.log("🔌 [REALTIME] Desconectando canal de configurações");
 			supabase.removeChannel(tenantChannel);
 		};
 	}, [tenantId]);
 
 	// 2. Real-time para bookings (atualiza automaticamente quando há novas reservas)
 	useEffect(() => {
-		if (!tenantId || !cleanSubdomain) return;
-
-		console.log(
-			"📡 [REALTIME] Conectando canal de bookings para tenant:",
-			tenantId,
-		);
+		if (!tenantId || !cleanSubdomain || realtimeDisabledRef.current.bookings)
+			return;
 
 		const bookingsChannel = supabase
 			.channel(`bookings-public-${tenantId}-${Date.now()}`) // Nome único para evitar conflitos
@@ -578,8 +417,6 @@ export default function BookingPublic() {
 					filter: `tenant_id=eq.${tenantId}`,
 				},
 				async (payload) => {
-					console.log("🔥 [REALTIME] Booking alterado!", payload);
-
 					// Se for INSERT ou UPDATE, verifica se é do dia atual
 					if (
 						payload.eventType === "INSERT" ||
@@ -612,7 +449,6 @@ export default function BookingPublic() {
 										slot_time: r.slot_time.slice(0, 5),
 									}));
 									setOccupiedSlots(occupied);
-									console.log("✅ [REALTIME] Ocupação atualizada:", occupied);
 								}
 							}
 						}
@@ -640,25 +476,24 @@ export default function BookingPublic() {
 				},
 			)
 			.subscribe((status) => {
-				console.log("📡 [REALTIME] Status do canal de bookings:", status);
 				if (status === "SUBSCRIBED") {
-					console.log("✅ [REALTIME] Conectado com sucesso!");
-				} else if (status === "CHANNEL_ERROR") {
-					console.error("❌ [REALTIME] Erro na conexão");
+					realtimeErrorCountRef.current.bookings = 0;
+				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+					realtimeErrorCountRef.current.bookings++;
+					if (realtimeErrorCountRef.current.bookings >= MAX_REALTIME_ERRORS) {
+						realtimeDisabledRef.current.bookings = true;
+						supabase.removeChannel(bookingsChannel);
+					}
 				}
 			});
 
 		return () => {
-			console.log("🔌 [REALTIME] Desconectando canal de bookings");
 			supabase.removeChannel(bookingsChannel);
 		};
 	}, [tenantId, cleanSubdomain, selectedDate]);
 
-	// 3. Carregar ocupação do dia (avulsos + mensalistas) via RPC pública segura
+	// 3. 🚀 OTIMIZADO: Carregar ocupação inicial (o Realtime cuida das atualizações)
 	useEffect(() => {
-		let cancelled = false;
-		const OCCUPANCY_REFRESH_MS = 60_000;
-
 		async function loadOccupancy() {
 			if (!cleanSubdomain) return;
 			const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -671,42 +506,29 @@ export default function BookingPublic() {
 			);
 
 			if (error) {
-				console.warn("Erro ao carregar ocupação pública:", error);
-				if (!cancelled) setOccupiedSlots([]);
+				if (import.meta.env.DEV) {
+					console.warn("Erro ao carregar ocupação:", error);
+				}
+				setOccupiedSlots([]);
 				return;
 			}
 
 			const rows =
 				(data as Array<{ court_id: string; slot_time: string }> | null) ?? [];
-			if (!cancelled) {
-				setOccupiedSlots(
-					rows
-						.filter((r) => !!r.court_id && !!r.slot_time)
-						.map((r) => ({
-							court_id: r.court_id,
-							slot_time: r.slot_time.slice(0, 5),
-						})),
-				);
-			}
+			setOccupiedSlots(
+				rows
+					.filter((r) => !!r.court_id && !!r.slot_time)
+					.map((r) => ({
+						court_id: r.court_id,
+						slot_time: r.slot_time.slice(0, 5),
+					})),
+			);
 		}
 		loadOccupancy();
-		const interval = window.setInterval(() => {
-			loadOccupancy();
-		}, OCCUPANCY_REFRESH_MS);
-
-		return () => {
-			cancelled = true;
-			window.clearInterval(interval);
-		};
 	}, [cleanSubdomain, selectedDate]);
 
 	// 2. Carregar slots disponíveis (com descontos e bloqueios) - Otimizado com useMemo
 	const courtsWithSlots = useMemo(() => {
-		console.log("🔄 [BookingPublic] Gerando horários disponíveis...");
-		console.log("   Courts:", courts.length);
-		console.log("   Tenant:", tenant?.business_name || "não carregado");
-		console.log("   Settings:", tenant?.settings ? "existe" : "não existe");
-
 		const now = new Date();
 		const isToday = isSameDay(selectedDate, now);
 		const nowHour = now.getHours();
@@ -765,17 +587,6 @@ export default function BookingPublic() {
 			return { ...court, slots };
 		});
 	}, [courts, occupiedSlots, selectedDate, tenant]);
-
-	// Debug: Log quando courtsWithSlots mudar
-	useEffect(() => {
-		console.log("📊 [BookingPublic] courtsWithSlots atualizado:");
-		console.log("   Total de quadras:", courtsWithSlots.length);
-		courtsWithSlots.forEach((court, index) => {
-			console.log(
-				`   [${index + 1}] ${court.name}: ${court.slots.length} horários disponíveis`,
-			);
-		});
-	}, [courtsWithSlots]);
 
 	// Scroll automático para o dia selecionado
 	useEffect(() => {

@@ -323,7 +323,12 @@ export default function Welcome() {
 			{/* Background */}
 			<div className="absolute inset-0 z-0">
 				<div className="absolute inset-0 bg-gradient-to-br from-[#02040a] via-[#03050c] to-[#02040a]" />
-				<div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+				<div
+					className="absolute inset-0 opacity-[0.03]"
+					style={{
+						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+					}}
+				/>
 				<div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
 				<div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]" />
 			</div>
@@ -525,22 +530,22 @@ export default function Welcome() {
 										w-full flex items-center justify-center gap-2 font-semibold text-base rounded-2xl transition-all duration-200
 										focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]
 										disabled:cursor-not-allowed disabled:hover:scale-100
-										${allCompleted
-											? "h-14 bg-emerald-500 hover:bg-emerald-400 text-black shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]"
-											: "h-12 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-black shadow-lg shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.98] disabled:shadow-none"
+										${
+											allCompleted ?
+												"h-14 bg-emerald-500 hover:bg-emerald-400 text-black shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]"
+											:	"h-12 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/50 text-black shadow-lg shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.98] disabled:shadow-none"
 										}
 									`}>
-									{isCompletingOnboarding ? (
+									{isCompletingOnboarding ?
 										<>
 											<div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
 											Entrando no dashboard...
 										</>
-									) : (
-										<>
+									:	<>
 											{allCompleted ? "Ir para Dashboard" : "Configurar Agora"}
 											<ArrowRight className="w-5 h-5" />
 										</>
-									)}
+									}
 								</Button>
 								<p className="text-center text-xs text-gray-500 mt-3">
 									{allCompleted ?

@@ -72,7 +72,7 @@ interface BookingsContextType {
 }
 
 const BookingsContext = createContext<BookingsContextType | undefined>(
-	undefined
+	undefined,
 );
 
 // Configurações
@@ -85,6 +85,8 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 	const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
 	const refreshTimerRef = useRef<number | null>(null);
 	const fetchDataRef = useRef<() => Promise<void>>(() => Promise.resolve());
+	const isConnectedRef = useRef<boolean>(false);
+	const connectionTenantRef = useRef<string | null>(null);
 
 	const isBookingOverlapError = (err: unknown) => {
 		const code = getStringProp(err, "code");
@@ -154,35 +156,35 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				const startTime = new Date(b.start_time);
 				const endTime = new Date(b.end_time);
 
-			return {
-				id: b.id,
-				tenantId: b.tenant_id,
-				slotId: b.id,
-				fieldId: b.court_id,
-				fieldName: b.court?.name || "Quadra",
-				customerName: b.customer_name,
-				customerPhone: b.customer_phone,
-				// IMPORTANTE: `start_time` vem em ISO (UTC). Para exibir corretamente
-				// no Brasil, formatamos a data/hora a partir do Date (timezone local).
-				date: formatLocalDate(startTime),
-				time: formatLocalTime(startTime),
-				startTime,
-				endTime,
-				totalPrice: b.total_price,
-				paidAmount: typeof b.paid_amount === "number" ? b.paid_amount : 0,
-				depositPercent:
-					typeof b.deposit_percent === "number"
-						? b.deposit_percent
-						: undefined,
-				paymentStatus: b.status === "paid" ? "paid" : "pending",
-				status: b.status === "paid" ? "confirmed" : "pending_approval",
-				bookedBy: b.customer_name,
-				players: [b.customer_name],
-				createdAt: b.created_at,
-				startedAt: b.started_at,
-				completedAt: b.completed_at,
-				cancelledAt: b.cancelled_at,
-			};
+				return {
+					id: b.id,
+					tenantId: b.tenant_id,
+					slotId: b.id,
+					fieldId: b.court_id,
+					fieldName: b.court?.name || "Quadra",
+					customerName: b.customer_name,
+					customerPhone: b.customer_phone,
+					// IMPORTANTE: `start_time` vem em ISO (UTC). Para exibir corretamente
+					// no Brasil, formatamos a data/hora a partir do Date (timezone local).
+					date: formatLocalDate(startTime),
+					time: formatLocalTime(startTime),
+					startTime,
+					endTime,
+					totalPrice: b.total_price,
+					paidAmount: typeof b.paid_amount === "number" ? b.paid_amount : 0,
+					depositPercent:
+						typeof b.deposit_percent === "number" ?
+							b.deposit_percent
+						:	undefined,
+					paymentStatus: b.status === "paid" ? "paid" : "pending",
+					status: b.status === "paid" ? "confirmed" : "pending_approval",
+					bookedBy: b.customer_name,
+					players: [b.customer_name],
+					createdAt: b.created_at,
+					startedAt: b.started_at,
+					completedAt: b.completed_at,
+					cancelledAt: b.cancelled_at,
+				};
 			});
 
 			setCourts(fetchedCourts);
@@ -195,7 +197,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			// CRÍTICO: Cria um Hash Set para lookup O(1).
 			// Evita o problema de performance do .find() dentro do loop.
 			const bookingLookup = new Set(
-				mappedBookings.map((b) => `${b.fieldId}-${b.date}-${b.time}`)
+				mappedBookings.map((b) => `${b.fieldId}-${b.date}-${b.time}`),
 			);
 
 			fetchedCourts.forEach((court) => {
@@ -207,14 +209,15 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 					const isReserved = bookingLookup.has(lookupKey);
 
 					// Recupera dados do booking se existir (apenas para display)
-					const existingBooking = isReserved
-						? mappedBookings.find(
+					const existingBooking =
+						isReserved ?
+							mappedBookings.find(
 								(b) =>
 									b.fieldId === court.id &&
 									b.time === timeString &&
-									b.date === today
-						  )
-						: undefined;
+									b.date === today,
+							)
+						:	undefined;
 
 					generatedSlots.push({
 						id: lookupKey,
@@ -273,23 +276,23 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 	// O real-time já cobre as atualizações instantâneas
 	// Se necessário, podemos adicionar um polling mais espaçado (ex: 60s) apenas como fallback
 
-		// Realtime (profissional): 1 canal por tenant, filtro por tenant_id,
-		// e refresh com debounce (evita refetch em cascata).
-		useEffect(() => {
-			let isMounted = true;
+	// Realtime (profissional): 1 canal por tenant, filtro por tenant_id,
+	// e refresh com debounce (evita refetch em cascata).
+	useEffect(() => {
+		let isMounted = true;
 
-			const scheduleRefresh = () => {
-				if (!isMounted) return;
-				if (refreshTimerRef.current) {
-					window.clearTimeout(refreshTimerRef.current);
+		const scheduleRefresh = () => {
+			if (!isMounted) return;
+			if (refreshTimerRef.current) {
+				window.clearTimeout(refreshTimerRef.current);
+			}
+			// Debounce de 300ms para UPDATE/DELETE
+			refreshTimerRef.current = window.setTimeout(() => {
+				if (isMounted) {
+					fetchDataRef.current(); // Usa ref para garantir função atualizada
 				}
-				// Debounce de 300ms para UPDATE/DELETE
-				refreshTimerRef.current = window.setTimeout(() => {
-					if (isMounted) {
-						fetchDataRef.current(); // Usa ref para garantir função atualizada
-					}
-				}, 300);
-			};
+			}, 300);
+		};
 
 		const setup = async () => {
 			const currentTenantId = await resolveTenantId();
@@ -298,25 +301,38 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				return;
 			}
 
-			// Log apenas na primeira conexão
-			console.log("📡 [REALTIME] Conectando canal para tenant:", currentTenantId);
+			// Evita reconectar se já estamos conectados ao mesmo tenant
+			if (
+				isConnectedRef.current &&
+				connectionTenantRef.current === currentTenantId
+			) {
+				console.log("🔄 [REALTIME] Já conectado ao tenant:", currentTenantId);
+				return;
+			}
+
+			// Log apenas na primeira conexão ou troca de tenant
+			console.log(
+				"📡 [REALTIME] Conectando canal para tenant:",
+				currentTenantId,
+			);
 
 			// Se já existe canal (troca de tenant, hot reload), remove antes.
 			if (realtimeChannelRef.current) {
 				supabase.removeChannel(realtimeChannelRef.current);
 				realtimeChannelRef.current = null;
+				isConnectedRef.current = false;
 			}
 
 			// Canal com nome estável (sem timestamp) para melhor reconexão
 			const channelName = `bookings-ctx-${currentTenantId}`;
-			
+
 			const channel = supabase
 				.channel(channelName, {
 					config: {
 						// Configurações otimizadas para real-time
 						broadcast: { self: false },
-						presence: { key: '' }
-					}
+						presence: { key: "" },
+					},
 				})
 				.on(
 					"postgres_changes",
@@ -329,32 +345,36 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 					},
 					(payload) => {
 						// Log apenas para INSERT (nova reserva) para evitar poluição
-						if (payload.eventType === 'INSERT') {
+						if (payload.eventType === "INSERT") {
 							console.log("🔥 [REALTIME] Nova reserva detectada:", {
 								id: payload.new?.id,
 								customer: payload.new?.customer_name,
-								time: payload.new?.start_time
+								time: payload.new?.start_time,
 							});
 						}
-						
+
 						// Verifica se o tenant_id do evento corresponde ao tenant atual
-						const eventTenantId = payload.new?.tenant_id || payload.old?.tenant_id;
+						const eventTenantId =
+							payload.new?.tenant_id || payload.old?.tenant_id;
 						if (eventTenantId !== currentTenantId) {
-							console.warn("⚠️ [REALTIME] Evento de tenant diferente ignorado:", {
-								eventTenantId,
-								currentTenantId
-							});
+							console.warn(
+								"⚠️ [REALTIME] Evento de tenant diferente ignorado:",
+								{
+									eventTenantId,
+									currentTenantId,
+								},
+							);
 							return;
 						}
-						
+
 						// Força refresh IMEDIATO para INSERT (nova reserva) - sem debounce
-						if (payload.eventType === 'INSERT') {
+						if (payload.eventType === "INSERT") {
 							// Cancela qualquer refresh pendente
 							if (refreshTimerRef.current) {
 								window.clearTimeout(refreshTimerRef.current);
 								refreshTimerRef.current = null;
 							}
-							
+
 							// Refresh IMEDIATO sem debounce para nova reserva
 							if (isMounted) {
 								// Usa setTimeout(0) para garantir que está fora do callback do real-time
@@ -370,7 +390,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 							// UPDATE/DELETE com debounce (não é crítico)
 							scheduleRefresh();
 						}
-					}
+					},
 				)
 				.on(
 					"postgres_changes",
@@ -383,16 +403,25 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 					(payload) => {
 						// Court alterado - atualiza com debounce
 						scheduleRefresh();
-					}
+					},
 				)
 				.subscribe((status, err) => {
-					if (status === 'SUBSCRIBED') {
-						console.log("✅ [REALTIME] Conectado! Escutando eventos de bookings e courts");
-					} else if (status === 'CHANNEL_ERROR') {
-						const errorMessage = err instanceof Error ? err.message : err ? String(err) : 'Erro desconhecido';
+					if (status === "SUBSCRIBED") {
+						console.log(
+							"✅ [REALTIME] Conectado! Escutando eventos de bookings e courts",
+						);
+						isConnectedRef.current = true;
+						connectionTenantRef.current = currentTenantId;
+					} else if (status === "CHANNEL_ERROR") {
+						const errorMessage =
+							err instanceof Error ? err.message
+							: err ? String(err)
+							: "Erro desconhecido";
 						console.error("❌ [REALTIME] Erro na conexão:", errorMessage);
-					} else if (status === 'TIMED_OUT' || status === 'CLOSED') {
+						isConnectedRef.current = false;
+					} else if (status === "TIMED_OUT" || status === "CLOSED") {
 						console.warn("⚠️ [REALTIME] Conexão perdida. Status:", status);
+						isConnectedRef.current = false;
 					}
 				});
 
@@ -410,6 +439,8 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			if (realtimeChannelRef.current) {
 				supabase.removeChannel(realtimeChannelRef.current);
 				realtimeChannelRef.current = null;
+				isConnectedRef.current = false;
+				connectionTenantRef.current = null;
 			}
 		};
 	}, [resolveTenantId, fetchData]);
@@ -442,7 +473,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 			}
 			if (!isValidCustomerPhone(customerPhone)) {
 				throw new Error(
-					"Telefone inválido (use DDD + número: 10 ou 11 dígitos)."
+					"Telefone inválido (use DDD + número: 10 ou 11 dígitos).",
 				);
 			}
 
@@ -498,7 +529,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				}
 				if (!isValidCustomerPhone(customerPhone)) {
 					throw new Error(
-						"Telefone inválido (use DDD + número: 10 ou 11 dígitos)."
+						"Telefone inválido (use DDD + número: 10 ou 11 dígitos).",
 					);
 				}
 				payload.customer_phone = customerPhone;

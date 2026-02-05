@@ -908,7 +908,9 @@ export default function LandingPage() {
 				setFoundersProgress(null);
 				return;
 			}
-			const row = Array.isArray(data) ? data[0] : data;
+			const row = (Array.isArray(data) ? data[0] : data) as
+				| { cap?: number; sold?: number; remaining?: number }
+				| undefined;
 			const cap = Number(row?.cap ?? 100);
 			const sold = Number(row?.sold ?? 0);
 			const remaining = Number(row?.remaining ?? Math.max(0, cap - sold));
@@ -1253,7 +1255,12 @@ export default function LandingPage() {
 
 				{/* Background Global - Apple-style pulsing glow */}
 				<div className="fixed inset-0 z-0 pointer-events-none">
-					<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02]" />
+					<div
+						className="absolute inset-0 opacity-[0.02]"
+						style={{
+							backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+						}}
+					/>
 					<div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/8 rounded-full blur-[120px] animate-pulse-glow" />
 					<div
 						className="absolute top-[60%] -right-[200px] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] animate-pulse-glow"

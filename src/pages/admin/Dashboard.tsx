@@ -1489,7 +1489,12 @@ export default function DashboardHome() {
 		<div className="min-h-screen bg-surface-0 text-white font-sans selection:bg-emerald-500/30 relative overflow-hidden">
 			{/* Background Noise & Gradient (Igual ao Login) */}
 			<div className="absolute inset-0 z-0 pointer-events-none">
-				<div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
+				<div
+					className="absolute inset-0 opacity-[0.03]"
+					style={{
+						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+					}}
+				/>
 				<div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px]" />
 				<div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]" />
 			</div>
