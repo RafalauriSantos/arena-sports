@@ -245,7 +245,7 @@ const Index = () => {
 
 	// Player Home
 	return (
-		<div className="bg-background pb-28 md:pb-24">
+		<div className="min-h-screen bg-background pb-28 md:pb-24">
 			<Header />
 
 			<main className="container px-5 md:px-6 pt-6 pb-4 md:py-5 space-y-3 md:space-y-4">
