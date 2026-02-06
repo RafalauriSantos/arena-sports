@@ -219,7 +219,7 @@ export default function FolgasView() {
 				{folgas.length === 0 ? (
 					<Card className="bg-gray-900/40 border-white/5 backdrop-blur-md">
 						<CardContent className="text-center py-12">
-							<CalendarOff className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+							<CalendarOff className="h-12 w-12 text-gray-400 mx-auto mb-4" />
 							<p className="text-gray-300">Nenhuma folga cadastrada</p>
 							<p className="text-sm text-gray-300 mt-1">
 								Adicione períodos de fechamento quando necessário

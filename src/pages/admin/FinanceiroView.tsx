@@ -568,7 +568,7 @@ export default function FinanceiroView({
 														style={{ height: `${Math.max(percentage, 8)}%` }}
 													/>
 												</div>
-												<span className="text-[9px] text-gray-600 mt-1.5 group-hover:text-gray-300 transition-colors">
+												<span className="text-[9px] text-gray-400 mt-1.5 group-hover:text-gray-300 transition-colors">
 													{format(new Date(date), "dd", { locale: ptBR })}
 												</span>
 											</div>
@@ -599,7 +599,7 @@ export default function FinanceiroView({
 										</span>
 									</div>
 								</div>
-								<span className="text-[10px] text-gray-600">
+								<span className="text-[10px] text-gray-400">
 									{Object.keys(metrics.revenueByDay).length} dias com receita
 								</span>
 							</div>

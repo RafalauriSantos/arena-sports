@@ -116,7 +116,7 @@ export class ErrorBoundary extends Component<Props, State> {
 							</div>
 						</div>
 
-						<div className="text-center text-xs text-gray-600">
+						<div className="text-center text-xs text-gray-400">
 							Se o problema persistir, tente limpar o cache do navegador (Ctrl+Shift+R) ou
 							entre em contato com o suporte.
 						</div>

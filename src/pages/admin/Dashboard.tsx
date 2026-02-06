@@ -321,7 +321,7 @@ const SidebarFixed = ({
 					</button>
 
 					{!collapsed && (
-						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
 							Operação
 						</p>
 					)}
@@ -368,7 +368,7 @@ const SidebarFixed = ({
 					{/* Divisor sutil: Operação vs Sistema */}
 					<div className="my-2 border-t border-white/5" aria-hidden />
 					{!collapsed && (
-						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
 							Sistema
 						</p>
 					)}
@@ -591,7 +591,7 @@ const ArenaSysStatusHero = ({
 				</div>
 				<div className="flex gap-4 sm:gap-8 text-xs sm:text-sm text-gray-300 mt-1">
 					<div className="flex flex-col">
-						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-600 font-bold">
+						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold">
 							Hoje
 						</span>
 						<span className="text-white font-bold text-lg sm:text-xl">
@@ -605,7 +605,7 @@ const ArenaSysStatusHero = ({
 					</div>
 					<div className="w-[1px] bg-white/10" />
 					<div className="flex flex-col">
-						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-600 font-bold">
+						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold">
 							Ocupação
 						</span>
 						<span className="text-white font-bold text-lg sm:text-xl">
@@ -1683,7 +1683,7 @@ export default function DashboardHome() {
 													<span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
 														Quadra em destaque
 													</span>
-													<Trophy className="w-5 h-5 text-gray-600" />
+													<Trophy className="w-5 h-5 text-gray-400" />
 												</div>
 												<h3 className="text-xl font-bold text-white mb-1">
 													{focusCourt.name}

@@ -974,7 +974,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 														</div>
 														<div className="flex items-center gap-3 text-sm text-gray-300">
 															<span className="truncate">{booking.field}</span>
-															<span className="text-gray-600">•</span>
+															<span className="text-gray-400">•</span>
 															<span>R$ {booking.totalAmount.toFixed(0)}</span>
 														</div>
 													</div>
@@ -1000,7 +1000,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 													</div>
 
 													{/* Arrow */}
-													<ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-300 transition-colors flex-shrink-0" />
+													<ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-300 transition-colors flex-shrink-0" />
 												</button>
 											:	<button
 													onClick={() => setIsNewBookingOpen(true)}
@@ -1012,11 +1012,11 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 													</div>
 													<div className="w-1.5 h-8 rounded-full bg-white/5 flex-shrink-0" />
 													<div className="flex-1 min-w-0">
-														<p className="text-sm text-gray-600 group-hover:text-gray-300 transition-colors">
+														<p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
 															Horário disponível
 														</p>
 													</div>
-													<Plus className="w-4 h-4 text-gray-600 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
+													<Plus className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
 												</button>
 											}
 										</div>

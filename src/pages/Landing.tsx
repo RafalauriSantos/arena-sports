@@ -498,9 +498,11 @@ function CalendarAppScreen() {
 						<span className="text-lg">⚽</span>
 					</div>
 					<div className="flex-1">
-						<h3 className="text-white font-bold text-[11px] leading-tight">
+						<span
+							className="text-white font-bold text-[11px] leading-tight block"
+							aria-hidden="true">
 							Arena Gol de Placa
-						</h3>
+						</span>
 						<div className="flex items-center gap-1.5 mt-0.5">
 							<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
 							<span className="text-emerald-400 text-[8px] font-medium">
@@ -814,7 +816,7 @@ function DashboardAppScreen() {
 											}`}
 											style={{ height: `${h}%` }}
 										/>
-										<span className="text-[6px] text-gray-600">
+										<span className="text-[6px] text-gray-400">
 											{["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"][i]}
 										</span>
 									</div>
@@ -863,12 +865,12 @@ function DashboardAppScreen() {
 												<span className="text-white font-bold text-[9px]">
 													{res.time}
 												</span>
-												<span className="text-gray-600 text-[7px]">•</span>
+												<span className="text-gray-400 text-[7px]">•</span>
 												<span className="text-gray-300 text-[8px] truncate">
 													{res.client}
 												</span>
 											</div>
-											<span className="text-gray-600 text-[7px]">
+											<span className="text-gray-400 text-[7px]">
 												{res.court}
 											</span>
 										</div>
@@ -1748,7 +1750,7 @@ export default function LandingPage() {
 												Mensal
 											</p>
 											<p className="text-white font-bold">R$ 97/mês</p>
-											<p className="text-gray-600 text-xs">= R$ 1.164/ano</p>
+											<p className="text-gray-400 text-xs">= R$ 1.164/ano</p>
 										</div>
 										<div className="text-center border-l border-white/10">
 											<p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">

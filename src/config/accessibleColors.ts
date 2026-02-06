@@ -59,7 +59,7 @@ export const accessibleClasses = {
     // Text
     textPrimary: 'text-white',
     textSecondary: 'text-gray-300',     // Melhor que text-gray-300
-    textMuted: 'text-gray-300',         // Melhor que text-gray-500
+    textMuted: 'text-gray-300',         // Melhor que text-gray-300
 
     // Links
     link: 'text-emerald-400 hover:text-emerald-300 underline-offset-4',

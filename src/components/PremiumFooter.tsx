@@ -21,7 +21,7 @@ export function PremiumFooter() {
 							<input
 								type="email"
 								placeholder="seu@email.com"
-								className="flex-1 md:w-64 h-10 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+								className="flex-1 md:w-64 h-10 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
 							/>
 							<Button className="h-10 px-5 bg-white text-black font-medium text-sm rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap">
 								Inscrever-se
@@ -191,7 +191,7 @@ export function PremiumFooter() {
 								</div>
 								<span className="font-bold text-white text-sm">ArenaSys</span>
 							</div>
-							<span className="text-gray-600 text-[11px] hidden sm:inline">
+							<span className="text-gray-400 text-[11px] hidden sm:inline">
 								|
 							</span>
 							<p className="text-gray-300 text-[11px] hidden sm:inline">
@@ -211,7 +211,7 @@ export function PremiumFooter() {
 								className="text-gray-300 hover:text-gray-300 transition-colors">
 								Privacidade
 							</Link>
-							<span className="text-gray-600">Brasil 🇧🇷</span>
+							<span className="text-gray-400">Brasil 🇧🇷</span>
 						</div>
 					</div>
 

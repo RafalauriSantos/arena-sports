@@ -1422,7 +1422,7 @@ Qual a chave PIX?`;
 								</p>
 								<div className="flex items-center gap-2 mt-0.5">
 									<Clock className="w-4 h-4 text-gray-300 flex-shrink-0" />
-									<span className="text-sm text-gray-600">
+									<span className="text-sm text-gray-400">
 										{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 										{selectedSlot.slot.time}
 										{bookingDuration === 90 && " - 1h30"}
@@ -1464,7 +1464,7 @@ Qual a chave PIX?`;
 							<h3 className="text-lg sm:text-xl font-bold text-gray-900">
 								Confirmar Reserva
 							</h3>
-							<p className="text-gray-600 text-sm mt-1.5">
+							<p className="text-gray-400 text-sm mt-1.5">
 								{selectedSlot.courtName} •{" "}
 								{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 								{selectedSlot.slot.time}

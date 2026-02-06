@@ -69,7 +69,7 @@ export function SupportModal({ open, onOpenChange }: SupportModalProps) {
 						<h3 className="text-lg font-semibold text-gray-900">
 							Equipe de Suporte
 						</h3>
-						<p className="text-sm text-gray-600">
+						<p className="text-sm text-gray-400">
 							Estamos aqui para ajudar você com qualquer dúvida ou problema.
 						</p>
 					</div>

@@ -645,7 +645,7 @@ export default function ConfiguracoesView() {
 														disabled
 														className="bg-white/5 border-white/10 text-gray-300 rounded-l-none pl-3 pr-8 italic cursor-not-allowed"
 													/>
-													<Lock className="absolute right-3 top-2.5 h-4 w-4 text-gray-600" />
+													<Lock className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
 												</div>
 											</div>
 										</div>
@@ -878,7 +878,7 @@ export default function ConfiguracoesView() {
 													:	<Copy className="h-4 w-4 text-gray-300 flex-shrink-0" />
 													}
 												</a>
-											:	<div className="text-sm font-mono text-gray-600 flex items-center gap-2">
+											:	<div className="text-sm font-mono text-gray-400 flex items-center gap-2">
 													<span>Preencha o nome...</span>
 												</div>
 											}

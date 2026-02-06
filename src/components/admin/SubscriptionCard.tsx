@@ -131,7 +131,7 @@ export function SubscriptionCard({
 			label: "Cancelado",
 			color: "bg-gray-50 text-gray-700 border-gray-200",
 			icon: AlertCircle,
-			iconColor: "text-gray-600",
+			iconColor: "text-gray-400",
 		};
 	};
 
@@ -230,7 +230,7 @@ export function SubscriptionCard({
 				{isTrial && trialDaysLeft !== null && (
 					<div className="space-y-2">
 						<div className="flex items-center justify-between text-sm">
-							<span className="text-gray-600 font-medium">
+							<span className="text-gray-400 font-medium">
 								Restam {trialDaysLeft} dia{trialDaysLeft !== 1 ? "s" : ""} de{" "}
 								{trialTotalDays}
 							</span>
@@ -357,7 +357,7 @@ export function SubscriptionCard({
 					<div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
 						<div className="flex items-center gap-3">
 							<div className="p-2 bg-white rounded-lg shadow-sm">
-								<Calendar className="h-4 w-4 text-gray-600" />
+								<Calendar className="h-4 w-4 text-gray-400" />
 							</div>
 							<div>
 								<p className="text-sm text-gray-300">Próxima fatura</p>
@@ -373,7 +373,7 @@ export function SubscriptionCard({
 				<div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
 					<div className="flex items-center gap-3">
 						<div className="p-2 bg-white rounded-lg shadow-sm">
-							<CreditCard className="h-4 w-4 text-gray-600" />
+							<CreditCard className="h-4 w-4 text-gray-400" />
 						</div>
 						<div>
 							<p className="text-sm text-gray-300">Método de pagamento</p>
