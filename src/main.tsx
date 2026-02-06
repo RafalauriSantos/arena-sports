@@ -4,6 +4,28 @@ import "./index.css";
 
 import { registerSW } from "virtual:pwa-register";
 
+// WCAG AA: Fix viewport for accessibility (ensure zoom is allowed)
+const fixViewportForAccessibility = () => {
+	const viewport = document.querySelector('meta[name="viewport"]');
+	if (viewport) {
+		const content = viewport.getAttribute("content") || "";
+		// Remove user-scalable=no and set maximum-scale=5.0
+		const fixedContent = content
+			.replace(/user-scalable\s*=\s*no/gi, "")
+			.replace(/maximum-scale\s*=\s*[\d.]+/gi, "maximum-scale=5.0")
+			.replace(/,\s*,/g, ",")
+			.replace(/,\s*$/g, "")
+			.trim();
+
+		if (!fixedContent.includes("maximum-scale")) {
+			viewport.setAttribute("content", fixedContent + ", maximum-scale=5.0");
+		} else {
+			viewport.setAttribute("content", fixedContent);
+		}
+	}
+};
+fixViewportForAccessibility();
+
 // Auto-refresh on new deployments (PWA): apply update and reload.
 // Com injectRegister: 'auto', o VitePWA já registra automaticamente,
 // mas mantemos o controle manual para melhor UX
