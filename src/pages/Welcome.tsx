@@ -334,7 +334,10 @@ export default function Welcome() {
 			</div>
 
 			{/* Conteúdo Principal */}
-			<div className="relative z-10 w-full max-w-2xl mx-auto px-4 py-8 md:py-12 flex flex-col items-center justify-center min-h-[100dvh]">
+			<main
+				role="main"
+				id="main-content"
+				className="relative z-10 w-full max-w-2xl mx-auto px-4 py-8 md:py-12 flex flex-col items-center justify-center min-h-[100dvh]">
 				<div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
 					{/* Header com Badge */}
 					<div className="text-center space-y-4">
@@ -565,7 +568,7 @@ export default function Welcome() {
 						</p>
 					</div>
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 }

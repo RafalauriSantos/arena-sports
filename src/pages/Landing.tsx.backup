@@ -929,9 +929,7 @@ export default function LandingPage() {
 				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
-			<main
-				role="main"
-				id="main-content"
+			<div
 				data-seo-ready
 				className="relative min-h-dvh text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
 				{/* ═══════════════════════════════════════════════════════════════════
@@ -1328,13 +1326,12 @@ export default function LandingPage() {
 							<div className="hidden md:flex items-center gap-3">
 								<button
 									onClick={() => navigate("/login")}
-									className="text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 px-3 py-2 rounded-full hover:bg-white/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]">
+									className="text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 px-3 py-2 rounded-full hover:bg-white/5">
 									Login
 								</button>
 								<button
 									onClick={() => navigate("/login?mode=signup")}
-									className="relative h-10 px-5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 text-black overflow-hidden group magnetic-btn shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-									aria-label="Começar teste grátis de 7 dias do ArenaSys">
+									className="relative h-10 px-5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 text-black overflow-hidden group magnetic-btn shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow duration-300">
 									<span className="relative z-10 flex items-center gap-1">
 										Testar grátis
 										<Sparkles className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -1435,8 +1432,7 @@ export default function LandingPage() {
 						<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
 							<button
 								onClick={() => navigate("/login?mode=signup")}
-								className="relative overflow-hidden h-16 px-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_60px_-10px_rgba(16,185,129,0.7)] active:scale-95 w-full sm:w-auto animate-border-glow btn-shine flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-								aria-label="Testar grátis agora - começar teste de 7 dias">
+								className="relative overflow-hidden h-16 px-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_60px_-10px_rgba(16,185,129,0.7)] active:scale-95 w-full sm:w-auto animate-border-glow btn-shine flex items-center justify-center gap-2">
 								Testar grátis agora
 								<ArrowRight className="w-5 h-5" />
 							</button>
@@ -1773,8 +1769,7 @@ export default function LandingPage() {
 
 								<button
 									onClick={() => navigate("/login?mode=signup")}
-									className="relative overflow-hidden w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] btn-shine focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-									aria-label="Começar teste grátis de 7 dias - plano Founders">
+									className="relative overflow-hidden w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] btn-shine">
 									Começar teste grátis
 								</button>
 
@@ -1873,8 +1868,7 @@ export default function LandingPage() {
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
-								className="relative overflow-hidden h-16 px-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_60px_-10px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.8)] active:scale-95 animate-border-glow btn-shine inline-flex items-center gap-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-								aria-label="Organizar minha arena agora - começar teste grátis">
+								className="relative overflow-hidden h-16 px-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_60px_-10px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.8)] active:scale-95 animate-border-glow btn-shine inline-flex items-center gap-3">
 								Organizar minha arena agora <ArrowRight className="w-5 h-5" />
 							</button>
 						</div>
@@ -1882,7 +1876,7 @@ export default function LandingPage() {
 				</section>
 
 				<PremiumFooter />
-			</main>
+			</div>
 		</>
 	);
 }

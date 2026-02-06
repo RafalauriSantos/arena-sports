@@ -69,7 +69,7 @@ export function Blog() {
 
 			<Header />
 
-			<main className="container mx-auto px-4 py-12 max-w-6xl">
+			<main className="container mx-auto px-4 py-12 max-w-6xl" role="main">
 				<h1 className="text-4xl md:text-5xl font-bold mb-4">Blog ArenaSys</h1>
 				<p className="text-xl text-gray-400 mb-12">
 					Dicas práticas de gestão, marketing e tecnologia para arenas
@@ -80,6 +80,8 @@ export function Blog() {
 					{articles.map((article) => (
 						<article
 							key={article.slug}
+							role="article"
+							aria-label={`Artigo: ${article.title}`}
 							className="bg-white/5 rounded-lg overflow-hidden hover:bg-white/10 transition-colors cursor-pointer"
 							onClick={() => navigate(`/blog/${article.slug}`)}>
 							<div className="p-6">
@@ -108,7 +110,9 @@ export function Blog() {
 					<p className="text-gray-300 mb-6">
 						Receba dicas semanais de gestão de arenas direto no seu email
 					</p>
-					<button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+					<button
+						aria-label="Assinar newsletter do ArenaSys"
+						className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 						Assinar Newsletter
 					</button>
 				</div>

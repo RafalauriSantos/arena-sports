@@ -21,7 +21,7 @@ export function SoftwareQuadrasFutebol() {
 
 			<Header />
 
-			<main className="container mx-auto px-4 py-12 max-w-4xl">
+			<main className="container mx-auto px-4 py-12 max-w-4xl" role="main">
 				<h1 className="text-4xl md:text-5xl font-bold mb-6">
 					Software para Gestão de Quadras de Futebol e Society
 				</h1>
@@ -117,6 +117,7 @@ export function SoftwareQuadrasFutebol() {
 						</p>
 						<button
 							onClick={() => navigate("/welcome")}
+							aria-label="Começar teste grátis de 7 dias do ArenaSys"
 							className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 							Começar Teste Grátis
 						</button>

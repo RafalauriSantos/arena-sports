@@ -15,7 +15,7 @@ export default function About() {
 	const navigate = useNavigate();
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white">
+		<main role="main" className="min-h-screen bg-[#02040a] text-white">
 			{/* Header */}
 			<header className="border-b border-white/[0.04] sticky top-0 bg-[#02040a]/80 backdrop-blur-xl z-50">
 				<div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -216,6 +216,7 @@ export default function About() {
 					</p>
 					<Button
 						onClick={() => navigate("/login?mode=signup")}
+						aria-label="Começar teste grátis por 7 dias do ArenaSys"
 						className="h-14 px-10 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-full text-lg">
 						Começar Grátis por 7 Dias
 					</Button>
@@ -239,6 +240,6 @@ export default function About() {
 					</div>
 				</div>
 			</footer>
-		</div>
+		</main>
 	);
 }
