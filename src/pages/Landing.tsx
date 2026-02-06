@@ -487,7 +487,9 @@ function CalendarAppScreen() {
 	const [selectedTime, setSelectedTime] = useState<string | null>("19:00");
 
 	return (
-		<div className="h-full bg-[#0a0a0a] font-sans flex flex-col overflow-hidden" aria-hidden="true">
+		<div
+			className="h-full bg-[#0a0a0a] font-sans flex flex-col overflow-hidden"
+			aria-hidden="true">
 			{/* Header com Arena Info */}
 			<div className="relative px-4 pt-2 pb-3 border-b border-white/5">
 				<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent" />
@@ -666,7 +668,9 @@ function CalendarAppScreen() {
 // Tela do MacBook: Dashboard Admin (decorativo - aria-hidden)
 function DashboardAppScreen() {
 	return (
-		<div className="h-full bg-[#050507] font-sans relative overflow-hidden flex" aria-hidden="true">
+		<div
+			className="h-full bg-[#050507] font-sans relative overflow-hidden flex"
+			aria-hidden="true">
 			{/* Sidebar Mini */}
 			<div className="w-12 md:w-14 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-3 gap-3">
 				<div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
