@@ -1,0 +1,11 @@
+﻿[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+bunx : 
+No linha:1 caractere:1
++ bunx vite build --mode production 2>&1 | Out-File -FilePath build-out ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+/fonts/Inter-roman.var.woff2 referenced in /fonts/Inter-roman.var.woff2 didn't 
+resolve at build time, it will remain unchanged to be resolved at runtime
