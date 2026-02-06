@@ -11,6 +11,7 @@ import {
 import { BookingsProvider } from "@/contexts/BookingsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 // Lazy load pages com tratamento de erro
 const Landing = lazy(() => import("./pages/Landing"));
@@ -65,14 +66,7 @@ const queryClient = new QueryClient({
 	},
 });
 
-const PageLoader = () => (
-	<div className="min-h-screen bg-background flex items-center justify-center">
-		<div className="flex flex-col items-center gap-3">
-			<div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-			<p className="text-sm text-muted-foreground">Carregando...</p>
-		</div>
-	</div>
-);
+const PageLoader = () => <LoadingSpinner />;
 
 // Componente de erro para rotas
 const RouteErrorElement = () => (

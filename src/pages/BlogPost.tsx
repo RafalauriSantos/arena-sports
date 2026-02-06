@@ -141,6 +141,7 @@ export function BlogPost() {
 					<h1 className="text-4xl font-bold mb-4">Artigo não encontrado</h1>
 					<button
 						onClick={() => navigate("/blog")}
+						aria-label="Voltar para o blog"
 						className="text-emerald-400 hover:underline">
 						← Voltar para o blog
 					</button>
@@ -160,9 +161,10 @@ export function BlogPost() {
 
 			<Header />
 
-			<main className="container mx-auto px-4 py-12 max-w-3xl">
+			<main className="container mx-auto px-4 py-12 max-w-3xl" role="main">
 				<button
 					onClick={() => navigate("/blog")}
+					aria-label="Voltar para o blog"
 					className="text-emerald-400 hover:underline mb-6 flex items-center gap-2">
 					← Voltar para o blog
 				</button>
@@ -198,6 +200,7 @@ export function BlogPost() {
 						</p>
 						<button
 							onClick={() => navigate("/welcome")}
+							aria-label="Começar teste grátis do ArenaSys"
 							className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 							Começar Teste Grátis
 						</button>
