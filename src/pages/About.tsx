@@ -21,7 +21,7 @@ export default function About() {
 				<div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
 					<Link
 						to="/"
-						className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+						className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm">
 						<ArrowLeft className="w-4 h-4" />
 						Voltar para Home
 					</Link>
@@ -47,7 +47,7 @@ export default function About() {
 						<br />
 						<span className="text-emerald-400">do caos do WhatsApp</span>
 					</h1>
-					<p className="text-gray-400 text-xl max-w-2xl leading-relaxed">
+					<p className="text-gray-300 text-xl max-w-2xl leading-relaxed">
 						Nascemos com uma missão simples: transformar quadras esportivas em
 						negócios lucrativos e previsíveis.
 					</p>
@@ -62,7 +62,7 @@ export default function About() {
 							<Target className="w-6 h-6 text-emerald-400" />
 						</div>
 						<h3 className="text-xl font-bold mb-3">Nossa Missão</h3>
-						<p className="text-gray-400 text-sm leading-relaxed">
+						<p className="text-gray-300 text-sm leading-relaxed">
 							Democratizar a gestão profissional de quadras esportivas,
 							permitindo que qualquer arena — de 1 ou 10 quadras — opere como um
 							negócio moderno.
@@ -71,10 +71,10 @@ export default function About() {
 
 					<div className="p-6 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
 						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4">
-							<Users className="w-6 h-6 text-gray-400" />
+							<Users className="w-6 h-6 text-gray-300" />
 						</div>
 						<h3 className="text-xl font-bold mb-3">Nossa Visão</h3>
-						<p className="text-gray-400 text-sm leading-relaxed">
+						<p className="text-gray-300 text-sm leading-relaxed">
 							Ser a infraestrutura financeira e operacional de todas as arenas
 							esportivas do Brasil, conectando jogadores e donos de quadra.
 						</p>
@@ -82,10 +82,10 @@ export default function About() {
 
 					<div className="p-6 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
 						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4">
-							<Heart className="w-6 h-6 text-gray-400" />
+							<Heart className="w-6 h-6 text-gray-300" />
 						</div>
 						<h3 className="text-xl font-bold mb-3">Nossos Valores</h3>
-						<p className="text-gray-400 text-sm leading-relaxed">
+						<p className="text-gray-300 text-sm leading-relaxed">
 							Simplicidade acima de tudo. Lucro para o cliente primeiro.
 							Tecnologia que serve pessoas.
 						</p>
@@ -107,7 +107,7 @@ export default function About() {
 								<span className="text-2xl">😰</span>
 								<h3 className="text-xl font-bold text-red-400">O Problema</h3>
 							</div>
-							<ul className="space-y-3 text-gray-400">
+							<ul className="space-y-3 text-gray-300">
 								<li className="flex items-start gap-2">
 									<span className="text-red-400 mt-1">•</span>
 									<span>4+ horas por dia no WhatsApp respondendo clientes</span>
@@ -139,7 +139,7 @@ export default function About() {
 									Nossa Solução
 								</h3>
 							</div>
-							<ul className="space-y-3 text-gray-400">
+							<ul className="space-y-3 text-gray-300">
 								<li className="flex items-start gap-2">
 									<span className="text-emerald-400 mt-1">•</span>
 									<span>Cliente reserva e paga online, 24/7</span>
@@ -178,7 +178,7 @@ export default function About() {
 							<Sparkles className="w-7 h-7 text-emerald-400" />
 						</div>
 						<h3 className="font-bold mb-2">Simplicidade</h3>
-						<p className="text-gray-400 text-sm">
+						<p className="text-gray-300 text-sm">
 							Interface intuitiva que qualquer pessoa consegue usar em minutos.
 						</p>
 					</div>
@@ -188,7 +188,7 @@ export default function About() {
 							<TrendingUp className="w-7 h-7 text-emerald-400" />
 						</div>
 						<h3 className="font-bold mb-2">ROI Imediato</h3>
-						<p className="text-gray-400 text-sm">
+						<p className="text-gray-300 text-sm">
 							O sistema se paga na primeira semana com redução de calotes.
 						</p>
 					</div>
@@ -198,7 +198,7 @@ export default function About() {
 							<Shield className="w-7 h-7 text-emerald-400" />
 						</div>
 						<h3 className="font-bold mb-2">Suporte Real</h3>
-						<p className="text-gray-400 text-sm">
+						<p className="text-gray-300 text-sm">
 							Time brasileiro que entende seu negócio e responde rápido.
 						</p>
 					</div>
@@ -211,7 +211,7 @@ export default function About() {
 					<h2 className="text-3xl md:text-4xl font-black mb-4">
 						Pronto para transformar sua arena?
 					</h2>
-					<p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto">
+					<p className="text-gray-300 text-lg mb-8 max-w-xl mx-auto">
 						Comece grátis por 7 dias. Sem cartão de crédito. Sem compromisso.
 					</p>
 					<Button
@@ -225,7 +225,7 @@ export default function About() {
 
 			{/* Footer simples */}
 			<footer className="border-t border-white/[0.04] py-8">
-				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-500 text-sm">
+				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-300 text-sm">
 					<p>© 2025 ArenaSys. Todos os direitos reservados.</p>
 					<div className="flex items-center gap-6">
 						<Link to="/terms" className="hover:text-white transition-colors">

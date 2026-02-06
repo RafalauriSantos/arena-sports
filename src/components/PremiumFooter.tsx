@@ -13,7 +13,7 @@ export function PremiumFooter() {
 							<h3 className="text-white font-semibold text-lg mb-1">
 								Fique por dentro das novidades
 							</h3>
-							<p className="text-gray-500 text-sm">
+							<p className="text-gray-300 text-sm">
 								Receba dicas de gestão e atualizações do ArenaSys.
 							</p>
 						</div>
@@ -36,7 +36,7 @@ export function PremiumFooter() {
 				<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-12">
 					{/* Explore */}
 					<div>
-						<h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-4">
+						<h4 className="text-[11px] font-medium text-gray-300 uppercase tracking-wider mb-4">
 							Explore
 						</h4>
 						<ul className="space-y-3">
@@ -73,7 +73,7 @@ export function PremiumFooter() {
 
 					{/* Empresa */}
 					<div>
-						<h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-4">
+						<h4 className="text-[11px] font-medium text-gray-300 uppercase tracking-wider mb-4">
 							Empresa
 						</h4>
 						<ul className="space-y-3">
@@ -103,7 +103,7 @@ export function PremiumFooter() {
 
 					{/* Legal */}
 					<div>
-						<h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-4">
+						<h4 className="text-[11px] font-medium text-gray-300 uppercase tracking-wider mb-4">
 							Legal
 						</h4>
 						<ul className="space-y-3">
@@ -126,7 +126,7 @@ export function PremiumFooter() {
 
 					{/* Comunidade */}
 					<div>
-						<h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-4">
+						<h4 className="text-[11px] font-medium text-gray-300 uppercase tracking-wider mb-4">
 							Comunidade
 						</h4>
 						<ul className="space-y-3">
@@ -153,19 +153,19 @@ export function PremiumFooter() {
 
 					{/* Segurança */}
 					<div className="col-span-2 sm:col-span-1">
-						<h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-4">
+						<h4 className="text-[11px] font-medium text-gray-300 uppercase tracking-wider mb-4">
 							Segurança
 						</h4>
 						<ul className="space-y-3">
-							<li className="flex items-center gap-2 text-gray-400 text-[13px]">
+							<li className="flex items-center gap-2 text-gray-300 text-[13px]">
 								<Lock className="w-3.5 h-3.5" />
 								<span>SSL/TLS Criptografado</span>
 							</li>
-							<li className="flex items-center gap-2 text-gray-400 text-[13px]">
+							<li className="flex items-center gap-2 text-gray-300 text-[13px]">
 								<ShieldCheck className="w-3.5 h-3.5" />
 								<span>Dados Protegidos</span>
 							</li>
-							<li className="flex items-center gap-2 text-gray-400 text-[13px]">
+							<li className="flex items-center gap-2 text-gray-300 text-[13px]">
 								<svg
 									className="w-3.5 h-3.5"
 									fill="currentColor"
@@ -194,7 +194,7 @@ export function PremiumFooter() {
 							<span className="text-gray-600 text-[11px] hidden sm:inline">
 								|
 							</span>
-							<p className="text-gray-500 text-[11px] hidden sm:inline">
+							<p className="text-gray-300 text-[11px] hidden sm:inline">
 								© 2025 ArenaSys. Todos os direitos reservados.
 							</p>
 						</div>
@@ -203,12 +203,12 @@ export function PremiumFooter() {
 						<div className="flex items-center gap-5 text-[11px]">
 							<Link
 								to="/terms"
-								className="text-gray-500 hover:text-gray-300 transition-colors">
+								className="text-gray-300 hover:text-gray-300 transition-colors">
 								Termos
 							</Link>
 							<Link
 								to="/privacy"
-								className="text-gray-500 hover:text-gray-300 transition-colors">
+								className="text-gray-300 hover:text-gray-300 transition-colors">
 								Privacidade
 							</Link>
 							<span className="text-gray-600">Brasil 🇧🇷</span>
@@ -216,7 +216,7 @@ export function PremiumFooter() {
 					</div>
 
 					{/* Mobile Copyright */}
-					<p className="text-gray-500 text-[11px] text-center mt-4 sm:hidden">
+					<p className="text-gray-300 text-[11px] text-center mt-4 sm:hidden">
 						© 2025 ArenaSys. Todos os direitos reservados.
 					</p>
 				</div>

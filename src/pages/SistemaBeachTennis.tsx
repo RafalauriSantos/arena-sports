@@ -69,7 +69,7 @@ export function SistemaBeachTennis() {
 							<h3 className="text-xl font-semibold mb-2">
 								🏖️ Múltiplas quadras
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Gerencie quantas quadras tiver no mesmo lugar
 							</p>
 						</div>
@@ -77,13 +77,13 @@ export function SistemaBeachTennis() {
 							<h3 className="text-xl font-semibold mb-2">
 								🌞 Preços por horário
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Manhã, tarde, noite - cada um com seu preço
 							</p>
 						</div>
 						<div className="bg-white/5 p-6 rounded-lg">
 							<h3 className="text-xl font-semibold mb-2">👥 Mensalistas</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Horários fixos garantidos automaticamente
 							</p>
 						</div>
@@ -91,7 +91,7 @@ export function SistemaBeachTennis() {
 							<h3 className="text-xl font-semibold mb-2">
 								💰 Pagamento garantido
 							</h3>
-							<p className="text-gray-400">PIX na reserva - sem calote</p>
+							<p className="text-gray-300">PIX na reserva - sem calote</p>
 						</div>
 					</div>
 
@@ -150,7 +150,7 @@ export function SistemaBeachTennis() {
 							em tempo real. Faturamento aumentou 40% porque não perco mais
 							reservas."
 						</p>
-						<p className="text-gray-400">— Arena Beach Club, São Paulo/SP</p>
+						<p className="text-gray-300">— Arena Beach Club, São Paulo/SP</p>
 					</div>
 
 					<h2 className="text-3xl font-bold mt-12 mb-4">Também serve para:</h2>

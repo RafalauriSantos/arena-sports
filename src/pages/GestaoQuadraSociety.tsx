@@ -41,7 +41,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								❌ Problema 1: Duas reservas no mesmo horário
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Você anota no caderno. Esquece de atualizar. Cliente liga
 								confirmando. Você confirma. Mas já tinha vendido aquele horário.
 								Resultado: barraco e cliente perdido.
@@ -51,7 +51,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								❌ Problema 2: Cliente não paga
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								"Pago depois." "Pago na próxima." E você fica correndo atrás de
 								R$ 60, R$ 100. Vira inadimplência acumulada.
 							</p>
@@ -60,7 +60,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								❌ Problema 3: Perda de tempo gerenciando
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								WhatsApp bombando. Ligações o dia todo. "Tem horário amanhã às
 								20h?" Você para o que está fazendo, verifica, responde. E repete
 								isso 20x por dia.
@@ -74,7 +74,7 @@ export function GestaoQuadraSociety() {
 					<div className="grid md:grid-cols-2 gap-6 mb-8">
 						<div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-6">
 							<h3 className="text-xl font-semibold mb-2">✅ Zero conflitos</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Sistema atualiza em tempo real. Se alguém reservou, ninguém mais
 								consegue pegar aquele horário. Impossível ter conflito.
 							</p>
@@ -83,7 +83,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								✅ Pagamento garantido
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								PIX obrigatório na reserva. Cliente não paga? Não reserva.
 								Simples. Zero inadimplência.
 							</p>
@@ -92,7 +92,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								✅ Você não faz nada
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Cliente acessa o link, vê horários livres, escolhe, paga e
 								pronto. Você só confirma no dashboard. 5 minutos por dia.
 							</p>
@@ -101,7 +101,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								✅ Mensalistas automáticos
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Cadastra uma vez. Sistema bloqueia horário fixo toda semana. Sem
 								erro, sem esquecer.
 							</p>
@@ -167,7 +167,7 @@ export function GestaoQuadraSociety() {
 					<p className="text-gray-300 mb-4">
 						<strong className="text-emerald-400 text-2xl">R$ 97/mês</strong>
 					</p>
-					<p className="text-gray-400 mb-6">
+					<p className="text-gray-300 mb-6">
 						Menos que 1 aluguel de quadra por mês. E você economiza muito mais
 						em tempo, inadimplência e clientes perdidos.
 					</p>
@@ -194,7 +194,7 @@ export function GestaoQuadraSociety() {
 							100%. Primeira semana zero conflitos. Hoje não vivo sem. Melhor
 							decisão que tomei."
 						</p>
-						<p className="text-gray-400">
+						<p className="text-gray-300">
 							— Carlos, Arena Champions - Curitiba/PR
 						</p>
 					</div>
@@ -207,7 +207,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								Preciso de computador potente?
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Não. Funciona no celular, tablet ou qualquer computador. É 100%
 								online.
 							</p>
@@ -216,7 +216,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								E se minha internet cair?
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Sistema fica online na nuvem. Clientes continuam agendando
 								normalmente. Você acessa quando voltar a internet.
 							</p>
@@ -225,7 +225,7 @@ export function GestaoQuadraSociety() {
 							<h3 className="text-xl font-semibold mb-2">
 								Posso cancelar quando quiser?
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Sim. Sem fidelidade, sem multa. Cancela com 1 clique.
 							</p>
 						</div>

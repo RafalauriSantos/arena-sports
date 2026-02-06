@@ -227,7 +227,7 @@ const SidebarFixed = ({
 								<h1 className="text-base font-bold text-white leading-none tracking-tight">
 									ArenaSys
 								</h1>
-								<p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">
+								<p className="text-[10px] text-gray-300 uppercase tracking-widest font-bold mt-1">
 									Gestão Pro
 								</p>
 							</div>
@@ -237,7 +237,7 @@ const SidebarFixed = ({
 
 					<button
 						onClick={() => setCollapsed(!collapsed)}
-						className="hidden md:flex text-gray-500 hover:text-white transition-colors p-1"
+						className="hidden md:flex text-gray-300 hover:text-white transition-colors p-1"
 						title={collapsed ? "Expandir" : "Recolher"}>
 						{collapsed ?
 							<ChevronRight className="h-5 w-5" />
@@ -245,7 +245,7 @@ const SidebarFixed = ({
 					</button>
 					<button
 						onClick={() => setMobileOpen(false)}
-						className="md:hidden text-gray-400">
+						className="md:hidden text-gray-300">
 						<X className="h-6 w-6" />
 					</button>
 				</div>
@@ -336,7 +336,7 @@ const SidebarFixed = ({
 									"w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group relative outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
 									activeView === item.id ?
 										"bg-emerald-500/15 text-white font-semibold border border-emerald-500/30 shadow-lg shadow-emerald-500/10"
-									:	"text-gray-400 hover:bg-white/5 hover:text-white border border-transparent",
+									:	"text-gray-300 hover:bg-white/5 hover:text-white border border-transparent",
 									collapsed ? "justify-center" : "",
 								)}>
 								<item.icon
@@ -384,7 +384,7 @@ const SidebarFixed = ({
 										setMobileOpen(false);
 									}}
 									className={cn(
-										"w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+										"w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
 										activeView === "config" &&
 											"bg-white/5 text-white border-l-emerald-500",
 									)}>
@@ -403,7 +403,7 @@ const SidebarFixed = ({
 								setMobileOpen(false);
 							}}
 							className={cn(
-								"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+								"w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:bg-white/5 hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
 								activeView === "config" &&
 									"bg-white/5 text-white border-l-emerald-500",
 							)}>
@@ -421,7 +421,7 @@ const SidebarFixed = ({
 										setSupportModalOpen(true);
 										setMobileOpen(false);
 									}}
-									className="w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
+									className="w-full flex items-center justify-center px-3 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
 									<Headphones className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
@@ -436,7 +436,7 @@ const SidebarFixed = ({
 								setSupportModalOpen(true);
 								setMobileOpen(false);
 							}}
-							className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
+							className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:bg-blue-500/10 hover:text-blue-400 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
 							<Headphones className="h-5 w-5 shrink-0" />
 							<span className="text-sm">Suporte</span>
 						</button>
@@ -466,13 +466,13 @@ const SidebarFixed = ({
 										<p className="text-sm font-medium text-white truncate">
 											{userProfile?.full_name?.split(" ")[0] || "Admin"}
 										</p>
-										<p className="text-[10px] text-gray-500 uppercase font-bold truncate">
+										<p className="text-[10px] text-gray-300 uppercase font-bold truncate">
 											Logado
 										</p>
 									</div>
 								)}
 								{!collapsed && (
-									<ChevronRight className="h-4 w-4 text-gray-500 shrink-0" />
+									<ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
 								)}
 							</button>
 						</DropdownMenuTrigger>
@@ -572,7 +572,7 @@ const ArenaSysStatusHero = ({
 			/>
 
 			<div className="relative z-10 flex flex-col items-center text-center space-y-2 sm:space-y-3">
-				<p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-500 w-full text-left sm:text-center">
+				<p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-300 w-full text-left sm:text-center">
 					Visão do dia
 				</p>
 				<div className="inline-flex items-center gap-2 bg-white/5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/5 shadow-inner">
@@ -589,7 +589,7 @@ const ArenaSysStatusHero = ({
 						{planPill.text}: <span className="text-gray-300">{planLabel}</span>
 					</h3>
 				</div>
-				<div className="flex gap-4 sm:gap-8 text-xs sm:text-sm text-gray-400 mt-1">
+				<div className="flex gap-4 sm:gap-8 text-xs sm:text-sm text-gray-300 mt-1">
 					<div className="flex flex-col">
 						<span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-600 font-bold">
 							Hoje
@@ -643,7 +643,7 @@ const MetricPill = ({
 	return (
 		<div className="flex flex-col p-4 sm:p-5 rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300 backdrop-blur-md group hover:scale-[1.02] shadow-sm hover:shadow-lg hover:shadow-emerald-500/5">
 			<div className="flex justify-between items-start mb-2">
-				<span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 transition-colors">
+				<span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 group-hover:text-gray-300 transition-colors">
 					{label}
 				</span>
 				{Icon && (
@@ -661,7 +661,7 @@ const MetricPill = ({
 						"text-[10px] font-medium mt-1.5",
 						trend.startsWith("+") ? "text-emerald-400"
 						: trend.startsWith("-") ? "text-red-400/90"
-						: "text-gray-500",
+						: "text-gray-300",
 					)}>
 					{trend} vs semana passada
 				</p>
@@ -1192,7 +1192,7 @@ export default function DashboardHome() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<p className="text-sm text-gray-400">
+						<p className="text-sm text-gray-300">
 							Não foi possível ler o status do plano agora. Isso pode acontecer
 							por instabilidade de rede ou policy/RLS.
 						</p>
@@ -1224,7 +1224,7 @@ export default function DashboardHome() {
 							Seu cadastro foi criado. Você tem direito a um trial de 7 dias do
 							Plano Pro, com tudo liberado.
 						</p>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-gray-300">
 							Ao clicar em “Começar trial”, ele é iniciado agora e termina em 21
 							dias. Ao expirar, o sistema cai na tela de assinatura.
 						</p>
@@ -1331,7 +1331,7 @@ export default function DashboardHome() {
 								<p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/70">
 									Escolha uma base
 								</p>
-								<p className="text-xs text-gray-400">
+								<p className="text-xs text-gray-300">
 									Toque no cartão para ver o preço mensal e anual.
 								</p>
 							</div>
@@ -1352,7 +1352,7 @@ export default function DashboardHome() {
 													<p className="text-base font-semibold text-white">
 														{plan.label}
 													</p>
-													<p className="text-xs text-gray-400">
+													<p className="text-xs text-gray-300">
 														{plan.tagline}
 													</p>
 												</div>
@@ -1414,7 +1414,7 @@ export default function DashboardHome() {
 								<p className="text-sm font-medium text-white mb-1">
 									Arena System
 								</p>
-								<p className="text-xs text-gray-400">
+								<p className="text-xs text-gray-300">
 									{billingInterval === "year" ?
 										"R$ 1.164/ano (12x de R$ 97)"
 									:	"R$ 97/mês"}
@@ -1457,12 +1457,12 @@ export default function DashboardHome() {
 								</>
 							:	"Assinar com Asaas"}
 						</Button>
-						<p className="text-[11px] text-gray-400">
+						<p className="text-[11px] text-gray-300">
 							Recomendamos o Pro para usar tudo liberado. Pagamento seguro pelo
 							Asaas com transparência total.
 						</p>
 						<div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3 text-sm text-gray-200">
-							<p className="text-[11px] uppercase tracking-[0.3em] text-gray-400">
+							<p className="text-[11px] uppercase tracking-[0.3em] text-gray-300">
 								Fluxo do checkout
 							</p>
 							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1592,10 +1592,10 @@ export default function DashboardHome() {
 												<div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3">
 													<Activity className="w-7 h-7 text-emerald-400/50" />
 												</div>
-												<p className="text-gray-400 text-sm font-medium mb-1">
+												<p className="text-gray-300 text-sm font-medium mb-1">
 													Tudo pronto para começar!
 												</p>
-												<p className="text-gray-500 text-xs mb-3">
+												<p className="text-gray-300 text-xs mb-3">
 													Agende o primeiro jogo e veja a mágica acontecer
 												</p>
 												<button
@@ -1688,7 +1688,7 @@ export default function DashboardHome() {
 												<h3 className="text-xl font-bold text-white mb-1">
 													{focusCourt.name}
 												</h3>
-												<p className="text-sm text-gray-500 mb-2">
+												<p className="text-sm text-gray-300 mb-2">
 													Ocupação:{" "}
 													<span className="text-white font-bold tabular-nums">
 														{focusCourt.occupancy}%
@@ -1710,7 +1710,7 @@ export default function DashboardHome() {
 											</div>
 											<div className="mt-4 pt-4 border-t border-white/[0.08] space-y-3">
 												<div>
-													<p className="text-[10px] text-gray-500 uppercase mb-1">
+													<p className="text-[10px] text-gray-300 uppercase mb-1">
 														Próximo livre
 													</p>
 													<p

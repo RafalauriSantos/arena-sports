@@ -37,7 +37,7 @@ export function PageLoading({
 		<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center">
 			<div className="text-center space-y-4">
 				<LoadingSpinner size="lg" className="text-emerald-500 mx-auto" />
-				<p className="text-gray-400 text-sm">{message}</p>
+				<p className="text-gray-300 text-sm">{message}</p>
 			</div>
 		</div>
 	);

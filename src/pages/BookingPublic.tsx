@@ -1071,7 +1071,7 @@ Qual a chave PIX?`;
 					<h1 className="text-xl font-bold text-gray-900">
 						Arena não encontrada
 					</h1>
-					<p className="text-gray-500 text-sm">
+					<p className="text-gray-300 text-sm">
 						{errorMsg ||
 							"Verifique se o link está correto ou se a arena mudou de nome."}
 					</p>
@@ -1230,7 +1230,7 @@ Qual a chave PIX?`;
 									}`}>
 									<span
 										className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${
-											isSelected ? "text-white/90" : "text-gray-500"
+											isSelected ? "text-white/90" : "text-gray-300"
 										}`}>
 										{dayName}
 									</span>
@@ -1242,7 +1242,7 @@ Qual a chave PIX?`;
 									</span>
 									<span
 										className={`text-[10px] mt-0.5 ${
-											isSelected ? "text-white/80" : "text-gray-400"
+											isSelected ? "text-white/80" : "text-gray-300"
 										}`}>
 										{format(date, "MMM", { locale: ptBR })}
 									</span>
@@ -1290,13 +1290,13 @@ Qual a chave PIX?`;
 										<h3 className="font-bold text-gray-900 text-lg">
 											{court.name}
 										</h3>
-										<p className="text-xs text-gray-500">
+										<p className="text-xs text-gray-300">
 											{court.slots.filter((s) => !s.isOccupied).length}{" "}
 											{court.slots.filter((s) => !s.isOccupied).length === 1 ?
 												"horário disponível"
 											:	"horários disponíveis"}
 											{court.slots.filter((s) => s.isOccupied).length > 0 && (
-												<span className="text-gray-400 ml-1">
+												<span className="text-gray-300 ml-1">
 													• {court.slots.filter((s) => s.isOccupied).length}{" "}
 													reservado
 													{(
@@ -1315,7 +1315,7 @@ Qual a chave PIX?`;
 						{/* Grid de Horários */}
 						<div className="p-4">
 							{court.slots.length === 0 ?
-								<div className="text-center py-12 text-gray-400">
+								<div className="text-center py-12 text-gray-300">
 									<Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
 									<p className="text-sm font-medium">
 										Sem horários livres para este dia
@@ -1343,15 +1343,15 @@ Qual a chave PIX?`;
 													key={slot.time}
 													className={`relative flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-xl border-2 bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed animate-reveal-up ${staggerClass}`}>
 													{/* Ícone de cadeado */}
-													<Lock className="w-4 h-4 text-gray-500 mb-1" />
+													<Lock className="w-4 h-4 text-gray-300 mb-1" />
 
 													{/* Horário */}
-													<span className="text-base font-bold text-gray-500 line-through">
+													<span className="text-base font-bold text-gray-300 line-through">
 														{slot.time}
 													</span>
 
 													{/* Label "Reservado" */}
-													<span className="text-[10px] text-gray-500 font-semibold mt-0.5">
+													<span className="text-[10px] text-gray-300 font-semibold mt-0.5">
 														Reservado
 													</span>
 												</div>
@@ -1387,7 +1387,7 @@ Qual a chave PIX?`;
 												{/* Preço */}
 												<div className="flex flex-col items-center gap-0.5">
 													{slot.hasDiscount && !isSelected && (
-														<span className="text-[10px] text-gray-400 line-through">
+														<span className="text-[10px] text-gray-300 line-through">
 															R$ {slot.price}
 														</span>
 													)}
@@ -1421,7 +1421,7 @@ Qual a chave PIX?`;
 									{selectedSlot.courtName}
 								</p>
 								<div className="flex items-center gap-2 mt-0.5">
-									<Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+									<Clock className="w-4 h-4 text-gray-300 flex-shrink-0" />
 									<span className="text-sm text-gray-600">
 										{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 										{selectedSlot.slot.time}
@@ -1529,7 +1529,7 @@ Qual a chave PIX?`;
 												value={playerName}
 												onChange={(e) => setPlayerName(e.target.value)}
 												placeholder="Ex: João"
-												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-500"
+												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-300"
 												disabled={isReserving}
 												maxLength={50}
 											/>
@@ -1546,7 +1546,7 @@ Qual a chave PIX?`;
 													setPlayerPhone(formatted);
 												}}
 												placeholder="(11) 99988-7766"
-												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-500"
+												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-300"
 												disabled={isReserving}
 												maxLength={15}
 											/>
@@ -1574,7 +1574,7 @@ Qual a chave PIX?`;
 										}
 									</button>
 
-									<p className="text-xs text-gray-500 text-center">
+									<p className="text-xs text-gray-300 text-center">
 										Você paga quando chegar • R${" "}
 										{calculatePrice(
 											selectedSlot.slot.price,
@@ -1592,7 +1592,7 @@ Qual a chave PIX?`;
 											<div className="w-full border-t border-gray-200"></div>
 										</div>
 										<div className="relative flex justify-center text-xs uppercase">
-											<span className="bg-white px-2 text-gray-500 font-medium">
+											<span className="bg-white px-2 text-gray-300 font-medium">
 												ou pagar via PIX
 											</span>
 										</div>
@@ -1607,7 +1607,7 @@ Qual a chave PIX?`;
 												<p className="font-bold text-gray-900 group-hover:text-green-700">
 													💳 Pagar Sinal (PIX)
 												</p>
-												<p className="text-xs text-gray-500">
+												<p className="text-xs text-gray-300">
 													Garante + enviar comprovante
 												</p>
 											</div>
@@ -1638,12 +1638,12 @@ Qual a chave PIX?`;
 												<p className="font-bold text-gray-900 group-hover:text-primary">
 													💎 Pagar Tudo (PIX)
 												</p>
-												<p className="text-xs text-gray-500">
+												<p className="text-xs text-gray-300">
 													Desconto + enviar comprovante
 												</p>
 											</div>
 											<div className="text-right">
-												<p className="text-xs text-gray-400 line-through">
+												<p className="text-xs text-gray-300 line-through">
 													R${" "}
 													{calculatePrice(
 														selectedSlot.slot.price,
@@ -1692,7 +1692,7 @@ Qual a chave PIX?`;
 										setPlayerPhone("");
 									}
 								}}
-								className="text-sm text-gray-500 hover:text-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-200/50 transition-colors">
+								className="text-sm text-gray-300 hover:text-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-200/50 transition-colors">
 								{reserveSuccess ? "Fechar" : "Cancelar"}
 							</button>
 						</div>

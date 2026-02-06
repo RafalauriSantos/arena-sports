@@ -174,14 +174,14 @@ export function BlogPost() {
 						<span className="text-sm font-semibold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full">
 							{article.category}
 						</span>
-						<span className="text-sm text-gray-500">{article.readTime}</span>
+						<span className="text-sm text-gray-300">{article.readTime}</span>
 					</div>
 
 					<h1 className="text-4xl md:text-5xl font-bold mb-4">
 						{article.title}
 					</h1>
 
-					<div className="flex items-center gap-4 text-sm text-gray-400 mb-8">
+					<div className="flex items-center gap-4 text-sm text-gray-300 mb-8">
 						<time>{new Date(article.date).toLocaleDateString("pt-BR")}</time>
 					</div>
 

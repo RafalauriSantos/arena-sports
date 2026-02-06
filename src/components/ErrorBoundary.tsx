@@ -70,11 +70,11 @@ export class ErrorBoundary extends Component<Props, State> {
 								</h1>
 							</div>
 
-							<p className="text-gray-400 text-sm mb-2">
+							<p className="text-gray-300 text-sm mb-2">
 								Ocorreu um erro ao carregar esta página. Isso pode ser causado por:
 							</p>
 
-							<ul className="text-gray-500 text-xs space-y-1 mb-6 list-disc list-inside">
+							<ul className="text-gray-300 text-xs space-y-1 mb-6 list-disc list-inside">
 								<li>Problema de conexão com o servidor</li>
 								<li>Arquivo de módulo não encontrado</li>
 								<li>Cache desatualizado do navegador</li>
@@ -82,7 +82,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
 							{this.state.error && (
 								<details className="mb-6">
-									<summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-400 mb-2">
+									<summary className="text-xs text-gray-300 cursor-pointer hover:text-gray-300 mb-2">
 										Detalhes técnicos (clique para expandir)
 									</summary>
 									<pre className="text-[10px] text-red-400 bg-[#0a0c10] p-3 rounded border border-red-500/20 overflow-auto max-h-40">

@@ -82,7 +82,7 @@ export function SupportModal({ open, onOpenChange }: SupportModalProps) {
 							Falar no WhatsApp
 						</Button>
 
-						<p className="text-xs text-gray-500 text-center">
+						<p className="text-xs text-gray-300 text-center">
 							Resposta rápida via WhatsApp. Geralmente respondemos em até 1 hora.
 						</p>
 					</div>

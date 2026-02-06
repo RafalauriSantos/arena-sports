@@ -335,7 +335,7 @@ export default function MensalistasView() {
 						<Crown className="w-5 h-5 md:w-6 md:h-6 text-amber-500" />
 						Mensalistas
 					</h1>
-					<p className="text-sm text-gray-500 mt-0.5">
+					<p className="text-sm text-gray-300 mt-0.5">
 						Horários recorrentes por quadra e dia
 					</p>
 				</div>
@@ -383,7 +383,7 @@ export default function MensalistasView() {
 									<div className="flex items-start justify-between">
 										<div className="flex-1">
 											<CardTitle className="text-white flex items-center gap-2">
-												<Crown className={`w-5 h-5 ${slot.active ? "text-amber-500" : "text-gray-500"}`} />
+												<Crown className={`w-5 h-5 ${slot.active ? "text-amber-500" : "text-gray-300"}`} />
 												{courtName}
 											</CardTitle>
 											<div className="mt-2 space-y-1">
@@ -447,7 +447,7 @@ export default function MensalistasView() {
 						<DialogTitle className="text-white">
 							{editingSlot ? "Editar Mensalista" : "Novo Mensalista"}
 						</DialogTitle>
-						<DialogDescription className="text-gray-400">
+						<DialogDescription className="text-gray-300">
 							Configure o horário fixo semanal para este mensalista
 						</DialogDescription>
 					</DialogHeader>

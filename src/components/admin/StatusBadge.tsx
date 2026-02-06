@@ -21,7 +21,7 @@ export function StatusBadge({ status, children, className }: StatusBadgeProps) {
 		error:
 			"bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20",
 		// Cinza para neutro (Inativo, Rascunho)
-		neutral: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+		neutral: "bg-gray-500/10 text-gray-300 border-gray-500/20",
 	};
 
 	return (

@@ -72,7 +72,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								⚽ Múltiplas quadras
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Gerencie society, futsal e campo no mesmo sistema
 							</p>
 						</div>
@@ -80,7 +80,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								⏰ Horários flexíveis
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Configure preços por horário (pico, off-peak)
 							</p>
 						</div>
@@ -88,7 +88,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								👥 Gestão de clientes
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Histórico completo, mensalistas e avulsos
 							</p>
 						</div>
@@ -96,7 +96,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								💰 Controle financeiro
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Saiba exatamente quanto cada quadra fatura
 							</p>
 						</div>
@@ -147,7 +147,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								Preciso ter conhecimento técnico?
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Não. É tão simples quanto usar WhatsApp. Você configura suas
 								quadras, horários e pronto. Sistema faz o resto.
 							</p>
@@ -156,7 +156,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								Meus clientes precisam criar conta?
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Não. Eles acessam o link, escolhem horário e pagam. Simples
 								assim.
 							</p>
@@ -165,7 +165,7 @@ export function SoftwareQuadrasFutebol() {
 							<h3 className="text-xl font-semibold mb-2">
 								E se eu cancelar depois do teste?
 							</h3>
-							<p className="text-gray-400">
+							<p className="text-gray-300">
 								Sem problemas. Cancele quando quiser, sem multas ou burocracias.
 							</p>
 						</div>

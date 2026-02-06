@@ -182,7 +182,7 @@ export default function FolgasView() {
 					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
 						Gerenciar Folgas
 					</h1>
-					<p className="text-sm text-gray-500 mt-0.5">
+					<p className="text-sm text-gray-300 mt-0.5">
 						Bloqueie datas e motive quando fechar
 					</p>
 				</div>
@@ -201,7 +201,7 @@ export default function FolgasView() {
 					<AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
 					<div className="text-sm">
 						<p className="font-medium text-amber-400 mb-1">Como funciona</p>
-						<p className="text-gray-400">
+						<p className="text-gray-300">
 							Ao criar uma folga, TODOS os horários dos dias selecionados serão
 							bloqueados automaticamente. Os jogadores não poderão reservar
 							nesses períodos.
@@ -220,8 +220,8 @@ export default function FolgasView() {
 					<Card className="bg-gray-900/40 border-white/5 backdrop-blur-md">
 						<CardContent className="text-center py-12">
 							<CalendarOff className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-							<p className="text-gray-400">Nenhuma folga cadastrada</p>
-							<p className="text-sm text-gray-500 mt-1">
+							<p className="text-gray-300">Nenhuma folga cadastrada</p>
+							<p className="text-sm text-gray-300 mt-1">
 								Adicione períodos de fechamento quando necessário
 							</p>
 						</CardContent>
@@ -236,17 +236,17 @@ export default function FolgasView() {
 									<div className="flex items-start justify-between">
 										<div>
 											<CardTitle className="text-lg flex items-center gap-2 text-white">
-												<CalendarOff className="h-5 w-5 text-gray-400" />
+												<CalendarOff className="h-5 w-5 text-gray-300" />
 												{formatDateRange(folga.startDate, folga.endDate)}
 											</CardTitle>
-											<p className="text-sm text-gray-400 mt-1">
+											<p className="text-sm text-gray-300 mt-1">
 												{folga.reason}
 											</p>
 										</div>
 										<Button
 											variant="ghost"
 											size="icon"
-											className="text-gray-500 hover:text-rose-400 hover:bg-rose-500/10"
+											className="text-gray-300 hover:text-rose-400 hover:bg-rose-500/10"
 											onClick={() => handleDeleteFolga(folga)}>
 											<Trash2 className="h-4 w-4" />
 										</Button>
@@ -255,7 +255,7 @@ export default function FolgasView() {
 								<CardContent>
 									<Badge
 										variant="outline"
-										className="text-xs border-white/10 text-gray-500">
+										className="text-xs border-white/10 text-gray-300">
 										Criada em{" "}
 										{format(new Date(folga.createdAt), "dd/MM/yyyy HH:mm", {
 											locale: ptBR,

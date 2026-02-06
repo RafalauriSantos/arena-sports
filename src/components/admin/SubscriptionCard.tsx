@@ -172,7 +172,7 @@ export function SubscriptionCard({
 								</span>
 							)}
 						</div>
-						<p className="text-sm text-gray-500">Plano atual</p>
+						<p className="text-sm text-gray-300">Plano atual</p>
 					</div>
 					<div
 						className={cn(
@@ -193,11 +193,11 @@ export function SubscriptionCard({
 								<span className="text-4xl font-bold text-gray-900">
 									{formatPrice(monthlyPrice)}
 								</span>
-								<span className="text-lg text-gray-500">{priceLabel}</span>
+								<span className="text-lg text-gray-300">{priceLabel}</span>
 							</div>
 							{/* Preço original riscado */}
 							<div className="flex items-center gap-2">
-								<span className="text-lg text-gray-400 line-through">
+								<span className="text-lg text-gray-300 line-through">
 									{formatPrice(
 										billingInterval === "month" ?
 											subscription.monthly_price || 9700
@@ -216,11 +216,11 @@ export function SubscriptionCard({
 							<span className="text-4xl font-bold text-gray-900">
 								{formatPrice(monthlyPrice)}
 							</span>
-							<span className="text-lg text-gray-500">{priceLabel}</span>
+							<span className="text-lg text-gray-300">{priceLabel}</span>
 						</div>
 					}
 					{billingInterval === "year" && (
-						<p className="text-sm text-gray-500">
+						<p className="text-sm text-gray-300">
 							Equivale a {formatPrice(Math.round(monthlyPrice / 12))}/mês
 						</p>
 					)}
@@ -234,7 +234,7 @@ export function SubscriptionCard({
 								Restam {trialDaysLeft} dia{trialDaysLeft !== 1 ? "s" : ""} de{" "}
 								{trialTotalDays}
 							</span>
-							<span className="text-gray-500">
+							<span className="text-gray-300">
 								{Math.round(trialProgress)}% usado
 							</span>
 						</div>
@@ -339,7 +339,7 @@ export function SubscriptionCard({
 								)}
 							</button>
 						</div>
-						<p className="text-xs text-gray-500 mt-3 text-center">
+						<p className="text-xs text-gray-300 mt-3 text-center">
 							💳 Parcelamento em até 12x sem juros no cartão
 						</p>
 					</div>
@@ -360,7 +360,7 @@ export function SubscriptionCard({
 								<Calendar className="h-4 w-4 text-gray-600" />
 							</div>
 							<div>
-								<p className="text-sm text-gray-500">Próxima fatura</p>
+								<p className="text-sm text-gray-300">Próxima fatura</p>
 								<p className="text-base font-semibold text-gray-900">
 									{isTrial ? "Inicia em" : "Renova em"} {nextBillingDate}
 								</p>
@@ -376,7 +376,7 @@ export function SubscriptionCard({
 							<CreditCard className="h-4 w-4 text-gray-600" />
 						</div>
 						<div>
-							<p className="text-sm text-gray-500">Método de pagamento</p>
+							<p className="text-sm text-gray-300">Método de pagamento</p>
 							<p className="text-base font-semibold text-gray-900">Via Asaas</p>
 						</div>
 					</div>
@@ -394,7 +394,7 @@ export function SubscriptionCard({
 					:	<div className="space-y-2">
 							{/* Placeholder para faturas futuras */}
 							<div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-								<p className="text-sm text-gray-500 text-center">
+								<p className="text-sm text-gray-300 text-center">
 									Nenhuma fatura registrada ainda
 								</p>
 							</div>
@@ -404,7 +404,7 @@ export function SubscriptionCard({
 
 				{/* Segurança */}
 				<div className="pt-4 border-t border-gray-200">
-					<p className="text-xs text-gray-500 text-center">
+					<p className="text-xs text-gray-300 text-center">
 						🔒 Pagamento seguro processado pelo Asaas. Você pode cancelar a
 						qualquer momento.
 					</p>

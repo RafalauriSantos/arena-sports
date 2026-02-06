@@ -354,7 +354,7 @@ export default function Welcome() {
 							{userName && `, ${userName}!`}
 						</h1>
 
-						<p className="text-gray-400 text-base md:text-lg max-w-lg mx-auto leading-relaxed">
+						<p className="text-gray-300 text-base md:text-lg max-w-lg mx-auto leading-relaxed">
 							Sua arena agora tem um sistema profissional de gestão.
 						</p>
 					</div>
@@ -379,7 +379,7 @@ export default function Welcome() {
 
 							{/* Barra de Progresso do Trial */}
 							<div className="space-y-2">
-								<div className="flex items-center justify-between text-xs text-gray-400">
+								<div className="flex items-center justify-between text-xs text-gray-300">
 									<span>
 										Dia {trialDays.current} de {trialDays.total} do seu teste
 										grátis
@@ -412,7 +412,7 @@ export default function Welcome() {
 							{/* Checklist */}
 							<div className="space-y-4">
 								<div className="flex items-center justify-between">
-									<h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+									<h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">
 										Configure sua Arena
 									</h3>
 									<span className="text-xs font-bold text-emerald-400">
@@ -463,12 +463,12 @@ export default function Welcome() {
 												}`}>
 												{item.completed ?
 													<CheckCircle2 className="w-4 h-4 text-black animate-in zoom-in spin-in-90 duration-300" />
-												:	<span className="text-[10px] text-gray-500 font-bold">
+												:	<span className="text-[10px] text-gray-300 font-bold">
 														XP
 													</span>
 												}
 											</div>
-											<div className="flex-shrink-0 text-gray-400">
+											<div className="flex-shrink-0 text-gray-300">
 												{item.icon}
 											</div>
 											<div className="flex-1">
@@ -486,12 +486,12 @@ export default function Welcome() {
 														className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
 															item.completed ?
 																"bg-emerald-500/20 text-emerald-400"
-															:	"bg-white/10 text-gray-400"
+															:	"bg-white/10 text-gray-300"
 														}`}>
 														+{item.xp || 50} XP
 													</span>
 												</div>
-												<p className="text-xs text-gray-500 mt-0.5">
+												<p className="text-xs text-gray-300 mt-0.5">
 													{item.description}
 												</p>
 											</div>
@@ -517,7 +517,7 @@ export default function Welcome() {
 										<p className="text-center text-xs font-semibold text-emerald-400">
 											✓ Arena 100% configurada!
 										</p>
-									:	<p className="text-center text-xs text-gray-500">
+									:	<p className="text-center text-xs text-gray-300">
 											Complete todas as configurações para começar
 										</p>
 									}
@@ -550,7 +550,7 @@ export default function Welcome() {
 										</>
 									}
 								</Button>
-								<p className="text-center text-xs text-gray-500 mt-3">
+								<p className="text-center text-xs text-gray-300 mt-3">
 									{allCompleted ?
 										"Sua arena está pronta! 🎉"
 									:	"Configure depois no Dashboard"}
@@ -561,7 +561,7 @@ export default function Welcome() {
 
 					{/* Mensagem Final */}
 					<div className="text-center">
-						<p className="text-gray-500 text-xs">
+						<p className="text-gray-300 text-xs">
 							Seu trial termina em {trialDays.total - trialDays.current} dias.
 							Durante este período, você tem acesso completo a todas as
 							funcionalidades.

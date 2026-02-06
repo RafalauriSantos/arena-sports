@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
 				<div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
 					<Link
 						to="/"
-						className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+						className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm">
 						<ArrowLeft className="w-4 h-4" />
 						Voltar para Home
 					</Link>
@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
 					<h1 className="text-4xl md:text-5xl font-black mb-4">
 						Política de Privacidade
 					</h1>
-					<p className="text-gray-400 text-lg">
+					<p className="text-gray-300 text-lg">
 						Última atualização: Janeiro de 2025
 					</p>
 				</div>
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
 							</div>
 							<h2 className="text-2xl font-bold">1. Quem Somos</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>
 								O <strong className="text-white">ArenaSys</strong> é uma
 								plataforma de gestão para arenas esportivas, desenvolvida e
@@ -88,7 +88,7 @@ export default function PrivacyPolicy() {
 							</div>
 							<h2 className="text-2xl font-bold">2. Dados que Coletamos</h2>
 						</div>
-						<div className="pl-[52px] space-y-4 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-4 text-gray-300 leading-relaxed">
 							<div className="p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl">
 								<h3 className="text-white font-medium mb-2">Dados de Conta</h3>
 								<p className="text-sm">
@@ -122,7 +122,7 @@ export default function PrivacyPolicy() {
 							</div>
 							<h2 className="text-2xl font-bold">3. Como Usamos os Dados</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<ul className="space-y-2">
 								<li className="flex items-start gap-2">
 									<span className="text-emerald-400 mt-1">•</span>
@@ -160,7 +160,7 @@ export default function PrivacyPolicy() {
 								4. Compartilhamento de Dados
 							</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>Seus dados podem ser compartilhados com:</p>
 							<ul className="space-y-2">
 								<li className="flex items-start gap-2">
@@ -195,7 +195,7 @@ export default function PrivacyPolicy() {
 							</div>
 							<h2 className="text-2xl font-bold">5. Segurança dos Dados</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>
 								Implementamos medidas técnicas e organizacionais para proteger
 								seus dados:
@@ -225,7 +225,7 @@ export default function PrivacyPolicy() {
 							</div>
 							<h2 className="text-2xl font-bold">6. Seus Direitos</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>De acordo com a LGPD, você tem direito a:</p>
 							<ul className="space-y-2">
 								<li className="flex items-start gap-2">
@@ -260,7 +260,7 @@ export default function PrivacyPolicy() {
 
 			{/* Footer simples */}
 			<footer className="border-t border-white/[0.04] py-8">
-				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-500 text-sm">
+				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-300 text-sm">
 					<p>© 2025 ArenaSys. Todos os direitos reservados.</p>
 					<div className="flex items-center gap-6">
 						<Link to="/terms" className="hover:text-white transition-colors">

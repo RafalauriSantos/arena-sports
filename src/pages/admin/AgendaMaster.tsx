@@ -497,7 +497,7 @@ export default function AgendaMaster() {
 							<span className="text-2xl sm:text-3xl font-light text-white tracking-tight">
 								{booking.time}
 								{endTimeDisplay && (
-									<span className="text-lg sm:text-xl text-gray-500 font-light ml-2">
+									<span className="text-lg sm:text-xl text-gray-300 font-light ml-2">
 										{endTimeDisplay}
 									</span>
 								)}
@@ -510,7 +510,7 @@ export default function AgendaMaster() {
 									"bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
 								: booking.paymentStatus === "deposit" ?
 									"bg-amber-500/10 text-amber-400 border-amber-500/20"
-								:	"bg-white/5 text-gray-400 border-white/10",
+								:	"bg-white/5 text-gray-300 border-white/10",
 							)}>
 							<span
 								className={cn(
@@ -533,7 +533,7 @@ export default function AgendaMaster() {
 						<p className="text-base sm:text-lg font-medium text-white/90 leading-tight">
 							{booking.customerName}
 						</p>
-						<p className="text-sm text-gray-500 mt-1 font-light">
+						<p className="text-sm text-gray-300 mt-1 font-light">
 							{booking.field}
 						</p>
 					</div>
@@ -549,7 +549,7 @@ export default function AgendaMaster() {
 							</span>
 						</div>
 					:	<div className="flex items-center gap-2 pt-3 border-t border-white/5">
-							<span className="text-xs text-gray-500 font-light">Pago</span>
+							<span className="text-xs text-gray-300 font-light">Pago</span>
 						</div>
 					}
 				</CardContent>
@@ -719,7 +719,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
 								Agenda de Jogos
 							</h1>
-							<p className="text-sm text-gray-500 mt-0.5">
+							<p className="text-sm text-gray-300 mt-0.5">
 								{format(
 									selectedDate,
 									selectedDate.getFullYear() === new Date().getFullYear() ?
@@ -749,7 +749,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									"px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
 									viewMode === "dia" ?
 										"bg-primary text-white shadow-sm"
-									:	"text-gray-400 hover:text-white",
+									:	"text-gray-300 hover:text-white",
 								)}>
 								Dia
 							</button>
@@ -759,7 +759,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									"px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
 									viewMode === "semana" ?
 										"bg-primary text-white shadow-sm"
-									:	"text-gray-400 hover:text-white",
+									:	"text-gray-300 hover:text-white",
 								)}>
 								Semana
 							</button>
@@ -778,7 +778,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 				<div className="flex items-center justify-center gap-2">
 					<button
 						onClick={goToPrevWeek}
-						className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0 hover:scale-105 active:scale-95">
+						className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all flex-shrink-0 hover:scale-105 active:scale-95">
 						<ChevronLeft className="w-5 h-5" />
 					</button>
 					<button
@@ -787,7 +787,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							"px-4 py-2 text-sm font-medium rounded-xl border transition-all flex-shrink-0 hover:scale-105 active:scale-95",
 							isToday ?
 								"bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-lg shadow-emerald-500/10"
-							:	"bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10",
+							:	"bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10",
 						)}>
 						Hoje
 					</button>
@@ -806,7 +806,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 											"bg-primary/20 border-primary/50 text-white shadow-lg shadow-primary/20"
 										: dayIsToday ?
 											"bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10"
-										:	"bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5",
+										:	"bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5",
 									)}>
 									{/* Indicador de selecionado */}
 									{isSelected && (
@@ -825,7 +825,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									<span
 										className={cn(
 											"text-[10px] uppercase font-medium leading-none mt-0.5",
-											isSelected ? "text-primary/80" : "text-gray-500",
+											isSelected ? "text-primary/80" : "text-gray-300",
 										)}>
 										{format(date, "MMM", { locale: ptBR })}
 									</span>
@@ -835,7 +835,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</div>
 					<button
 						onClick={goToNextWeek}
-						className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0 hover:scale-105 active:scale-95">
+						className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all flex-shrink-0 hover:scale-105 active:scale-95">
 						<ChevronRight className="w-5 h-5" />
 					</button>
 				</div>
@@ -864,7 +864,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										).length
 									}
 								</p>
-								<p className="text-xs text-gray-500">Pagos</p>
+								<p className="text-xs text-gray-300">Pagos</p>
 							</div>
 						</div>
 						<div className="flex items-center gap-3 p-4 bg-surface-2/60 border border-white/5 rounded-2xl">
@@ -881,7 +881,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										).length
 									}
 								</p>
-								<p className="text-xs text-gray-500">Pendentes</p>
+								<p className="text-xs text-gray-300">Pendentes</p>
 							</div>
 						</div>
 						<div className="flex items-center gap-3 p-4 bg-surface-2/60 border border-white/5 rounded-2xl">
@@ -892,7 +892,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								<p className="text-2xl font-semibold text-white">
 									{selectedDateBookings.length}
 								</p>
-								<p className="text-xs text-gray-500">Total</p>
+								<p className="text-xs text-gray-300">Total</p>
 							</div>
 						</div>
 					</div>
@@ -908,7 +908,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									<h3 className="text-xl font-semibold text-white mb-2">
 										{isPast ? "Nenhum jogo nesse dia" : "Agenda livre!"}
 									</h3>
-									<p className="text-sm text-gray-400 mb-6 max-w-sm">
+									<p className="text-sm text-gray-300 mb-6 max-w-sm">
 										{isPast ?
 											"Não houve reservas nessa data."
 										: isToday ?
@@ -942,7 +942,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 															{booking.time}
 														</p>
 														{booking.endTime && (
-															<p className="text-xs text-gray-500">
+															<p className="text-xs text-gray-300">
 																até {format(booking.endTime, "HH:mm")}
 															</p>
 														)}
@@ -972,7 +972,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 																</Badge>
 															)}
 														</div>
-														<div className="flex items-center gap-3 text-sm text-gray-400">
+														<div className="flex items-center gap-3 text-sm text-gray-300">
 															<span className="truncate">{booking.field}</span>
 															<span className="text-gray-600">•</span>
 															<span>R$ {booking.totalAmount.toFixed(0)}</span>
@@ -989,7 +989,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 																	"bg-emerald-500/10 text-emerald-400"
 																: booking.paymentStatus === "deposit" ?
 																	"bg-amber-500/10 text-amber-400"
-																:	"bg-gray-500/10 text-gray-400",
+																:	"bg-gray-500/10 text-gray-300",
 															)}>
 															{booking.paymentStatus === "paid" ?
 																"Pago"
@@ -1000,19 +1000,19 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 													</div>
 
 													{/* Arrow */}
-													<ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors flex-shrink-0" />
+													<ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-300 transition-colors flex-shrink-0" />
 												</button>
 											:	<button
 													onClick={() => setIsNewBookingOpen(true)}
 													className="w-full flex items-center gap-4 p-3 rounded-xl border border-dashed border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all text-left group">
 													<div className="flex-shrink-0 w-16 md:w-20">
-														<p className="text-base font-medium text-gray-500 group-hover:text-gray-400">
+														<p className="text-base font-medium text-gray-300 group-hover:text-gray-300">
 															{time}
 														</p>
 													</div>
 													<div className="w-1.5 h-8 rounded-full bg-white/5 flex-shrink-0" />
 													<div className="flex-1 min-w-0">
-														<p className="text-sm text-gray-600 group-hover:text-gray-400 transition-colors">
+														<p className="text-sm text-gray-600 group-hover:text-gray-300 transition-colors">
 															Horário disponível
 														</p>
 													</div>
@@ -1039,12 +1039,12 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									<SheetTitle className="text-2xl font-semibold text-white tracking-tight flex items-center gap-2">
 										{selectedBooking.time}
 										{selectedBooking.endTime && (
-											<span className="text-lg text-gray-500 font-normal">
+											<span className="text-lg text-gray-300 font-normal">
 												→ {format(selectedBooking.endTime, "HH:mm")}
 											</span>
 										)}
 									</SheetTitle>
-									<SheetDescription className="text-sm text-gray-400">
+									<SheetDescription className="text-sm text-gray-300">
 										{selectedBooking.field}
 									</SheetDescription>
 								</div>
@@ -1065,7 +1065,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 												"bg-emerald-500/20 text-emerald-400"
 											: selectedBooking.paymentStatus === "deposit" ?
 												"bg-amber-500/20 text-amber-400"
-											:	"bg-gray-500/20 text-gray-400",
+											:	"bg-gray-500/20 text-gray-300",
 										)}>
 										{selectedBooking.paymentStatus === "paid" ?
 											"Pago"
@@ -1084,7 +1084,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									<Users className="w-5 h-5 text-primary" />
 								</div>
 								<div className="flex-1 min-w-0">
-									<p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">
+									<p className="text-xs text-gray-300 uppercase tracking-wider mb-0.5">
 										Cliente
 									</p>
 									<p className="text-base font-medium text-white truncate">
@@ -1097,7 +1097,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<div className="space-y-2">
 								<Label
 									htmlFor="editPhone"
-									className="text-xs text-gray-500 uppercase tracking-wider">
+									className="text-xs text-gray-300 uppercase tracking-wider">
 									Telefone
 								</Label>
 								<div className="flex gap-2">
@@ -1118,7 +1118,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									<Button
 										variant="outline"
 										size="sm"
-										className="h-10 px-4 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl"
+										className="h-10 px-4 border-white/10 text-gray-300 hover:text-white hover:bg-white/10 rounded-xl"
 										disabled={savingPhone}
 										onClick={handleSavePhone}>
 										{savingPhone ?
@@ -1131,14 +1131,14 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							{/* Valores */}
 							<div className="grid grid-cols-3 gap-3">
 								<div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 text-center">
-									<p className="text-xs text-gray-500 mb-1">Total</p>
+									<p className="text-xs text-gray-300 mb-1">Total</p>
 									<p className="text-lg font-semibold text-white">
 										R$ {selectedBooking.totalAmount.toFixed(0)}
 									</p>
 								</div>
 								<div className="p-3 bg-white/[0.02] rounded-xl border border-white/5 text-center">
-									<p className="text-xs text-gray-500 mb-1">Pago</p>
-									<p className="text-lg font-semibold text-gray-400">
+									<p className="text-xs text-gray-300 mb-1">Pago</p>
+									<p className="text-lg font-semibold text-gray-300">
 										R$ {selectedBooking.paidAmount.toFixed(0)}
 									</p>
 								</div>
@@ -1154,7 +1154,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 											"text-xs mb-1",
 											selectedBooking.remainingAmount > 0 ?
 												"text-amber-400/80"
-											:	"text-gray-500",
+											:	"text-gray-300",
 										)}>
 										Pendente
 									</p>
@@ -1163,7 +1163,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 											"text-lg font-semibold",
 											selectedBooking.remainingAmount > 0 ?
 												"text-amber-400"
-											:	"text-gray-500",
+											:	"text-gray-300",
 										)}>
 										R$ {selectedBooking.remainingAmount.toFixed(0)}
 									</p>
@@ -1176,7 +1176,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									{selectedBooking.startedAt ?
 										<>
 											<div className="flex items-center justify-between">
-												<span className="text-sm text-gray-400">
+												<span className="text-sm text-gray-300">
 													Tempo decorrido
 												</span>
 												<p className="text-2xl font-semibold text-white font-mono tracking-tight">
@@ -1205,7 +1205,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							{/* Histórico */}
 							{bookingEvents.length > 0 && (
 								<div className="space-y-3">
-									<p className="text-xs text-gray-500 uppercase tracking-wider">
+									<p className="text-xs text-gray-300 uppercase tracking-wider">
 										Histórico
 									</p>
 									<div className="space-y-2">
@@ -1218,7 +1218,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 													<p className="text-white/80">
 														{summarizeEvent(event)}
 													</p>
-													<p className="text-xs text-gray-500 mt-0.5">
+													<p className="text-xs text-gray-300 mt-0.5">
 														{format(
 															new Date(event.created_at),
 															"dd/MM 'às' HH:mm",
@@ -1247,7 +1247,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<Button
 								variant="ghost"
 								size="sm"
-								className="w-full h-10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl"
+								className="w-full h-10 text-gray-300 hover:text-red-400 hover:bg-red-500/10 rounded-xl"
 								onClick={handleCancelBooking}>
 								Cancelar Reserva
 							</Button>

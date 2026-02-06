@@ -97,7 +97,7 @@ export function CpfCnpjInput({ value, onChange, className }: CpfCnpjInputProps) 
 							"px-3 py-1 text-xs font-bold rounded transition-all",
 							isCpf
 								? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-								: "text-gray-400 hover:text-white"
+								: "text-gray-300 hover:text-white"
 						)}
 					>
 						CPF
@@ -109,7 +109,7 @@ export function CpfCnpjInput({ value, onChange, className }: CpfCnpjInputProps) 
 							"px-3 py-1 text-xs font-bold rounded transition-all",
 							!isCpf
 								? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-								: "text-gray-400 hover:text-white"
+								: "text-gray-300 hover:text-white"
 						)}
 					>
 						CNPJ
@@ -157,7 +157,7 @@ export function CpfCnpjInput({ value, onChange, className }: CpfCnpjInputProps) 
 						{isCpf ? "CPF válido" : "CNPJ válido"}
 					</p>
 				) : (
-					<p className="text-gray-500">
+					<p className="text-gray-300">
 						{isCpf 
 							? `Digite ${11 - cleanValue.length} dígitos restantes`
 							: `Digite ${14 - cleanValue.length} dígitos restantes`

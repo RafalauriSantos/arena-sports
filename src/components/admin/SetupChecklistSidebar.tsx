@@ -255,7 +255,7 @@ export function SetupChecklistSidebar({
 						{isComplete ? "Arena Configurada!" : "Configure sua Arena"}
 					</span>
 				</DialogTitle>
-				<DialogDescription className="text-gray-400">
+				<DialogDescription className="text-gray-300">
 					{isComplete
 						? "Tudo pronto para receber reservas! 🎉"
 						: `${completed} de ${total} itens concluídos`}
@@ -271,7 +271,7 @@ export function SetupChecklistSidebar({
 						{/* Progress Bar */}
 						<div className="space-y-2">
 							<div className="flex justify-between text-sm">
-								<span className="text-gray-400 font-medium">Progresso</span>
+								<span className="text-gray-300 font-medium">Progresso</span>
 								<span className="font-bold text-white">{Math.round(progress)}%</span>
 							</div>
 						<Progress
@@ -317,7 +317,7 @@ export function SetupChecklistSidebar({
 										{item.completed ? (
 											<CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
 										) : (
-											<Circle className="w-5 h-5 text-gray-500 flex-shrink-0 group-hover:text-emerald-400" />
+											<Circle className="w-5 h-5 text-gray-300 flex-shrink-0 group-hover:text-emerald-400" />
 										)}
 
 										<Icon
@@ -325,7 +325,7 @@ export function SetupChecklistSidebar({
 												"w-4 h-4 flex-shrink-0",
 												item.completed
 													? "text-green-400"
-													: "text-gray-400 group-hover:text-emerald-400"
+													: "text-gray-300 group-hover:text-emerald-400"
 											)}
 										/>
 
@@ -340,11 +340,11 @@ export function SetupChecklistSidebar({
 											>
 												{item.label}
 											</p>
-											<p className="text-xs text-gray-500">{item.description}</p>
+											<p className="text-xs text-gray-300">{item.description}</p>
 										</div>
 
 										{!item.completed && (
-											<ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
+											<ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
 										)}
 									</button>
 								);
@@ -358,7 +358,7 @@ export function SetupChecklistSidebar({
 									<CheckCircle2 className="w-8 h-8 text-green-400" />
 								</div>
 								<p className="font-bold text-green-400">Tudo Pronto!</p>
-								<p className="text-sm text-gray-400 mt-1">
+								<p className="text-sm text-gray-300 mt-1">
 									Sua arena está 100% configurada.
 								</p>
 							</div>

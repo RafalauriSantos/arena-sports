@@ -10,7 +10,7 @@ export function LoadingSpinner() {
 			aria-label="Carregando">
 			<div className="flex flex-col items-center gap-4">
 				<div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-				<p className="text-gray-400 text-sm">Carregando...</p>
+				<p className="text-gray-300 text-sm">Carregando...</p>
 				<span className="sr-only">Aguarde enquanto o conteúdo é carregado</span>
 			</div>
 		</div>

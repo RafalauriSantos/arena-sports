@@ -362,7 +362,7 @@ const Login = () => {
 						</span>
 					</h1>
 
-					<p className="text-sm sm:text-base text-gray-400 max-w-[16rem] sm:max-w-md leading-relaxed">
+					<p className="text-sm sm:text-base text-gray-300 max-w-[16rem] sm:max-w-md leading-relaxed">
 						Pare de perder dinheiro com horários vagos e gestão manual. O{" "}
 						<strong>ArenaSys</strong> é o cérebro que automatiza suas reservas,
 						pagamentos e clientes enquanto você dorme.
@@ -385,7 +385,7 @@ const Login = () => {
 							<Zap className="w-3 h-3 fill-emerald-400" />
 							Programa Founders - Vagas Limitadas
 						</div>
-						<p className="text-gray-400 text-sm mt-3 max-w-md">
+						<p className="text-gray-300 text-sm mt-3 max-w-md">
 							Seja um dos primeiros arenas a transformar sua gestão. Condições
 							especiais para quem se juntar agora.
 						</p>
@@ -410,7 +410,7 @@ const Login = () => {
 										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
 											Conta Criada com Sucesso! 🎉
 										</h2>
-										<p className="text-gray-400 text-sm">
+										<p className="text-gray-300 text-sm">
 											Enviamos um email de confirmação para:
 										</p>
 										<p className="text-emerald-400 font-medium text-sm mt-1 break-all">
@@ -506,7 +506,7 @@ const Login = () => {
 										</Button>
 									</div>
 
-									<p className="text-xs text-gray-500 pt-2">
+									<p className="text-xs text-gray-300 pt-2">
 										Já confirmou?{" "}
 										<button
 											onClick={() => setMode("signin")}
@@ -520,7 +520,7 @@ const Login = () => {
 										<h2 className="text-lg sm:text-xl font-bold text-white">
 											{mode === "signin" ? "Acessar Central" : "Começar Agora"}
 										</h2>
-										<p className="text-gray-400 text-[11px] sm:text-xs mt-1">
+										<p className="text-gray-300 text-[11px] sm:text-xs mt-1">
 											{mode === "signin" ?
 												"Digite suas credenciais de gestor."
 											:	"Crie sua conta em 30 segundos."}
@@ -532,11 +532,11 @@ const Login = () => {
 										className="space-y-2.5 sm:space-y-4">
 										{mode === "signup" && (
 											<div className="space-y-1 sm:space-y-1.5">
-												<Label className="text-xs uppercase text-gray-500 font-bold">
+												<Label className="text-xs uppercase text-gray-300 font-bold">
 													Nome da Arena
 												</Label>
 												<div className="relative">
-													<Trophy className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+													<Trophy className="absolute left-3 top-3 h-5 w-5 text-gray-300" />
 													<Input
 														value={arenaName}
 														onChange={(e) => setArenaName(e.target.value)}
@@ -549,11 +549,11 @@ const Login = () => {
 										)}
 
 										<div className="space-y-1 sm:space-y-1.5">
-											<Label className="text-xs uppercase text-gray-500 font-bold">
+											<Label className="text-xs uppercase text-gray-300 font-bold">
 												Email Corporativo
 											</Label>
 											<div className="relative">
-												<ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
+												<ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
 												<Input
 													type="email"
 													value={email}
@@ -566,11 +566,11 @@ const Login = () => {
 										</div>
 
 										<div className="space-y-1 sm:space-y-1.5">
-											<Label className="text-xs uppercase text-gray-500 font-bold">
+											<Label className="text-xs uppercase text-gray-300 font-bold">
 												Senha de Acesso
 											</Label>
 											<div className="relative">
-												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
+												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
 												<Input
 													type="password"
 													value={password}
@@ -594,7 +594,7 @@ const Login = () => {
 												<div
 													className={`toggle-premium ${rememberMe ? "active" : ""}`}
 												/>
-												<label className="text-sm text-gray-400 cursor-pointer select-none group-hover:text-white transition-colors">
+												<label className="text-sm text-gray-300 cursor-pointer select-none group-hover:text-white transition-colors">
 													Lembrar-me neste dispositivo
 												</label>
 											</div>
@@ -630,7 +630,7 @@ const Login = () => {
 												setSuccessMessage(null);
 												setSignupEmail("");
 											}}
-											className="text-sm text-gray-400 hover:text-white transition-colors">
+											className="text-sm text-gray-300 hover:text-white transition-colors">
 											{mode === "signin" ?
 												"Não tem conta? Criar acesso grátis"
 											:	"Já tem conta? Fazer login"}
@@ -641,7 +641,7 @@ const Login = () => {
 						</div>
 
 						{/* Selo de Segurança */}
-						<div className="mt-2 sm:mt-3 flex items-center justify-center gap-1 text-[9px] sm:text-[10px] text-gray-500 opacity-60">
+						<div className="mt-2 sm:mt-3 flex items-center justify-center gap-1 text-[9px] sm:text-[10px] text-gray-300 opacity-60">
 							<Lock className="w-3 h-3" />
 							<span>Criptografia de ponta a ponta (SSL)</span>
 						</div>

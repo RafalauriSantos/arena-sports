@@ -17,7 +17,7 @@ export default function TermsOfService() {
 				<div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
 					<Link
 						to="/"
-						className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+						className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm">
 						<ArrowLeft className="w-4 h-4" />
 						Voltar para Home
 					</Link>
@@ -41,7 +41,7 @@ export default function TermsOfService() {
 					<h1 className="text-4xl md:text-5xl font-black mb-4">
 						Termos de Serviço
 					</h1>
-					<p className="text-gray-400 text-lg">
+					<p className="text-gray-300 text-lg">
 						Última atualização: Janeiro de 2025
 					</p>
 				</div>
@@ -65,7 +65,7 @@ export default function TermsOfService() {
 							</div>
 							<h2 className="text-2xl font-bold">1. Aceitação dos Termos</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>
 								Ao acessar ou usar o ArenaSys, você declara ter lido,
 								compreendido e concordado com estes Termos de Serviço.
@@ -87,7 +87,7 @@ export default function TermsOfService() {
 							</div>
 							<h2 className="text-2xl font-bold">2. Descrição do Serviço</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>
 								O ArenaSys é uma plataforma de gestão para arenas esportivas que
 								oferece:
@@ -123,7 +123,7 @@ export default function TermsOfService() {
 								3. Responsabilidades do Usuário
 							</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>Como usuário do ArenaSys, você se compromete a:</p>
 							<ul className="space-y-2">
 								<li className="flex items-start gap-2">
@@ -156,7 +156,7 @@ export default function TermsOfService() {
 								4. Pagamentos e Assinaturas
 							</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>
 								Os pagamentos são processados por provedores terceiros
 								confiáveis, como o <strong className="text-white">Asaas</strong>
@@ -191,7 +191,7 @@ export default function TermsOfService() {
 							</div>
 							<h2 className="text-2xl font-bold">5. Suporte e Contato</h2>
 						</div>
-						<div className="pl-[52px] space-y-3 text-gray-400 leading-relaxed">
+						<div className="pl-[52px] space-y-3 text-gray-300 leading-relaxed">
 							<p>
 								Para dúvidas, sugestões ou suporte técnico, estamos à
 								disposição:
@@ -216,7 +216,7 @@ export default function TermsOfService() {
 
 			{/* Footer simples */}
 			<footer className="border-t border-white/[0.04] py-8">
-				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-500 text-sm">
+				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-300 text-sm">
 					<p>© 2025 ArenaSys. Todos os direitos reservados.</p>
 					<div className="flex items-center gap-6">
 						<Link to="/privacy" className="hover:text-white transition-colors">

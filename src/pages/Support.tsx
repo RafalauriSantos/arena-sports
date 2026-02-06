@@ -23,7 +23,7 @@ export default function Support() {
 				<div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
 					<Link
 						to="/"
-						className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
+						className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm">
 						<ArrowLeft className="w-4 h-4" />
 						Voltar para Home
 					</Link>
@@ -47,7 +47,7 @@ export default function Support() {
 					<h1 className="text-4xl md:text-5xl font-black mb-4">
 						Central de Suporte
 					</h1>
-					<p className="text-gray-400 text-lg max-w-xl">
+					<p className="text-gray-300 text-lg max-w-xl">
 						Estamos aqui para ajudar. Escolha o canal de atendimento que
 						preferir.
 					</p>
@@ -64,7 +64,7 @@ export default function Support() {
 							<MessageCircle className="w-6 h-6 text-emerald-400" />
 						</div>
 						<h3 className="text-xl font-bold mb-2">WhatsApp</h3>
-						<p className="text-gray-400 text-sm mb-4">
+						<p className="text-gray-300 text-sm mb-4">
 							Atendimento rápido via mensagem. Resposta em até 2 horas úteis.
 						</p>
 						{whatsappLink ?
@@ -74,9 +74,9 @@ export default function Support() {
 									Abrir WhatsApp
 								</Button>
 							</a>
-						:	<p className="text-gray-500 text-sm">WhatsApp não configurado.</p>}
+						:	<p className="text-gray-300 text-sm">WhatsApp não configurado.</p>}
 						{whatsapp && (
-							<p className="text-gray-500 text-xs mt-3 text-center">
+							<p className="text-gray-300 text-xs mt-3 text-center">
 								+{whatsapp.slice(0, 2)} ({whatsapp.slice(2, 4)}){" "}
 								{whatsapp.slice(4, 9)}-{whatsapp.slice(9)}
 							</p>
@@ -86,10 +86,10 @@ export default function Support() {
 					{/* Email */}
 					<div className="p-6 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
 						<div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4">
-							<Mail className="w-6 h-6 text-gray-400" />
+							<Mail className="w-6 h-6 text-gray-300" />
 						</div>
 						<h3 className="text-xl font-bold mb-2">E-mail</h3>
-						<p className="text-gray-400 text-sm mb-4">
+						<p className="text-gray-300 text-sm mb-4">
 							Para assuntos mais complexos ou documentação. Resposta em até 24
 							horas.
 						</p>
@@ -126,7 +126,7 @@ export default function Support() {
 							<p className="text-white text-lg font-bold mt-1">9h às 12h</p>
 						</div>
 					</div>
-					<p className="text-gray-500 text-sm mt-4">
+					<p className="text-gray-300 text-sm mt-4">
 						* Horário de Brasília (GMT-3). Atendimento via WhatsApp pode ter
 						resposta mais rápida.
 					</p>
@@ -140,11 +140,11 @@ export default function Support() {
 							to="/terms"
 							className="flex items-center gap-4 p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:bg-white/[0.04] transition-colors group">
 							<div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-white/10 transition-colors">
-								<FileText className="w-5 h-5 text-gray-400" />
+								<FileText className="w-5 h-5 text-gray-300" />
 							</div>
 							<div>
 								<h3 className="font-medium text-white">Termos de Serviço</h3>
-								<p className="text-gray-500 text-sm">
+								<p className="text-gray-300 text-sm">
 									Condições de uso da plataforma
 								</p>
 							</div>
@@ -153,13 +153,13 @@ export default function Support() {
 							to="/privacy"
 							className="flex items-center gap-4 p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:bg-white/[0.04] transition-colors group">
 							<div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-white/10 transition-colors">
-								<ShieldCheck className="w-5 h-5 text-gray-400" />
+								<ShieldCheck className="w-5 h-5 text-gray-300" />
 							</div>
 							<div>
 								<h3 className="font-medium text-white">
 									Política de Privacidade
 								</h3>
-								<p className="text-gray-500 text-sm">
+								<p className="text-gray-300 text-sm">
 									Como protegemos seus dados
 								</p>
 							</div>
@@ -170,7 +170,7 @@ export default function Support() {
 
 			{/* Footer simples */}
 			<footer className="border-t border-white/[0.04] py-8">
-				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-500 text-sm">
+				<div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-300 text-sm">
 					<p>© 2025 ArenaSys. Todos os direitos reservados.</p>
 					<div className="flex items-center gap-6">
 						<Link to="/terms" className="hover:text-white transition-colors">

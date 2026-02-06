@@ -76,7 +76,7 @@ const RouteErrorElement = () => (
 				<h1 className="text-xl font-bold text-white mb-2">
 					Erro ao carregar página
 				</h1>
-				<p className="text-gray-400 text-sm mb-4">
+				<p className="text-gray-300 text-sm mb-4">
 					Não foi possível carregar esta página. Tente recarregar ou voltar para
 					a home.
 				</p>

@@ -255,14 +255,14 @@ export default function FinanceiroView({
 								Cockpit Financeiro
 							</h1>
 						</div>
-						<p className="text-sm text-gray-400 mt-1">
+						<p className="text-sm text-gray-300 mt-1">
 							Visão completa do faturamento • Atualizado em tempo real
 						</p>
 					</div>
 					<div className="flex gap-2 md:gap-3 w-full md:w-auto">
 						<Select value={selectedMonth} onValueChange={setSelectedMonth}>
 							<SelectTrigger className="flex-1 md:w-[200px] h-11 rounded-xl border-white/10 bg-white/5 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/30 hover:bg-white/10 transition-colors">
-								<Calendar className="w-4 h-4 mr-2 text-gray-400" />
+								<Calendar className="w-4 h-4 mr-2 text-gray-300" />
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -288,7 +288,7 @@ export default function FinanceiroView({
 				<div className="relative mt-6 pt-5 border-t border-white/5 flex flex-wrap gap-6">
 					<div className="flex items-center gap-2">
 						<div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-						<span className="text-xs text-gray-400">
+						<span className="text-xs text-gray-300">
 							<span className="font-medium text-white">
 								{metrics.uniquePlayers}
 							</span>{" "}
@@ -297,7 +297,7 @@ export default function FinanceiroView({
 					</div>
 					<div className="flex items-center gap-2">
 						<TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-						<span className="text-xs text-gray-400">
+						<span className="text-xs text-gray-300">
 							<span className="font-medium text-emerald-400">
 								{metrics.revenueGrowth > 0 ? "+" : ""}
 								{metrics.revenueGrowth.toFixed(0)}%
@@ -338,12 +338,12 @@ export default function FinanceiroView({
 							</div>
 							<div className="relative flex items-center gap-3 mt-auto">
 								{renderGrowthIndicator(metrics.revenueGrowth)}
-								<span className="text-xs text-gray-500">vs mês anterior</span>
+								<span className="text-xs text-gray-300">vs mês anterior</span>
 							</div>
 							{/* Mini Progress - Meta visual */}
 							<div className="relative mt-4">
 								<div className="flex justify-between text-[10px] mb-1">
-									<span className="text-gray-500">Progresso do mês</span>
+									<span className="text-gray-300">Progresso do mês</span>
 									<span className="text-emerald-400 font-medium">
 										{Math.min(
 											100,
@@ -366,7 +366,7 @@ export default function FinanceiroView({
 						{/* Reservas */}
 						<div className="relative flex flex-col p-5 rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 backdrop-blur-md group">
 							<div className="flex justify-between items-start mb-2">
-								<span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+								<span className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
 									Reservas
 								</span>
 								<span className="rounded-xl bg-blue-500/10 p-2 ring-1 ring-blue-500/20">
@@ -378,19 +378,19 @@ export default function FinanceiroView({
 							</span>
 							<div className="flex items-center gap-2 mt-2">
 								{renderGrowthIndicator(metrics.bookingsGrowth)}
-								<span className="text-[10px] text-gray-500">
+								<span className="text-[10px] text-gray-300">
 									vs mês anterior
 								</span>
 							</div>
 							{/* Breakdown mini */}
 							<div className="mt-3 pt-3 border-t border-white/5 flex gap-3 text-[10px]">
-								<span className="text-gray-500">
+								<span className="text-gray-300">
 									<span className="text-emerald-400 font-semibold">
 										{metrics.paidBookings.length}
 									</span>{" "}
 									pagas
 								</span>
-								<span className="text-gray-500">
+								<span className="text-gray-300">
 									<span className="text-amber-400 font-semibold">
 										{metrics.pendingBookings.length}
 									</span>{" "}
@@ -402,7 +402,7 @@ export default function FinanceiroView({
 						{/* Ocupação */}
 						<div className="relative flex flex-col p-5 rounded-2xl bg-surface-2/80 border border-white/5 hover:border-white/10 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 backdrop-blur-md group">
 							<div className="flex justify-between items-start mb-2">
-								<span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+								<span className="text-[10px] font-bold uppercase tracking-widest text-gray-300">
 									Taxa de Ocupação
 								</span>
 								<span className="rounded-xl bg-purple-500/10 p-2 ring-1 ring-purple-500/20">
@@ -412,7 +412,7 @@ export default function FinanceiroView({
 							<span className="text-2xl sm:text-3xl font-bold text-white tracking-tight tabular-nums">
 								{metrics.occupancyRate.toFixed(0)}%
 							</span>
-							<p className="text-[10px] text-gray-500 mt-1">
+							<p className="text-[10px] text-gray-300 mt-1">
 								dos slots disponíveis
 							</p>
 							{/* Visual gauge */}
@@ -451,7 +451,7 @@ export default function FinanceiroView({
 										{metrics.pendingBookings.length} pendentes
 									</Badge>
 								</h3>
-								<p className="text-sm text-gray-400 mt-0.5">
+								<p className="text-sm text-gray-300 mt-0.5">
 									Você tem{" "}
 									<span className="font-bold text-amber-400">
 										{formatCurrency(metrics.pendingRevenue)}
@@ -484,7 +484,7 @@ export default function FinanceiroView({
 								<span className="text-base font-semibold">
 									Fluxo de Receita
 								</span>
-								<p className="text-xs text-gray-500 font-normal mt-0.5">
+								<p className="text-xs text-gray-300 font-normal mt-0.5">
 									Receita diária no período
 								</p>
 							</div>
@@ -494,7 +494,7 @@ export default function FinanceiroView({
 								<p className="text-2xl font-bold text-white tabular-nums">
 									{formatCurrency(metrics.totalRevenue)}
 								</p>
-								<p className="text-[10px] text-gray-500">total do período</p>
+								<p className="text-[10px] text-gray-300">total do período</p>
 							</div>
 						)}
 					</div>
@@ -519,7 +519,7 @@ export default function FinanceiroView({
 							<h3 className="text-sm font-medium text-white mb-1">
 								O motor está pronto!
 							</h3>
-							<p className="text-xs text-gray-500 max-w-[200px] mb-4">
+							<p className="text-xs text-gray-300 max-w-[200px] mb-4">
 								Assim que as primeiras reservas chegarem, seus gráficos ganham
 								vida
 							</p>
@@ -568,7 +568,7 @@ export default function FinanceiroView({
 														style={{ height: `${Math.max(percentage, 8)}%` }}
 													/>
 												</div>
-												<span className="text-[9px] text-gray-600 mt-1.5 group-hover:text-gray-400 transition-colors">
+												<span className="text-[9px] text-gray-600 mt-1.5 group-hover:text-gray-300 transition-colors">
 													{format(new Date(date), "dd", { locale: ptBR })}
 												</span>
 											</div>
@@ -581,7 +581,7 @@ export default function FinanceiroView({
 								<div className="flex items-center gap-4 text-xs">
 									<div className="flex items-center gap-1.5">
 										<div className="w-2 h-2 rounded-full bg-emerald-400" />
-										<span className="text-gray-500">Maior dia:</span>
+										<span className="text-gray-300">Maior dia:</span>
 										<span className="text-white font-medium">
 											{formatCurrency(
 												Math.max(...Object.values(metrics.revenueByDay)),
@@ -590,7 +590,7 @@ export default function FinanceiroView({
 									</div>
 									<div className="flex items-center gap-1.5">
 										<div className="w-2 h-2 rounded-full bg-gray-600" />
-										<span className="text-gray-500">Média:</span>
+										<span className="text-gray-300">Média:</span>
 										<span className="text-white font-medium">
 											{formatCurrency(
 												metrics.totalRevenue /
@@ -618,13 +618,13 @@ export default function FinanceiroView({
 							</div>
 							<div>
 								<span className="text-base font-semibold">Movimentações</span>
-								<p className="text-xs text-gray-500 font-normal mt-0.5">
+								<p className="text-xs text-gray-300 font-normal mt-0.5">
 									Histórico de transações
 								</p>
 							</div>
 						</CardTitle>
 						{metrics.confirmedBookings.length > 0 && (
-							<Badge className="bg-white/5 text-gray-400 border-0">
+							<Badge className="bg-white/5 text-gray-300 border-0">
 								{metrics.confirmedBookings.length} transações
 							</Badge>
 						)}
@@ -647,7 +647,7 @@ export default function FinanceiroView({
 							<h3 className="text-sm font-medium text-white mb-1">
 								Nenhuma transação ainda
 							</h3>
-							<p className="text-xs text-gray-500 max-w-[200px] mb-4">
+							<p className="text-xs text-gray-300 max-w-[200px] mb-4">
 								As reservas pagas aparecerão aqui como um extrato
 							</p>
 							{onNavigateToAgenda && (
@@ -703,13 +703,13 @@ export default function FinanceiroView({
 														</Badge>
 													</div>
 													<div className="flex items-center gap-2 mt-0.5">
-														<span className="text-xs text-gray-500">
+														<span className="text-xs text-gray-300">
 															{format(new Date(booking.date), "dd MMM", {
 																locale: ptBR,
 															})}
 														</span>
 														<span className="text-gray-700">•</span>
-														<span className="text-xs text-gray-500 font-mono">
+														<span className="text-xs text-gray-300 font-mono">
 															{booking.time}
 														</span>
 													</div>
@@ -719,7 +719,7 @@ export default function FinanceiroView({
 											<div className="text-right flex items-center gap-3">
 												{/* Payment method icon */}
 												<div className="hidden sm:flex w-8 h-8 rounded-lg bg-white/5 items-center justify-center">
-													<Banknote className="w-4 h-4 text-gray-500" />
+													<Banknote className="w-4 h-4 text-gray-300" />
 												</div>
 												<div>
 													<div
@@ -738,7 +738,7 @@ export default function FinanceiroView({
 									<Button
 										variant="ghost"
 										size="sm"
-										className="text-gray-400 hover:text-white gap-2">
+										className="text-gray-300 hover:text-white gap-2">
 										Ver todas as {metrics.confirmedBookings.length} transações
 										<ChevronRight className="w-4 h-4" />
 									</Button>

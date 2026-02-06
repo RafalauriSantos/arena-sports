@@ -144,7 +144,7 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex items-center justify-center py-8">
-					<Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+					<Loader2 className="w-6 h-6 animate-spin text-gray-300" />
 				</CardContent>
 			</Card>
 		);
@@ -157,7 +157,7 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 					<Clock className="w-5 h-5" />
 					Horários de Funcionamento
 				</CardTitle>
-				<CardDescription className="text-gray-400">
+				<CardDescription className="text-gray-300">
 					Configure os horários em que suas quadras ficam disponíveis para reserva
 				</CardDescription>
 			</CardHeader>
@@ -166,7 +166,7 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 				<div className="space-y-3">
 					<div>
 						<Label className="text-base font-semibold text-gray-200">Domingo</Label>
-						<p className="text-sm text-gray-400">
+						<p className="text-sm text-gray-300">
 							Horário de funcionamento aos domingos
 						</p>
 					</div>
@@ -212,7 +212,7 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 				<div className="space-y-3">
 					<div>
 						<Label className="text-base font-semibold text-gray-200">Segunda a Sábado</Label>
-						<p className="text-sm text-gray-400">
+						<p className="text-sm text-gray-300">
 							Horário de funcionamento nos dias úteis e sábado
 						</p>
 					</div>

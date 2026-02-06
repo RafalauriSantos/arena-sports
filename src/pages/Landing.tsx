@@ -341,7 +341,7 @@ function SocialProofBar() {
 			<div className="flex flex-wrap items-center justify-center gap-6 text-center">
 				<div className="px-3">
 					<p className="text-2xl md:text-3xl font-black text-red-400/80">78%</p>
-					<p className="text-xs text-gray-500 max-w-[100px]">
+					<p className="text-xs text-gray-300 max-w-[100px]">
 						das arenas perdem reservas por conflitos
 					</p>
 				</div>
@@ -349,7 +349,7 @@ function SocialProofBar() {
 					<p className="text-2xl md:text-3xl font-black text-red-400/80">
 						R$ 4.8k
 					</p>
-					<p className="text-xs text-gray-500 max-w-[100px]">
+					<p className="text-xs text-gray-300 max-w-[100px]">
 						perdidos/mês em média com no-shows
 					</p>
 				</div>
@@ -504,7 +504,7 @@ function CalendarAppScreen() {
 							<span className="text-emerald-400 text-[8px] font-medium">
 								Aberto agora
 							</span>
-							<span className="text-gray-500 text-[8px]">• 4.9 ⭐</span>
+							<span className="text-gray-300 text-[8px]">• 4.9 ⭐</span>
 						</div>
 					</div>
 					<div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
@@ -521,7 +521,7 @@ function CalendarAppScreen() {
 						className={`px-3 py-1.5 rounded-full text-[8px] font-bold whitespace-nowrap transition-all ${
 							i === 0 ?
 								"bg-emerald-500 text-black shadow-lg shadow-emerald-500/30"
-							:	"bg-white/5 text-gray-400 border border-white/10"
+							:	"bg-white/5 text-gray-300 border border-white/10"
 						}`}>
 						{q}
 					</button>
@@ -531,14 +531,14 @@ function CalendarAppScreen() {
 			{/* Calendário Mini */}
 			<div className="px-3 py-2">
 				<div className="flex items-center justify-between mb-2">
-					<span className="text-[9px] text-gray-400 font-medium">
+					<span className="text-[9px] text-gray-300 font-medium">
 						Janeiro 2026
 					</span>
 					<div className="flex gap-1">
-						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-400">
+						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-300">
 							←
 						</div>
-						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-400">
+						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-300">
 							→
 						</div>
 					</div>
@@ -559,7 +559,7 @@ function CalendarAppScreen() {
 								: "bg-white/[0.02] opacity-40"
 							}`}>
 							<span
-								className={`text-[6px] font-medium ${d.selected ? "text-black/60" : "text-gray-500"}`}>
+								className={`text-[6px] font-medium ${d.selected ? "text-black/60" : "text-gray-300"}`}>
 								{d.day}
 							</span>
 							<span
@@ -576,7 +576,7 @@ function CalendarAppScreen() {
 
 			{/* Horários Disponíveis */}
 			<div className="flex-1 px-3 overflow-hidden">
-				<span className="text-[8px] text-gray-500 font-medium uppercase tracking-wider">
+				<span className="text-[8px] text-gray-300 font-medium uppercase tracking-wider">
 					Horários disponíveis
 				</span>
 				<div className="mt-2 space-y-1.5 overflow-y-auto max-h-[140px] hide-scrollbar">
@@ -625,7 +625,7 @@ function CalendarAppScreen() {
 									<span className="text-white font-bold text-[10px] block">
 										{slot.time}
 									</span>
-									<span className="text-gray-500 text-[7px]">
+									<span className="text-gray-300 text-[7px]">
 										{slot.status === "occupied" ?
 											`Reservado • ${slot.occupant}`
 										:	"1h de jogo"}
@@ -697,9 +697,11 @@ function DashboardAppScreen() {
 				{/* Top Bar */}
 				<div className="h-10 md:h-12 border-b border-white/5 flex items-center justify-between px-4">
 					<div className="flex items-center gap-2">
-						<h1 className="text-white font-bold text-[11px] md:text-xs">
+						<span
+							className="text-white font-bold text-[11px] md:text-xs"
+							aria-hidden="true">
 							Dashboard
-						</h1>
+						</span>
 						<span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-bold border border-emerald-500/30">
 							Tempo real
 						</span>
@@ -755,7 +757,7 @@ function DashboardAppScreen() {
 								key={i}
 								className="p-2 md:p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group">
 								<div className="flex items-center justify-between mb-1">
-									<span className="text-[7px] md:text-[8px] text-gray-500 font-medium uppercase tracking-wider">
+									<span className="text-[7px] md:text-[8px] text-gray-300 font-medium uppercase tracking-wider">
 										{kpi.label}
 									</span>
 									<span className="text-[10px] opacity-60 group-hover:opacity-100 transition-opacity">
@@ -778,7 +780,7 @@ function DashboardAppScreen() {
 						{/* Chart */}
 						<div className="col-span-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
 							<div className="flex items-center justify-between mb-3">
-								<span className="text-[9px] text-gray-400 font-medium">
+								<span className="text-[9px] text-gray-300 font-medium">
 									Faturamento Semanal
 								</span>
 								<div className="flex gap-1">
@@ -788,7 +790,7 @@ function DashboardAppScreen() {
 											className={`px-2 py-0.5 rounded text-[7px] font-bold ${
 												i === 1 ?
 													"bg-emerald-500/20 text-emerald-400"
-												:	"text-gray-500"
+												:	"text-gray-300"
 											}`}>
 											{p}
 										</button>
@@ -818,7 +820,7 @@ function DashboardAppScreen() {
 
 						{/* Próximas Reservas */}
 						<div className="col-span-2 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-							<span className="text-[9px] text-gray-400 font-medium block mb-2">
+							<span className="text-[9px] text-gray-300 font-medium block mb-2">
 								Próximas Reservas
 							</span>
 							<div className="space-y-1.5">
@@ -858,7 +860,7 @@ function DashboardAppScreen() {
 													{res.time}
 												</span>
 												<span className="text-gray-600 text-[7px]">•</span>
-												<span className="text-gray-400 text-[8px] truncate">
+												<span className="text-gray-300 text-[8px] truncate">
 													{res.client}
 												</span>
 											</div>
@@ -1314,12 +1316,12 @@ export default function LandingPage() {
 							<div className="hidden md:flex items-center gap-1">
 								<a
 									href="#pricing"
-									className="nav-link px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors duration-300">
+									className="nav-link px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-300">
 									Preço
 								</a>
 								<a
 									href="#faq"
-									className="nav-link px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors duration-300">
+									className="nav-link px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-300">
 									FAQ
 								</a>
 							</div>
@@ -1328,7 +1330,7 @@ export default function LandingPage() {
 							<div className="hidden md:flex items-center gap-3">
 								<button
 									onClick={() => navigate("/login")}
-									className="text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 px-3 py-2 rounded-full hover:bg-white/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]">
+									className="text-sm font-medium text-gray-300 hover:text-white transition-all duration-300 px-3 py-2 rounded-full hover:bg-white/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]">
 									Login
 								</button>
 								<button
@@ -1345,7 +1347,8 @@ export default function LandingPage() {
 
 							{/* Mobile menu button */}
 							<button
-								className="md:hidden relative p-2 text-gray-400 hover:text-white transition-colors"
+								className="md:hidden relative p-2 text-gray-300 hover:text-white transition-colors"
+								aria-label="Abrir menu de navegação"
 								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
 								<div
 									className={`w-5 h-0.5 bg-current transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[3px]" : ""}`}
@@ -1424,7 +1427,7 @@ export default function LandingPage() {
 
 						<RotatingHeroText />
 
-						<p className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 font-light">
+						<p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 font-light">
 							O cliente reserva pelo link. Você confirma e cobra no balcão.
 							<br className="hidden md:block" />
 							<span className="text-white font-medium">
@@ -1443,13 +1446,13 @@ export default function LandingPage() {
 						</div>
 
 						<div className="flex items-center justify-center gap-6 pt-2 animate-in fade-in duration-1000 delay-500">
-							<span className="flex items-center gap-2 text-sm text-gray-500">
+							<span className="flex items-center gap-2 text-sm text-gray-300">
 								<Check className="w-4 h-4 text-emerald-500/70" /> 7 dias grátis
 							</span>
-							<span className="flex items-center gap-2 text-sm text-gray-500">
+							<span className="flex items-center gap-2 text-sm text-gray-300">
 								<Check className="w-4 h-4 text-emerald-500/70" /> Sem cartão
 							</span>
-							<span className="flex items-center gap-2 text-sm text-gray-500">
+							<span className="flex items-center gap-2 text-sm text-gray-300">
 								<Check className="w-4 h-4 text-emerald-500/70" /> Cancele quando
 								quiser
 							</span>
@@ -1500,7 +1503,7 @@ export default function LandingPage() {
 										<h3 className="text-white font-bold text-xl mb-3">
 											{item.enemy}
 										</h3>
-										<p className="text-gray-400 text-base leading-relaxed">
+										<p className="text-gray-300 text-base leading-relaxed">
 											{item.pain}
 										</p>
 									</TiltCard>
@@ -1522,7 +1525,7 @@ export default function LandingPage() {
 							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
 								Uma agenda que funciona sozinha
 							</h2>
-							<p className="text-gray-400 text-xl max-w-2xl mx-auto">
+							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
 								Você para de apagar incêndio. O sistema organiza tudo.
 							</p>
 						</ScrollReveal>
@@ -1624,7 +1627,7 @@ export default function LandingPage() {
 										<h3 className="text-white font-bold text-xl mb-3">
 											{item.title}
 										</h3>
-										<p className="text-gray-400 text-base">{item.desc}</p>
+										<p className="text-gray-300 text-base">{item.desc}</p>
 									</TiltCard>
 								</ScrollReveal>
 							))}
@@ -1644,7 +1647,7 @@ export default function LandingPage() {
 							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
 								Custa menos que 1 hora da sua quadra
 							</h2>
-							<p className="text-gray-400 text-xl max-w-2xl mx-auto">
+							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
 								Com apenas uma reserva no mês, o sistema já se paga. O resto é
 								lucro.
 							</p>
@@ -1653,7 +1656,7 @@ export default function LandingPage() {
 						<ScrollReveal delay={100}>
 							<div className="grid sm:grid-cols-2 gap-6 mb-10">
 								<div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center">
-									<p className="text-gray-500 text-sm uppercase tracking-wider mb-3">
+									<p className="text-gray-300 text-sm uppercase tracking-wider mb-3">
 										1 hora de aluguel
 									</p>
 									<p className="text-4xl font-black text-white">~R$ 200</p>
@@ -1678,7 +1681,7 @@ export default function LandingPage() {
 								<div className="text-center mb-8">
 									{/* Toggle Mensal/Anual visual */}
 									<div className="flex items-center justify-center gap-3 mb-6">
-										<span className="text-gray-500 text-sm">Mensal</span>
+										<span className="text-gray-300 text-sm">Mensal</span>
 										<div className="relative w-14 h-7 bg-emerald-500/20 rounded-full border border-emerald-500/30">
 											<div className="absolute right-1 top-1 w-5 h-5 bg-emerald-500 rounded-full shadow-lg" />
 										</div>
@@ -1691,23 +1694,23 @@ export default function LandingPage() {
 										<>
 											{/* Preço Founders Anual */}
 											<div className="flex items-baseline justify-center gap-2 mb-3">
-												<span className="text-2xl text-gray-500 line-through">
+												<span className="text-2xl text-gray-300 line-through">
 													R$ 97
 												</span>
 												<span className="text-6xl font-black text-emerald-400">
 													R$ 67
 												</span>
-												<span className="text-gray-500 text-xl">/mês</span>
+												<span className="text-gray-300 text-xl">/mês</span>
 											</div>
 											<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3">
 												<span className="text-emerald-400 text-sm font-bold">
 													30% OFF
 												</span>
-												<span className="text-gray-400 text-sm">
+												<span className="text-gray-300 text-sm">
 													• Plano anual • Preço fixo pra sempre
 												</span>
 											</div>
-											<p className="text-gray-500 text-sm">
+											<p className="text-gray-300 text-sm">
 												Apenas{" "}
 												<span className="text-white font-bold">
 													{foundersProgress.remaining} vagas
@@ -1721,9 +1724,9 @@ export default function LandingPage() {
 												<span className="text-6xl font-black text-white">
 													R$ 97
 												</span>
-												<span className="text-gray-500 text-xl">/mês</span>
+												<span className="text-gray-300 text-xl">/mês</span>
 											</div>
-											<p className="text-gray-500">
+											<p className="text-gray-300">
 												Plano mensal • Cancele quando quiser
 											</p>
 										</>
@@ -1734,7 +1737,7 @@ export default function LandingPage() {
 								{foundersProgress && foundersProgress.remaining > 0 && (
 									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
 										<div className="text-center">
-											<p className="text-gray-500 text-xs uppercase tracking-wider mb-1">
+											<p className="text-gray-300 text-xs uppercase tracking-wider mb-1">
 												Mensal
 											</p>
 											<p className="text-white font-bold">R$ 97/mês</p>
@@ -1788,7 +1791,7 @@ export default function LandingPage() {
 												}}
 											/>
 										</div>
-										<p className="text-center text-sm text-gray-500 mt-3">
+										<p className="text-center text-sm text-gray-300 mt-3">
 											{foundersProgress.remaining} de {foundersProgress.cap}{" "}
 											vagas Founders restantes
 										</p>
@@ -1846,7 +1849,7 @@ export default function LandingPage() {
 										<h3 className="text-white font-bold text-lg mb-2">
 											{item.question}
 										</h3>
-										<p className="text-gray-400">{item.answer}</p>
+										<p className="text-gray-300">{item.answer}</p>
 									</div>
 								</ScrollReveal>
 							))}
@@ -1868,7 +1871,7 @@ export default function LandingPage() {
 								<br />
 								<span className="text-emerald-400">que funcione.</span>
 							</h2>
-							<p className="text-gray-400 text-xl mb-10 max-w-xl mx-auto">
+							<p className="text-gray-300 text-xl mb-10 max-w-xl mx-auto">
 								7 dias grátis. Sem cartão. Cancele quando quiser.
 							</p>
 							<button

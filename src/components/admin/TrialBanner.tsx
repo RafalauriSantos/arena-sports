@@ -79,7 +79,7 @@ export function TrialBanner({ tenantId }: TrialBannerProps) {
 							setDismissed(true);
 						}}
 						className="ml-1 p-0.5 rounded-full hover:bg-white/10 transition-colors">
-						<X className="h-3 w-3 text-gray-400 hover:text-white" />
+						<X className="h-3 w-3 text-gray-300 hover:text-white" />
 					</button>
 				)}
 			</div>

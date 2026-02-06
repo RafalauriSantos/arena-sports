@@ -65,7 +65,7 @@ export function AdminSidebar({
 						<h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-primary/80 tracking-tight drop-shadow-[0_0_20px_hsl(var(--primary)/0.6)] animate-pulse-subtle">
 							ArenaSys
 						</h1>
-						<p className="text-xs text-gray-500 mt-1">
+						<p className="text-xs text-gray-300 mt-1">
 							Painel Administrativo
 						</p>
 					</div>
@@ -80,9 +80,9 @@ export function AdminSidebar({
 						title={isCollapsed ? "Expandir" : "Recolher"}
 					>
 						{isCollapsed ? (
-							<ChevronRight className="w-4 h-4 text-gray-400" />
+							<ChevronRight className="w-4 h-4 text-gray-300" />
 						) : (
-							<ChevronLeft className="w-4 h-4 text-gray-400" />
+							<ChevronLeft className="w-4 h-4 text-gray-300" />
 						)}
 					</button>
 				</div>
@@ -105,7 +105,7 @@ export function AdminSidebar({
 								"animate-in fade-in slide-in-from-left-5",
 								isActive
 									? "bg-gradient-to-r from-primary/90 to-primary text-white shadow-[0_0_30px_hsl(var(--primary)/0.5)] font-bold scale-[1.02]"
-									: "text-gray-400 hover:bg-white/5 hover:text-white hover:shadow-lg hover:shadow-primary/10"
+									: "text-gray-300 hover:bg-white/5 hover:text-white hover:shadow-lg hover:shadow-primary/10"
 							)}
 						>
 							{/* Efeito de brilho animado no hover */}
@@ -209,7 +209,7 @@ export function AdminSidebar({
 						<p className="text-sm font-semibold text-white">
 							{userProfile?.full_name ?? "Admin"}
 						</p>
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-gray-300">
 							{userProfile?.job_title || "Gestor"}
 						</p>
 					</div>

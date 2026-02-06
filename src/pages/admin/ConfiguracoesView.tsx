@@ -85,7 +85,7 @@ function TabTrigger({
 	return (
 		<TabsTrigger
 			value={value}
-			className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 data-[state=active]:bg-emerald-500/20 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-emerald-500/30 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2">
+			className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 data-[state=active]:bg-emerald-500/20 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-emerald-500/30 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2">
 			<Icon className="h-4 w-4 shrink-0" />
 			<span className="hidden md:inline">{label}</span>
 		</TabsTrigger>
@@ -107,7 +107,7 @@ function PremiumCard({
 				<CardTitle className="text-lg font-semibold text-white tracking-tight">
 					{title}
 				</CardTitle>
-				<CardDescription className="text-sm text-gray-500">
+				<CardDescription className="text-sm text-gray-300">
 					{description}
 				</CardDescription>
 			</CardHeader>
@@ -520,7 +520,7 @@ export default function ConfiguracoesView() {
 						<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
 							Configurações
 						</h1>
-						<p className="text-sm text-gray-500 mt-0.5">
+						<p className="text-sm text-gray-300 mt-0.5">
 							Arena, perfil, cobrança e integrações
 						</p>
 					</div>
@@ -623,7 +623,7 @@ export default function ConfiguracoesView() {
 												className="bg-white/5 border-white/10 text-white font-medium text-lg"
 												placeholder="Ex: ArenaSys Champions"
 											/>
-											<p className="text-xs text-gray-500">
+											<p className="text-xs text-gray-300">
 												O link da agenda será gerado a partir deste nome.
 											</p>
 										</div>
@@ -635,7 +635,7 @@ export default function ConfiguracoesView() {
 												Agenda (URL)
 											</Label>
 											<div className="flex items-center group opacity-80 cursor-not-allowed">
-												<span className="bg-white/5 border border-white/10 border-r-0 rounded-l-md px-3 h-10 flex items-center text-gray-500 text-sm">
+												<span className="bg-white/5 border border-white/10 border-r-0 rounded-l-md px-3 h-10 flex items-center text-gray-300 text-sm">
 													arenasys.app/agendar/
 												</span>
 												<div className="relative w-full">
@@ -643,7 +643,7 @@ export default function ConfiguracoesView() {
 														value={formData.tenant.subdomain}
 														readOnly
 														disabled
-														className="bg-white/5 border-white/10 text-gray-400 rounded-l-none pl-3 pr-8 italic cursor-not-allowed"
+														className="bg-white/5 border-white/10 text-gray-300 rounded-l-none pl-3 pr-8 italic cursor-not-allowed"
 													/>
 													<Lock className="absolute right-3 top-2.5 h-4 w-4 text-gray-600" />
 												</div>
@@ -659,7 +659,7 @@ export default function ConfiguracoesView() {
 												}
 												className="bg-white/5 border-white/10 text-white min-h-[100px]"
 											/>
-											<p className="text-xs text-gray-500">
+											<p className="text-xs text-gray-300">
 												Bio curta da arena exibida no calendário público.
 											</p>
 										</div>
@@ -697,7 +697,7 @@ export default function ConfiguracoesView() {
 												value={formData.tenant.cpf_cnpj || ""}
 												onChange={(value) => updateTenant("cpf_cnpj", value)}
 											/>
-											<p className="text-xs text-gray-500 mt-2">
+											<p className="text-xs text-gray-300 mt-2">
 												Obrigatório para processar pagamentos via Asaas.
 											</p>
 										</div>
@@ -820,7 +820,7 @@ export default function ConfiguracoesView() {
 										{/* Preview do endereço */}
 										{(formData.tenant.street || formData.tenant.city) && (
 											<div className="p-3 bg-white/5 border border-white/10 rounded-lg">
-												<p className="text-xs text-gray-400 mb-1">Preview:</p>
+												<p className="text-xs text-gray-300 mb-1">Preview:</p>
 												<p className="text-sm text-white font-medium">
 													{formData.tenant.street &&
 														`${formData.tenant.street}`}
@@ -852,7 +852,7 @@ export default function ConfiguracoesView() {
 									</CardHeader>
 									<CardContent className="space-y-6">
 										<div className="p-4 bg-black/60 rounded-xl border border-primary/10 flex flex-col gap-2">
-											<span className="text-xs text-gray-500 uppercase font-bold tracking-wider">
+											<span className="text-xs text-gray-300 uppercase font-bold tracking-wider">
 												URL Oficial
 											</span>
 											{formData.tenant.subdomain ?
@@ -875,7 +875,7 @@ export default function ConfiguracoesView() {
 													</span>
 													{copied ?
 														<Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-													:	<Copy className="h-4 w-4 text-gray-500 flex-shrink-0" />
+													:	<Copy className="h-4 w-4 text-gray-300 flex-shrink-0" />
 													}
 												</a>
 											:	<div className="text-sm font-mono text-gray-600 flex items-center gap-2">
@@ -936,20 +936,20 @@ export default function ConfiguracoesView() {
 										key={index}
 										className="bg-black/20 border-white/5 backdrop-blur-sm group">
 										<CardHeader className="pb-3 flex flex-row items-center justify-between">
-											<div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-white">
+											<div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 group-hover:text-white">
 												<Trophy className="h-5 w-5" />
 											</div>
 											<Button
 												variant="ghost"
 												size="icon"
 												onClick={() => removeCourt(index)}
-												className="h-8 w-8 text-gray-500 hover:text-red-400 hover:bg-red-400/10">
+												className="h-8 w-8 text-gray-300 hover:text-red-400 hover:bg-red-400/10">
 												<Trash2 className="h-4 w-4" />
 											</Button>
 										</CardHeader>
 										<CardContent className="space-y-4">
 											<div className="space-y-2">
-												<Label className="text-xs uppercase text-gray-500">
+												<Label className="text-xs uppercase text-gray-300">
 													Nome
 												</Label>
 												<Input
@@ -963,7 +963,7 @@ export default function ConfiguracoesView() {
 											</div>
 											<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 												<div className="space-y-2 flex flex-col">
-													<Label className="text-xs uppercase text-gray-500">
+													<Label className="text-xs uppercase text-gray-300">
 														Preço 1h (R$)
 													</Label>
 													<Input
@@ -981,7 +981,7 @@ export default function ConfiguracoesView() {
 													/>
 												</div>
 												<div className="space-y-2 flex flex-col">
-													<Label className="text-xs uppercase text-gray-500">
+													<Label className="text-xs uppercase text-gray-300">
 														Meia hora adicional (R$)
 													</Label>
 													<Input
@@ -1002,7 +1002,7 @@ export default function ConfiguracoesView() {
 														placeholder="Ex: 50, 75, 100"
 														className="bg-white/5 border-white/10 text-white"
 													/>
-													<p className="text-xs text-gray-500 mt-1">
+													<p className="text-xs text-gray-300 mt-1">
 														Total 1h30: R${" "}
 														{(
 															(court.base_price || 0) +
@@ -1031,7 +1031,7 @@ export default function ConfiguracoesView() {
 											<Label className="text-base text-gray-200">
 												Exigir Sinal
 											</Label>
-											<p className="text-xs text-gray-500">
+											<p className="text-xs text-gray-300">
 												Obrigatório para reservar.
 											</p>
 										</div>
@@ -1047,7 +1047,7 @@ export default function ConfiguracoesView() {
 										<div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 space-y-4 animate-in slide-in-from-top-2">
 											<div className="grid grid-cols-2 gap-4">
 												<div className="space-y-2">
-													<Label className="text-xs uppercase text-gray-400">
+													<Label className="text-xs uppercase text-gray-300">
 														Tipo
 													</Label>
 													<select
@@ -1064,7 +1064,7 @@ export default function ConfiguracoesView() {
 													</select>
 												</div>
 												<div className="space-y-2">
-													<Label className="text-xs uppercase text-gray-400">
+													<Label className="text-xs uppercase text-gray-300">
 														Valor
 													</Label>
 													<Input
@@ -1093,7 +1093,7 @@ export default function ConfiguracoesView() {
 											<Label className="text-base text-gray-200">
 												Ativar Desconto
 											</Label>
-											<p className="text-xs text-gray-500">
+											<p className="text-xs text-gray-300">
 												Para pagamento 100% online.
 											</p>
 										</div>
@@ -1109,7 +1109,7 @@ export default function ConfiguracoesView() {
 										<div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-4 animate-in slide-in-from-top-2">
 											<div className="space-y-2">
 												<div className="flex justify-between">
-													<Label className="text-xs uppercase text-gray-400">
+													<Label className="text-xs uppercase text-gray-300">
 														Desconto
 													</Label>
 													<span className="text-primary font-bold">
@@ -1146,8 +1146,8 @@ export default function ConfiguracoesView() {
 							<div className="relative opacity-50 pointer-events-none">
 								{/* Overlay com cadeado */}
 								<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-900/50 rounded-xl z-10">
-									<Lock className="h-8 w-8 text-gray-400" />
-									<p className="text-gray-400 font-medium">
+									<Lock className="h-8 w-8 text-gray-300" />
+									<p className="text-gray-300 font-medium">
 										Em Desenvolvimento
 									</p>
 								</div>
@@ -1158,7 +1158,7 @@ export default function ConfiguracoesView() {
 										<Label className="text-white text-base">
 											Ativar Promoção Automática
 										</Label>
-										<p className="text-gray-400 text-sm">
+										<p className="text-gray-300 text-sm">
 											Descontos em horários ociosos.
 										</p>
 									</div>

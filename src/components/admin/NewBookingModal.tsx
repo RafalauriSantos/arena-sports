@@ -364,8 +364,8 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 	};
 
 	const inputClass =
-		"h-12 rounded-xl bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors";
-	const labelClass = "text-sm text-gray-500 font-medium";
+		"h-12 rounded-xl bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-300 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors";
+	const labelClass = "text-sm text-gray-300 font-medium";
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -375,7 +375,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						<Plus className="h-5 w-5 text-primary" />
 						Novo Agendamento
 					</DialogTitle>
-					<DialogDescription className="text-sm text-gray-500 mt-1">
+					<DialogDescription className="text-sm text-gray-300 mt-1">
 						Insira os dados para reservar um horário manualmente.
 					</DialogDescription>
 				</DialogHeader>
@@ -409,7 +409,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								<SelectTrigger
 									className={
 										inputClass +
-										" border-gray-700/50 data-[placeholder]:text-gray-500"
+										" border-gray-700/50 data-[placeholder]:text-gray-300"
 									}>
 									<SelectValue placeholder="Selecione..." />
 								</SelectTrigger>
@@ -423,7 +423,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										</SelectItem>
 									))}
 									{courts.length === 0 && (
-										<div className="p-2 text-xs text-gray-500">
+										<div className="p-2 text-xs text-gray-300">
 											Nenhuma quadra encontrada
 										</div>
 									)}
@@ -446,7 +446,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								<SelectTrigger
 									className={
 										inputClass +
-										" border-gray-700/50 data-[placeholder]:text-gray-500"
+										" border-gray-700/50 data-[placeholder]:text-gray-300"
 									}>
 									<SelectValue placeholder="Escolha a hora..." />
 								</SelectTrigger>
@@ -493,8 +493,8 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</div>
 
 					{formData.fieldId && formData.duration && (
-						<div className="text-sm text-gray-400 bg-white/5 border border-white/10 p-3 rounded-xl">
-							<span className="text-gray-500">Preço: </span>
+						<div className="text-sm text-gray-300 bg-white/5 border border-white/10 p-3 rounded-xl">
+							<span className="text-gray-300">Preço: </span>
 							<span className="font-medium text-white">
 								R${" "}
 								{(() => {
@@ -510,7 +510,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									return finalPrice.toFixed(2);
 								})()}
 							</span>
-							<span className="text-gray-500">
+							<span className="text-gray-300">
 								{" "}
 								({formData.duration === 90 ? "1h30" : "1h"})
 							</span>
@@ -605,7 +605,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								}
 								className={inputClass}
 							/>
-							<p className="text-xs text-gray-500">Ex: 30 para sinal de 30%.</p>
+							<p className="text-xs text-gray-300">Ex: 30 para sinal de 30%.</p>
 						</div>
 					)}
 				</div>

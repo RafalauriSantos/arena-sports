@@ -71,7 +71,7 @@ export function Blog() {
 
 			<main className="container mx-auto px-4 py-12 max-w-6xl" role="main">
 				<h1 className="text-4xl md:text-5xl font-bold mb-4">Blog ArenaSys</h1>
-				<p className="text-xl text-gray-400 mb-12">
+				<p className="text-xl text-gray-300 mb-12">
 					Dicas práticas de gestão, marketing e tecnologia para arenas
 					esportivas
 				</p>
@@ -89,15 +89,15 @@ export function Blog() {
 									<span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">
 										{article.category}
 									</span>
-									<span className="text-xs text-gray-500">
+									<span className="text-xs text-gray-300">
 										{article.readTime}
 									</span>
 								</div>
 								<h2 className="text-xl font-bold mb-2 hover:text-emerald-400 transition-colors">
 									{article.title}
 								</h2>
-								<p className="text-gray-400 text-sm mb-4">{article.excerpt}</p>
-								<time className="text-xs text-gray-500">
+								<p className="text-gray-300 text-sm mb-4">{article.excerpt}</p>
+								<time className="text-xs text-gray-300">
 									{new Date(article.date).toLocaleDateString("pt-BR")}
 								</time>
 							</div>
