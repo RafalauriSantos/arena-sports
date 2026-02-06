@@ -76,6 +76,10 @@ export default defineConfig(({ mode }) => ({
           'date-vendor': ['date-fns'],
           'query-vendor': ['@tanstack/react-query'],
         },
+        // Nome de arquivo com hash para cache infinito
+        assetFileNames: 'assets/[name].[hash][extname]',
+        chunkFileNames: 'assets/[name].[hash].js',
+        entryFileNames: 'assets/[name].[hash].js',
       },
     },
     chunkSizeWarningLimit: 1000,
@@ -86,12 +90,23 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
+        passes: 2,
+        pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
+      },
+      mangle: {
+        safari10: true,
+      },
+      format: {
+        comments: false,
       },
     },
-    // CSS code splitting
+    // CSS code splitting e minificação
     cssCodeSplit: true,
+    cssMinify: true,
     // Tamanho alvo dos chunks para melhor cache
     target: 'es2020',
+    // Reportar tamanho dos chunks comprimidos
+    reportCompressedSize: true,
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
