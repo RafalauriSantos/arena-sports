@@ -80,8 +80,24 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 1000,
     sourcemap: mode === 'development',
+    // Performance: otimizações de build
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
+    // CSS code splitting
+    cssCodeSplit: true,
+    // Tamanho alvo dos chunks para melhor cache
+    target: 'es2020',
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
+  },
+  // Performance: compressão e cache
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
   },
 }));

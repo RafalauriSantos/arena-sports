@@ -7,7 +7,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
-		"build:vercel": "vite build && node scripts/inject-seo-html.mjs",
+		"build:vercel": "vite build && bun scripts/inject-seo-html.mjs",
 		"build:dev": "vite build --mode development",
 		"lint": "eslint .",
 		"preview": "vite preview",
@@ -17,6 +17,7 @@
 		"test:flow": "bun run scripts/test-fluxo-completo.ts",
 		"test:asaas": "bun run scripts/testAsaasCreateCheckout.ts && bun run scripts/testAsaasWebhook.ts",
 		"audit:perf": "bun run scripts/performance-audit.ts",
+		"audit:seo": "bun run scripts/seo-audit.ts",
 		"check:deploy": "bun run scripts/pre-flight-checklist.ts",
 		"check:supabase": "bun run scripts/check-supabase-connection.ts",
 		"test:conexoes": "bun run scripts/test-conexoes.ts",

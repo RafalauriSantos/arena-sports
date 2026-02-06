@@ -39,6 +39,14 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Support = lazy(() => import("./pages/Support"));
 const About = lazy(() => import("./pages/About"));
+// Páginas SEO
+const SoftwareQuadrasFutebol = lazy(
+	() => import("./pages/SoftwareQuadrasFutebol"),
+);
+const SistemaBeachTennis = lazy(() => import("./pages/SistemaBeachTennis"));
+const GestaoQuadraSociety = lazy(() => import("./pages/GestaoQuadraSociety"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
 // BookingPublic - Import direto temporariamente para forçar reload
 import BookingPublicComponent from "./pages/BookingPublic";
@@ -129,6 +137,31 @@ const router = createBrowserRouter([
 	{
 		path: "/about",
 		element: <About />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/software-quadras-futebol",
+		element: <SoftwareQuadrasFutebol />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/sistema-beach-tennis",
+		element: <SistemaBeachTennis />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/gestao-quadra-society",
+		element: <GestaoQuadraSociety />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/blog",
+		element: <Blog />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/blog/:slug",
+		element: <BlogPost />,
 		errorElement: <RouteErrorElement />,
 	},
 

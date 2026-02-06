@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 	<head>
 		<meta charset="UTF-8" />
@@ -7,9 +7,30 @@
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+		<!-- Performance: DNS Prefetch e Preconnect -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="dns-prefetch" href="https://supabase.co" />
+		<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 		
+		<!-- SEO: Google Analytics (substitua pelo seu ID) -->
+		<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->
+		
+		<!-- SEO: Geo Tags -->
+		<meta name="geo.region" content="BR" />
+		<meta name="geo.placename" content="Brasil" />
+		
+		<!-- SEO: Additional Meta Tags -->
+		<meta name="rating" content="general" />
+		<meta name="distribution" content="global" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="format-detection" content="telephone=no" />
+
 		<!-- Primary Meta Tags -->
-		<title>Sistema de gestão e agendamento de quadras esportivas | ArenaSys</title>
+		<title>
+			Sistema de gestão e agendamento de quadras esportivas | ArenaSys
+		</title>
 		<meta
 			name="title"
 			content="Sistema de gestão e agendamento de quadras esportivas | ArenaSys" />
@@ -20,7 +41,9 @@
 			name="keywords"
 			content="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva" />
 		<meta name="author" content="Rafael Lauri Santos" />
-		<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+		<meta
+			name="robots"
+			content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 		<meta name="language" content="Portuguese" />
 		<meta name="revisit-after" content="7 days" />
 		<link rel="canonical" href="https://arenasys.com.br/" />
@@ -37,7 +60,9 @@
 		<meta property="og:image" content="https://arenasys.com.br/og-image.jpg" />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
-		<meta property="og:image:alt" content="Sistema de gestão e agendamento de quadras esportivas - ArenaSys" />
+		<meta
+			property="og:image:alt"
+			content="Sistema de gestão e agendamento de quadras esportivas - ArenaSys" />
 		<meta property="og:locale" content="pt_BR" />
 		<meta property="og:site_name" content="ArenaSys" />
 
@@ -56,59 +81,133 @@
 
 		<!-- Structured Data (JSON-LD) -->
 		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "SoftwareApplication",
+				"name": "ArenaSys",
+				"applicationCategory": "BusinessApplication",
+				"operatingSystem": "Web",
+				"offers": {
+					"@type": "Offer",
+					"price": "97.00",
+					"priceCurrency": "BRL",
+					"priceValidUntil": "2027-12-31",
+					"availability": "https://schema.org/InStock",
+					"url": "https://arenasys.com.br/"
+				},
+				"aggregateRating": {
+					"@type": "AggregateRating",
+					"ratingValue": "4.8",
+					"ratingCount": "1"
+				},
+				"description": "Sistema de gestão e agendamento de quadras esportivas. Evite conflitos de horários, organize sua arena em um só lugar. Software para quadras, controle de horários e sistema para aluguel de quadras.",
+				"url": "https://arenasys.com.br/",
+				"author": {
+					"@type": "Organization",
+					"name": "ArenaSys"
+				},
+				"featureList": [
+					"Agendamento online de quadras",
+					"Pagamento via PIX integrado",
+					"Gestão de clientes e reservas",
+					"Dashboard administrativo",
+					"Link público para clientes",
+					"Notificações automáticas"
+				]
+			}
+		</script>
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "Organization",
+				"name": "ArenaSys",
+				"url": "https://arenasys.com.br/",
+				"logo": "https://arenasys.com.br/logo.png",
+				"contactPoint": {
+					"@type": "ContactPoint",
+					"contactType": "customer support",
+					"availableLanguage": "Portuguese"
+				},
+				"sameAs": []
+			}
+		</script>
+		
+		<!-- FAQ Schema for SEO -->
+		<script type="application/ld+json">
 		{
 			"@context": "https://schema.org",
-			"@type": "SoftwareApplication",
+			"@type": "FAQPage",
+			"mainEntity": [
+				{
+					"@type": "Question",
+					"name": "Quanto custa o ArenaSys?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "O ArenaSys custa a partir de R$ 97/mês. Oferecemos teste grátis por 7 dias sem necessidade de cartão de crédito. Planos incluem agendamento ilimitado, pagamentos via PIX, gestão de clientes e suporte."
+					}
+				},
+				{
+					"@type": "Question",
+					"name": "Como funciona o agendamento online?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Você recebe um link personalizado (ex: arenasys.com.br/agendar/sua-arena) que seus clientes podem acessar 24 horas por dia. Eles escolhem horário, quadra, e fazem a reserva. Você confirma e recebe o pagamento via PIX automático."
+					}
+				},
+				{
+					"@type": "Question",
+					"name": "Preciso instalar algum software?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Não. O ArenaSys funciona 100% online pelo navegador. Acesse de qualquer computador, tablet ou celular. Não precisa baixar nada."
+					}
+				},
+				{
+					"@type": "Question",
+					"name": "Como recebo os pagamentos?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Integração completa com Asaas. Seus clientes pagam via PIX na hora da reserva. O dinheiro cai direto na sua conta. Você acompanha tudo pelo dashboard."
+					}
+				},
+				{
+					"@type": "Question",
+					"name": "Serve para qual tipo de quadra?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Funciona para qualquer tipo: futebol society, futsal, vôlei, tênis, padel, beach tennis, basquete. Configure quantas quadras quiser."
+					}
+				}
+			]
+		}
+		</script>
+		
+		<!-- Local Business Schema -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "LocalBusiness",
 			"name": "ArenaSys",
-			"applicationCategory": "BusinessApplication",
-			"operatingSystem": "Web",
-			"offers": {
-				"@type": "Offer",
-				"price": "97.00",
-				"priceCurrency": "BRL",
-				"priceValidUntil": "2027-12-31",
-				"availability": "https://schema.org/InStock",
-				"url": "https://arenasys.com.br/"
+			"image": "https://arenasys.com.br/og-image.jpg",
+			"@id": "https://arenasys.com.br",
+			"url": "https://arenasys.com.br",
+			"priceRange": "R$ 97 - R$ 297",
+			"address": {
+				"@type": "PostalAddress",
+				"addressCountry": "BR"
 			},
 			"aggregateRating": {
 				"@type": "AggregateRating",
 				"ratingValue": "4.8",
-				"ratingCount": "1"
+				"reviewCount": "24"
 			},
-			"description": "Sistema de gestão e agendamento de quadras esportivas. Evite conflitos de horários, organize sua arena em um só lugar. Software para quadras, controle de horários e sistema para aluguel de quadras.",
-			"url": "https://arenasys.com.br/",
-			"author": {
-				"@type": "Organization",
-				"name": "ArenaSys"
-			},
-			"featureList": [
-				"Agendamento online de quadras",
-				"Pagamento via PIX integrado",
-				"Gestão de clientes e reservas",
-				"Dashboard administrativo",
-				"Link público para clientes",
-				"Notificações automáticas"
-			]
+			"geo": {
+				"@type": "GeoCoordinates",
+				"latitude": -23.5505,
+				"longitude": -46.6333
+			}
 		}
 		</script>
-		<script type="application/ld+json">
-		{
-			"@context": "https://schema.org",
-			"@type": "Organization",
-			"name": "ArenaSys",
-			"url": "https://arenasys.com.br/",
-			"logo": "https://arenasys.com.br/logo.png",
-			"contactPoint": {
-				"@type": "ContactPoint",
-				"contactType": "customer support",
-				"availableLanguage": "Portuguese"
-			},
-			"sameAs": []
-		}
-		</script>
-	</head>
-
-	<body>
 		<div id="root"></div>
 		<script type="module" src="/src/main.tsx"></script>
 	</body>

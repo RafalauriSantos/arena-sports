@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, "..", "dist", "index.html");
 
-const CRITICAL_HTML = `<div id="root"><div data-seo-ready class="min-h-screen bg-[#02040a] text-white font-sans"><main class="relative z-10"><h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white mt-8">Duas reservas no mesmo horário. Já passou por isso?</h1><p class="text-lg md:text-xl text-gray-300 mt-4 max-w-2xl">O ArenaSys acaba com essa bagunça. Cliente reserva pelo link. Você confirma e cobra no balcão.</p><p class="text-gray-400 mt-4">Sistema de gestão e agendamento de quadras esportivas. Uma agenda, tudo no lugar. Teste grátis 7 dias.</p></main></div></div>`;
+const CRITICAL_HTML = `<div id="root"><div data-seo-ready class="min-h-screen bg-[#02040a] text-white font-sans"><main class="relative z-10"><h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white mt-8">Sistema de Gestão e Agendamento de Quadras Esportivas | ArenaSys</h1><p class="text-lg md:text-xl text-gray-300 mt-4 max-w-2xl">Evite conflitos de horários, receba pagamentos automáticos via PIX e organize sua arena em um só lugar. Software completo para quadras de futebol, society, vôlei, tênis e beach tennis.</p><p class="text-gray-400 mt-4">Gestão profissional de quadras esportivas. Link público para seus clientes agendarem online. Dashboard administrativo completo. A partir de R$ 97/mês. Teste grátis por 7 dias sem cartão de crédito.</p><ul class="text-gray-300 mt-4 space-y-2"><li>✅ Agendamento online 24/7 para seus clientes</li><li>✅ Pagamento PIX integrado com Asaas</li><li>✅ Controle de mensalistas e horários fixos</li><li>✅ Notificações automáticas por WhatsApp</li><li>✅ Relatórios de faturamento e ocupação</li></ul></main></div></div>`;
 
 if (!fs.existsSync(distPath)) {
 	console.error("❌ dist/index.html não encontrado. Rode 'vite build' antes.");
@@ -24,7 +24,9 @@ let html = fs.readFileSync(distPath, "utf8");
 // Substitui <div id="root"></div> pelo HTML com conteúdo crítico (Vite gera assim)
 const rootEmpty = /<div id="root"\s*>\s*<\/div>/;
 if (!rootEmpty.test(html)) {
-	console.error("❌ Não foi encontrado <div id=\"root\"></div> em dist/index.html");
+	console.error(
+		'❌ Não foi encontrado <div id="root"></div> em dist/index.html',
+	);
 	process.exit(1);
 }
 html = html.replace(rootEmpty, CRITICAL_HTML);
