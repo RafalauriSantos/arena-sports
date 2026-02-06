@@ -509,6 +509,7 @@ const Login = () => {
 									<p className="text-xs text-gray-300 pt-2">
 										Já confirmou?{" "}
 										<button
+											aria-label="Ir para página de login"
 											onClick={() => setMode("signin")}
 											className="text-emerald-400 hover:text-emerald-300 underline">
 											Fazer login aqui
@@ -624,6 +625,7 @@ const Login = () => {
 
 									<div className="mt-2 sm:mt-4 text-center">
 										<button
+											aria-label="Alternar entre login e cadastro"
 											onClick={() => {
 												setMode(mode === "signin" ? "signup" : "signin");
 												setError(null);
