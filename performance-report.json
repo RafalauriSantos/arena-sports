@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-02-06T18:09:03.074Z",
+  "totalJs": 1465494,
+  "totalCss": 158592,
+  "totalAll": 1624086,
+  "filesCount": {
+    "js": 37,
+    "css": 1
+  },
+  "largestFiles": [
+    {
+      "name": "AdminIndex.38eV7moi.js",
+      "size": 659020,
+      "sizeFormatted": "643.6 KB"
+    },
+    {
+      "name": "index.D6LvgD0E.js",
+      "size": 301016,
+      "sizeFormatted": "294.0 KB"
+    },
+    {
+      "name": "react-vendor.Ca7Znvot.js",
+      "size": 200936,
+      "sizeFormatted": "196.2 KB"
+    },
+    {
+      "name": "ui-vendor.BpJgpAMH.js",
+      "size": 73559,
+      "sizeFormatted": "71.8 KB"
+    },
+    {
+      "name": "Landing.DwLGzX_W.js",
+      "size": 52244,
+      "sizeFormatted": "51.0 KB"
+    }
+  ],
+  "optimizations": {
+    "codeSplitting": true,
+    "minification": true,
+    "hashedNames": false,
+    "reasonableSize": true
+  },
+  "gzipEstimate": {
+    "js": 439648.2,
+    "css": 47577.6,
+    "total": 487225.8
+  }
+}
