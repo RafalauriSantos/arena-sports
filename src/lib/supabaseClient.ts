@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -9,11 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Singleton: garante uma única instância do cliente Supabase
 // Isso evita o aviso "Multiple GoTrueClient instances detected"
-let supabaseInstance: ReturnType<typeof createClient> | null = null;
+let supabaseInstance: SupabaseClient<any> | null = null;
 
 const getSupabaseClient = () => {
   if (!supabaseInstance) {
-    supabaseInstance = createClient(
+    supabaseInstance = createClient<any>(
       supabaseUrl || "https://missing.supabase.co",
       supabaseAnonKey || "MISSING_KEY",
       {

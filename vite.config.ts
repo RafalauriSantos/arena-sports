@@ -59,6 +59,43 @@ export default defineConfig(({ mode }) => ({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
+        // ✅ IMPORTANTE: Não fazer cache de chamadas da API (Supabase)
+        navigateFallback: null, // Desabilita fallback para evitar cache de rotas dinâmicas
+        runtimeCaching: [
+          {
+            // Cache de assets estáticos (imagens, fontes, etc)
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 ano
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // ⚠️ NÃO FAZER CACHE de chamadas do Supabase
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkOnly', // Sempre busca do servidor
+          },
+          {
+            // Cache de navegação (HTML) com revalidação
+            urlPattern: /^https?:\/\/.*\/agendar\/.*/i,
+            handler: 'NetworkFirst', // Tenta rede primeiro, depois cache
+            options: {
+              cacheName: 'pages-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutos apenas
+              },
+              networkTimeoutSeconds: 3,
+            }
+          }
+        ],
       },
     }),
   ],

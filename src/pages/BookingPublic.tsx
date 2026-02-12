@@ -3,10 +3,6 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-
-console.log(
-	"🔥🔥🔥 BOOKINGPUBLIC.TSX CARREGADO - VERSÃO NOVA 2026-02-05! 🔥🔥🔥",
-);
 import {
 	MapPin,
 	Clock,
@@ -35,6 +31,15 @@ import {
 	isValidPhone,
 } from "@/lib/phoneFormat";
 import { formatFullAddress } from "@/lib/cep";
+
+// Versão do componente para detecção de cache
+const BOOKING_PUBLIC_VERSION = "v2.1.1-2026-02-11";
+
+console.log(`🔥 BOOKINGPUBLIC.TSX CARREGADO - ${BOOKING_PUBLIC_VERSION}`, {
+	userAgent: navigator.userAgent,
+	timestamp: new Date().toISOString(),
+	serviceWorker: "serviceWorker" in navigator ? "disponível" : "indisponível",
+});
 
 // --- Tipos ---
 interface Court {
@@ -226,14 +231,15 @@ export default function BookingPublic() {
 					);
 				}
 
-				setTenant(tData);
-				setTenantId(tData.id);
+				const tenantRow = tData as TenantPublic;
+				setTenant(tenantRow);
+				setTenantId(tenantRow.id);
 
 				// Busca Quadras Ativas
 				const { data: cData, error: cError } = await supabase
 					.from("courts")
 					.select("id, name, base_price, half_hour_price")
-					.eq("tenant_id", tData.id)
+					.eq("tenant_id", tenantRow.id)
 					.eq("active", true)
 					.order("base_price");
 
@@ -363,7 +369,8 @@ export default function BookingPublic() {
 
 	// 1c. 🔥 Realtime: escuta mudanças nas CONFIGURAÇÕES do tenant (horários, preços, etc)
 	useEffect(() => {
-		if (!tenantId || realtimeDisabledRef.current.tenant) return;
+		if (!tenantId || !cleanSubdomain || realtimeDisabledRef.current.tenant)
+			return;
 
 		const tenantChannel = supabase
 			.channel(`tenant-settings-${tenantId}`, {
@@ -388,7 +395,7 @@ export default function BookingPublic() {
 						.maybeSingle();
 
 					if (!error && data) {
-						setTenant(data);
+						setTenant(data as TenantPublic);
 					}
 				},
 			)
@@ -407,7 +414,7 @@ export default function BookingPublic() {
 		return () => {
 			supabase.removeChannel(tenantChannel);
 		};
-	}, [tenantId]);
+	}, [tenantId, cleanSubdomain]);
 
 	// 2. Real-time para bookings (atualiza automaticamente quando há novas reservas)
 	useEffect(() => {
@@ -425,13 +432,21 @@ export default function BookingPublic() {
 					filter: `tenant_id=eq.${tenantId}`,
 				},
 				async (payload) => {
+					const newRow = (payload.new ?? null) as Record<
+						string,
+						unknown
+					> | null;
+					const oldRow = (payload.old ?? null) as Record<
+						string,
+						unknown
+					> | null;
 					console.log(
 						"🔥 [BookingPublic] Evento de reserva recebido:",
 						payload.eventType,
 						{
-							id: payload.new?.id || payload.old?.id,
-							customer: payload.new?.customer_name,
-							time: payload.new?.start_time,
+							id: (newRow?.id ?? oldRow?.id) as string | undefined,
+							customer: newRow?.customer_name as string | undefined,
+							time: newRow?.start_time as string | undefined,
 						},
 					);
 
@@ -440,8 +455,9 @@ export default function BookingPublic() {
 						payload.eventType === "INSERT" ||
 						payload.eventType === "UPDATE"
 					) {
-						const bookingDate =
-							payload.new?.start_time ? new Date(payload.new.start_time) : null;
+						const startTimeIso =
+							(newRow?.start_time as string | undefined) ?? undefined;
+						const bookingDate = startTimeIso ? new Date(startTimeIso) : null;
 
 						if (bookingDate) {
 							const bookingDateStr = format(bookingDate, "yyyy-MM-dd");
@@ -556,7 +572,7 @@ export default function BookingPublic() {
 			console.log("📦 [DEBUG] Resposta RPC:", {
 				data,
 				error,
-				totalSlots: data?.length || 0,
+				totalSlots: Array.isArray(data) ? data.length : 0,
 			});
 
 			if (error) {
@@ -745,6 +761,12 @@ export default function BookingPublic() {
 		setReserveError(null);
 
 		try {
+			console.log("🎯 [BookingPublic] Iniciando reserva...", {
+				slot: selectedSlot.slot.time,
+				court: selectedSlot.courtName,
+				duration: bookingDuration,
+			});
+
 			const dateStr = format(selectedDate, "yyyy-MM-dd");
 			const startTime = selectedSlot.slot.time;
 			const [hour, minute] = startTime.split(":");
@@ -778,6 +800,11 @@ export default function BookingPublic() {
 			const startTimestamp = formatWithTimezone(startDate);
 			const endTimestamp = formatWithTimezone(endDate);
 
+			console.log("⏰ [BookingPublic] Timestamps calculados:", {
+				startTimestamp,
+				endTimestamp,
+			});
+
 			// ✅ VALIDAÇÃO CRÍTICA: Verifica se o slot ainda está livre (ANTES de inserir)
 			const { data: checkData } = await supabase.rpc(
 				"fn_public_get_occupied_slots",
@@ -793,9 +820,15 @@ export default function BookingPublic() {
 				).map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`),
 			);
 
+			console.log("🔍 [BookingPublic] Slots ocupados atualizados:", {
+				total: occupied.size,
+				slots: Array.from(occupied),
+			});
+
 			// Verifica se o slot inicial está livre
 			const slotKey = `${selectedSlot.courtId}-${startTime}`;
 			if (occupied.has(slotKey)) {
+				console.error("❌ [BookingPublic] Slot ocupado:", slotKey);
 				throw new Error(
 					"Horário acabou de ser reservado. Escolha outro horário.",
 				);
@@ -809,6 +842,10 @@ export default function BookingPublic() {
 				const nextSlotKey = `${selectedSlot.courtId}-${nextTime}`;
 
 				if (occupied.has(nextSlotKey)) {
+					console.error(
+						"❌ [BookingPublic] Próximo slot ocupado:",
+						nextSlotKey,
+					);
 					throw new Error(
 						"O horário das " +
 							nextTime +
@@ -888,6 +925,12 @@ export default function BookingPublic() {
 				throw error;
 			}
 
+			console.log("✅ [BookingPublic] Reserva criada com sucesso:", {
+				id: newBooking?.id,
+				status: newBooking?.status,
+				customer: newBooking?.customer_name,
+			});
+
 			// ✅ ATUALIZA IMEDIATAMENTE o estado local (sem esperar real-time)
 			// Marca o slot inicial e, se for 1h30, também o próximo slot como ocupado
 			setOccupiedSlots((prev) => {
@@ -901,6 +944,10 @@ export default function BookingPublic() {
 					)
 				) {
 					newSlots.push({
+						court_id: selectedSlot.courtId,
+						slot_time: startTime,
+					});
+					console.log("📌 [BookingPublic] Slot inicial marcado como ocupado:", {
 						court_id: selectedSlot.courtId,
 						slot_time: startTime,
 					});
@@ -921,9 +968,20 @@ export default function BookingPublic() {
 							court_id: selectedSlot.courtId,
 							slot_time: nextTime,
 						});
+						console.log(
+							"📌 [BookingPublic] Próximo slot marcado como ocupado:",
+							{
+								court_id: selectedSlot.courtId,
+								slot_time: nextTime,
+							},
+						);
 					}
 				}
 
+				console.log(
+					"🔄 [BookingPublic] Estado local atualizado. Total de slots ocupados:",
+					newSlots.length,
+				);
 				return newSlots;
 			});
 
@@ -931,6 +989,7 @@ export default function BookingPublic() {
 				`Reserva confirmada! ${tenant?.business_name || "A arena"} aguarda você no horário marcado.`,
 			);
 			setBookingSuccess(true);
+			setShowBookingModal(false);
 
 			// Limpa form após 3 segundos
 			setTimeout(() => {
@@ -938,14 +997,36 @@ export default function BookingPublic() {
 				setReserveSuccess(null);
 				setPlayerName("");
 				setPlayerPhone("");
-				setBookingDuration(60); // Reset para 1h
+				setBookingDuration(60);
 			}, 3000);
 		} catch (error: unknown) {
-			console.error("Erro ao criar reserva:", error);
-			const message =
-				error instanceof Error ?
-					error.message
-				:	"Erro ao confirmar reserva. Tente novamente.";
+			console.error("❌ [BookingPublic] Erro ao criar reserva:", error);
+			type NavigatorWithConnection = Navigator & {
+				connection?: { effectiveType?: string };
+			};
+			console.error("📱 Info do dispositivo:", {
+				userAgent: navigator.userAgent,
+				version: BOOKING_PUBLIC_VERSION,
+				connection:
+					(navigator as NavigatorWithConnection).connection?.effectiveType ??
+					"unknown",
+			});
+
+			let message: string;
+			if (error instanceof Error) {
+				message = error.message;
+				// Se for erro de rede ou timeout, adiciona dica de atualização
+				if (
+					message.includes("Failed to fetch") ||
+					message.includes("NetworkError")
+				) {
+					message =
+						"Erro de conexão. Tente recarregar a página (arraste para baixo).";
+				}
+			} else {
+				message = "Erro ao confirmar reserva. Tente recarregar a página.";
+			}
+
 			setReserveError(message);
 		} finally {
 			setIsReserving(false);
@@ -1124,6 +1205,14 @@ Qual a chave PIX?`;
 				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 			}`}>
 			{showConfetti && <Confetti />}
+
+			{/* Badge de versão (aparece apenas quando há erro ou em dev) */}
+			{(reserveError || import.meta.env.DEV) && (
+				<div className="fixed top-2 right-2 z-50 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full font-mono">
+					{BOOKING_PUBLIC_VERSION}
+				</div>
+			)}
+
 			{/* Header Imersivo (Hero Section) - NOVO DESIGN MOBILE FIRST */}
 			<div className="relative h-64 md:h-80 overflow-hidden">
 				{/* Background com gradiente ou foto de capa (futuro) */}
@@ -1474,8 +1563,26 @@ Qual a chave PIX?`;
 
 						<div className="p-6 space-y-3">
 							{reserveError && (
-								<div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700 text-sm">
-									{reserveError}
+								<div className="space-y-2">
+									<div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700 text-sm">
+										{reserveError}
+									</div>
+									<button
+										onClick={() => {
+											console.log("🔄 Forçando atualização da página...");
+											// Limpa cache do service worker se disponível
+											if ("caches" in window) {
+												caches.keys().then((keys) => {
+													keys.forEach((key) => caches.delete(key));
+												});
+											}
+											// Recarrega com cache bypass
+											window.location.reload();
+										}}
+										type="button"
+										className="w-full py-2 px-4 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-xs font-medium transition-colors">
+										🔄 Recarregar página (limpar cache)
+									</button>
 								</div>
 							)}
 

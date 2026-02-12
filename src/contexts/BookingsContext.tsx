@@ -156,6 +156,15 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 				const startTime = new Date(b.start_time);
 				const endTime = new Date(b.end_time);
 
+				// ✅ CORREÇÃO: Preserva o status original do banco
+				// pending_payment = Reserva confirmada, aguarda pagamento no balcão
+				// paid/confirmed = Confirmado
+				// demais = pendente de aprovação
+				const mappedStatus =
+					b.status === "paid" || b.status === "confirmed" ? "confirmed"
+					: b.status === "pending_payment" ? "pending_payment"
+					: "pending_approval";
+
 				return {
 					id: b.id,
 					tenantId: b.tenant_id,
@@ -177,7 +186,7 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 							b.deposit_percent
 						:	undefined,
 					paymentStatus: b.status === "paid" ? "paid" : "pending",
-					status: b.status === "paid" ? "confirmed" : "pending_approval",
+					status: mappedStatus,
 					bookedBy: b.customer_name,
 					players: [b.customer_name],
 					createdAt: b.created_at,

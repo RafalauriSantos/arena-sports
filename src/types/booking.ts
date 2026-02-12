@@ -1,6 +1,6 @@
 
 export type PaymentStatus = 'paid' | 'pending' | 'failed' | 'refunded';
-export type BookingStatus = 'confirmed' | 'pending_approval' | 'cancelled' | 'pending';
+export type BookingStatus = 'confirmed' | 'pending_approval' | 'pending_payment' | 'cancelled' | 'pending';
 
 export interface Booking {
   id: string;
