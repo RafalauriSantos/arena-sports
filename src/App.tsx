@@ -16,6 +16,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 // Lazy load pages com tratamento de erro
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Welcome = lazy(() =>
 	import("./pages/Welcome").catch((error) => {
 		console.error("Erro ao carregar Welcome.tsx:", error);
@@ -106,6 +107,16 @@ const router = createBrowserRouter([
 	{
 		path: "/login",
 		element: <Login />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/reset-password",
+		element: <ResetPassword />,
+		errorElement: <RouteErrorElement />,
+	},
+	{
+		path: "/reset-password/",
+		element: <ResetPassword />,
 		errorElement: <RouteErrorElement />,
 	},
 	{

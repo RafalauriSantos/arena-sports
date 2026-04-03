@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
@@ -14,12 +14,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+function hashHasRecoveryType(): boolean {
+	if (typeof window === "undefined") return false;
+	const raw = window.location.hash.replace(/^#/, "");
+	if (!raw) return false;
+	const params = new URLSearchParams(raw);
+	return params.get("type") === "recovery";
+}
+
+function searchHasRecoveryType(): boolean {
+	if (typeof window === "undefined") return false;
+	return new URLSearchParams(window.location.search).get("type") === "recovery";
+}
+
+/** PKCE: recuperação pode cair em /login?code=... sem hash type=recovery */
+function loginPageHasPkceCode(): boolean {
+	if (typeof window === "undefined") return false;
+	const path = window.location.pathname;
+	if (path !== "/login" && !path.endsWith("/login")) return false;
+	return new URLSearchParams(window.location.search).has("code");
+}
+
 const Login = () => {
-	const [mode, setMode] = useState<"signin" | "signup" | "email-confirmation">(
-		"signin",
-	);
+	const passwordRecoveryRef = useRef(false);
+	const [mode, setMode] = useState<
+		| "signin"
+		| "signup"
+		| "email-confirmation"
+		| "forgot-password"
+		| "update-password"
+	>("signin");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [newPassword, setNewPassword] = useState("");
+	const [confirmNewPassword, setConfirmNewPassword] = useState("");
 	const [arenaName, setArenaName] = useState("");
 	const [rememberMe, setRememberMe] = useState(true); // Novo: checkbox "Lembrar-me" (true por padrão)
 	const [isLoading, setIsLoading] = useState(false);
@@ -42,8 +70,26 @@ const Login = () => {
 		const params = new URLSearchParams(location.search);
 		const qMode = params.get("mode");
 		const sessionExpired = params.get("session_expired");
+		const resetError = params.get("reset_error");
 		if (qMode === "signup") setMode("signup");
 		if (qMode === "signin") setMode("signin");
+		if (qMode === "forgot" || qMode === "forgot-password") {
+			setMode("forgot-password");
+			setError(null);
+		}
+		if (resetError === "otp_expired") {
+			setMode("forgot-password");
+			setSuccessMessage(null);
+			setError(
+				"Seu link de recuperação expirou ou já foi usado. Solicite um novo link.",
+			);
+			const next = new URLSearchParams(location.search);
+			next.delete("reset_error");
+			const clean =
+				location.pathname + (next.toString() ? `?${next.toString()}` : "");
+			navigate(clean, { replace: true });
+			return;
+		}
 		if (sessionExpired === "1") {
 			setError(
 				"Sua sessão expirou ou o token de renovação é inválido. Faça login novamente.",
@@ -55,17 +101,58 @@ const Login = () => {
 				location.pathname + (next.toString() ? `?${next.toString()}` : "");
 			navigate(clean, { replace: true });
 		}
-	}, [location.search]);
+	}, [location.pathname, location.search, navigate]);
+
+	// Recuperação: hash/query type=recovery ou evento PASSWORD_RECOVERY (evita redirect antes da UI)
+	useEffect(() => {
+		if (hashHasRecoveryType() || searchHasRecoveryType()) {
+			passwordRecoveryRef.current = true;
+			setMode("update-password");
+			setError(null);
+		}
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange((event) => {
+			if (event === "PASSWORD_RECOVERY") {
+				passwordRecoveryRef.current = true;
+				setMode("update-password");
+				setError(null);
+			}
+		});
+		return () => subscription.unsubscribe();
+	}, []);
 
 	// --- LÓGICA DE SESSÃO MANTIDA ---
 	// IMPORTANTE: Não redireciona automaticamente se estiver em modo signup ou email-confirmation
 	// (permite que novo usuário crie conta mesmo se houver sessão de outro usuário)
 	useEffect(() => {
 		const checkSession = async () => {
-			// Se estiver em modo signup ou email-confirmation, não redireciona
-			if (mode === "signup" || mode === "email-confirmation") {
+			if (passwordRecoveryRef.current) return;
+
+			const qp = new URLSearchParams(location.search);
+			if (qp.get("mode") === "forgot" || qp.get("mode") === "forgot-password") {
 				return;
 			}
+
+			// Fluxos de conta / recuperação: não redirecionar para dashboard
+			if (
+				mode === "signup" ||
+				mode === "email-confirmation" ||
+				mode === "forgot-password" ||
+				mode === "update-password" ||
+				hashHasRecoveryType() ||
+				searchHasRecoveryType()
+			) {
+				return;
+			}
+
+			// PKCE: sessão pode existir antes do evento PASSWORD_RECOVERY — não redirecionar cedo demais
+			if (loginPageHasPkceCode()) {
+				await new Promise((r) => setTimeout(r, 400));
+			} else {
+				await new Promise((r) => setTimeout(r, 0));
+			}
+			if (passwordRecoveryRef.current) return;
 
 			const { data } = await supabase.auth.getSession();
 			if (data?.session?.user) {
@@ -95,7 +182,100 @@ const Login = () => {
 			}
 		};
 		checkSession();
-	}, [navigate, mode]);
+	}, [navigate, mode, location.search]);
+
+	const handleSendRecoveryEmail = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoading(true);
+		setError(null);
+		setSuccessMessage(null);
+		if (!email?.trim() || !email.includes("@")) {
+			setError("Digite um email válido.");
+			setIsLoading(false);
+			return;
+		}
+
+		if (!navigator.onLine) {
+			setError("Você está sem internet. Conecte-se e tente novamente.");
+			setIsLoading(false);
+			return;
+		}
+
+		try {
+			const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+				email.trim().toLowerCase(),
+				{ redirectTo: "https://arenasys.com.br/reset-password" },
+			);
+
+			if (resetError) {
+				setError(resetError.message);
+				return;
+			}
+
+			setSuccessMessage(
+				"Se existir uma conta com este email, enviaremos um link para redefinir a senha. Verifique a caixa de entrada e o spam.",
+			);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "Erro de rede";
+			if (
+				/Failed to fetch|ERR_INTERNET_DISCONNECTED|NetworkError/i.test(message)
+			) {
+				setError(
+					"Sem conexão com a internet. Verifique sua rede e tente novamente.",
+				);
+			} else {
+				setError(`Erro ao enviar link de recuperação: ${message}`);
+			}
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleSetNewPassword = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoading(true);
+		setError(null);
+		if (newPassword.length < 6) {
+			setError("A nova senha deve ter no mínimo 6 caracteres.");
+			setIsLoading(false);
+			return;
+		}
+		if (newPassword !== confirmNewPassword) {
+			setError("As senhas não coincidem.");
+			setIsLoading(false);
+			return;
+		}
+		const { data, error: updateError } = await supabase.auth.updateUser({
+			password: newPassword,
+		});
+		setIsLoading(false);
+		if (updateError) {
+			setError(updateError.message);
+			return;
+		}
+		const user = data.user;
+		if (user) {
+			const { data: profile } = await supabase
+				.from("profiles")
+				.select("onboarding_completed_at")
+				.eq("id", user.id)
+				.single();
+			setNewPassword("");
+			setConfirmNewPassword("");
+			if (window.location.hash) {
+				window.history.replaceState(
+					null,
+					"",
+					`${window.location.pathname}${window.location.search}`,
+				);
+			}
+			if (profile?.onboarding_completed_at) {
+				navigate("/dashboard", { replace: true });
+			} else {
+				navigate("/welcome", { replace: true });
+			}
+		}
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -516,6 +696,135 @@ const Login = () => {
 										</button>
 									</p>
 								</div>
+							: mode === "forgot-password" ?
+								<div className="space-y-4 sm:space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
+									<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-1">
+										<Lock className="w-8 h-8 text-emerald-400" />
+									</div>
+									<div>
+										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+											Redefinir senha
+										</h2>
+										<p className="text-gray-300 text-sm text-left">
+											Informe o email da sua conta. Enviaremos um link para você
+											criar uma nova senha.
+										</p>
+									</div>
+									{successMessage && (
+										<div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm text-center">
+											{successMessage}
+										</div>
+									)}
+									{error && (
+										<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+											{error}
+										</div>
+									)}
+									<form
+										onSubmit={handleSendRecoveryEmail}
+										className="space-y-4 text-left">
+										<div className="space-y-1.5">
+											<Label className="text-xs uppercase text-gray-300 font-bold">
+												Email
+											</Label>
+											<div className="relative">
+												<ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
+												<Input
+													type="email"
+													value={email}
+													onChange={(e) => setEmail(e.target.value)}
+													autoComplete="email"
+													required
+													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
+													placeholder="gestor@arenasys.com"
+												/>
+											</div>
+										</div>
+										<Button
+											type="submit"
+											disabled={isLoading}
+											className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold">
+											{isLoading ? "Enviando..." : "Enviar link"}
+										</Button>
+									</form>
+									<button
+										type="button"
+										onClick={() => {
+											setMode("signin");
+											setError(null);
+											setSuccessMessage(null);
+										}}
+										className="text-sm text-gray-300 hover:text-white underline">
+										Voltar ao login
+									</button>
+								</div>
+							: mode === "update-password" ?
+								<div className="space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-bottom-4">
+									<div className="text-center">
+										<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-2">
+											<Lock className="w-8 h-8 text-emerald-400" />
+										</div>
+										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+											Nova senha
+										</h2>
+										<p className="text-gray-300 text-sm">
+											Escolha uma senha forte para sua conta.
+										</p>
+									</div>
+									{error && (
+										<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+											{error}
+										</div>
+									)}
+									<form
+										onSubmit={handleSetNewPassword}
+										className="space-y-3 text-left">
+										<div className="space-y-1.5">
+											<Label className="text-xs uppercase text-gray-300 font-bold">
+												Nova senha
+											</Label>
+											<div className="relative">
+												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
+												<Input
+													type="password"
+													value={newPassword}
+													onChange={(e) => setNewPassword(e.target.value)}
+													autoComplete="new-password"
+													minLength={6}
+													required
+													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
+													placeholder="Mínimo 6 caracteres"
+												/>
+											</div>
+										</div>
+										<div className="space-y-1.5">
+											<Label className="text-xs uppercase text-gray-300 font-bold">
+												Confirmar senha
+											</Label>
+											<div className="relative">
+												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
+												<Input
+													type="password"
+													value={confirmNewPassword}
+													onChange={(e) =>
+														setConfirmNewPassword(e.target.value)
+													}
+													autoComplete="new-password"
+													minLength={6}
+													required
+													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
+													placeholder="Repita a senha"
+												/>
+											</div>
+										</div>
+										<Button
+											type="submit"
+											disabled={isLoading}
+											className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold">
+											{isLoading ? "Salvando..." : "Salvar nova senha"}
+										</Button>
+									</form>
+								</div>
 							:	<>
 									<div className="text-center mb-4 sm:mb-6">
 										<h2 className="text-lg sm:text-xl font-bold text-white">
@@ -587,6 +896,23 @@ const Login = () => {
 											</div>
 										</div>
 
+										{mode === "signin" && (
+											<div className="flex justify-end -mt-0.5">
+												<button
+													type="button"
+													onClick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														setMode("forgot-password");
+														setError(null);
+														setSuccessMessage(null);
+													}}
+													className="text-xs text-emerald-400 hover:text-emerald-300 underline underline-offset-2">
+													Esqueceu a senha?
+												</button>
+											</div>
+										)}
+
 										{/* Checkbox "Lembrar-me" Premium Toggle */}
 										{mode === "signin" && (
 											<div
@@ -631,6 +957,8 @@ const Login = () => {
 												setError(null);
 												setSuccessMessage(null);
 												setSignupEmail("");
+												setNewPassword("");
+												setConfirmNewPassword("");
 											}}
 											className="text-sm text-gray-300 hover:text-white transition-colors">
 											{mode === "signin" ?

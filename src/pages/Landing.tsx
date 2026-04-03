@@ -907,10 +907,40 @@ export default function LandingPage() {
 
 	const isVisible = (id: string) => visibleElements.has(id);
 
+	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
+	// Sem isto, o token fica na home e a tela de "Nova senha" nunca aparece.
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const raw = window.location.hash.replace(/^#/, "");
+		if (raw) {
+			const hp = new URLSearchParams(raw);
+			if (hp.get("error_code") === "otp_expired") {
+				window.location.replace(
+					"/login?mode=forgot-password&reset_error=otp_expired",
+				);
+				return;
+			}
+			if (hp.get("type") === "recovery") {
+				window.location.replace(`/reset-password${window.location.hash}`);
+				return;
+			}
+		}
+		const sp = new URLSearchParams(window.location.search);
+		if (sp.get("type") === "recovery" && sp.has("code")) {
+			const q = window.location.search;
+			window.location.replace(`/reset-password${q}`);
+		}
+	}, []);
+
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
-			const { data, error } = await supabase.rpc("get_founders_progress");
+			const rpcClient = supabase as unknown as {
+				rpc: (
+					fn: string,
+				) => Promise<{ data: unknown; error: { message: string } | null }>;
+			};
+			const { data, error } = await rpcClient.rpc("get_founders_progress");
 			if (!mounted) return;
 			if (error || !data) {
 				setFoundersProgress(null);
