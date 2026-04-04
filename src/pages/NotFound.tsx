@@ -5,6 +5,28 @@ const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      const hasRecoverySignal =
+        hashParams.get("type") === "recovery" ||
+        (searchParams.get("type") === "recovery" && searchParams.has("code")) ||
+        searchParams.has("code") ||
+        location.pathname.startsWith("/auth/v1/");
+
+      if (hashParams.get("error_code") === "otp_expired" || searchParams.get("error_code") === "otp_expired") {
+        window.location.replace("/login?mode=forgot-password&reset_error=otp_expired");
+        return;
+      }
+
+      if (hasRecoverySignal) {
+        const suffix = `${window.location.search}${window.location.hash}`;
+        window.location.replace(`/reset-password${suffix}`);
+        return;
+      }
+    }
+
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
 
