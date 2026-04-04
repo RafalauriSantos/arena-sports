@@ -23,6 +23,7 @@ Este indice centraliza os guias detalhados do projeto para manter o README princ
 - [../PERFORMANCE_IMPROVEMENTS.md](../PERFORMANCE_IMPROVEMENTS.md)
 - [../CONFIGURAR_WEBHOOK_ASAAS.md](../CONFIGURAR_WEBHOOK_ASAAS.md)
 - [../COMO_LIMPAR_CACHE.md](../COMO_LIMPAR_CACHE.md)
+- [SUPABASE_PRODUCTION_CHECKLIST.md](SUPABASE_PRODUCTION_CHECKLIST.md)
 
 ## Como usar este indice
 

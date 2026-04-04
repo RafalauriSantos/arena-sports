@@ -35,6 +35,22 @@ function loginPageHasPkceCode(): boolean {
 	return new URLSearchParams(window.location.search).has("code");
 }
 
+function isEmailRateLimitMessage(message: string): boolean {
+	return /email rate limit exceeded|rate limit|too many requests/i.test(
+		message,
+	);
+}
+
+function extractRetrySeconds(message: string): number {
+	const match = message.match(/(\d{1,4})\s*(seconds?|sec|s|minutes?|mins?|m)/i);
+	if (!match) return 60;
+	const value = Number(match[1]);
+	if (!Number.isFinite(value) || value <= 0) return 60;
+	const unit = match[2].toLowerCase();
+	if (unit.startsWith("m")) return value * 60;
+	return value;
+}
+
 const Login = () => {
 	const passwordRecoveryRef = useRef(false);
 	const [mode, setMode] = useState<
@@ -53,6 +69,7 @@ const Login = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+	const [recoveryCooldownSeconds, setRecoveryCooldownSeconds] = useState(0);
 	const [signupEmail, setSignupEmail] = useState<string>(""); // Email usado no signup (para mostrar na confirmação)
 	const location = useLocation();
 	const navigate = useNavigate();
@@ -65,6 +82,14 @@ const Login = () => {
 			setRememberMe(true);
 		}
 	}, [mode]);
+
+	useEffect(() => {
+		if (recoveryCooldownSeconds <= 0) return;
+		const timerId = window.setInterval(() => {
+			setRecoveryCooldownSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+		}, 1000);
+		return () => window.clearInterval(timerId);
+	}, [recoveryCooldownSeconds]);
 
 	useEffect(() => {
 		const params = new URLSearchParams(location.search);
@@ -192,6 +217,12 @@ const Login = () => {
 
 	const handleSendRecoveryEmail = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (recoveryCooldownSeconds > 0) {
+			setError(
+				`Aguarde ${recoveryCooldownSeconds}s antes de solicitar um novo link.`,
+			);
+			return;
+		}
 		setIsLoading(true);
 		setError(null);
 		setSuccessMessage(null);
@@ -214,9 +245,19 @@ const Login = () => {
 			);
 
 			if (resetError) {
+				if (isEmailRateLimitMessage(resetError.message)) {
+					const retryIn = extractRetrySeconds(resetError.message);
+					setRecoveryCooldownSeconds(retryIn);
+					setError(
+						`Muitas tentativas em pouco tempo. Aguarde ${retryIn}s e tente novamente.`,
+					);
+					return;
+				}
 				setError(resetError.message);
 				return;
 			}
+
+			setRecoveryCooldownSeconds(30);
 
 			setSuccessMessage(
 				"Se existir uma conta com este email, enviaremos um link para redefinir a senha. Verifique a caixa de entrada e o spam.",
@@ -228,6 +269,12 @@ const Login = () => {
 			) {
 				setError(
 					"Sem conexão com a internet. Verifique sua rede e tente novamente.",
+				);
+			} else if (isEmailRateLimitMessage(message)) {
+				const retryIn = extractRetrySeconds(message);
+				setRecoveryCooldownSeconds(retryIn);
+				setError(
+					`Muitas tentativas em pouco tempo. Aguarde ${retryIn}s e tente novamente.`,
 				);
 			} else {
 				setError(`Erro ao enviar link de recuperação: ${message}`);
@@ -748,10 +795,20 @@ const Login = () => {
 										</div>
 										<Button
 											type="submit"
-											disabled={isLoading}
+											disabled={isLoading || recoveryCooldownSeconds > 0}
 											className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold">
-											{isLoading ? "Enviando..." : "Enviar link"}
+											{isLoading ?
+												"Enviando..."
+											: recoveryCooldownSeconds > 0 ?
+												`Aguarde ${recoveryCooldownSeconds}s`
+											:	"Enviar link"}
 										</Button>
+										{recoveryCooldownSeconds > 0 && (
+											<p className="text-xs text-gray-400 text-center">
+												Para evitar bloqueio do provedor de email, tente
+												novamente em {recoveryCooldownSeconds}s.
+											</p>
+										)}
 									</form>
 									<button
 										type="button"
