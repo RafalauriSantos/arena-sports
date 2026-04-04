@@ -3,7 +3,7 @@
 	"framework": "vite",
 	"buildCommand": "vite build && bun scripts/inject-seo-html.mjs",
 	"outputDirectory": "dist",
-	"rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+	"rewrites": [{ "source": "/(.*)", "destination": "/" }],
 	"headers": [
 		{
 			"source": "/assets/(.*)",
