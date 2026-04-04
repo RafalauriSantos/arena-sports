@@ -1,0 +1,31 @@
+# Documentacao ArenaSys
+
+Este indice centraliza os guias detalhados do projeto para manter o README principal objetivo.
+
+## SEO
+
+- [PRIMEIROS_PASSOS_SEO.md](PRIMEIROS_PASSOS_SEO.md)
+- [GUIA_SEO_COMPLETO.md](GUIA_SEO_COMPLETO.md)
+- [SEO_PRERENDER.md](SEO_PRERENDER.md)
+
+## Performance
+
+- [PERFORMANCE_OPTIMIZATIONS.md](PERFORMANCE_OPTIMIZATIONS.md)
+- [APEX_ACCESSIBILITY_PERFORMANCE.md](APEX_ACCESSIBILITY_PERFORMANCE.md)
+- [RESULTADOS_PERFORMANCE.md](RESULTADOS_PERFORMANCE.md)
+- [MELHORIAS_PAGESPEED.md](MELHORIAS_PAGESPEED.md)
+- [RESULTADOS_FINAIS_PAGESPEED.md](RESULTADOS_FINAIS_PAGESPEED.md)
+- [MELHORIAS_100_PERCENT.md](MELHORIAS_100_PERCENT.md)
+
+## Operacao de Produto
+
+- [../MELHORIAS_PENDENTES.md](../MELHORIAS_PENDENTES.md)
+- [../PERFORMANCE_IMPROVEMENTS.md](../PERFORMANCE_IMPROVEMENTS.md)
+- [../CONFIGURAR_WEBHOOK_ASAAS.md](../CONFIGURAR_WEBHOOK_ASAAS.md)
+- [../COMO_LIMPAR_CACHE.md](../COMO_LIMPAR_CACHE.md)
+
+## Como usar este indice
+
+1. Leia o README principal para setup rapido.
+2. Use este arquivo para aprofundar por tema.
+3. Ao criar nova documentacao, adicione aqui para manter rastreabilidade.
