@@ -78,3 +78,4 @@ skills-lock.json
 # Documentos internos / auditorias (não versionar)
 ANALISE_*.md
 AUDITORIA_*.md
+.env*.local
