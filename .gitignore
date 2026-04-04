@@ -26,6 +26,7 @@ dist
 dist-ssr
 *.local
 build-output.txt
+performance-report.json
 
 # Editor directories and files
 .vscode/*
