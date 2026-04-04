@@ -105,22 +105,28 @@ const Login = () => {
 
 	// Recuperação: hash/query type=recovery ou evento PASSWORD_RECOVERY (evita redirect antes da UI)
 	useEffect(() => {
+		const redirectToResetPassword = () => {
+			const suffix = `${window.location.search}${window.location.hash}`;
+			navigate(`/reset-password${suffix}`, { replace: true });
+		};
+
 		if (hashHasRecoveryType() || searchHasRecoveryType()) {
 			passwordRecoveryRef.current = true;
-			setMode("update-password");
 			setError(null);
+			redirectToResetPassword();
+			return;
 		}
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange((event) => {
 			if (event === "PASSWORD_RECOVERY") {
 				passwordRecoveryRef.current = true;
-				setMode("update-password");
 				setError(null);
+				redirectToResetPassword();
 			}
 		});
 		return () => subscription.unsubscribe();
-	}, []);
+	}, [navigate]);
 
 	// --- LÓGICA DE SESSÃO MANTIDA ---
 	// IMPORTANTE: Não redireciona automaticamente se estiver em modo signup ou email-confirmation
