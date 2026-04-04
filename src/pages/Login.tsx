@@ -96,11 +96,25 @@ const Login = () => {
 		const qMode = params.get("mode");
 		const sessionExpired = params.get("session_expired");
 		const resetError = params.get("reset_error");
+		const passwordReset = params.get("password_reset");
 		if (qMode === "signup") setMode("signup");
 		if (qMode === "signin") setMode("signin");
 		if (qMode === "forgot" || qMode === "forgot-password") {
 			setMode("forgot-password");
 			setError(null);
+		}
+		if (passwordReset === "1") {
+			setMode("signin");
+			setError(null);
+			setSuccessMessage(
+				"Senha redefinida com sucesso. Faça login com a nova senha.",
+			);
+			const next = new URLSearchParams(location.search);
+			next.delete("password_reset");
+			const clean =
+				location.pathname + (next.toString() ? `?${next.toString()}` : "");
+			navigate(clean, { replace: true });
+			return;
 		}
 		if (resetError === "otp_expired") {
 			setMode("forgot-password");
