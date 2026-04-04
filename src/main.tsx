@@ -4,6 +4,39 @@ import "./index.css";
 
 import { registerSW } from "virtual:pwa-register";
 
+const isResetPasswordPath = (pathname: string) =>
+	pathname === "/reset-password" || pathname === "/reset-password/";
+
+const redirectRecoveryBeforeAppBoot = (): boolean => {
+	if (typeof window === "undefined") return false;
+
+	const { pathname, search, hash } = window.location;
+	const searchParams = new URLSearchParams(search);
+	const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
+
+	const hasCode = searchParams.has("code");
+	const isRecoveryType =
+		hashParams.get("type") === "recovery" ||
+		searchParams.get("type") === "recovery";
+	const hasExpiredOtp =
+		hashParams.get("error_code") === "otp_expired" ||
+		searchParams.get("error_code") === "otp_expired";
+
+	if (hasExpiredOtp && !pathname.startsWith("/login")) {
+		window.location.replace(
+			"/login?mode=forgot-password&reset_error=otp_expired",
+		);
+		return true;
+	}
+
+	if ((hasCode || isRecoveryType) && !isResetPasswordPath(pathname)) {
+		window.location.replace(`/reset-password${search}${hash}`);
+		return true;
+	}
+
+	return false;
+};
+
 // WCAG AA: Fix viewport for accessibility (ensure zoom is allowed)
 const fixViewportForAccessibility = () => {
 	const viewport = document.querySelector('meta[name="viewport"]');
@@ -57,4 +90,6 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 	});
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+if (!redirectRecoveryBeforeAppBoot()) {
+	createRoot(document.getElementById("root")!).render(<App />);
+}

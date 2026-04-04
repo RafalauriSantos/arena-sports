@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Lock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const ResetPassword = () => {
 	const navigate = useNavigate();
@@ -123,75 +127,109 @@ const ResetPassword = () => {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-[#0a0c10] p-4">
-			<div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-sm">
-				<h1 className="text-2xl font-bold text-white">Redefinir senha</h1>
-				<p className="mt-2 text-sm text-gray-300">
-					{isInitializing ?
-						"Validando link de recuperação..."
-					: isRecoveryMode ?
-						"Crie uma nova senha para sua conta ArenaSys."
-					:	"Link de recuperação inválido ou expirado."}
-				</p>
+		<div className="relative min-h-screen overflow-hidden bg-[#06090f] p-4 text-white sm:p-6">
+			<div className="pointer-events-none absolute inset-0">
+				<div className="absolute -left-16 top-12 h-56 w-56 rounded-full bg-emerald-500/20 blur-3xl" />
+				<div className="absolute right-0 top-1/3 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
+				<div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-teal-400/10 blur-3xl" />
+			</div>
 
-				{message && (
-					<div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
-						{message}
+			<div className="relative mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-md items-center justify-center">
+				<div className="w-full rounded-3xl border border-white/10 bg-[#0d131d]/90 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:p-7">
+					<div className="mb-5 flex items-center gap-3">
+						<div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-500/15">
+							<ShieldCheck className="h-5 w-5 text-emerald-300" />
+						</div>
+						<div>
+							<h1 className="text-2xl font-bold tracking-tight text-white">
+								Redefinir senha
+							</h1>
+							<p className="text-xs uppercase tracking-[0.18em] text-emerald-300/80">
+								Fluxo seguro ArenaSys
+							</p>
+						</div>
 					</div>
-				)}
 
-				{error && (
-					<div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-						{error}
+					<p className="text-sm leading-relaxed text-slate-300">
+						{isInitializing ?
+							"Validando seu link de recuperação..."
+						: isRecoveryMode ?
+							"Escolha uma senha forte para concluir o acesso da sua conta."
+						:	"Não conseguimos validar este link. Solicite um novo email de recuperação."
+						}
+					</p>
+
+					{message && (
+						<div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+							{message}
+						</div>
+					)}
+
+					{error && (
+						<div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+							{error}
+						</div>
+					)}
+
+					<div className="mt-5 space-y-4">
+						<div className="space-y-1.5">
+							<Label
+								htmlFor="new-password"
+								className="text-xs uppercase tracking-wide text-slate-300">
+								Nova senha
+							</Label>
+							<div className="relative">
+								<Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+								<Input
+									id="new-password"
+									type="password"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									placeholder="Mínimo 6 caracteres"
+									autoComplete="new-password"
+									className="h-11 rounded-xl border-white/15 bg-white/5 pl-10 text-white placeholder:text-slate-400 focus-visible:ring-emerald-500/40"
+								/>
+							</div>
+						</div>
+
+						<div className="space-y-1.5">
+							<Label
+								htmlFor="confirm-password"
+								className="text-xs uppercase tracking-wide text-slate-300">
+								Confirmar nova senha
+							</Label>
+							<div className="relative">
+								<Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+								<Input
+									id="confirm-password"
+									type="password"
+									value={confirmPassword}
+									onChange={(e) => setConfirmPassword(e.target.value)}
+									placeholder="Repita a nova senha"
+									autoComplete="new-password"
+									className="h-11 rounded-xl border-white/15 bg-white/5 pl-10 text-white placeholder:text-slate-400 focus-visible:ring-emerald-500/40"
+								/>
+							</div>
+						</div>
 					</div>
-				)}
 
-				<div className="mt-4 space-y-3">
-					<label
-						htmlFor="new-password"
-						className="block text-xs uppercase tracking-wide text-gray-300">
-						Nova senha
-					</label>
-					<input
-						id="new-password"
-						type="password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						placeholder="Mínimo 6 caracteres"
-						className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
-					/>
+					<Button
+						type="button"
+						onClick={handleReset}
+						disabled={!canSubmit}
+						className="mt-6 h-11 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-sm font-semibold text-[#05120d] hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50">
+						{isLoading ? "Salvando..." : "Salvar nova senha"}
+					</Button>
 
-					<label
-						htmlFor="confirm-password"
-						className="block text-xs uppercase tracking-wide text-gray-300">
-						Confirmar nova senha
-					</label>
-					<input
-						id="confirm-password"
-						type="password"
-						value={confirmPassword}
-						onChange={(e) => setConfirmPassword(e.target.value)}
-						placeholder="Repita a senha"
-						className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400"
-					/>
+					<button
+						type="button"
+						onClick={() =>
+							navigate("/login?mode=forgot-password", { replace: true })
+						}
+						className="mt-3 w-full text-center text-sm text-slate-300 underline decoration-slate-500 underline-offset-4 hover:text-white">
+						Solicitar novo link de recuperação
+					</button>
 				</div>
-
-				<button
-					type="button"
-					onClick={handleReset}
-					disabled={!canSubmit}
-					className="mt-5 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:from-emerald-400 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-50">
-					{isLoading ? "Salvando..." : "Salvar nova senha"}
-				</button>
-
-				<button
-					type="button"
-					onClick={() =>
-						navigate("/login?mode=forgot-password", { replace: true })
-					}
-					className="mt-3 w-full text-sm text-gray-300 underline hover:text-white">
-					Solicitar novo link
-				</button>
 			</div>
 		</div>
 	);
