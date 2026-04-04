@@ -41,6 +41,12 @@ function isEmailRateLimitMessage(message: string): boolean {
 	);
 }
 
+function isMissingApiKeyMessage(message: string): boolean {
+	return /no api key found|apikey request header|invalid api key/i.test(
+		message,
+	);
+}
+
 function extractRetrySeconds(message: string): number {
 	const match = message.match(/(\d{1,4})\s*(seconds?|sec|s|minutes?|mins?|m)/i);
 	if (!match) return 60;
@@ -71,6 +77,7 @@ const Login = () => {
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [recoveryCooldownSeconds, setRecoveryCooldownSeconds] = useState(0);
 	const [signupEmail, setSignupEmail] = useState<string>(""); // Email usado no signup (para mostrar na confirmação)
+	const recoveryInFlightRef = useRef(false);
 	const location = useLocation();
 	const navigate = useNavigate();
 
@@ -231,12 +238,14 @@ const Login = () => {
 
 	const handleSendRecoveryEmail = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (recoveryInFlightRef.current) return;
 		if (recoveryCooldownSeconds > 0) {
 			setError(
 				`Aguarde ${recoveryCooldownSeconds}s antes de solicitar um novo link.`,
 			);
 			return;
 		}
+		recoveryInFlightRef.current = true;
 		setIsLoading(true);
 		setError(null);
 		setSuccessMessage(null);
@@ -259,6 +268,12 @@ const Login = () => {
 			);
 
 			if (resetError) {
+				if (isMissingApiKeyMessage(resetError.message)) {
+					setError(
+						"Erro temporário de autenticação no navegador. Atualize a página e tente novamente.",
+					);
+					return;
+				}
 				if (isEmailRateLimitMessage(resetError.message)) {
 					const retryIn = extractRetrySeconds(resetError.message);
 					setRecoveryCooldownSeconds(retryIn);
@@ -284,6 +299,10 @@ const Login = () => {
 				setError(
 					"Sem conexão com a internet. Verifique sua rede e tente novamente.",
 				);
+			} else if (isMissingApiKeyMessage(message)) {
+				setError(
+					"Erro temporário de autenticação no navegador. Atualize a página e tente novamente.",
+				);
 			} else if (isEmailRateLimitMessage(message)) {
 				const retryIn = extractRetrySeconds(message);
 				setRecoveryCooldownSeconds(retryIn);
@@ -295,6 +314,7 @@ const Login = () => {
 			}
 		} finally {
 			setIsLoading(false);
+			recoveryInFlightRef.current = false;
 		}
 	};
 
