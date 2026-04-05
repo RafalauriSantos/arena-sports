@@ -1087,22 +1087,26 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									.filter((booking) => booking.date === dateKey)
 									.sort((a, b) => a.time.localeCompare(b.time));
 								const dayIsToday = isSameDay(day, new Date());
+								const dayIsSelected = isSameDay(day, selectedDate);
 
 								return (
 									<Card
 										key={dateKey}
 										className={cn(
-											"border rounded-2xl bg-surface-2/60 overflow-hidden",
-											dayIsToday ? "border-emerald-500/30" : "border-white/5",
+											"border rounded-2xl bg-surface-2/60 overflow-hidden transition-all",
+											dayIsToday ?
+												"border-emerald-500/30 shadow-lg shadow-emerald-500/10"
+											:	"border-white/5",
+											dayIsSelected && "ring-1 ring-primary/40",
 										)}>
 										<CardContent className="p-4 space-y-3">
 											<div className="flex items-center justify-between">
-												<div>
+												<div className="min-w-0">
 													<p className="text-xs uppercase text-gray-300">
 														{format(day, "EEE", { locale: ptBR })}
 													</p>
-													<p className="text-xl font-semibold text-white">
-														{format(day, "dd")}
+													<p className="text-xl font-semibold text-white leading-none mt-1">
+														{format(day, "dd MMM", { locale: ptBR })}
 													</p>
 												</div>
 												<Badge className="bg-white/5 text-gray-300 border-white/10">
@@ -1111,19 +1115,37 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 											</div>
 
 											{dayBookings.length === 0 ?
-												<p className="text-sm text-gray-400">Sem jogos</p>
+												<div className="rounded-xl border border-dashed border-white/10 p-4 text-center bg-white/[0.02]">
+													<p className="text-sm text-gray-400">
+														Sem jogos neste dia
+													</p>
+												</div>
 											:	<div className="space-y-2">
 													{dayBookings.slice(0, 4).map((booking) => (
 														<button
 															key={booking.id}
 															onClick={() => handleViewDetails(booking)}
-															className="w-full text-left p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 transition-colors">
-															<p className="text-sm text-white font-medium truncate">
-																{booking.time} - {booking.customerName}
-															</p>
-															<p className="text-xs text-gray-300 truncate">
-																{booking.field}
-															</p>
+															className="w-full text-left p-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 transition-colors">
+															<div className="flex items-start gap-2">
+																<span
+																	className={cn(
+																		"mt-1 w-1.5 h-1.5 rounded-full shrink-0",
+																		booking.paymentStatus === "paid" ?
+																			"bg-emerald-500"
+																		: booking.paymentStatus === "deposit" ?
+																			"bg-amber-500"
+																		:	"bg-gray-500",
+																	)}
+																/>
+																<div className="min-w-0">
+																	<p className="text-sm text-white font-medium truncate">
+																		{booking.time} - {booking.customerName}
+																	</p>
+																	<p className="text-xs text-gray-300 truncate">
+																		{booking.field}
+																	</p>
+																</div>
+															</div>
 														</button>
 													))}
 													{dayBookings.length > 4 && (
