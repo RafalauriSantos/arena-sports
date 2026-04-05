@@ -33,7 +33,21 @@ import { supabase } from "@/lib/supabaseClient";
 import { useBookings } from "@/contexts/BookingsContext";
 import { NewBookingModal } from "@/components/admin/NewBookingModal";
 import { useToast } from "@/hooks/use-toast";
-import { addDays, format, parseISO, subDays, isSameDay } from "date-fns";
+import {
+	addDays,
+	addMonths,
+	eachDayOfInterval,
+	endOfMonth,
+	endOfWeek,
+	format,
+	isSameDay,
+	isSameMonth,
+	parseISO,
+	startOfMonth,
+	startOfWeek,
+	subDays,
+	subMonths,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -81,6 +95,13 @@ type BookingEventRow = {
 	created_at: string;
 };
 
+type LooseQueryBuilder = {
+	select: (columns: string) => LooseQueryBuilder;
+	eq: (column: string, value: unknown) => LooseQueryBuilder;
+	order: (column: string, options: { ascending: boolean }) => LooseQueryBuilder;
+	limit: (count: number) => Promise<{ data: unknown; error: unknown }>;
+};
+
 const AgendaSkeleton = () => (
 	<div className="space-y-6">
 		<div className="h-16 w-full rounded-2xl skeleton-premium" />
@@ -115,12 +136,23 @@ const DEFAULT_SLOTS = [
 ];
 
 // Tipo para visualização
-type ViewMode = "dia" | "semana";
+type ViewMode = "dia" | "semana" | "mes";
 
 export default function AgendaMaster() {
 	const context = useBookings();
 	const { bookings, updateBooking, deleteBooking, refreshData, loading } =
 		context;
+	const supabaseLoose = useMemo(
+		() =>
+			supabase as unknown as {
+				from: (table: string) => LooseQueryBuilder;
+				rpc: (
+					fn: string,
+					args?: Record<string, unknown>,
+				) => Promise<{ error: unknown; data?: unknown }>;
+			},
+		[],
+	);
 	const { toast } = useToast();
 	const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(
 		null,
@@ -137,7 +169,9 @@ export default function AgendaMaster() {
 	const [elapsedTime, setElapsedTime] = useState<string>("00:00:00");
 	const [viewMode, setViewMode] = useState<ViewMode>("dia");
 	const [selectedDate, setSelectedDate] = useState(new Date());
-	const [viewStartDate, setViewStartDate] = useState(new Date()); // Início da janela de 7 dias
+	const [viewStartDate, setViewStartDate] = useState(
+		startOfWeek(new Date(), { weekStartsOn: 1 }),
+	); // Início da janela de visualização
 	const [preselectedSlot, setPreselectedSlot] = useState<string | null>(null);
 
 	// Função para abrir os detalhes de uma reserva
@@ -187,6 +221,15 @@ export default function AgendaMaster() {
 	}, [bookings]);
 
 	useEffect(() => {
+		if (viewMode === "mes") {
+			setViewStartDate(startOfMonth(selectedDate));
+			return;
+		}
+
+		setViewStartDate(startOfWeek(selectedDate, { weekStartsOn: 1 }));
+	}, [selectedDate, viewMode]);
+
+	useEffect(() => {
 		if (!isModalOpen || !selectedBooking) return;
 		setEditedPhone(selectedBooking.phone || "");
 	}, [isModalOpen, selectedBooking]);
@@ -198,7 +241,7 @@ export default function AgendaMaster() {
 			setBookingEventsLoading(true);
 			setBookingEventsError(null);
 
-			const { data, error } = await supabase
+			const { data, error } = await supabaseLoose
 				.from("booking_events")
 				.select(
 					"id, booking_id, actor_user_id, action, old_data, new_data, created_at",
@@ -234,7 +277,7 @@ export default function AgendaMaster() {
 		return () => {
 			cancelled = true;
 		};
-	}, [isModalOpen, selectedBooking?.bookingId]);
+	}, [isModalOpen, selectedBooking?.bookingId, supabaseLoose]);
 
 	const formatEventAction = (action: string) => {
 		switch (action) {
@@ -428,7 +471,6 @@ export default function AgendaMaster() {
 
 	// Gera slots para a visualização
 	const timeSlotGrid = useMemo(() => {
-		const dateStr = format(selectedDate, "yyyy-MM-dd");
 		const nowHour = new Date().getHours();
 		const isToday = isSameDay(selectedDate, new Date());
 
@@ -446,12 +488,69 @@ export default function AgendaMaster() {
 		});
 	}, [selectedDate, selectedDateBookings]);
 
-	// Navegação de janela de visualização (move a strip de dias)
-	const goToPrevWeek = () => setViewStartDate((prev) => subDays(prev, 7));
-	const goToNextWeek = () => setViewStartDate((prev) => addDays(prev, 7));
+	const weekDays = useMemo(() => {
+		const weekStart = startOfWeek(viewStartDate, { weekStartsOn: 1 });
+		return eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
+	}, [viewStartDate]);
+
+	const monthDays = useMemo(() => {
+		const monthStart = startOfMonth(viewStartDate);
+		const monthEnd = endOfMonth(viewStartDate);
+		const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+		const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+		return eachDayOfInterval({ start: gridStart, end: gridEnd });
+	}, [viewStartDate]);
+
+	const periodBookings = useMemo(() => {
+		if (viewMode === "dia") return selectedDateBookings;
+
+		if (viewMode === "mes") {
+			const monthStart = startOfMonth(viewStartDate);
+			const monthEnd = endOfMonth(viewStartDate);
+			return adminBookingsData.filter((booking) => {
+				const bookingDate = parseISO(booking.date);
+				return bookingDate >= monthStart && bookingDate <= monthEnd;
+			});
+		}
+
+		const weekStart = startOfWeek(viewStartDate, { weekStartsOn: 1 });
+		const weekEnd = addDays(weekStart, 6);
+		return adminBookingsData.filter((booking) => {
+			const bookingDate = parseISO(booking.date);
+			return bookingDate >= weekStart && bookingDate <= weekEnd;
+		});
+	}, [adminBookingsData, selectedDateBookings, viewMode, viewStartDate]);
+
+	// Navegação por período
+	const goToPrevWeek = () => {
+		if (viewMode === "dia") {
+			setSelectedDate((prev) => subDays(prev, 1));
+			return;
+		}
+
+		if (viewMode === "mes") {
+			setSelectedDate((prev) => subMonths(prev, 1));
+			return;
+		}
+
+		setSelectedDate((prev) => subDays(prev, 7));
+	};
+	const goToNextWeek = () => {
+		if (viewMode === "dia") {
+			setSelectedDate((prev) => addDays(prev, 1));
+			return;
+		}
+
+		if (viewMode === "mes") {
+			setSelectedDate((prev) => addMonths(prev, 1));
+			return;
+		}
+
+		setSelectedDate((prev) => addDays(prev, 7));
+	};
 	const goToToday = () => {
 		setSelectedDate(new Date());
-		setViewStartDate(new Date());
+		setViewStartDate(startOfWeek(new Date(), { weekStartsOn: 1 }));
 	};
 
 	const renderBookingCard = (booking: AdminBooking, showDate = false) => {
@@ -581,7 +680,7 @@ export default function AgendaMaster() {
 
 		try {
 			// Usa a função SQL que contorna a constraint e garante consistência
-			const { error } = await supabase.rpc("fn_start_booking", {
+			const { error } = await supabaseLoose.rpc("fn_start_booking", {
 				p_booking_id: selectedBooking.bookingId,
 			});
 
@@ -618,7 +717,7 @@ export default function AgendaMaster() {
 
 		try {
 			// Usa a função SQL que contorna a constraint e garante consistência
-			const { error } = await supabase.rpc("fn_complete_booking", {
+			const { error } = await supabaseLoose.rpc("fn_complete_booking", {
 				p_booking_id: selectedBooking.bookingId,
 			});
 
@@ -708,6 +807,22 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 	const isToday = isSameDay(selectedDate, new Date());
 	const isTomorrow = isSameDay(selectedDate, new Date(Date.now() + 86400000));
 	const isPast = selectedDate < new Date() && !isToday;
+	const periodTitle =
+		viewMode === "mes" ?
+			format(viewStartDate, "MMMM 'de' yyyy", { locale: ptBR })
+		: viewMode === "semana" ?
+			`${format(weekDays[0], "dd MMM", { locale: ptBR })} - ${format(
+				weekDays[6],
+				"dd MMM yyyy",
+				{ locale: ptBR },
+			)}`
+		:	format(
+				selectedDate,
+				selectedDate.getFullYear() === new Date().getFullYear() ?
+					"EEEE, dd 'de' MMMM"
+				:	"EEEE, dd 'de' MMMM 'de' yyyy",
+				{ locale: ptBR },
+			);
 
 	return (
 		<div className="space-y-4 md:space-y-6">
@@ -720,13 +835,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								Agenda de Jogos
 							</h1>
 							<p className="text-sm text-gray-300 mt-0.5">
-								{format(
-									selectedDate,
-									selectedDate.getFullYear() === new Date().getFullYear() ?
-										"EEEE, dd 'de' MMMM"
-									:	"EEEE, dd 'de' MMMM 'de' yyyy",
-									{ locale: ptBR },
-								)}
+								{periodTitle}
 								{isToday && (
 									<span className="ml-2 text-emerald-400 font-medium">
 										• Hoje
@@ -742,7 +851,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</div>
 					<div className="flex items-center gap-2 md:gap-3">
 						{/* View Toggle */}
-						<div className="hidden md:flex items-center gap-1 p-1 bg-white/5 rounded-xl border border-white/10">
+						<div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl border border-white/10">
 							<button
 								onClick={() => setViewMode("dia")}
 								className={cn(
@@ -762,6 +871,16 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									:	"text-gray-300 hover:text-white",
 								)}>
 								Semana
+							</button>
+							<button
+								onClick={() => setViewMode("mes")}
+								className={cn(
+									"px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
+									viewMode === "mes" ?
+										"bg-primary text-white shadow-sm"
+									:	"text-gray-300 hover:text-white",
+								)}>
+								Mês
 							</button>
 						</div>
 						<Button
@@ -792,46 +911,51 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						Hoje
 					</button>
 					<div className="flex items-center gap-2">
-						{[0, 1, 2, 3, 4, 5, 6].map((offset) => {
-							const date = addDays(viewStartDate, offset);
-							const isSelected = isSameDay(date, selectedDate);
-							const dayIsToday = isSameDay(date, new Date());
-							return (
-								<button
-									key={offset}
-									onClick={() => setSelectedDate(date)}
-									className={cn(
-										"group relative flex flex-col items-center justify-center w-14 h-[72px] rounded-2xl border transition-all flex-shrink-0 hover:scale-105 active:scale-95",
-										isSelected ?
-											"bg-primary/20 border-primary/50 text-white shadow-lg shadow-primary/20"
-										: dayIsToday ?
-											"bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10"
-										:	"bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5",
-									)}>
-									{/* Indicador de selecionado */}
-									{isSelected && (
-										<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
-									)}
-									{/* Indicador de hoje */}
-									{dayIsToday && !isSelected && (
-										<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
-									)}
-									<span className="text-[10px] uppercase font-medium opacity-50 group-hover:opacity-80 transition-opacity">
-										{format(date, "EEE", { locale: ptBR })}
-									</span>
-									<span className="text-xl font-bold leading-tight">
-										{format(date, "dd")}
-									</span>
-									<span
+						{viewMode === "mes" ?
+							<div className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-sm text-gray-300 min-w-[180px] text-center capitalize">
+								{format(viewStartDate, "MMMM yyyy", { locale: ptBR })}
+							</div>
+						:	[0, 1, 2, 3, 4, 5, 6].map((offset) => {
+								const date = addDays(viewStartDate, offset);
+								const isSelected = isSameDay(date, selectedDate);
+								const dayIsToday = isSameDay(date, new Date());
+								return (
+									<button
+										key={offset}
+										onClick={() => setSelectedDate(date)}
 										className={cn(
-											"text-[10px] uppercase font-medium leading-none mt-0.5",
-											isSelected ? "text-primary/80" : "text-gray-300",
+											"group relative flex flex-col items-center justify-center w-14 h-[72px] rounded-2xl border transition-all flex-shrink-0 hover:scale-105 active:scale-95",
+											isSelected ?
+												"bg-primary/20 border-primary/50 text-white shadow-lg shadow-primary/20"
+											: dayIsToday ?
+												"bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10"
+											:	"bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5",
 										)}>
-										{format(date, "MMM", { locale: ptBR })}
-									</span>
-								</button>
-							);
-						})}
+										{/* Indicador de selecionado */}
+										{isSelected && (
+											<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
+										)}
+										{/* Indicador de hoje */}
+										{dayIsToday && !isSelected && (
+											<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+										)}
+										<span className="text-[10px] uppercase font-medium opacity-50 group-hover:opacity-80 transition-opacity">
+											{format(date, "EEE", { locale: ptBR })}
+										</span>
+										<span className="text-xl font-bold leading-tight">
+											{format(date, "dd")}
+										</span>
+										<span
+											className={cn(
+												"text-[10px] uppercase font-medium leading-none mt-0.5",
+												isSelected ? "text-primary/80" : "text-gray-300",
+											)}>
+											{format(date, "MMM", { locale: ptBR })}
+										</span>
+									</button>
+								);
+							})
+						}
 					</div>
 					<button
 						onClick={goToNextWeek}
@@ -859,9 +983,8 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<div>
 								<p className="text-2xl font-semibold text-white">
 									{
-										selectedDateBookings.filter(
-											(b) => b.paymentStatus === "paid",
-										).length
+										periodBookings.filter((b) => b.paymentStatus === "paid")
+											.length
 									}
 								</p>
 								<p className="text-xs text-gray-300">Pagos</p>
@@ -874,7 +997,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							<div>
 								<p className="text-2xl font-semibold text-white">
 									{
-										selectedDateBookings.filter(
+										periodBookings.filter(
 											(b) =>
 												b.paymentStatus === "deposit" ||
 												b.paymentStatus === "pending",
@@ -890,141 +1013,272 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							</div>
 							<div>
 								<p className="text-2xl font-semibold text-white">
-									{selectedDateBookings.length}
+									{periodBookings.length}
 								</p>
 								<p className="text-xs text-gray-300">Total</p>
 							</div>
 						</div>
 					</div>
 
-					{/* Time Slot Grid */}
-					<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
-						<CardContent className="p-4 md:p-5">
-							{selectedDateBookings.length === 0 ?
-								<div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-									<div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-emerald-500/20 flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
-										<Calendar className="w-10 h-10 text-primary" />
-									</div>
-									<h3 className="text-xl font-semibold text-white mb-2">
-										{isPast ? "Nenhum jogo nesse dia" : "Agenda livre!"}
-									</h3>
-									<p className="text-sm text-gray-300 mb-6 max-w-sm">
-										{isPast ?
-											"Não houve reservas nessa data."
-										: isToday ?
-											"Nenhum jogo agendado para hoje. Que tal compartilhar seu link ou criar uma reserva?"
-										:	"Esse dia está disponível para novos jogos."}
-									</p>
-									{!isPast && (
-										<Button
-											onClick={() => setIsNewBookingOpen(true)}
-											className="gap-2 bg-primary text-white hover:bg-primary/90 font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105">
-											<Plus className="w-4 h-4" />
-											Agendar primeiro jogo
-										</Button>
+					{/* Agenda Content */}
+					{viewMode === "mes" ?
+						<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+							<CardContent className="p-4 md:p-5 space-y-4">
+								<div className="grid grid-cols-7 gap-2 text-center text-xs uppercase text-gray-400">
+									{["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"].map(
+										(label) => (
+											<div key={label} className="py-1">
+												{label}
+											</div>
+										),
 									)}
 								</div>
-							:	<div className="space-y-2">
-									{timeSlotGrid.map(({ time, booking }) => (
-										<div
-											key={time}
-											className={cn(
-												"relative group transition-all",
-												booking ? "" : "opacity-50 hover:opacity-100",
-											)}>
-											{booking ?
-												<button
-													onClick={() => handleViewDetails(booking)}
-													className="w-full flex items-center gap-4 p-3 md:p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 transition-all text-left group">
-													{/* Time */}
-													<div className="flex-shrink-0 w-16 md:w-20">
-														<p className="text-lg md:text-xl font-semibold text-white">
-															{booking.time}
+
+								<div className="grid grid-cols-7 gap-2">
+									{monthDays.map((day) => {
+										const dateKey = format(day, "yyyy-MM-dd");
+										const dayBookings = adminBookingsData.filter(
+											(booking) => booking.date === dateKey,
+										);
+										const inCurrentMonth = isSameMonth(day, viewStartDate);
+										const dayIsSelected = isSameDay(day, selectedDate);
+
+										return (
+											<button
+												key={dateKey}
+												onClick={() => {
+													setSelectedDate(day);
+													setViewMode("dia");
+												}}
+												className={cn(
+													"min-h-[88px] p-2 rounded-xl border text-left transition-all",
+													inCurrentMonth ?
+														"bg-white/[0.03] border-white/10 hover:bg-white/[0.07]"
+													:	"bg-white/[0.01] border-white/5 text-gray-500",
+													dayIsSelected && "border-primary/50 bg-primary/10",
+												)}>
+												<div className="flex items-center justify-between">
+													<span className="text-sm font-semibold">
+														{format(day, "dd")}
+													</span>
+													{dayBookings.length > 0 && (
+														<Badge className="bg-primary/15 text-primary border-primary/20 text-[10px] px-1.5 py-0.5">
+															{dayBookings.length}
+														</Badge>
+													)}
+												</div>
+												{dayBookings[0] && (
+													<p className="text-xs text-gray-300 mt-2 truncate">
+														{dayBookings[0].time} -{" "}
+														{dayBookings[0].customerName}
+													</p>
+												)}
+											</button>
+										);
+									})}
+								</div>
+							</CardContent>
+						</Card>
+					: viewMode === "semana" ?
+						<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+							{weekDays.map((day) => {
+								const dateKey = format(day, "yyyy-MM-dd");
+								const dayBookings = periodBookings
+									.filter((booking) => booking.date === dateKey)
+									.sort((a, b) => a.time.localeCompare(b.time));
+								const dayIsToday = isSameDay(day, new Date());
+
+								return (
+									<Card
+										key={dateKey}
+										className={cn(
+											"border rounded-2xl bg-surface-2/60 overflow-hidden",
+											dayIsToday ? "border-emerald-500/30" : "border-white/5",
+										)}>
+										<CardContent className="p-4 space-y-3">
+											<div className="flex items-center justify-between">
+												<div>
+													<p className="text-xs uppercase text-gray-300">
+														{format(day, "EEE", { locale: ptBR })}
+													</p>
+													<p className="text-xl font-semibold text-white">
+														{format(day, "dd")}
+													</p>
+												</div>
+												<Badge className="bg-white/5 text-gray-300 border-white/10">
+													{dayBookings.length} jogo(s)
+												</Badge>
+											</div>
+
+											{dayBookings.length === 0 ?
+												<p className="text-sm text-gray-400">Sem jogos</p>
+											:	<div className="space-y-2">
+													{dayBookings.slice(0, 4).map((booking) => (
+														<button
+															key={booking.id}
+															onClick={() => handleViewDetails(booking)}
+															className="w-full text-left p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 transition-colors">
+															<p className="text-sm text-white font-medium truncate">
+																{booking.time} - {booking.customerName}
+															</p>
+															<p className="text-xs text-gray-300 truncate">
+																{booking.field}
+															</p>
+														</button>
+													))}
+													{dayBookings.length > 4 && (
+														<p className="text-xs text-gray-400">
+															+{dayBookings.length - 4} jogo(s)
 														</p>
-														{booking.endTime && (
-															<p className="text-xs text-gray-300">
-																até {format(booking.endTime, "HH:mm")}
-															</p>
-														)}
-													</div>
+													)}
+												</div>
+											}
 
-													{/* Status Indicator */}
-													<div
-														className={cn(
-															"w-1.5 h-12 rounded-full flex-shrink-0",
-															booking.paymentStatus === "paid" ?
-																"bg-emerald-500"
-															: booking.paymentStatus === "deposit" ?
-																"bg-amber-500"
-															:	"bg-gray-500",
-														)}
-													/>
-
-													{/* Content */}
-													<div className="flex-1 min-w-0">
-														<div className="flex items-center gap-2 mb-1">
-															<p className="font-medium text-white truncate">
-																{booking.customerName}
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => {
+													setSelectedDate(day);
+													setViewMode("dia");
+												}}
+												className="w-full border-white/10 text-gray-300 hover:text-white hover:bg-white/10">
+												Ver dia
+											</Button>
+										</CardContent>
+									</Card>
+								);
+							})}
+						</div>
+					:	<Card className="border border-white/5 rounded-2xl bg-surface-2/60 overflow-hidden">
+							<CardContent className="p-4 md:p-5">
+								{selectedDateBookings.length === 0 ?
+									<div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+										<div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-emerald-500/20 flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
+											<Calendar className="w-10 h-10 text-primary" />
+										</div>
+										<h3 className="text-xl font-semibold text-white mb-2">
+											{isPast ? "Nenhum jogo nesse dia" : "Agenda livre!"}
+										</h3>
+										<p className="text-sm text-gray-300 mb-6 max-w-sm">
+											{isPast ?
+												"Não houve reservas nessa data."
+											: isToday ?
+												"Nenhum jogo agendado para hoje. Que tal compartilhar seu link ou criar uma reserva?"
+											:	"Esse dia está disponível para novos jogos."}
+										</p>
+										{!isPast && (
+											<Button
+												onClick={() => setIsNewBookingOpen(true)}
+												className="gap-2 bg-primary text-white hover:bg-primary/90 font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105">
+												<Plus className="w-4 h-4" />
+												Agendar primeiro jogo
+											</Button>
+										)}
+									</div>
+								:	<div className="space-y-2">
+										{timeSlotGrid.map(({ time, booking }) => (
+											<div
+												key={time}
+												className={cn(
+													"relative group transition-all",
+													booking ? "" : "opacity-50 hover:opacity-100",
+												)}>
+												{booking ?
+													<button
+														onClick={() => handleViewDetails(booking)}
+														className="w-full flex items-center gap-4 p-3 md:p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 transition-all text-left group">
+														{/* Time */}
+														<div className="flex-shrink-0 w-16 md:w-20">
+															<p className="text-lg md:text-xl font-semibold text-white">
+																{booking.time}
 															</p>
-															{booking.startedAt && !booking.completedAt && (
-																<Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px] px-1.5 py-0">
-																	EM JOGO
-																</Badge>
+															{booking.endTime && (
+																<p className="text-xs text-gray-300">
+																	até {format(booking.endTime, "HH:mm")}
+																</p>
 															)}
 														</div>
-														<div className="flex items-center gap-3 text-sm text-gray-300">
-															<span className="truncate">{booking.field}</span>
-															<span className="text-gray-400">•</span>
-															<span>R$ {booking.totalAmount.toFixed(0)}</span>
-														</div>
-													</div>
 
-													{/* Payment Badge */}
-													<div className="flex-shrink-0 hidden md:block">
-														<Badge
-															variant="outline"
+														{/* Status Indicator */}
+														<div
 															className={cn(
-																"text-xs font-medium border-0",
+																"w-1.5 h-12 rounded-full flex-shrink-0",
 																booking.paymentStatus === "paid" ?
-																	"bg-emerald-500/10 text-emerald-400"
+																	"bg-emerald-500"
 																: booking.paymentStatus === "deposit" ?
-																	"bg-amber-500/10 text-amber-400"
-																:	"bg-gray-500/10 text-gray-300",
-															)}>
-															{booking.paymentStatus === "paid" ?
-																"Pago"
-															: booking.paymentStatus === "deposit" ?
-																`Sinal ${booking.depositPercent || 0}%`
-															:	"Pendente"}
-														</Badge>
-													</div>
+																	"bg-amber-500"
+																:	"bg-gray-500",
+															)}
+														/>
 
-													{/* Arrow */}
-													<ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-300 transition-colors flex-shrink-0" />
-												</button>
-											:	<button
-													onClick={() => setIsNewBookingOpen(true)}
-													className="w-full flex items-center gap-4 p-3 rounded-xl border border-dashed border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all text-left group">
-													<div className="flex-shrink-0 w-16 md:w-20">
-														<p className="text-base font-medium text-gray-300 group-hover:text-gray-300">
-															{time}
-														</p>
-													</div>
-													<div className="w-1.5 h-8 rounded-full bg-white/5 flex-shrink-0" />
-													<div className="flex-1 min-w-0">
-														<p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-															Horário disponível
-														</p>
-													</div>
-													<Plus className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
-												</button>
-											}
-										</div>
-									))}
-								</div>
-							}
-						</CardContent>
-					</Card>
+														{/* Content */}
+														<div className="flex-1 min-w-0">
+															<div className="flex items-center gap-2 mb-1">
+																<p className="font-medium text-white truncate">
+																	{booking.customerName}
+																</p>
+																{booking.startedAt && !booking.completedAt && (
+																	<Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px] px-1.5 py-0">
+																		EM JOGO
+																	</Badge>
+																)}
+															</div>
+															<div className="flex items-center gap-3 text-sm text-gray-300">
+																<span className="truncate">
+																	{booking.field}
+																</span>
+																<span className="text-gray-400">•</span>
+																<span>R$ {booking.totalAmount.toFixed(0)}</span>
+															</div>
+														</div>
+
+														{/* Payment Badge */}
+														<div className="flex-shrink-0 hidden md:block">
+															<Badge
+																variant="outline"
+																className={cn(
+																	"text-xs font-medium border-0",
+																	booking.paymentStatus === "paid" ?
+																		"bg-emerald-500/10 text-emerald-400"
+																	: booking.paymentStatus === "deposit" ?
+																		"bg-amber-500/10 text-amber-400"
+																	:	"bg-gray-500/10 text-gray-300",
+																)}>
+																{booking.paymentStatus === "paid" ?
+																	"Pago"
+																: booking.paymentStatus === "deposit" ?
+																	`Sinal ${booking.depositPercent || 0}%`
+																:	"Pendente"}
+															</Badge>
+														</div>
+
+														{/* Arrow */}
+														<ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-300 transition-colors flex-shrink-0" />
+													</button>
+												:	<button
+														onClick={() => setIsNewBookingOpen(true)}
+														className="w-full flex items-center gap-4 p-3 rounded-xl border border-dashed border-white/10 hover:border-primary/30 hover:bg-primary/5 transition-all text-left group">
+														<div className="flex-shrink-0 w-16 md:w-20">
+															<p className="text-base font-medium text-gray-300 group-hover:text-gray-300">
+																{time}
+															</p>
+														</div>
+														<div className="w-1.5 h-8 rounded-full bg-white/5 flex-shrink-0" />
+														<div className="flex-1 min-w-0">
+															<p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+																Horário disponível
+															</p>
+														</div>
+														<Plus className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
+													</button>
+												}
+											</div>
+										))}
+									</div>
+								}
+							</CardContent>
+						</Card>
+					}
 				</div>
 			}
 
