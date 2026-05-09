@@ -11,12 +11,6 @@ Regra deste arquivo:
 
 ## Fase 1 - Prioridade imediata (Ordem 1 a 4)
 
-- [ ] [#1] Visualizacao de agenda por dia / semana / mes
-  - Modulo: Agenda / Visualizacao
-  - Dificuldade: Facil
-  - Situacao atual: Parcialmente implementado
-  - Link Notion: https://www.notion.so/3362113a244881908cbcdc1e85dc1413
-
 - [ ] [#2] Check-in do jogador na chegada
   - Modulo: Check-in / Operacao
   - Dificuldade: Medio
