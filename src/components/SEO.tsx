@@ -17,7 +17,7 @@ interface SEOProps {
 
 export function SEO({
 	title = "ArenaSys - Sistema de Gestão e Agendamento de Quadras Esportivas",
-	description = "Sistema completo de gestão e agendamento para quadras esportivas. Automatize reservas, receba pagamentos via PIX, gerencie horários e clientes. Teste grátis por 7 dias. A partir de R$ 97/mês.",
+	description = "Agenda online simples para quadras esportivas. Saia do WhatsApp, envie um link de reserva e organize horários em minutos. Teste grátis por 7 dias.",
 	keywords = "sistema gestão quadras, agendamento quadras esportivas, software arena, gestão reservas esportivas, sistema agendamento online, software para quadras, gestão de quadra society, sistema booking esportivo, SaaS quadras, agendamento automático quadras",
 	ogImage = "https://arenasys.com.br/og-image.jpg",
 	canonical,

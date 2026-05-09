@@ -1099,7 +1099,7 @@ export default function LandingPage() {
 			const row = (Array.isArray(data) ? data[0] : data) as
 				| { cap?: number; sold?: number; remaining?: number }
 				| undefined;
-			const cap = Number(row?.cap ?? 100);
+			const cap = Number(row?.cap ?? 20);
 			const sold = Number(row?.sold ?? 0);
 			const remaining = Number(row?.remaining ?? Math.max(0, cap - sold));
 			setFoundersProgress({ cap, sold, remaining });
@@ -1113,7 +1113,7 @@ export default function LandingPage() {
 		<>
 			<SEO
 				title="Sistema de gestão e agendamento de quadras esportivas | ArenaSys"
-				description="Evite conflitos de horários, perca menos dinheiro e organize sua arena em um só lugar. Software para quadras esportivas, controle de horários e sistema para aluguel de quadras. Teste grátis 7 dias."
+				description="Agenda online simples para quadras esportivas. Saia do WhatsApp, envie um link de reserva e organize horários em minutos. Founders por R$ 49/mês para as primeiras arenas. Teste grátis 7 dias."
 				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
@@ -1610,17 +1610,18 @@ export default function LandingPage() {
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
 								<div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-blue-600" />
-									Agenda online para quadras esportivas
+									Founders: primeiras arenas por R$ 49/mês
 								</div>
 							</div>
 
 							<div className="space-y-5">
 								<h1 className="text-[2.85rem] font-black leading-[0.96] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
-									Organize sua arena sem depender do WhatsApp.
+									Saia do WhatsApp sem pagar caro por um sistema complexo.
 								</h1>
 								<p className="mx-auto max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl lg:mx-0">
-									O ArenaSys mostra horários livres, recebe reservas pelo link e
-									dá ao gestor uma visão clara de agenda, receita e clientes.
+									O ArenaSys é uma agenda online simples para quadras. Você
+									cadastra horários, envia um link de reserva e acompanha agenda,
+									receita e clientes em um painel direto.
 								</p>
 							</div>
 
@@ -1629,7 +1630,7 @@ export default function LandingPage() {
 									onClick={startSignup}
 									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-blue-600 px-7 text-base font-bold text-white shadow-[0_18px_38px_-20px_rgba(37,99,235,0.95)] transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] sm:w-auto focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
 									aria-label="Testar grátis agora - começar teste de 7 dias">
-									Testar grátis agora
+									Entrar como Founder
 									<ArrowRight className="h-5 w-5" />
 								</button>
 								<button
@@ -1643,8 +1644,8 @@ export default function LandingPage() {
 							<div className="grid grid-cols-3 gap-3 pt-1 text-left">
 								{[
 									["7 dias", "grátis"],
-									["0", "cartão"],
-									["24h", "reservas online"],
+									["R$ 49", "founders"],
+									["15 min", "para começar"],
 								].map(([value, label]) => (
 									<div
 										key={label}
@@ -1769,11 +1770,11 @@ export default function LandingPage() {
 					<div className="max-w-4xl mx-auto relative z-10">
 						<ScrollReveal className="text-center mb-16">
 							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
-								Custa menos que 1 hora da sua quadra
+								Oferta simples para conquistar as primeiras arenas
 							</h2>
 							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
-								Com apenas uma reserva no mês, o sistema já se paga. O resto é
-								lucro.
+								Entre como Founder, use tudo por um preço menor e ajude a moldar
+								o ArenaSys com suporte direto.
 							</p>
 						</ScrollReveal>
 
@@ -1781,15 +1782,19 @@ export default function LandingPage() {
 							<div className="grid sm:grid-cols-2 gap-6 mb-10">
 								<div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center">
 									<p className="text-gray-300 text-sm uppercase tracking-wider mb-3">
-										1 hora de aluguel
+										Preço normal
 									</p>
-									<p className="text-4xl font-black text-white">~R$ 200</p>
+									<p className="text-4xl font-black text-white">R$ 97</p>
+									<p className="mt-2 text-sm text-gray-300">plano Pro mensal</p>
 								</div>
 								<div className="p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-center animate-border-glow">
 									<p className="text-emerald-400 text-sm uppercase tracking-wider mb-3">
-										ArenaSys / mês
+										Founders
 									</p>
-									<p className="text-4xl font-black text-emerald-400">R$ 97</p>
+									<p className="text-4xl font-black text-emerald-400">R$ 49</p>
+									<p className="mt-2 text-sm text-gray-300">
+										para as primeiras 20 arenas
+									</p>
 								</div>
 							</div>
 						</ScrollReveal>
@@ -1798,40 +1803,33 @@ export default function LandingPage() {
 							<TiltCard className="relative rounded-3xl p-10 pt-14 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
 								{foundersProgress && foundersProgress.remaining > 0 && (
 									<div className="absolute -top-4 md:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs md:text-sm font-bold px-4 md:px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
-										🎉 FOUNDERS: Preço travado pra sempre
+										FOUNDERS: primeiras {foundersProgress.cap} arenas
 									</div>
 								)}
 
 								<div className="text-center mb-8">
-									{/* Toggle Mensal/Anual visual */}
-									<div className="flex items-center justify-center gap-3 mb-6">
-										<span className="text-gray-300 text-sm">Mensal</span>
-										<div className="relative w-14 h-7 bg-emerald-500/20 rounded-full border border-emerald-500/30">
-											<div className="absolute right-1 top-1 w-5 h-5 bg-emerald-500 rounded-full shadow-lg" />
-										</div>
-										<span className="text-emerald-400 text-sm font-bold">
-											Anual
-										</span>
+									<div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-400 mb-6">
+										7 dias grátis • sem cartão • suporte direto
 									</div>
 
 									{foundersProgress && foundersProgress.remaining > 0 ?
 										<>
-											{/* Preço Founders Anual */}
+											{/* Preço Founders */}
 											<div className="flex items-baseline justify-center gap-2 mb-3">
 												<span className="text-2xl text-gray-300 line-through">
 													R$ 97
 												</span>
 												<span className="text-6xl font-black text-emerald-400">
-													R$ 67
+													R$ 49
 												</span>
 												<span className="text-gray-300 text-xl">/mês</span>
 											</div>
 											<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3">
 												<span className="text-emerald-400 text-sm font-bold">
-													30% OFF
+													Oferta de validação
 												</span>
 												<span className="text-gray-300 text-sm">
-													• Plano anual • Preço fixo pra sempre
+													• preço travado por 12 meses
 												</span>
 											</div>
 											<p className="text-gray-300 text-sm">
@@ -1862,18 +1860,18 @@ export default function LandingPage() {
 									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
 										<div className="text-center">
 											<p className="text-gray-300 text-xs uppercase tracking-wider mb-1">
-												Mensal
+												Plano normal
 											</p>
 											<p className="text-white font-bold">R$ 97/mês</p>
-											<p className="text-gray-400 text-xs">= R$ 1.164/ano</p>
+											<p className="text-gray-400 text-xs">para novas arenas</p>
 										</div>
 										<div className="text-center border-l border-white/10">
 											<p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">
-												Anual Founders
+												Founders
 											</p>
-											<p className="text-emerald-400 font-bold">R$ 67/mês</p>
+											<p className="text-emerald-400 font-bold">R$ 49/mês</p>
 											<p className="text-emerald-400/60 text-xs">
-												= R$ 804/ano (economia de R$ 360)
+												por 12 meses para as primeiras arenas
 											</p>
 										</div>
 									</div>
@@ -1882,10 +1880,10 @@ export default function LandingPage() {
 								<ul className="space-y-4 mb-8">
 									{[
 										"Agenda organizada — acabou conflito de horário",
-										"Cliente reserva pelo link, 24h por dia",
+										"Cliente reserva pelo link, sem instalar app",
 										"Relatório financeiro — veja quanto faturou",
 										"Mensalistas controlados",
-										"Suporte no WhatsApp — gente de verdade",
+										"Setup assistido e suporte direto no WhatsApp",
 									].map((item, i) => (
 										<li
 											key={i}
@@ -1901,8 +1899,8 @@ export default function LandingPage() {
 								<button
 									onClick={() => navigate("/login?mode=signup")}
 									className="relative overflow-hidden w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] btn-shine focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-									aria-label="Começar teste grátis de 7 dias - plano Founders">
-									Começar teste grátis
+									aria-label="Entrar como Founder - começar teste grátis de 7 dias">
+									Entrar como Founder
 								</button>
 
 								{foundersProgress && (
@@ -1962,18 +1960,19 @@ export default function LandingPage() {
 					<ScrollReveal>
 						<div className="max-w-3xl mx-auto text-center relative z-10">
 							<h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
-								Sua quadra merece uma agenda
+								Valide o ArenaSys na sua arena
 								<br />
-								<span className="text-emerald-400">que funcione.</span>
+								<span className="text-emerald-400">por R$ 49/mês.</span>
 							</h2>
 							<p className="text-gray-300 text-xl mb-10 max-w-xl mx-auto">
-								7 dias grátis. Sem cartão. Cancele quando quiser.
+								Oferta Founders limitada às primeiras arenas. 7 dias grátis, sem
+								cartão e com suporte direto.
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
 								className="relative overflow-hidden h-16 px-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_60px_-10px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.8)] active:scale-95 animate-border-glow btn-shine inline-flex items-center gap-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-								aria-label="Organizar minha arena agora - começar teste grátis">
-								Organizar minha arena agora <ArrowRight className="w-5 h-5" />
+								aria-label="Entrar como Founder - começar teste grátis">
+								Entrar como Founder <ArrowRight className="w-5 h-5" />
 							</button>
 						</div>
 					</ScrollReveal>
