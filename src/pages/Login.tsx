@@ -597,13 +597,13 @@ const Login = () => {
 	};
 
 	return (
-		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
+		<div className="login-light min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-blue-200">
 			{/* 1. FUNDO IMERSIVO - FIXED para evitar espaço extra no mobile */}
 			<div className="fixed inset-0 z-0">
 				{/* Imagem de fundo de alta qualidade (Esportes) */}
-				<div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center" />
+				<div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-80" />
 				{/* Gradiente pesado para escurecer e focar no conteúdo */}
-				<div className="absolute inset-0 bg-gradient-to-r from-[#02040a] via-[#02040a]/95 to-[#02040a]/40" />
+				<div className="absolute inset-0 bg-gradient-to-r from-[#02040a] via-[#02040a]/92 to-[#02040a]/55" />
 				{/* Efeito de granulação (Noise) para textura premium */}
 				<div
 					className="absolute inset-0 opacity-[0.03]"
@@ -617,30 +617,30 @@ const Login = () => {
 			<div className="relative z-10 w-full max-w-md sm:max-w-xl lg:max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between px-1 sm:px-4 py-3 sm:py-8 lg:py-0 h-full min-h-[100dvh] gap-4 sm:gap-8 lg:gap-10">
 				{/* ESQUERDA: Copy de Vendas Agressiva */}
 				<div className="w-full lg:w-1/2 space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-left-10 duration-700">
-					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-bold tracking-wide uppercase shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-sm font-bold tracking-wide uppercase">
 						<Zap className="w-4 h-4 fill-emerald-400" />
 						Sistema de Alta Performance
 					</div>
 
 					<h1 className="text-2xl sm:text-4xl lg:text-6xl font-black tracking-tight leading-[1.1]">
 						Transforme horários vazios em{" "}
-						<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+						<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-300">
 							lucro automático.
 						</span>
 					</h1>
 
-					<p className="text-sm sm:text-base text-gray-300 max-w-[16rem] sm:max-w-md leading-relaxed">
+					<p className="text-sm sm:text-base text-slate-300 max-w-[16rem] sm:max-w-md leading-relaxed">
 						Pare de perder dinheiro com horários vagos e gestão manual. O{" "}
 						<strong>ArenaSys</strong> é o cérebro que automatiza suas reservas,
 						pagamentos e clientes enquanto você dorme.
 					</p>
 
 					<div className="flex flex-col sm:flex-row gap-1 sm:gap-2 pt-2">
-						<div className="flex items-center gap-3 text-gray-300">
+						<div className="flex items-center gap-3 text-slate-300">
 							<CheckCircle2 className="w-5 h-5 text-emerald-500" />
 							<span>7 dias grátis para testar</span>
 						</div>
-						<div className="flex items-center gap-3 text-gray-300">
+						<div className="flex items-center gap-3 text-slate-300">
 							<CheckCircle2 className="w-5 h-5 text-emerald-500" />
 							<span>Setup em 3 minutos</span>
 						</div>
@@ -648,11 +648,11 @@ const Login = () => {
 
 					{/* Programa Founders - Prova Social Autêntica */}
 					<div className="border-t border-white/10 pt-4 sm:pt-6 mt-4 sm:mt-6">
-						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold tracking-wide uppercase">
-							<Zap className="w-3 h-3 fill-emerald-400" />
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200 text-xs font-bold tracking-wide uppercase">
+							<Zap className="w-3 h-3 fill-amber-200" />
 							Programa Founders - Vagas Limitadas
 						</div>
-						<p className="text-gray-300 text-sm mt-3 max-w-md">
+						<p className="text-slate-300 text-sm mt-3 max-w-md">
 							Seja um dos primeiros arenas a transformar sua gestão. Condições
 							especiais para quem se juntar agora.
 						</p>
@@ -662,10 +662,10 @@ const Login = () => {
 				{/* DIREITA: O Card de Login "HUD" */}
 				<div className="w-full max-w-[18rem] sm:max-w-xs lg:w-[400px] animate-in fade-in slide-in-from-right-10 duration-700 delay-200">
 					<div className="relative group">
-						{/* Glow Effect atrás do card */}
-						<div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+						{/* Contorno sutil para separar o formulario do fundo */}
+						<div className="absolute -inset-px bg-gradient-to-r from-emerald-500/35 to-cyan-500/25 rounded-2xl blur opacity-10 transition duration-700"></div>
 
-						<div className="relative bg-[#0a0c10]/90 backdrop-blur-2xl border border-white/10 p-8 sm:p-10 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/40 hover:shadow-emerald-500/5 transition-shadow duration-300">
+						<div className="relative bg-[#0b1118]/95 backdrop-blur-xl border border-white/[0.12] p-7 sm:p-9 rounded-2xl shadow-xl shadow-black/35 transition-shadow duration-300">
 							{/* TELA DE CONFIRMAÇÃO DE EMAIL */}
 							{mode === "email-confirmation" ?
 								<div className="space-y-4 sm:space-y-6 text-center animate-in fade-in slide-in-from-bottom-4">
@@ -692,7 +692,7 @@ const Login = () => {
 									)}
 
 									{error && (
-										<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+										<div className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
 											{error}
 										</div>
 									)}
@@ -803,7 +803,7 @@ const Login = () => {
 										</div>
 									)}
 									{error && (
-										<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+										<div className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
 											{error}
 										</div>
 									)}
@@ -822,7 +822,7 @@ const Login = () => {
 													onChange={(e) => setEmail(e.target.value)}
 													autoComplete="email"
 													required
-													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
+													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
 													placeholder="gestor@arenasys.com"
 												/>
 											</div>
@@ -830,7 +830,7 @@ const Login = () => {
 										<Button
 											type="submit"
 											disabled={isLoading || recoveryCooldownSeconds > 0}
-											className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold">
+											className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
 											{isLoading ?
 												"Enviando..."
 											: recoveryCooldownSeconds > 0 ?
@@ -869,7 +869,7 @@ const Login = () => {
 										</p>
 									</div>
 									{error && (
-										<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+										<div className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
 											{error}
 										</div>
 									)}
@@ -889,7 +889,7 @@ const Login = () => {
 													autoComplete="new-password"
 													minLength={6}
 													required
-													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
+													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
 													placeholder="Mínimo 6 caracteres"
 												/>
 											</div>
@@ -909,7 +909,7 @@ const Login = () => {
 													autoComplete="new-password"
 													minLength={6}
 													required
-													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
+													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
 													placeholder="Repita a senha"
 												/>
 											</div>
@@ -917,7 +917,7 @@ const Login = () => {
 										<Button
 											type="submit"
 											disabled={isLoading}
-											className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold">
+											className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
 											{isLoading ? "Salvando..." : "Salvar nova senha"}
 										</Button>
 									</form>
@@ -948,7 +948,7 @@ const Login = () => {
 														value={arenaName}
 														onChange={(e) => setArenaName(e.target.value)}
 														autoComplete="organization"
-														className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
+														className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
 														placeholder="Ex: ArenaSys Tatuí"
 													/>
 												</div>
@@ -965,8 +965,9 @@ const Login = () => {
 													type="email"
 													value={email}
 													onChange={(e) => setEmail(e.target.value)}
+													data-testid="login-email"
 													autoComplete="email"
-													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
+													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
 													placeholder="gestor@arenasys.com"
 												/>
 											</div>
@@ -982,12 +983,13 @@ const Login = () => {
 													type="password"
 													value={password}
 													onChange={(e) => setPassword(e.target.value)}
+													data-testid="login-password"
 													autoComplete={
 														mode === "signin" ? "current-password" : (
 															"new-password"
 														)
 													}
-													className="pl-10 h-12 rounded-xl bg-white/5 border-white/10 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
+													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
 													placeholder="••••••••"
 												/>
 											</div>
@@ -1025,7 +1027,9 @@ const Login = () => {
 										)}
 
 										{error && (
-											<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+											<div
+												role="alert"
+												className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
 												{error}
 											</div>
 										)}
@@ -1033,7 +1037,8 @@ const Login = () => {
 										<Button
 											type="submit"
 											disabled={isLoading}
-											className="w-full h-11 sm:h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold text-sm sm:text-base shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-200 transform hover:-translate-y-0.5 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]">
+											data-testid="login-submit"
+											className="w-full h-11 sm:h-12 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm sm:text-base shadow-sm transition-colors duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]">
 											{isLoading ?
 												"Conectando..."
 											:	<span className="flex items-center gap-2">

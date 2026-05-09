@@ -10,13 +10,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
 	Zap,
-	ShieldCheck,
 	Check,
 	ArrowRight,
 	Sparkles,
 	MessageSquare,
-	BookOpen,
 	CreditCard,
+	CalendarDays,
+	BarChart3,
+	Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -292,69 +293,17 @@ function RotatingHeroText() {
 	const { text } = useTypewriter(words, 80, 40, 1800);
 
 	return (
-		<h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.0] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
+		<h1 className="text-[2.75rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.0] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
 			Sua arena cheia.
 			<br />
 			<span className="text-emerald-400">
 				Sem{" "}
-				<span className="inline-block min-w-[200px] md:min-w-[320px] lg:min-w-[400px] text-left">
+				<span className="block sm:inline-block min-w-0 sm:min-w-[220px] md:min-w-[320px] lg:min-w-[400px] text-center sm:text-left">
 					{text}
 					<span className="inline-block w-[3px] md:w-[4px] h-[0.9em] bg-emerald-400 ml-1 animate-blink align-middle" />
 				</span>
 			</span>
 		</h1>
-	);
-}
-
-// --- COMPONENTE: SOCIAL PROOF NUMBERS ---
-function SocialProofBar() {
-	return (
-		<div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 py-8 px-4">
-			{/* Trust Signals Reais */}
-			<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-					<Check className="w-3 h-3 text-emerald-500" />
-				</div>
-				<span className="text-sm text-gray-300">7 dias grátis</span>
-			</div>
-
-			<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-					<Check className="w-3 h-3 text-emerald-500" />
-				</div>
-				<span className="text-sm text-gray-300">Sem cartão de crédito</span>
-			</div>
-
-			<div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-				<div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-					<Check className="w-3 h-3 text-emerald-500" />
-				</div>
-				<span className="text-sm text-gray-300">Suporte via WhatsApp</span>
-			</div>
-
-			{/* Separador */}
-			<div className="w-full md:w-auto flex justify-center">
-				<div className="w-16 h-px md:w-px md:h-8 bg-white/10" />
-			</div>
-
-			{/* Estatísticas do Problema (reais do mercado) */}
-			<div className="flex flex-wrap items-center justify-center gap-6 text-center">
-				<div className="px-3">
-					<p className="text-2xl md:text-3xl font-black text-red-400/80">78%</p>
-					<p className="text-xs text-gray-300 max-w-[100px]">
-						das arenas perdem reservas por conflitos
-					</p>
-				</div>
-				<div className="px-3">
-					<p className="text-2xl md:text-3xl font-black text-red-400/80">
-						R$ 4.8k
-					</p>
-					<p className="text-xs text-gray-300 max-w-[100px]">
-						perdidos/mês em média com no-shows
-					</p>
-				</div>
-			</div>
-		</div>
 	);
 }
 
@@ -446,7 +395,7 @@ function useScrollAnimation() {
 // --- MOCKUPS VISUAIS ---
 function IPhoneMockup({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="relative transform hover:scale-[1.02] transition-transform duration-500">
+		<div className="landing-device relative transform hover:scale-[1.02] transition-transform duration-500">
 			<div className="relative w-[180px] md:w-[220px] h-[380px] md:h-[460px] bg-[#121212] rounded-[30px] md:rounded-[45px] p-[8px] md:p-[10px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#333] ring-1 ring-white/10">
 				<div className="absolute top-[10px] md:top-[15px] left-1/2 -translate-x-1/2 w-[60px] md:w-[80px] h-[18px] md:h-[24px] bg-black rounded-full z-20" />
 				<div className="relative w-full h-full bg-black rounded-[24px] md:rounded-[36px] overflow-hidden border border-white/5">
@@ -465,7 +414,7 @@ function IPhoneMockup({ children }: { children: React.ReactNode }) {
 
 function MacBookMockup({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="relative transform hover:scale-[1.01] transition-transform duration-500">
+		<div className="landing-device relative transform hover:scale-[1.01] transition-transform duration-500">
 			<div className="relative w-[280px] md:w-[580px] bg-[#121212] rounded-t-xl p-1.5 border border-[#333] shadow-2xl">
 				<div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#0a0a0a] rounded-full" />
 				<div className="w-full h-[160px] md:h-[360px] bg-black rounded-lg overflow-hidden border border-white/5 relative group">
@@ -893,6 +842,206 @@ function DashboardAppScreen() {
 	);
 }
 
+function HeroProductPreview() {
+	const daySlots = [
+		{ time: "07:00", court: "Campo menor", status: "Livre", tone: "blue" },
+		{ time: "08:00", court: "Campo maior", status: "Pago", tone: "green" },
+		{ time: "09:00", court: "Campo menor", status: "Sinal", tone: "amber" },
+		{ time: "10:00", court: "Campo maior", status: "Livre", tone: "blue" },
+	];
+
+	return (
+		<div className="relative mx-auto w-full max-w-[560px] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+			<div className="absolute -inset-6 rounded-[2rem] bg-blue-500/10 blur-3xl" />
+			<div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_28px_90px_-42px_rgba(15,23,42,0.55)]">
+				<div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-5 py-4">
+					<div>
+						<p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">
+							Painel ArenaSys
+						</p>
+						<h2 className="mt-1 text-lg font-black text-slate-950">
+							Visão de hoje
+						</h2>
+					</div>
+					<div className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+						Online
+					</div>
+				</div>
+
+				<div className="grid gap-4 p-5 sm:grid-cols-3">
+					{[
+						{ label: "Receita", value: "R$ 1.840", hint: "+18%" },
+						{ label: "Jogos", value: "14", hint: "4 livres" },
+						{ label: "Ocupação", value: "72%", hint: "boa demanda" },
+					].map((metric) => (
+						<div
+							key={metric.label}
+							className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+							<p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+								{metric.label}
+							</p>
+							<p className="mt-2 text-2xl font-black text-slate-950">
+								{metric.value}
+							</p>
+							<p className="mt-1 text-xs font-semibold text-blue-600">
+								{metric.hint}
+							</p>
+						</div>
+					))}
+				</div>
+
+				<div className="grid gap-4 px-5 pb-5 lg:grid-cols-[1.15fr_0.85fr]">
+					<div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+						<div className="mb-4 flex items-center justify-between">
+							<h3 className="text-sm font-black text-slate-950">
+								Agenda das quadras
+							</h3>
+							<span className="text-xs font-semibold text-slate-500">
+								Hoje
+							</span>
+						</div>
+						<div className="space-y-2">
+							{daySlots.map((slot) => (
+								<div
+									key={`${slot.time}-${slot.court}`}
+									className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
+									<span className="font-mono text-sm font-black text-slate-950">
+										{slot.time}
+									</span>
+									<span className="truncate text-sm font-semibold text-slate-700">
+										{slot.court}
+									</span>
+									<span
+										className={cn(
+											"rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wide",
+											slot.tone === "green" &&
+												"bg-emerald-50 text-emerald-700",
+											slot.tone === "amber" && "bg-amber-50 text-amber-700",
+											slot.tone === "blue" && "bg-blue-50 text-blue-700",
+										)}>
+										{slot.status}
+									</span>
+								</div>
+							))}
+						</div>
+					</div>
+
+					<div className="rounded-xl border border-blue-200 bg-blue-600 p-4 text-white">
+						<p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">
+							Link público
+						</p>
+						<p className="mt-3 text-2xl font-black leading-tight">
+							Cliente reserva sem chamar no WhatsApp
+						</p>
+						<div className="mt-5 rounded-lg bg-white/15 p-3 text-sm font-semibold">
+							/agendar/arena-society
+						</div>
+						<div className="mt-4 flex items-center gap-2 text-sm text-blue-50">
+							<Check className="h-4 w-4" />
+							Disponibilidade em tempo real
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function ProductSuiteSection({
+	onPrimaryAction,
+}: {
+	onPrimaryAction: () => void;
+}) {
+	const products = [
+		{
+			icon: CalendarDays,
+			title: "Agenda online",
+			desc: "Horários livres, reservas e bloqueios em uma visão simples para a equipe.",
+			action: "Organizar agenda",
+			tone: "blue",
+		},
+		{
+			icon: MessageSquare,
+			title: "Reserva por link",
+			desc: "O jogador escolhe a quadra, vê disponibilidade e envia a reserva sozinho.",
+			action: "Criar link público",
+			tone: "cyan",
+		},
+		{
+			icon: BarChart3,
+			title: "Painel financeiro",
+			desc: "Receita do dia, ocupação, jogos pagos e sinal pendente sem planilha.",
+			action: "Ver relatórios",
+			tone: "indigo",
+		},
+		{
+			icon: Users,
+			title: "Mensalistas",
+			desc: "Controle clientes fixos, horários recorrentes e pagamentos em aberto.",
+			action: "Gerenciar fixos",
+			tone: "amber",
+		},
+	];
+
+	const toneClasses = {
+		blue: "bg-blue-50 text-blue-700 border-blue-100",
+		cyan: "bg-cyan-50 text-cyan-700 border-cyan-100",
+		indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
+		amber: "bg-amber-50 text-amber-700 border-amber-100",
+	};
+
+	return (
+		<section className="relative px-4 py-20">
+			<div className="mx-auto max-w-6xl">
+				<div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+					<div>
+						<p className="text-sm font-black uppercase tracking-[0.22em] text-blue-600">
+							Soluções ArenaSys
+						</p>
+						<h2 className="mt-3 max-w-2xl text-3xl font-black tracking-tight text-slate-950 md:text-5xl">
+							Tudo que sua arena precisa para vender horários online.
+						</h2>
+					</div>
+					<button
+						onClick={onPrimaryAction}
+						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700">
+						Começar grátis
+						<ArrowRight className="h-4 w-4" />
+					</button>
+				</div>
+
+				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+					{products.map((product) => (
+						<article
+							key={product.title}
+							className="group flex min-h-[260px] flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
+							<div
+								className={cn(
+									"mb-5 flex h-12 w-12 items-center justify-center rounded-xl border",
+									toneClasses[product.tone as keyof typeof toneClasses],
+								)}>
+								<product.icon className="h-6 w-6" />
+							</div>
+							<h3 className="text-xl font-black text-slate-950">
+								{product.title}
+							</h3>
+							<p className="mt-3 flex-1 text-sm leading-6 text-slate-600">
+								{product.desc}
+							</p>
+							<button
+								onClick={onPrimaryAction}
+								className="mt-6 inline-flex items-center gap-2 text-sm font-black text-blue-600 transition-colors group-hover:text-blue-700">
+								{product.action}
+								<ArrowRight className="h-4 w-4" />
+							</button>
+						</article>
+					))}
+				</div>
+			</div>
+		</section>
+	);
+}
+
 // --- PÁGINA PRINCIPAL ---
 
 export default function LandingPage() {
@@ -906,6 +1055,7 @@ export default function LandingPage() {
 	} | null>(null);
 
 	const isVisible = (id: string) => visibleElements.has(id);
+	const startSignup = () => navigate("/login?mode=signup");
 
 	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
 	// Sem isto, o token fica na home e a tela de "Nova senha" nunca aparece.
@@ -971,7 +1121,7 @@ export default function LandingPage() {
 				role="main"
 				id="main-content"
 				data-seo-ready
-				className="relative min-h-dvh text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden scroll-smooth">
+				className="landing-light relative min-h-dvh text-slate-950 font-sans selection:bg-blue-200 overflow-x-hidden scroll-smooth">
 				{/* ═══════════════════════════════════════════════════════════════════
 				    🌌 COSMIC BACKGROUND — De cair o queixo
 				    ═══════════════════════════════════════════════════════════════════ */}
@@ -1439,8 +1589,8 @@ export default function LandingPage() {
 					</nav>
 				</header>
 
-				{/* --- HERO: Apple-style com texto rotativo --- */}
-				<section className="relative pt-32 pb-24 lg:pt-44 lg:pb-32 px-4 overflow-hidden flex flex-col items-center">
+				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
+				<section className="relative px-4 pb-20 pt-28 sm:pt-32 lg:pb-24 lg:pt-40 overflow-hidden">
 					{/* Floating sparkles */}
 					<div
 						className="absolute top-40 left-[15%] w-2 h-2 bg-emerald-500/40 rounded-full animate-float"
@@ -1455,65 +1605,77 @@ export default function LandingPage() {
 						style={{ animationDelay: "2s" }}
 					/>
 
-					<div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
-						{/* Badge */}
-						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-							<Sparkles className="w-4 h-4 text-emerald-400" />
-							<span className="text-sm text-gray-300">
-								Sistema #1 para arenas esportivas
-							</span>
+					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.92fr_1.08fr]">
+						<div className="space-y-7 text-center lg:text-left">
+							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+								<div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+									<Sparkles className="h-4 w-4 text-blue-600" />
+									Agenda online para quadras esportivas
+								</div>
+							</div>
+
+							<div className="space-y-5">
+								<h1 className="text-[2.85rem] font-black leading-[0.96] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
+									Organize sua arena sem depender do WhatsApp.
+								</h1>
+								<p className="mx-auto max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl lg:mx-0">
+									O ArenaSys mostra horários livres, recebe reservas pelo link e
+									dá ao gestor uma visão clara de agenda, receita e clientes.
+								</p>
+							</div>
+
+							<div className="flex flex-col items-center gap-4 pt-2 sm:flex-row lg:items-start">
+								<button
+									onClick={startSignup}
+									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-blue-600 px-7 text-base font-bold text-white shadow-[0_18px_38px_-20px_rgba(37,99,235,0.95)] transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] sm:w-auto focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+									aria-label="Testar grátis agora - começar teste de 7 dias">
+									Testar grátis agora
+									<ArrowRight className="h-5 w-5" />
+								</button>
+								<button
+									onClick={() => navigate("/login")}
+									className="flex h-14 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-7 text-base font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto"
+									aria-label="Entrar no ArenaSys">
+									Entrar
+								</button>
+							</div>
+
+							<div className="grid grid-cols-3 gap-3 pt-1 text-left">
+								{[
+									["7 dias", "grátis"],
+									["0", "cartão"],
+									["24h", "reservas online"],
+								].map(([value, label]) => (
+									<div
+										key={label}
+										className="rounded-xl border border-slate-200 bg-white/75 p-3 shadow-sm">
+										<p className="text-xl font-black text-slate-950">{value}</p>
+										<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+											{label}
+										</p>
+									</div>
+								))}
+							</div>
 						</div>
 
-						<RotatingHeroText />
-
-						<p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150 font-light">
-							O cliente reserva pelo link. Você confirma e cobra no balcão.
-							<br className="hidden md:block" />
-							<span className="text-white font-medium">
-								Acabou a bagunça no WhatsApp.
-							</span>
-						</p>
-
-						<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-							<button
-								onClick={() => navigate("/login?mode=signup")}
-								className="relative overflow-hidden h-16 px-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_60px_-10px_rgba(16,185,129,0.7)] active:scale-95 w-full sm:w-auto animate-border-glow btn-shine flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-								aria-label="Testar grátis agora - começar teste de 7 dias">
-								Testar grátis agora
-								<ArrowRight className="w-5 h-5" />
-							</button>
-						</div>
-
-						<div className="flex items-center justify-center gap-6 pt-2 animate-in fade-in duration-1000 delay-500">
-							<span className="flex items-center gap-2 text-sm text-gray-300">
-								<Check className="w-4 h-4 text-emerald-500/70" /> 7 dias grátis
-							</span>
-							<span className="flex items-center gap-2 text-sm text-gray-300">
-								<Check className="w-4 h-4 text-emerald-500/70" /> Sem cartão
-							</span>
-							<span className="flex items-center gap-2 text-sm text-gray-300">
-								<Check className="w-4 h-4 text-emerald-500/70" /> Cancele quando
-								quiser
-							</span>
-						</div>
-					</div>
-
-					{/* Social Proof Numbers */}
-					<div className="mt-16 border-t border-white/5 pt-8">
-						<SocialProofBar />
+						<HeroProductPreview />
 					</div>
 				</section>
 
 				{/* --- SEÇÃO PROBLEMA: com cards 3D tilt --- */}
-				<section className="relative py-28 px-4">
+				<section className="relative px-4 py-24">
 					<div className="max-w-5xl mx-auto">
-						<ScrollReveal className="text-center mb-16">
+						<ScrollReveal className="text-center mb-12">
 							<p className="text-red-400/80 text-sm font-bold uppercase tracking-widest mb-3">
 								Parece familiar?
 							</p>
 							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								O caos de todo dono de quadra
+								O problema aparece antes de parecer grande
 							</h2>
+							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-gray-300">
+								Quando a agenda fica espalhada, a equipe perde tempo, o cliente
+								espera resposta e os conflitos começam.
+							</p>
 						</ScrollReveal>
 
 						<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1521,17 +1683,17 @@ export default function LandingPage() {
 								{
 									icon: MessageSquare,
 									enemy: "WhatsApp",
-									pain: '"Tem horário amanhã às 19h?" — 47 mensagens por dia',
+									pain: "Perguntas repetidas sobre horário tomam o dia da equipe.",
 								},
 								{
-									icon: BookOpen,
-									enemy: "Caderno",
-									pain: '"Anota aí que eu vejo depois" — e some uma reserva',
+									icon: CalendarDays,
+									enemy: "Agenda manual",
+									pain: "Reservas soltas aumentam o risco de conflito e esquecimento.",
 								},
 								{
 									icon: CreditCard,
-									enemy: "Calote",
-									pain: '"Ele sempre paga" — mas não pagou e você ficou no prejuízo',
+									enemy: "No-show",
+									pain: "Sem controle simples, fica difícil saber o que entrou e o que ficou pendente.",
 								},
 							].map((item, i) => (
 								<ScrollReveal key={i} delay={i * 100}>
@@ -1552,87 +1714,10 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- SEÇÃO SOLUÇÃO: com parallax mockups --- */}
-				<section
-					id="solucao"
-					className="relative py-32 px-4 border-y border-white/5 bg-gradient-to-b from-[#050507] via-emerald-500/5 to-[#050507] overflow-hidden">
-					<div className="max-w-5xl mx-auto">
-						<ScrollReveal className="text-center mb-16">
-							<p className="text-emerald-400 text-sm font-bold uppercase tracking-widest mb-4">
-								A solução
-							</p>
-							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
-								Uma agenda que funciona sozinha
-							</h2>
-							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
-								Você para de apagar incêndio. O sistema organiza tudo.
-							</p>
-						</ScrollReveal>
-
-						<div className="grid sm:grid-cols-2 gap-4 mb-20">
-							{[
-								{
-									before: "WhatsApp o dia todo",
-									after: "Cliente reserva pelo link",
-								},
-								{
-									before: "Planilha ou na cabeça",
-									after: "Uma agenda centralizada",
-								},
-								{
-									before: "Não sabe quanto faturou",
-									after: "Relatório financeiro pronto",
-								},
-								{
-									before: "Conflito de horários",
-									after: "Impossível marcar 2 no mesmo slot",
-								},
-							].map((item, i) => (
-								<ScrollReveal key={i} delay={i * 75}>
-									<div className="p-6 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 flex items-center gap-4 transition-all duration-300 hover:bg-white/[0.06]">
-										<div className="flex-1">
-											<p className="text-red-400/70 text-sm line-through mb-2">
-												{item.before}
-											</p>
-											<p className="text-emerald-400 font-semibold text-lg">
-												{item.after}
-											</p>
-										</div>
-										<div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-											<Check className="w-5 h-5 text-emerald-500" />
-										</div>
-									</div>
-								</ScrollReveal>
-							))}
-						</div>
-
-						{/* Mockups com parallax */}
-						<ScrollReveal>
-							<div className="relative w-full max-w-4xl mx-auto">
-								<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] bg-emerald-500/15 rounded-full blur-[100px] animate-pulse-glow" />
-								<div className="relative flex flex-col items-center md:flex-row md:items-end md:justify-center gap-4 md:gap-0">
-									<div
-										className="relative z-10 shadow-2xl animate-float"
-										style={{ animationDelay: "0s" }}>
-										<MacBookMockup>
-											<DashboardAppScreen />
-										</MacBookMockup>
-									</div>
-									<div
-										className="relative z-20 transform scale-[0.7] md:scale-[0.8] md:ml-[-56px] lg:ml-[-72px] md:mb-6 animate-float"
-										style={{ animationDelay: "1s" }}>
-										<IPhoneMockup>
-											<CalendarAppScreen />
-										</IPhoneMockup>
-									</div>
-								</div>
-							</div>
-						</ScrollReveal>
-					</div>
-				</section>
+				<ProductSuiteSection onPrimaryAction={startSignup} />
 
 				{/* --- COMO FUNCIONA: 3 passos com reveal --- */}
-				<section className="relative py-32 px-4">
+				<section id="como-funciona" className="relative py-28 px-4">
 					<div className="max-w-5xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
 							<h2 className="text-3xl md:text-5xl font-black text-white mb-4">
@@ -1839,35 +1924,6 @@ export default function LandingPage() {
 							</TiltCard>
 						</ScrollReveal>
 					</div>
-				</section>
-
-				{/* --- SEÇÃO RISCO ZERO --- */}
-				<section className="relative py-24 px-4">
-					<ScrollReveal>
-						<div className="max-w-4xl mx-auto">
-							<div className="p-12 rounded-3xl bg-black/30 backdrop-blur-md border border-white/10 text-center">
-								<div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-									<ShieldCheck className="w-10 h-10 text-emerald-500" />
-								</div>
-								<h3 className="text-3xl md:text-4xl font-black text-white mb-6">
-									Risco zero pra você
-								</h3>
-								<div className="flex flex-wrap justify-center gap-4 text-gray-300">
-									<span className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-full text-base border border-white/10 hover:border-emerald-500/30 transition-colors">
-										<Check className="w-5 h-5 text-emerald-500" /> Sem cartão de
-										crédito
-									</span>
-									<span className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-full text-base border border-white/10 hover:border-emerald-500/30 transition-colors">
-										<Check className="w-5 h-5 text-emerald-500" /> Cancele
-										quando quiser
-									</span>
-									<span className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-full text-base border border-white/10 hover:border-emerald-500/30 transition-colors">
-										<Check className="w-5 h-5 text-emerald-500" /> 7 dias grátis
-									</span>
-								</div>
-							</div>
-						</div>
-					</ScrollReveal>
 				</section>
 
 				{/* --- FAQ --- */}

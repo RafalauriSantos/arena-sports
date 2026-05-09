@@ -1,11 +1,11 @@
--- Migration: Trial Duration Dinâmico (Teste A/B)
+-- Migration: Trial Duration Padronizado
 -- Data: 2026-01-19
--- Descrição: Atualiza função de criação de trial para suportar teste A/B (7d vs 21d)
+-- Descrição: Atualiza função de criação de trial para usar sempre 7 dias
 
--- Função para criar trial com duração baseada em teste A/B
+-- Função para criar trial fixo de 7 dias
 CREATE OR REPLACE FUNCTION public.create_trial_subscription(
   p_tenant_id UUID,
-  p_trial_days INTEGER DEFAULT NULL -- Se NULL, usa teste A/B
+  p_trial_days INTEGER DEFAULT NULL -- Mantido apenas por compatibilidade
 )
 RETURNS UUID
 LANGUAGE plpgsql
@@ -17,29 +17,9 @@ DECLARE
   v_variant TEXT;
   v_final_trial_days INTEGER;
 BEGIN
-  -- Se não especificou dias, faz teste A/B (50/50)
-  IF p_trial_days IS NULL THEN
-    -- Determina variante aleatória (50/50 split)
-    v_variant := CASE 
-      WHEN random() < 0.5 THEN 'control_21d'
-      ELSE 'test_7d'
-    END;
-
-    -- Define dias baseado na variante
-    v_final_trial_days := CASE v_variant
-      WHEN 'control_21d' THEN 21
-      WHEN 'test_7d' THEN 7
-      ELSE 21 -- fallback
-    END;
-  ELSE
-    -- Dias especificados manualmente (admin override)
-    v_final_trial_days := p_trial_days;
-    v_variant := CASE
-      WHEN p_trial_days = 7 THEN 'test_7d'
-      WHEN p_trial_days = 21 THEN 'control_21d'
-      ELSE 'legacy'
-    END;
-  END IF;
+  -- Trial público é sempre 7 dias; p_trial_days foi preservado para chamadas antigas.
+  v_variant := 'test_7d';
+  v_final_trial_days := 7;
 
   -- Cria a subscription com trial
   INSERT INTO public.tenant_subscriptions (
@@ -70,8 +50,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.create_trial_subscription IS 
-'Cria trial com duração baseada em teste A/B (50/50: 7d vs 21d). 
-Se p_trial_days for NULL, faz split automático. Se especificado, usa o valor direto.';
+'Cria trial fixo de 7 dias. O parâmetro p_trial_days é mantido apenas por compatibilidade.';
 
 -- Garante que a função é chamada pelo trigger de onboarding
 -- (Se ainda não existir, vamos validar)
@@ -128,14 +107,14 @@ BEGIN
         'owner'
       );
 
-      -- Cria trial usando a nova função (teste A/B automático)
+      -- Cria trial usando a função padronizada
       v_trial_id := public.create_trial_subscription(v_tenant_id);
 
       RETURN NEW;
     END;
     $func$;
 
-    RAISE NOTICE 'Função fn_onboard_user atualizada para usar teste A/B';
+    RAISE NOTICE 'Função fn_onboard_user atualizada para usar trial fixo de 7 dias';
   ELSE
     RAISE NOTICE 'Função fn_onboard_user não existe ainda. Criar manualmente se necessário.';
   END IF;

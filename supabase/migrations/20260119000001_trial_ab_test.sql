@@ -1,14 +1,14 @@
--- Migration: Sistema de Teste A/B para Trial (7d vs 21d)
+-- Migration: Metadados de trial padronizado em 7 dias
 -- Data: 2026-01-19
--- Descrição: Adiciona campos para rastrear variante do teste e extensões manuais
+-- Descrição: Adiciona campos para rastrear trial e extensões manuais
 
--- Adiciona coluna para rastrear grupo do teste A/B
+-- Adiciona coluna para rastrear grupo do trial
 ALTER TABLE public.tenant_subscriptions
-ADD COLUMN IF NOT EXISTS trial_variant TEXT DEFAULT 'control_21d'
-CHECK (trial_variant IN ('control_21d', 'test_7d', 'legacy'));
+ADD COLUMN IF NOT EXISTS trial_variant TEXT DEFAULT 'test_7d'
+CHECK (trial_variant IN ('test_7d', 'legacy'));
 
 COMMENT ON COLUMN public.tenant_subscriptions.trial_variant IS 
-'Grupo do teste A/B: control_21d (21 dias), test_7d (7 dias), legacy (antes do teste)';
+'Grupo do trial: test_7d (7 dias), legacy (antes da padronização)';
 
 -- Adiciona colunas para rastrear extensões manuais do trial
 ALTER TABLE public.tenant_subscriptions
@@ -34,9 +34,9 @@ WHERE status = 'trial' AND trial_extended_at IS NOT NULL;
 -- Atualiza trials existentes como 'legacy' (antes do teste)
 UPDATE public.tenant_subscriptions
 SET trial_variant = 'legacy'
-WHERE trial_variant IS NULL OR trial_variant = 'control_21d';
+WHERE trial_variant IS NULL;
 
--- View para analytics do teste A/B
+-- View para analytics do trial
 CREATE OR REPLACE VIEW public.trial_ab_analytics AS
 SELECT
   trial_variant,
@@ -60,8 +60,8 @@ SELECT
   ) as avg_extension_days
 FROM public.tenant_subscriptions
 WHERE trial_started_at >= NOW() - INTERVAL '90 days'
-  AND trial_variant IN ('control_21d', 'test_7d')
+  AND trial_variant IN ('test_7d')
 GROUP BY trial_variant;
 
 COMMENT ON VIEW public.trial_ab_analytics IS 
-'Métricas do teste A/B: conversão, tempo médio, extensões por variante';
+'Métricas do trial: conversão, tempo médio e extensões';

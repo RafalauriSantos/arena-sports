@@ -44,7 +44,13 @@
 		"db:query:stats": "bun run scripts/run-sql-direct.ts scripts/query-stats.sql",
 		"test:auto": "bun run scripts/test-all-automated.ts",
 		"test:whatsapp": "bun run scripts/test-whatsapp-messages.ts",
-		"test:db-structure": "bun run scripts/test-database-structure.ts"
+		"test:db-structure": "bun run scripts/test-database-structure.ts",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:smoke": "playwright test --grep @smoke",
+		"test:api": "playwright test --grep @api",
+		"test:qa": "playwright test --grep @qa",
+		"test:qa:full": "playwright test --grep \"@smoke|@api|@qa\""
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.10.0",
@@ -101,6 +107,7 @@
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.52.0",
 		"@eslint/js": "^9.32.0",
 		"@tailwindcss/typography": "^0.5.16",
 		"@types/node": "^22.16.5",

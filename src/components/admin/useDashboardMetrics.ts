@@ -277,26 +277,23 @@ export function useDashboardMetrics(tenantId?: string) {
 
     if (!tenantId) return;
 
-    // Real-time: Escutar novas reservas para atualizar faturamento instantaneamente
-    const channel = supabase
-      .channel("dashboard-metrics-channel")
-      .on(
-        "postgres_changes",
-        {
-          event: "*", // INSERT, UPDATE, DELETE
-          schema: "public",
-          table: "bookings",
-          filter: `tenant_id=eq.${tenantId}`,
-        },
-        () => {
-          // Recarrega métricas quando houver mudança nas reservas
-          fetchMetrics();
-        }
-      )
-      .subscribe();
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchMetrics();
+      }
+    }, 60_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchMetrics();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      supabase.removeChannel(channel);
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [tenantId, fetchMetrics]);
 

@@ -458,15 +458,15 @@ begin
   select * into s from public.tenant_subscriptions where tenant_id = p_tenant_id;
 
   if not found then
-    -- Fallback: Se não tem assinatura, verifica se o tenant é novo (< 21 dias)
-    return (select created_at + interval '21 days' > now() from public.tenants where id = p_tenant_id);
+    -- Fallback: Se não tem assinatura, verifica se o tenant é novo (< 7 dias)
+    return (select created_at + interval '7 days' > now() from public.tenants where id = p_tenant_id);
   end if;
 
   if s.status = 'active' then return true; end if;
   
   if s.status = 'trial' then
     if s.trial_started_at is null then return false; end if;
-    v_trial_ends := coalesce(s.trial_ends_at, s.trial_started_at + interval '21 days');
+    v_trial_ends := coalesce(s.trial_ends_at, s.trial_started_at + interval '7 days');
     return v_trial_ends > now();
   end if;
 
@@ -517,7 +517,7 @@ create or replace function public.fn_init_tenant_subscription()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
   insert into public.tenant_subscriptions (tenant_id, plan_code, plan_name, monthly_price, status, billing_interval, trial_ends_at, grace_ends_at)
-  values (new.id, 'start', 'Arena Start', 89, 'trial', 'month', now() + interval '21 days', now() + interval '24 days')
+  values (new.id, 'start', 'Arena Start', 89, 'trial', 'month', now() + interval '7 days', now() + interval '10 days')
   on conflict (tenant_id) do nothing;
   return new;
 end $$;

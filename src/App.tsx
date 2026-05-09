@@ -12,6 +12,7 @@ import { BookingsProvider } from "@/contexts/BookingsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 // Lazy load pages com tratamento de erro
 const Landing = lazy(() => import("./pages/Landing"));
@@ -22,13 +23,13 @@ const Welcome = lazy(() =>
 		console.error("Erro ao carregar Welcome.tsx:", error);
 		// Retorna um componente de fallback
 		return {
-			default: () => (
-				<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center">
+				default: () => (
+				<div className="min-h-screen bg-[#eef4fb] text-slate-950 flex items-center justify-center">
 					<div className="text-center">
 						<p className="text-red-400 mb-4">Erro ao carregar página Welcome</p>
 						<button
 							onClick={() => window.location.reload()}
-							className="px-4 py-2 bg-emerald-500 text-black rounded">
+							className="px-4 py-2 bg-blue-600 text-white rounded">
 							Recarregar
 						</button>
 					</div>
@@ -42,13 +43,27 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Support = lazy(() => import("./pages/Support"));
 const About = lazy(() => import("./pages/About"));
 // Páginas SEO
-const SoftwareQuadrasFutebol = lazy(
-	() => import("./pages/SoftwareQuadrasFutebol"),
+const SoftwareQuadrasFutebol = lazy(() =>
+	import("./pages/SoftwareQuadrasFutebol").then((module) => ({
+		default: module.SoftwareQuadrasFutebol,
+	})),
 );
-const SistemaBeachTennis = lazy(() => import("./pages/SistemaBeachTennis"));
-const GestaoQuadraSociety = lazy(() => import("./pages/GestaoQuadraSociety"));
-const Blog = lazy(() => import("./pages/Blog"));
-const BlogPost = lazy(() => import("./pages/BlogPost"));
+const SistemaBeachTennis = lazy(() =>
+	import("./pages/SistemaBeachTennis").then((module) => ({
+		default: module.SistemaBeachTennis,
+	})),
+);
+const GestaoQuadraSociety = lazy(() =>
+	import("./pages/GestaoQuadraSociety").then((module) => ({
+		default: module.GestaoQuadraSociety,
+	})),
+);
+const Blog = lazy(() =>
+	import("./pages/Blog").then((module) => ({ default: module.Blog })),
+);
+const BlogPost = lazy(() =>
+	import("./pages/BlogPost").then((module) => ({ default: module.BlogPost })),
+);
 const AdminIndex = lazy(() => import("./pages/admin/AdminIndex"));
 // BookingPublic - Import direto temporariamente para forçar reload
 import BookingPublicComponent from "./pages/BookingPublic";
@@ -71,25 +86,25 @@ const PageLoader = () => <LoadingSpinner />;
 
 // Componente de erro para rotas
 const RouteErrorElement = () => (
-	<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center p-4">
+	<div className="min-h-screen bg-[#eef4fb] text-slate-950 flex items-center justify-center p-4">
 		<div className="max-w-md w-full space-y-4 text-center">
-			<div className="bg-[#0F1115] border border-red-500/20 rounded-2xl p-6">
-				<h1 className="text-xl font-bold text-white mb-2">
+			<div className="bg-[#fbfdff] border border-red-200 rounded-2xl p-6 shadow-xl shadow-slate-950/10">
+				<h1 className="text-xl font-bold text-slate-950 mb-2">
 					Erro ao carregar página
 				</h1>
-				<p className="text-gray-300 text-sm mb-4">
+				<p className="text-slate-600 text-sm mb-4">
 					Não foi possível carregar esta página. Tente recarregar ou voltar para
 					a home.
 				</p>
 				<div className="flex gap-3 justify-center">
 					<button
 						onClick={() => window.location.reload()}
-						className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black rounded font-bold text-sm">
+						className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-sm">
 						Recarregar Página
 					</button>
 					<a
 						href="/"
-						className="px-4 py-2 border border-white/20 hover:bg-white/5 rounded text-sm">
+						className="px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded text-sm">
 						Voltar para Home
 					</a>
 				</div>
@@ -173,7 +188,11 @@ const router = createBrowserRouter([
 	{ path: "/admin", element: <Navigate to="/dashboard" replace /> },
 	{
 		path: "/dashboard/*",
-		element: <AdminIndex />,
+		element: (
+			<BookingsProvider>
+				<AdminIndex />
+			</BookingsProvider>
+		),
 		errorElement: <RouteErrorElement />,
 	},
 	{
@@ -188,8 +207,8 @@ const router = createBrowserRouter([
 const App = () => (
 	<ErrorBoundary>
 		<QueryClientProvider client={queryClient}>
-			<AuthProvider>
-				<BookingsProvider>
+			<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+				<AuthProvider>
 					<TooltipProvider>
 						<Toaster />
 						<Sonner />
@@ -197,8 +216,8 @@ const App = () => (
 							<RouterProvider router={router} />
 						</Suspense>
 					</TooltipProvider>
-				</BookingsProvider>
-			</AuthProvider>
+				</AuthProvider>
+			</ThemeProvider>
 		</QueryClientProvider>
 	</ErrorBoundary>
 );

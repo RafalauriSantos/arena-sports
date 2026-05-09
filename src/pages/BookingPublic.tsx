@@ -1,6 +1,6 @@
 // BookingPublic - Link Público para Jogadores
 // Versão: 2.1.0 - Mostra horários ocupados como "Reservado"
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import {
@@ -181,6 +181,7 @@ export default function BookingPublic() {
 
 	// Estados de UI
 	const [selectedDate, setSelectedDate] = useState(new Date());
+	const selectedDateRef = useRef(selectedDate);
 	const [selectedSlot, setSelectedSlot] = useState<{
 		courtId: string;
 		courtName: string;
@@ -201,13 +202,13 @@ export default function BookingPublic() {
 	const dateButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
 	// Controle de erros do Realtime para evitar loops infinitos
-	const realtimeErrorCountRef = useRef({ courts: 0, tenant: 0, bookings: 0 });
-	const realtimeDisabledRef = useRef({
-		courts: false,
-		tenant: false,
-		bookings: false,
-	});
+	const realtimeErrorCountRef = useRef({ public: 0 });
+	const realtimeDisabledRef = useRef({ public: false });
 	const MAX_REALTIME_ERRORS = 3;
+
+	useEffect(() => {
+		selectedDateRef.current = selectedDate;
+	}, [selectedDate]);
 
 	// 1. Carregar Dados Iniciais (Empresa e Quadras)
 	useEffect(() => {
@@ -262,14 +263,50 @@ export default function BookingPublic() {
 		loadShell();
 	}, [cleanSubdomain]);
 
-	// 1b. Realtime: manter preços/quadras atualizados sem refresh
+	const loadOccupiedSlots = useCallback(
+		async (date: Date) => {
+			if (!cleanSubdomain) return;
+			const dateStr = format(date, "yyyy-MM-dd");
+
+			const { data, error } = await supabase.rpc(
+				"fn_public_get_occupied_slots",
+				{
+					p_subdomain: cleanSubdomain,
+					p_date: dateStr,
+				},
+			);
+
+			if (error) {
+				setOccupiedSlots([]);
+				return;
+			}
+
+			const rows =
+				(data as Array<{ court_id: string; slot_time: string }> | null) ?? [];
+
+			setOccupiedSlots(
+				rows
+					.filter((r) => !!r.court_id && !!r.slot_time)
+					.map((r) => ({
+						court_id: r.court_id,
+						slot_time: r.slot_time.slice(0, 5),
+					})),
+			);
+		},
+		[cleanSubdomain],
+	);
+
+	// 2. Canal público único por tenant: bookings, courts e configurações.
 	useEffect(() => {
-		if (!tenantId || realtimeDisabledRef.current.courts) return;
+		if (!tenantId || !cleanSubdomain || realtimeDisabledRef.current.public)
+			return;
+
+		const reloadCurrentDate = () => loadOccupiedSlots(selectedDateRef.current);
 
 		const channel = supabase
-			.channel(`public-courts-${tenantId}`, {
+			.channel(`public-booking-${tenantId}`, {
 				config: {
-					broadcast: { self: true },
+					broadcast: { self: false },
 				},
 			})
 			.on(
@@ -299,14 +336,12 @@ export default function BookingPublic() {
 					>;
 					if (!row?.id) return;
 
-					// Se desativar, some da agenda pública
 					if (row.active === false) {
 						setCourts((prev) => prev.filter((c) => c.id !== row.id));
 						setSelectedSlot((prev) => (prev?.courtId === row.id ? null : prev));
 						return;
 					}
 
-					// Upsert local
 					setCourts((prev) => {
 						const next = [...prev];
 						const index = next.findIndex((c) => c.id === row.id);
@@ -327,57 +362,21 @@ export default function BookingPublic() {
 						return next;
 					});
 
-					// Se o usuário já selecionou um horário dessa quadra, manter preço atualizado
 					setSelectedSlot((prev) => {
 						if (!prev || prev.courtId !== row.id) return prev;
-						const newPrice = Number(row.base_price ?? prev.slot.price);
-						const newHalfHourPrice = Number(
-							row.half_hour_price ?? prev.halfHourPrice ?? 0,
-						);
 						return {
 							...prev,
 							slot: {
 								...prev.slot,
-								price: newPrice,
+								price: Number(row.base_price ?? prev.slot.price),
 							},
-							halfHourPrice: newHalfHourPrice,
+							halfHourPrice: Number(
+								row.half_hour_price ?? prev.halfHourPrice ?? 0,
+							),
 						};
 					});
 				},
 			)
-			.subscribe((status, err) => {
-				if (status === "SUBSCRIBED") {
-					realtimeErrorCountRef.current.courts = 0;
-				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-					realtimeErrorCountRef.current.courts++;
-					if (realtimeErrorCountRef.current.courts >= MAX_REALTIME_ERRORS) {
-						if (import.meta.env.DEV) {
-							console.warn(
-								`⚠️ Canal de quadras desabilitado após ${MAX_REALTIME_ERRORS} falhas`,
-							);
-						}
-						realtimeDisabledRef.current.courts = true;
-						supabase.removeChannel(channel);
-					}
-				}
-			});
-
-		return () => {
-			supabase.removeChannel(channel);
-		};
-	}, [tenantId]);
-
-	// 1c. 🔥 Realtime: escuta mudanças nas CONFIGURAÇÕES do tenant (horários, preços, etc)
-	useEffect(() => {
-		if (!tenantId || !cleanSubdomain || realtimeDisabledRef.current.tenant)
-			return;
-
-		const tenantChannel = supabase
-			.channel(`tenant-settings-${tenantId}`, {
-				config: {
-					broadcast: { self: true },
-				},
-			})
 			.on(
 				"postgres_changes",
 				{
@@ -387,10 +386,9 @@ export default function BookingPublic() {
 					filter: `id=eq.${tenantId}`,
 				},
 				async () => {
-					// Recarrega os dados do tenant para pegar os novos settings
 					const { data, error } = await supabase
 						.rpc("fn_public_get_tenant_by_subdomain", {
-							p_subdomain: cleanSubdomain!,
+							p_subdomain: cleanSubdomain,
 						})
 						.maybeSingle();
 
@@ -399,39 +397,15 @@ export default function BookingPublic() {
 					}
 				},
 			)
-			.subscribe((status) => {
-				if (status === "SUBSCRIBED") {
-					realtimeErrorCountRef.current.tenant = 0;
-				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-					realtimeErrorCountRef.current.tenant++;
-					if (realtimeErrorCountRef.current.tenant >= MAX_REALTIME_ERRORS) {
-						realtimeDisabledRef.current.tenant = true;
-						supabase.removeChannel(tenantChannel);
-					}
-				}
-			});
-
-		return () => {
-			supabase.removeChannel(tenantChannel);
-		};
-	}, [tenantId, cleanSubdomain]);
-
-	// 2. Real-time para bookings (atualiza automaticamente quando há novas reservas)
-	useEffect(() => {
-		if (!tenantId || !cleanSubdomain || realtimeDisabledRef.current.bookings)
-			return;
-
-		const bookingsChannel = supabase
-			.channel(`bookings-public-${tenantId}-${Date.now()}`) // Nome único para evitar conflitos
 			.on(
 				"postgres_changes",
 				{
-					event: "*", // INSERT, UPDATE, DELETE
+					event: "*",
 					schema: "public",
 					table: "bookings",
 					filter: `tenant_id=eq.${tenantId}`,
 				},
-				async (payload) => {
+				(payload) => {
 					const newRow = (payload.new ?? null) as Record<
 						string,
 						unknown
@@ -440,161 +414,47 @@ export default function BookingPublic() {
 						string,
 						unknown
 					> | null;
-					console.log(
-						"🔥 [BookingPublic] Evento de reserva recebido:",
-						payload.eventType,
-						{
-							id: (newRow?.id ?? oldRow?.id) as string | undefined,
-							customer: newRow?.customer_name as string | undefined,
-							time: newRow?.start_time as string | undefined,
-						},
+					const startTimeIso =
+						(newRow?.start_time as string | undefined) ??
+						(oldRow?.start_time as string | undefined);
+
+					if (!startTimeIso) {
+						reloadCurrentDate();
+						return;
+					}
+
+					const bookingDateStr = format(new Date(startTimeIso), "yyyy-MM-dd");
+					const currentDateStr = format(
+						selectedDateRef.current,
+						"yyyy-MM-dd",
 					);
 
-					// Se for INSERT ou UPDATE, verifica se é do dia atual
-					if (
-						payload.eventType === "INSERT" ||
-						payload.eventType === "UPDATE"
-					) {
-						const startTimeIso =
-							(newRow?.start_time as string | undefined) ?? undefined;
-						const bookingDate = startTimeIso ? new Date(startTimeIso) : null;
-
-						if (bookingDate) {
-							const bookingDateStr = format(bookingDate, "yyyy-MM-dd");
-							const currentDateStr = format(selectedDate, "yyyy-MM-dd");
-
-							console.log("📅 [BookingPublic] Comparando datas:", {
-								booking: bookingDateStr,
-								visualizando: currentDateStr,
-								mesmaData: bookingDateStr === currentDateStr,
-							});
-
-							// Só atualiza se for do dia que está sendo visualizado
-							if (bookingDateStr === currentDateStr) {
-								console.log(
-									"✅ [BookingPublic] Atualizando ocupação do dia...",
-								);
-								// Recarrega ocupação do dia atual
-								const { data, error } = await supabase.rpc(
-									"fn_public_get_occupied_slots",
-									{
-										p_subdomain: cleanSubdomain,
-										p_date: currentDateStr,
-									},
-								);
-
-								if (!error && data) {
-									const occupied = (
-										(data as Array<{ court_id: string; slot_time: string }>) ||
-										[]
-									).map((r) => ({
-										court_id: r.court_id,
-										slot_time: r.slot_time.slice(0, 5),
-									}));
-									setOccupiedSlots(occupied);
-									console.log(
-										"✅ [BookingPublic] Ocupação atualizada!",
-										occupied.length,
-										"slots ocupados",
-									);
-								}
-							}
-						}
-					} else if (payload.eventType === "DELETE") {
-						console.log("🗑️ [BookingPublic] Reserva deletada, recarregando...");
-						// Se deletou, recarrega também
-						const dateStr = format(selectedDate, "yyyy-MM-dd");
-						const { data, error } = await supabase.rpc(
-							"fn_public_get_occupied_slots",
-							{
-								p_subdomain: cleanSubdomain,
-								p_date: dateStr,
-							},
-						);
-
-						if (!error && data) {
-							const occupied = (
-								(data as Array<{ court_id: string; slot_time: string }>) || []
-							).map((r) => ({
-								court_id: r.court_id,
-								slot_time: r.slot_time.slice(0, 5),
-							}));
-							setOccupiedSlots(occupied);
-							console.log(
-								"✅ [BookingPublic] Ocupação atualizada após delete!",
-							);
-						}
+					if (bookingDateStr === currentDateStr) {
+						reloadCurrentDate();
 					}
 				},
 			)
 			.subscribe((status) => {
 				if (status === "SUBSCRIBED") {
-					realtimeErrorCountRef.current.bookings = 0;
-					console.log("✅ [BookingPublic] CONECTADO ao realtime de reservas!");
+					realtimeErrorCountRef.current.public = 0;
 				} else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-					realtimeErrorCountRef.current.bookings++;
-					console.error(
-						"❌ [BookingPublic] Erro no realtime de reservas:",
-						status,
-					);
-					if (realtimeErrorCountRef.current.bookings >= MAX_REALTIME_ERRORS) {
-						realtimeDisabledRef.current.bookings = true;
-						supabase.removeChannel(bookingsChannel);
-						console.error(
-							"❌ [BookingPublic] Realtime de reservas DESABILITADO após múltiplos erros",
-						);
+					realtimeErrorCountRef.current.public++;
+					if (realtimeErrorCountRef.current.public >= MAX_REALTIME_ERRORS) {
+						realtimeDisabledRef.current.public = true;
+						supabase.removeChannel(channel);
 					}
 				}
 			});
 
 		return () => {
-			supabase.removeChannel(bookingsChannel);
+			supabase.removeChannel(channel);
 		};
-	}, [tenantId, cleanSubdomain, selectedDate]);
+	}, [tenantId, cleanSubdomain, loadOccupiedSlots]);
 
-	// 3. 🚀 OTIMIZADO: Carregar ocupação inicial (o Realtime cuida das atualizações)
+	// 3. Carregar ocupação inicial e ao trocar a data visível.
 	useEffect(() => {
-		async function loadOccupancy() {
-			if (!cleanSubdomain) return;
-			const dateStr = format(selectedDate, "yyyy-MM-dd");
-
-			console.log("📅 [DEBUG] Carregando ocupação para:", dateStr);
-			console.log("🔑 [DEBUG] Subdomain:", cleanSubdomain);
-
-			const { data, error } = await supabase.rpc(
-				"fn_public_get_occupied_slots",
-				{
-					p_subdomain: cleanSubdomain,
-					p_date: dateStr,
-				},
-			);
-
-			console.log("📦 [DEBUG] Resposta RPC:", {
-				data,
-				error,
-				totalSlots: Array.isArray(data) ? data.length : 0,
-			});
-
-			if (error) {
-				setOccupiedSlots([]);
-				return;
-			}
-
-			const rows =
-				(data as Array<{ court_id: string; slot_time: string }> | null) ?? [];
-
-			const processed = rows
-				.filter((r) => !!r.court_id && !!r.slot_time)
-				.map((r) => ({
-					court_id: r.court_id,
-					slot_time: r.slot_time.slice(0, 5),
-				}));
-
-			console.log("✅ [DEBUG] Slots processados:", processed);
-			setOccupiedSlots(processed);
-		}
-		loadOccupancy();
-	}, [cleanSubdomain, selectedDate]);
+		loadOccupiedSlots(selectedDate);
+	}, [loadOccupiedSlots, selectedDate]);
 
 	// 2. Carregar slots disponíveis (com descontos e bloqueios) - Otimizado com useMemo
 	const courtsWithSlots = useMemo(() => {
@@ -1201,7 +1061,7 @@ Qual a chave PIX?`;
 
 	return (
 		<div
-			className={`min-h-screen bg-white font-sans ${
+			className={`min-h-screen bg-slate-50 font-sans ${
 				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 			}`}>
 			{showConfetti && <Confetti />}
@@ -1216,8 +1076,8 @@ Qual a chave PIX?`;
 			{/* Header Imersivo (Hero Section) - NOVO DESIGN MOBILE FIRST */}
 			<div className="relative h-64 md:h-80 overflow-hidden">
 				{/* Background com gradiente ou foto de capa (futuro) */}
-				<div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700" />
-				<div className="absolute inset-0 bg-black/40" />
+				<div className="absolute inset-0 bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-800" />
+				<div className="absolute inset-0 bg-black/25" />
 
 				{/* Conteúdo do Header */}
 				<div className="relative z-10 h-full flex flex-col justify-between p-6 text-white">
@@ -1226,10 +1086,10 @@ Qual a chave PIX?`;
 						<div className="flex items-center gap-2">
 							{/* Status Aberto/Fechado */}
 							<div
-								className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm ${
+								className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/15 ${
 									isOpen ?
-										"bg-green-500/90 text-white"
-									:	"bg-gray-500/90 text-white"
+										"bg-emerald-500/90 text-white"
+									:	"bg-slate-600/90 text-white"
 								}`}>
 								<div
 									className={`w-2 h-2 rounded-full ${isOpen ? "bg-white animate-pulse" : "bg-white"}`}
@@ -1254,7 +1114,7 @@ Qual a chave PIX?`;
 								<button
 									onClick={() => {
 										const phoneDigits = toWhatsAppLinkPhone(tenant.phone || "");
-										const msg = `Ola! Estou no calendario de *${tenant.business_name}* e gostaria de mais informacoes.`;
+										const msg = `Ola! Estou no calendario de *${tenant.business_name}*. Gostaria de mais informacoes.`;
 										window.open(
 											`https://wa.me/${phoneDigits}?text=${encodeURIComponent(msg)}`,
 											"_blank",
@@ -1270,18 +1130,18 @@ Qual a chave PIX?`;
 
 					{/* Nome da Arena e Info */}
 					<div className="space-y-2">
-						<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight capitalize drop-shadow-lg">
+						<h1 className="text-3xl md:text-4xl font-extrabold tracking-tight capitalize leading-tight drop-shadow-lg">
 							{tenant.business_name}
 						</h1>
 						{tenant.description && (
-							<p className="text-white/90 text-sm max-w-md drop-shadow">
+							<p className="text-white/90 text-sm sm:text-base max-w-md drop-shadow">
 								{tenant.description}
 							</p>
 						)}
 						{fullAddress && (
-							<div className="flex items-center gap-1.5 text-white/80 text-sm">
+							<div className="flex items-start gap-1.5 text-white/85 text-sm max-w-xl">
 								<MapPin className="w-4 h-4 flex-shrink-0" />
-								<span className="line-clamp-1">{fullAddress}</span>
+								<span className="line-clamp-2">{fullAddress}</span>
 							</div>
 						)}
 					</div>
@@ -1289,7 +1149,7 @@ Qual a chave PIX?`;
 			</div>
 
 			{/* Seletor de Data Horizontal (Estilo Google Calendar) */}
-			<div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+			<div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
 				<div className="max-w-2xl mx-auto px-4 py-3">
 					<div
 						ref={carouselRef}
@@ -1312,26 +1172,26 @@ Qual a chave PIX?`;
 									}}
 									key={i}
 									onClick={() => setSelectedDate(date)}
-									className={`flex-shrink-0 snap-center flex flex-col items-center justify-center min-w-[64px] h-20 rounded-xl border-2 transition-all duration-200 active:scale-95 ${
+									className={`flex-shrink-0 snap-center flex flex-col items-center justify-center min-w-[64px] h-20 rounded-xl border transition-all duration-200 active:scale-[0.98] ${
 										isSelected ?
-											"bg-emerald-500 text-white border-emerald-500 shadow-md scale-105"
-										:	"bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+											"bg-emerald-600 text-white border-emerald-600 shadow-sm"
+										:	"bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
 									}`}>
 									<span
 										className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${
-											isSelected ? "text-white/90" : "text-gray-300"
+											isSelected ? "text-white/90" : "text-slate-400"
 										}`}>
 										{dayName}
 									</span>
 									<span
 										className={`text-2xl font-bold ${
-											isSelected ? "text-white" : "text-gray-900"
+											isSelected ? "text-white" : "text-slate-950"
 										}`}>
 										{format(date, "dd")}
 									</span>
 									<span
 										className={`text-[10px] mt-0.5 ${
-											isSelected ? "text-white/80" : "text-gray-300"
+											isSelected ? "text-white/80" : "text-slate-400"
 										}`}>
 										{format(date, "MMM", { locale: ptBR })}
 									</span>
@@ -1343,11 +1203,11 @@ Qual a chave PIX?`;
 			</div>
 
 			{/* Lista de Quadras e Horários */}
-			<div className="max-w-2xl mx-auto px-4 mt-6 space-y-6 pb-6">
+			<div className="max-w-2xl mx-auto px-4 mt-5 sm:mt-6 space-y-5 sm:space-y-6 pb-6">
 				{/* Banner Promoção */}
 				{courtsWithSlots.some((c) => c.slots.some((s) => s.hasDiscount)) && (
-					<div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
-						<div className="bg-emerald-500 p-2 rounded-full">
+					<div className="bg-white border border-emerald-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+						<div className="bg-emerald-600 p-2 rounded-lg">
 							<Sparkles className="w-5 h-5 text-white" />
 						</div>
 						<div className="flex-1">
@@ -1367,25 +1227,25 @@ Qual a chave PIX?`;
 				{courtsWithSlots.map((court) => (
 					<div
 						key={court.id}
-						className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+						className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
 						{/* Header da Quadra */}
-						<div className="px-5 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+						<div className="px-4 sm:px-5 py-4 bg-slate-50 border-b border-slate-200">
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
-									<div className="bg-emerald-100 p-2.5 rounded-xl">
+									<div className="bg-emerald-100 p-2.5 rounded-lg">
 										<Trophy className="w-5 h-5 text-emerald-600" />
 									</div>
 									<div>
-										<h3 className="font-bold text-gray-900 text-lg">
+										<h3 className="font-bold text-slate-950 text-lg">
 											{court.name}
 										</h3>
-										<p className="text-xs text-gray-300">
+										<p className="text-xs text-slate-500">
 											{court.slots.filter((s) => !s.isOccupied).length}{" "}
 											{court.slots.filter((s) => !s.isOccupied).length === 1 ?
 												"horário disponível"
 											:	"horários disponíveis"}
 											{court.slots.filter((s) => s.isOccupied).length > 0 && (
-												<span className="text-gray-300 ml-1">
+												<span className="text-slate-500 ml-1">
 													• {court.slots.filter((s) => s.isOccupied).length}{" "}
 													reservado
 													{(
@@ -1404,7 +1264,7 @@ Qual a chave PIX?`;
 						{/* Grid de Horários */}
 						<div className="p-4">
 							{court.slots.length === 0 ?
-								<div className="text-center py-12 text-gray-300">
+								<div className="text-center py-12 text-slate-400">
 									<Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
 									<p className="text-sm font-medium">
 										Sem horários livres para este dia
@@ -1430,17 +1290,17 @@ Qual a chave PIX?`;
 											return (
 												<div
 													key={slot.time}
-													className={`relative flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-xl border-2 bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed animate-reveal-up ${staggerClass}`}>
+													className={`relative flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-lg border bg-slate-100 border-slate-200 opacity-85 cursor-not-allowed animate-reveal-up ${staggerClass}`}>
 													{/* Ícone de cadeado */}
-													<Lock className="w-4 h-4 text-gray-300 mb-1" />
+													<Lock className="w-4 h-4 text-slate-500 mb-1" />
 
 													{/* Horário */}
-													<span className="text-base font-bold text-gray-300 line-through">
+													<span className="text-base font-bold text-slate-500 line-through">
 														{slot.time}
 													</span>
 
 													{/* Label "Reservado" */}
-													<span className="text-[10px] text-gray-300 font-semibold mt-0.5">
+													<span className="text-[10px] text-slate-500 font-semibold mt-0.5">
 														Reservado
 													</span>
 												</div>
@@ -1453,14 +1313,15 @@ Qual a chave PIX?`;
 												onClick={() =>
 													handleBooking(court.id, court.name, slot)
 												}
-												className={`relative group flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-xl border-2 transition-all duration-200 active:scale-95 animate-reveal-up ${staggerClass} ${
+												data-testid="slot-available"
+												className={`relative group flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-lg border transition-all duration-200 active:scale-[0.98] animate-reveal-up ${staggerClass} ${
 													isSelected ?
-														"bg-emerald-500 border-emerald-500 text-white shadow-lg scale-105"
-													:	"bg-white border-gray-200 text-gray-900 hover:border-emerald-300 hover:bg-emerald-50"
+														"bg-emerald-600 border-emerald-600 text-white shadow-sm"
+													:	"bg-white border-slate-200 text-slate-900 hover:border-emerald-300 hover:bg-emerald-50"
 												}`}>
 												{/* Badge Promo */}
 												{slot.hasDiscount && !isSelected && (
-													<span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+													<span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10">
 														-{configs.full_payment_discount_percent}%
 													</span>
 												)}
@@ -1468,7 +1329,7 @@ Qual a chave PIX?`;
 												{/* Horário */}
 												<span
 													className={`text-base font-bold mb-1 ${
-														isSelected ? "text-white" : "text-gray-900"
+														isSelected ? "text-white" : "text-slate-950"
 													}`}>
 													{slot.time}
 												</span>
@@ -1501,17 +1362,17 @@ Qual a chave PIX?`;
 
 			{/* Sticky Footer - Resumo da Reserva */}
 			{selectedSlot && !reserveSuccess && (
-				<div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl">
+				<div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 shadow-xl">
 					<div className="max-w-2xl mx-auto px-4 py-4">
 						<div className="flex items-center justify-between gap-4">
 							{/* Resumo */}
 							<div className="flex-1 min-w-0">
-								<p className="text-sm font-semibold text-gray-900 truncate">
+								<p className="text-sm font-semibold text-slate-950 truncate">
 									{selectedSlot.courtName}
 								</p>
 								<div className="flex items-center gap-2 mt-0.5">
-									<Clock className="w-4 h-4 text-gray-300 flex-shrink-0" />
-									<span className="text-sm text-gray-400">
+									<Clock className="w-4 h-4 text-slate-400 flex-shrink-0" />
+									<span className="text-sm text-slate-500">
 										{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 										{selectedSlot.slot.time}
 										{bookingDuration === 90 && " - 1h30"}
@@ -1530,7 +1391,7 @@ Qual a chave PIX?`;
 							{/* Botão de Ação */}
 							<button
 								onClick={() => setShowBookingModal(true)}
-								className="flex-shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2">
+								className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 sm:px-6 py-3 rounded-lg shadow-sm transition-all active:scale-[0.98] flex items-center gap-2">
 								<span>Reservar Agora</span>
 								<ChevronRightIcon className="w-5 h-5" />
 							</button>
@@ -1542,18 +1403,19 @@ Qual a chave PIX?`;
 			{/* Modal Checkout Completo (Abre quando clica em "Reservar Agora") */}
 			{selectedSlot && showBookingModal && (
 				<div
+					data-testid="booking-modal"
 					onClick={(e) => {
 						if (e.target === e.currentTarget) {
 							setShowBookingModal(false);
 						}
 					}}
-					className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-					<div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 max-h-[90vh] overflow-y-auto">
-						<div className="p-5 sm:p-6 text-center border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-teal-50">
-							<h3 className="text-lg sm:text-xl font-bold text-gray-900">
+					className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+					<div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl shadow-xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 max-h-[90vh] overflow-y-auto">
+						<div className="p-5 sm:p-6 text-center border-b border-slate-200 bg-slate-50">
+							<h3 className="text-lg sm:text-xl font-bold text-slate-950">
 								Confirmar Reserva
 							</h3>
-							<p className="text-gray-400 text-sm mt-1.5">
+							<p className="text-slate-500 text-sm mt-1.5">
 								{selectedSlot.courtName} •{" "}
 								{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 								{selectedSlot.slot.time}
@@ -1596,7 +1458,7 @@ Qual a chave PIX?`;
 								<>
 									{/* Seleção de Duração */}
 									<div className="mb-4">
-										<label className="block text-sm font-medium text-gray-700 mb-2">
+										<label className="block text-sm font-medium text-slate-700 mb-2">
 											Duração do jogo
 										</label>
 										<div className="grid grid-cols-2 gap-2">
@@ -1604,10 +1466,11 @@ Qual a chave PIX?`;
 												type="button"
 												onClick={() => setBookingDuration(60)}
 												disabled={isReserving}
-												className={`py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
+												aria-pressed={bookingDuration === 60}
+												className={`py-2.5 px-4 rounded-lg border font-medium transition-all ${
 													bookingDuration === 60 ?
-														"border-primary bg-primary/10 text-primary"
-													:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+														"border-emerald-600 bg-emerald-50 text-emerald-700"
+													:	"border-slate-200 bg-white text-slate-700 hover:border-slate-300"
 												} disabled:opacity-50`}>
 												1 hora
 											</button>
@@ -1615,10 +1478,11 @@ Qual a chave PIX?`;
 												type="button"
 												onClick={() => setBookingDuration(90)}
 												disabled={isReserving}
-												className={`py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
+												aria-pressed={bookingDuration === 90}
+												className={`py-2.5 px-4 rounded-lg border font-medium transition-all ${
 													bookingDuration === 90 ?
-														"border-primary bg-primary/10 text-primary"
-													:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+														"border-emerald-600 bg-emerald-50 text-emerald-700"
+													:	"border-slate-200 bg-white text-slate-700 hover:border-slate-300"
 												} disabled:opacity-50`}>
 												1h30
 											</button>
@@ -1628,24 +1492,32 @@ Qual a chave PIX?`;
 									{/* Formulário de Dados do Jogador */}
 									<div className="space-y-3 mb-4">
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-1">
+											<label
+												htmlFor="booking-player-name"
+												className="block text-sm font-medium text-slate-700 mb-1">
 												Seu nome
 											</label>
 											<input
+												id="booking-player-name"
+												data-testid="booking-player-name"
 												type="text"
 												value={playerName}
 												onChange={(e) => setPlayerName(e.target.value)}
 												placeholder="Ex: João"
-												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-300"
+												className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 text-slate-950 font-medium placeholder:text-slate-400"
 												disabled={isReserving}
 												maxLength={50}
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-1">
+											<label
+												htmlFor="booking-player-phone"
+												className="block text-sm font-medium text-slate-700 mb-1">
 												Seu telefone (WhatsApp)
 											</label>
 											<input
+												id="booking-player-phone"
+												data-testid="booking-player-phone"
 												type="tel"
 												value={playerPhone}
 												onChange={(e) => {
@@ -1653,7 +1525,7 @@ Qual a chave PIX?`;
 													setPlayerPhone(formatted);
 												}}
 												placeholder="(11) 99988-7766"
-												className="w-full px-4 py-2.5 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 font-medium placeholder:text-gray-300"
+												className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 text-slate-950 font-medium placeholder:text-slate-400"
 												disabled={isReserving}
 												maxLength={15}
 											/>
@@ -1664,7 +1536,7 @@ Qual a chave PIX?`;
 									<button
 										onClick={handleDirectBooking}
 										disabled={isReserving}
-										className="w-full bg-gray-900 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+										className="w-full bg-slate-950 text-white py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
 										{isReserving ?
 											<>
 												<Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -1681,7 +1553,7 @@ Qual a chave PIX?`;
 										}
 									</button>
 
-									<p className="text-xs text-gray-300 text-center">
+									<p className="text-xs text-slate-500 text-center">
 										Você paga quando chegar • R${" "}
 										{calculatePrice(
 											selectedSlot.slot.price,
@@ -1696,10 +1568,10 @@ Qual a chave PIX?`;
 									{/* Divider */}
 									<div className="relative my-4">
 										<div className="absolute inset-0 flex items-center">
-											<div className="w-full border-t border-gray-200"></div>
+											<div className="w-full border-t border-slate-200"></div>
 										</div>
 										<div className="relative flex justify-center text-xs uppercase">
-											<span className="bg-white px-2 text-gray-300 font-medium">
+											<span className="bg-white px-2 text-slate-400 font-medium">
 												ou pagar via PIX
 											</span>
 										</div>
@@ -1846,8 +1718,8 @@ function PublicSkeleton() {
 				{[...Array(3)].map((_, i) => (
 					<div
 						key={i}
-						className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-						<div className="p-4 border-b border-gray-50 flex justify-between items-center">
+						className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+						<div className="p-4 border-b border-slate-100 flex justify-between items-center">
 							<div className="flex items-center gap-3">
 								<Skeleton className="w-10 h-10 rounded-full bg-gray-100" />
 								<div className="space-y-2">
@@ -1860,7 +1732,7 @@ function PublicSkeleton() {
 							{[...Array(6)].map((_, j) => (
 								<Skeleton
 									key={j}
-									className="h-[72px] rounded-xl bg-gray-50 border-2 border-transparent"
+									className="h-[72px] rounded-lg bg-slate-50 border border-transparent"
 								/>
 							))}
 						</div>

@@ -5,22 +5,22 @@
 
 export const focusStyles = {
     // Focus ring padrão (3px outline, contraste 7:1)
-    ring: "focus:outline-none focus:ring-4 focus:ring-emerald-500/60 focus:ring-offset-2 focus:ring-offset-gray-900",
+    ring: "focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:ring-offset-2 focus:ring-offset-blue-50",
 
-    // Focus para botões primários (emerald)
-    buttonPrimary: "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]",
+    // Focus para botões primários
+    buttonPrimary: "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50",
 
     // Focus para botões secundários
-    buttonSecondary: "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]",
+    buttonSecondary: "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50",
 
     // Focus para links
-    link: "focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 focus-visible:decoration-2 focus-visible:decoration-emerald-400",
+    link: "focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4 focus-visible:decoration-2 focus-visible:decoration-blue-500",
 
     // Focus para inputs
-    input: "focus:outline-none focus:ring-4 focus:ring-emerald-500/50 focus:border-emerald-500",
+    input: "focus:outline-none focus:ring-4 focus:ring-blue-500/40 focus:border-blue-600",
 
     // Focus para cards interativos
-    card: "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]",
+    card: "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50",
 };
 
 /**
@@ -30,9 +30,9 @@ export const a11yFocusClasses = {
     buttonPrimary: `
 		focus-visible:outline-none
 		focus-visible:ring-4
-		focus-visible:ring-emerald-400/70
+		focus-visible:ring-blue-500/60
 		focus-visible:ring-offset-2
-		focus-visible:ring-offset-[#020205]
+		focus-visible:ring-offset-blue-50
 		transition-all
 		duration-200
 	`,
@@ -40,9 +40,9 @@ export const a11yFocusClasses = {
     buttonSecondary: `
 		focus-visible:outline-none
 		focus-visible:ring-4
-		focus-visible:ring-white/40
+		focus-visible:ring-blue-300/60
 		focus-visible:ring-offset-2
-		focus-visible:ring-offset-[#020205]
+		focus-visible:ring-offset-blue-50
 		transition-all
 		duration-200
 	`,
@@ -52,16 +52,16 @@ export const a11yFocusClasses = {
 		focus-visible:underline
 		focus-visible:underline-offset-4
 		focus-visible:decoration-2
-		focus-visible:decoration-emerald-400
+		focus-visible:decoration-blue-500
 		transition-all
 		duration-200
 	`,
 
-    input: `
+	input: `
 		focus:outline-none
 		focus:ring-4
-		focus:ring-emerald-500/50
-		focus:border-emerald-500
+		focus:ring-blue-500/40
+		focus:border-blue-600
 		transition-all
 		duration-200
 	`,

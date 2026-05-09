@@ -1,6 +1,6 @@
 /**
  * Hook para monitorar status do trial em tempo real
- * Atualiza a cada minuto e detecta variante do teste A/B
+ * Atualiza a cada minuto e normaliza o trial padrão de 7 dias
  */
 
 import { useState, useEffect } from "react";
@@ -12,7 +12,7 @@ export interface TrialStatus {
   hoursRemaining: number;
   minutesRemaining: number;
   totalDays: number;
-  variant: "control_21d" | "test_7d" | "legacy";
+  variant: "test_7d" | "legacy";
   canExtend: boolean;
   extensionDaysUsed: number;
   trialEndsAt: string;
@@ -63,7 +63,7 @@ export function useTrialStatus(tenantId: string): TrialStatus | null {
         hoursRemaining: Math.max(0, hoursRemaining),
         minutesRemaining: Math.max(0, minutesRemaining),
         totalDays,
-        variant: data.trial_variant || "legacy",
+        variant: data.trial_variant === "test_7d" ? "test_7d" : "legacy",
         canExtend: (data.trial_extension_days || 0) < 7,
         extensionDaysUsed: data.trial_extension_days || 0,
         trialEndsAt: data.trial_ends_at,

@@ -52,38 +52,8 @@ export function DivulgacaoCard() {
 
 		loadTenant();
 
-		// 🔥 REALTIME: Atualiza nome da arena, subdomain e telefone em tempo real
-		const channel = supabase
-			.channel(`divulgacao-tenant-${tenantId}`)
-			.on(
-				"postgres_changes",
-				{
-					event: "UPDATE",
-					schema: "public",
-					table: "tenants",
-					filter: `id=eq.${tenantId}`,
-				},
-				(payload) => {
-					if (!active) return;
-					const updated = payload.new as {
-						business_name?: string;
-						subdomain?: string;
-						phone?: string;
-					};
-					if (updated.business_name) setArenaName(updated.business_name);
-					if (updated.subdomain) setSubdomain(updated.subdomain);
-					if (updated.phone) setWhatsapp(updated.phone);
-					console.log(
-						"✅ [DivulgacaoCard] Nome da arena atualizado em tempo real:",
-						updated.business_name,
-					);
-				},
-			)
-			.subscribe();
-
 		return () => {
 			active = false;
-			supabase.removeChannel(channel);
 		};
 	}, [tenantId]);
 

@@ -27,6 +27,8 @@ dist-ssr
 *.local
 build-output.txt
 performance-report.json
+playwright-report/
+test-results/
 
 # Editor directories and files
 .vscode/*
