@@ -972,29 +972,33 @@ function ProductSuiteSection({
 	const products = [
 		{
 			icon: CalendarDays,
-			title: "Agenda online",
-			desc: "Horários livres, reservas e bloqueios em uma visão simples para a equipe.",
+			title: "Agenda confiável",
+			desc: "Horários livres, reservas, bloqueios e ocupação em uma visão única para a equipe.",
+			result: "Menos conflito de horário",
 			action: "Organizar agenda",
 			tone: "blue",
 		},
 		{
 			icon: MessageSquare,
-			title: "Reserva por link",
-			desc: "O jogador escolhe a quadra, vê disponibilidade e envia a reserva sozinho.",
+			title: "Link de reserva",
+			desc: "O cliente vê disponibilidade, escolhe quadra e solicita a reserva sem instalar aplicativo.",
+			result: "Menos atendimento repetido",
 			action: "Criar link público",
 			tone: "cyan",
 		},
 		{
 			icon: BarChart3,
-			title: "Painel financeiro",
-			desc: "Receita do dia, ocupação, jogos pagos e sinal pendente sem planilha.",
+			title: "Painel da operação",
+			desc: "Receita do dia, ocupação, pagamentos confirmados e pendências sem depender de planilha.",
+			result: "Mais clareza para decidir",
 			action: "Ver relatórios",
 			tone: "indigo",
 		},
 		{
 			icon: Users,
 			title: "Mensalistas",
-			desc: "Controle clientes fixos, horários recorrentes e pagamentos em aberto.",
+			desc: "Controle clientes fixos, horários recorrentes e pendências sem misturar tudo na agenda avulsa.",
+			result: "Recorrência sob controle",
 			action: "Gerenciar fixos",
 			tone: "amber",
 		},
@@ -1008,21 +1012,26 @@ function ProductSuiteSection({
 	};
 
 	return (
-		<section className="relative px-4 py-20">
+		<section className="relative px-4 py-24">
 			<div className="mx-auto max-w-6xl">
-				<div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
 						<p className="text-sm font-black uppercase tracking-[0.22em] text-blue-600">
-							Soluções ArenaSys
+							Do chat ao painel
 						</p>
 						<h2 className="mt-3 max-w-2xl text-3xl font-black tracking-tight text-slate-950 md:text-5xl">
-							Tudo que sua arena precisa para vender horários online.
+							Uma camada simples para organizar o que hoje fica espalhado.
 						</h2>
+						<p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+							O ArenaSys não tenta mudar a rotina da sua arena de uma vez. Ele
+							coloca reservas, horários e clientes em um fluxo mais fácil de
+							acompanhar.
+						</p>
 					</div>
 					<button
 						onClick={onPrimaryAction}
-						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700">
-						Começar grátis
+						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 lg:justify-self-end">
+						Testar na minha arena
 						<ArrowRight className="h-4 w-4" />
 					</button>
 				</div>
@@ -1045,6 +1054,9 @@ function ProductSuiteSection({
 							<p className="mt-3 flex-1 text-sm leading-6 text-slate-600">
 								{product.desc}
 							</p>
+							<div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+								{product.result}
+							</div>
 							<button
 								onClick={onPrimaryAction}
 								className="mt-6 inline-flex items-center gap-2 text-sm font-black text-blue-600 transition-colors group-hover:text-blue-700">
