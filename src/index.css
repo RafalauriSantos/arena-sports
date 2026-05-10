@@ -401,12 +401,12 @@
   color: #0f172a !important;
 }
 
-.login-light > .fixed > div:first-child {
+.login-light>.fixed>div:first-child {
   opacity: 0.14 !important;
   filter: saturate(0.9);
 }
 
-.login-light > .fixed > div:nth-child(2) {
+.login-light>.fixed>div:nth-child(2) {
   background:
     linear-gradient(90deg, rgba(238, 244, 251, 0.98), rgba(247, 250, 255, 0.94), rgba(232, 241, 251, 0.74)) !important;
 }
@@ -615,6 +615,30 @@
 }
 
 @layer utilities {
+  .marketing-dark {
+    background-color: #02040a;
+  }
+
+  .marketing-dark-muted {
+    background-color: rgba(2, 4, 10, 0.8);
+  }
+
+  .marketing-dark-panel {
+    background-color: #050507;
+  }
+
+  .marketing-dark-deep {
+    background-color: #0a0a0a;
+  }
+
+  .marketing-dark-deep-muted {
+    background-color: rgba(10, 10, 10, 0.8);
+  }
+
+  .marketing-dark-deep-95 {
+    background-color: rgba(10, 10, 10, 0.95);
+  }
+
   .glow-primary {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
       0 0 40px hsl(var(--primary) / 0.15);
@@ -1422,7 +1446,7 @@
     linear-gradient(180deg, #eef4fb 0%, #f7faff 46%, #e8f1fb 100%);
 }
 
-.landing-light > .fixed:first-of-type {
+.landing-light>.fixed:first-of-type {
   background:
     radial-gradient(ellipse 80% 52% at 50% -20%, rgba(37, 99, 235, 0.12) 0%, transparent 56%),
     radial-gradient(ellipse 58% 42% at 100% 36%, rgba(14, 165, 233, 0.10) 0%, transparent 44%),
@@ -1430,12 +1454,12 @@
     linear-gradient(180deg, #eef4fb 0%, #f7faff 54%, #e8f1fb 100%) !important;
 }
 
-.landing-light > .fixed:nth-of-type(2),
-.landing-light > .fixed:nth-of-type(3) {
+.landing-light>.fixed:nth-of-type(2),
+.landing-light>.fixed:nth-of-type(3) {
   opacity: 0.18;
 }
 
-.landing-light > .fixed:nth-of-type(4) {
+.landing-light>.fixed:nth-of-type(4) {
   opacity: 0.38;
 }
 
@@ -1499,7 +1523,9 @@
   background-color: rgba(251, 253, 255, 0.86) !important;
 }
 
-.landing-light [class*="bg-[#0a0a0a]"],
+.landing-light .marketing-dark-deep,
+.landing-light .marketing-dark-deep-muted,
+.landing-light .marketing-dark-deep-95,
 .landing-light [class*="bg-[#050507]"],
 .landing-light .bg-black\/30,
 .landing-light .bg-black\/40 {
@@ -1591,7 +1617,9 @@
   color: #34d399 !important;
 }
 
-.landing-light .landing-device [class*="bg-[#0a0a0a]"],
+.landing-light .landing-device .marketing-dark-deep,
+.landing-light .landing-device .marketing-dark-deep-muted,
+.landing-light .landing-device .marketing-dark-deep-95,
 .landing-light .landing-device [class*="bg-[#050507]"],
 .landing-light .landing-device .bg-black,
 .landing-light .landing-device .bg-black\/40 {

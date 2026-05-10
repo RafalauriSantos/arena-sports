@@ -3,7 +3,7 @@ import { disableServiceWorker } from "../utils/browser";
 import { expectNoHorizontalOverflow, trackPageIssues } from "../utils/page-issues";
 
 const publicRoutes = [
-	{ path: "/", heading: /Organize sua arena/i },
+	{ path: "/", heading: /A agenda da sua arena/i },
 	{ path: "/about", heading: /Libertar donos de arena/i },
 	{ path: "/support", heading: /Central de Suporte/i },
 	{ path: "/privacy", heading: /Pol[ií]tica de Privacidade/i },
@@ -53,6 +53,8 @@ test("unknown route shows 404 and returns home @qa", async ({ page }) => {
 	await page.goto("/rota-inexistente-qa", { waitUntil: "domcontentloaded" });
 
 	await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
-	await page.getByRole("link", { name: /return to home/i }).click();
+	await page
+		.getByRole("link", { name: /return to home|voltar para a home/i })
+		.click();
 	await expect(page).toHaveURL(/\/$/);
 });

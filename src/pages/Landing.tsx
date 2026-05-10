@@ -1,12 +1,4 @@
-import {
-	useEffect,
-	useState,
-	useRef,
-	useCallback,
-	useMemo,
-	lazy,
-	Suspense,
-} from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Zap,
@@ -36,19 +28,44 @@ const STARS_CONFIG = Array.from({ length: 25 }, (_, i) => ({
 	delay: Math.random() * 4,
 }));
 
+function usePrefersReducedMotion() {
+	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+	useEffect(() => {
+		if (typeof window === "undefined" || !("matchMedia" in window)) return;
+		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
+		handleChange();
+		if (mediaQuery.addEventListener) {
+			mediaQuery.addEventListener("change", handleChange);
+			return () => mediaQuery.removeEventListener("change", handleChange);
+		}
+		mediaQuery.addListener(handleChange);
+		return () => mediaQuery.removeListener(handleChange);
+	}, []);
+
+	return prefersReducedMotion;
+}
+
 // --- HOOK: ANIMAÇÃO DE CONTAGEM (Count-Up) ---
 function useCountUp(
 	end: number,
 	duration: number = 2000,
 	shouldStart: boolean = true,
 	decimals: number = 0,
+	prefersReducedMotion: boolean = false,
 ): number {
 	const [count, setCount] = useState(0);
 	const startTimeRef = useRef<number | null>(null);
 	const hasStartedRef = useRef(false);
 
 	useEffect(() => {
-		if (!shouldStart || hasStartedRef.current) return;
+		if (!shouldStart) return;
+		if (prefersReducedMotion) {
+			setCount(end);
+			return;
+		}
+		if (hasStartedRef.current) return;
 		hasStartedRef.current = true;
 
 		const startValue = 0;
@@ -70,7 +87,7 @@ function useCountUp(
 		};
 
 		requestAnimationFrame(animate);
-	}, [end, duration, shouldStart, decimals]);
+	}, [end, duration, shouldStart, decimals, prefersReducedMotion]);
 
 	return count;
 }
@@ -78,11 +95,16 @@ function useCountUp(
 // --- HOOK: DETECTAR VISIBILIDADE (IntersectionObserver) ---
 function useInView(
 	options?: IntersectionObserverInit,
+	disabled: boolean = false,
 ): [React.RefObject<HTMLDivElement>, boolean] {
 	const ref = useRef<HTMLDivElement>(null);
 	const [isInView, setIsInView] = useState(false);
 
 	useEffect(() => {
+		if (disabled) {
+			setIsInView(true);
+			return;
+		}
 		const element = ref.current;
 		if (!element) return;
 
@@ -98,17 +120,22 @@ function useInView(
 
 		observer.observe(element);
 		return () => observer.disconnect();
-	}, [options]);
+	}, [options, disabled]);
 
 	return [ref, isInView];
 }
 
 // --- HOOK: ROTATING TEXT (Apple-style) ---
-function useRotatingText(words: string[], interval: number = 3000) {
+function useRotatingText(
+	words: string[],
+	interval: number = 3000,
+	prefersReducedMotion: boolean = false,
+) {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isAnimating, setIsAnimating] = useState(false);
 
 	useEffect(() => {
+		if (prefersReducedMotion) return;
 		const timer = setInterval(() => {
 			setIsAnimating(true);
 			setTimeout(() => {
@@ -117,9 +144,12 @@ function useRotatingText(words: string[], interval: number = 3000) {
 			}, 300);
 		}, interval);
 		return () => clearInterval(timer);
-	}, [words.length, interval]);
+	}, [words.length, interval, prefersReducedMotion]);
 
-	return { word: words[currentIndex], isAnimating };
+	return {
+		word: prefersReducedMotion ? (words[0] ?? "") : words[currentIndex],
+		isAnimating: prefersReducedMotion ? false : isAnimating,
+	};
 }
 
 // --- HOOK: 3D TILT EFFECT ---
@@ -128,6 +158,7 @@ function useTilt(intensity: number = 15) {
 	const [style, setStyle] = useState({
 		transform: "perspective(1000px) rotateX(0deg) rotateY(0deg)",
 	});
+	const prefersReducedMotion = usePrefersReducedMotion();
 
 	const handleMouseMove = useCallback(
 		(e: MouseEvent) => {
@@ -153,6 +184,7 @@ function useTilt(intensity: number = 15) {
 	}, []);
 
 	useEffect(() => {
+		if (prefersReducedMotion) return;
 		const element = ref.current;
 		if (!element) return;
 		element.addEventListener("mousemove", handleMouseMove);
@@ -161,7 +193,7 @@ function useTilt(intensity: number = 15) {
 			element.removeEventListener("mousemove", handleMouseMove);
 			element.removeEventListener("mouseleave", handleMouseLeave);
 		};
-	}, [handleMouseMove, handleMouseLeave]);
+	}, [handleMouseMove, handleMouseLeave, prefersReducedMotion]);
 
 	return { ref, style };
 }
@@ -215,7 +247,8 @@ function ScrollReveal({
 	delay?: number;
 	className?: string;
 }) {
-	const [ref, isInView] = useInView();
+	const prefersReducedMotion = usePrefersReducedMotion();
+	const [ref, isInView] = useInView(undefined, prefersReducedMotion);
 	return (
 		<div
 			ref={ref}
@@ -236,6 +269,7 @@ function useTypewriter(
 	typingSpeed = 100,
 	deletingSpeed = 50,
 	pauseDuration = 2000,
+	prefersReducedMotion: boolean = false,
 ) {
 	const [currentWordIndex, setCurrentWordIndex] = useState(0);
 	const [currentText, setCurrentText] = useState("");
@@ -243,6 +277,10 @@ function useTypewriter(
 	const [isPaused, setIsPaused] = useState(false);
 
 	useEffect(() => {
+		if (prefersReducedMotion) {
+			setCurrentText(words[0] ?? "");
+			return;
+		}
 		const currentWord = words[currentWordIndex];
 
 		if (isPaused) {
@@ -282,6 +320,7 @@ function useTypewriter(
 		typingSpeed,
 		deletingSpeed,
 		pauseDuration,
+		prefersReducedMotion,
 	]);
 
 	return { text: currentText, isTyping: !isDeleting && !isPaused };
@@ -290,7 +329,8 @@ function useTypewriter(
 // --- COMPONENTE: HERO COM EFEITO TYPEWRITER ---
 function RotatingHeroText() {
 	const words = ["confusão.", "calote.", "bagunça.", "estresse."];
-	const { text } = useTypewriter(words, 80, 40, 1800);
+	const prefersReducedMotion = usePrefersReducedMotion();
+	const { text } = useTypewriter(words, 80, 40, 1800, prefersReducedMotion);
 
 	return (
 		<h1 className="text-[2.75rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.0] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -323,8 +363,15 @@ function AnimatedValue({
 	duration?: number;
 	decimals?: number;
 }) {
-	const [ref, isInView] = useInView();
-	const count = useCountUp(value, duration, isInView, decimals);
+	const prefersReducedMotion = usePrefersReducedMotion();
+	const [ref, isInView] = useInView(undefined, prefersReducedMotion);
+	const count = useCountUp(
+		value,
+		duration,
+		isInView,
+		decimals,
+		prefersReducedMotion,
+	);
 
 	return (
 		<span ref={ref} className={`number-display ${className}`}>
@@ -365,33 +412,6 @@ const faqList = [
 	},
 ];
 
-// --- HOOKS & UTILS ---
-function useScrollAnimation() {
-	const [visibleElements, setVisibleElements] = useState<Set<string>>(
-		new Set(),
-	);
-
-	useEffect(() => {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						setVisibleElements((prev) => new Set(prev).add(entry.target.id));
-					}
-				});
-			},
-			{ threshold: 0.1, rootMargin: "0px 0px -50px 0px" },
-		);
-
-		const elements = document.querySelectorAll("[data-animate]");
-		elements.forEach((el) => observer.observe(el));
-
-		return () => observer.disconnect();
-	}, []);
-
-	return visibleElements;
-}
-
 // --- MOCKUPS VISUAIS ---
 function IPhoneMockup({ children }: { children: React.ReactNode }) {
 	return (
@@ -416,7 +436,7 @@ function MacBookMockup({ children }: { children: React.ReactNode }) {
 	return (
 		<div className="landing-device relative transform hover:scale-[1.01] transition-transform duration-500">
 			<div className="relative w-[280px] md:w-[580px] bg-[#121212] rounded-t-xl p-1.5 border border-[#333] shadow-2xl">
-				<div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#0a0a0a] rounded-full" />
+				<div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 marketing-dark-deep rounded-full" />
 				<div className="w-full h-[160px] md:h-[360px] bg-black rounded-lg overflow-hidden border border-white/5 relative group">
 					{children}
 					<div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none group-hover:opacity-50 transition-opacity duration-700" />
@@ -437,7 +457,7 @@ function CalendarAppScreen() {
 
 	return (
 		<div
-			className="h-full bg-[#0a0a0a] font-sans flex flex-col overflow-hidden"
+			className="h-full marketing-dark-deep font-sans flex flex-col overflow-hidden"
 			aria-hidden="true">
 			{/* Header com Arena Info */}
 			<div className="relative px-4 pt-2 pb-3 border-b border-white/5">
@@ -606,7 +626,7 @@ function CalendarAppScreen() {
 			</div>
 
 			{/* Bottom CTA */}
-			<div className="p-3 border-t border-white/5 bg-[#0a0a0a]/80 backdrop-blur">
+			<div className="p-3 border-t border-white/5 marketing-dark-deep-muted backdrop-blur">
 				<button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-bold text-[11px] flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 active:scale-[0.98] transition-transform">
 					Confirmar Reserva • R$ 120
 					<span className="text-[10px]">→</span>
@@ -620,10 +640,10 @@ function CalendarAppScreen() {
 function DashboardAppScreen() {
 	return (
 		<div
-			className="h-full bg-[#050507] font-sans relative overflow-hidden flex"
+			className="h-full marketing-dark-panel font-sans relative overflow-hidden flex"
 			aria-hidden="true">
 			{/* Sidebar Mini */}
-			<div className="w-12 md:w-14 bg-[#0a0a0a] border-r border-white/5 flex flex-col items-center py-3 gap-3">
+			<div className="w-12 md:w-14 marketing-dark-deep border-r border-white/5 flex flex-col items-center py-3 gap-3">
 				<div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
 					<Zap className="w-3 h-3 md:w-4 md:h-4 text-black" />
 				</div>
@@ -896,9 +916,7 @@ function HeroProductPreview() {
 							<h3 className="text-sm font-black text-slate-950">
 								Agenda das quadras
 							</h3>
-							<span className="text-xs font-semibold text-slate-500">
-								Hoje
-							</span>
+							<span className="text-xs font-semibold text-slate-500">Hoje</span>
 						</div>
 						<div className="space-y-2">
 							{daySlots.map((slot) => (
@@ -914,8 +932,7 @@ function HeroProductPreview() {
 									<span
 										className={cn(
 											"rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wide",
-											slot.tone === "green" &&
-												"bg-emerald-50 text-emerald-700",
+											slot.tone === "green" && "bg-emerald-50 text-emerald-700",
 											slot.tone === "amber" && "bg-amber-50 text-amber-700",
 											slot.tone === "blue" && "bg-blue-50 text-blue-700",
 										)}>
@@ -1046,15 +1063,12 @@ function ProductSuiteSection({
 
 export default function LandingPage() {
 	const navigate = useNavigate();
-	const visibleElements = useScrollAnimation();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [foundersProgress, setFoundersProgress] = useState<{
 		cap: number;
 		sold: number;
 		remaining: number;
 	} | null>(null);
-
-	const isVisible = (id: string) => visibleElements.has(id);
 	const startSignup = () => navigate("/login?mode=signup");
 
 	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
@@ -1113,7 +1127,7 @@ export default function LandingPage() {
 		<>
 			<SEO
 				title="Sistema de gestão e agendamento de quadras esportivas | ArenaSys"
-				description="Agenda online simples para quadras esportivas. Saia do WhatsApp, envie um link de reserva e organize horários em minutos. Founders por R$ 49/mês para as primeiras arenas. Teste grátis 7 dias."
+				description="Agenda online para quadras esportivas. Coloque horários, reservas e clientes em um painel simples, envie um link para reservas e acompanhe a operação da sua arena com clareza."
 				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
@@ -1474,7 +1488,7 @@ export default function LandingPage() {
 					<nav className="relative flex items-center justify-between w-full max-w-4xl h-14 rounded-full">
 						{/* Animated gradient border */}
 						<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/50 via-cyan-500/50 to-emerald-500/50 animate-gradient opacity-60" />
-						<div className="absolute inset-[1px] rounded-full bg-[#0a0a0a]/95 backdrop-blur-2xl" />
+						<div className="absolute inset-[1px] rounded-full marketing-dark-deep-95 backdrop-blur-2xl" />
 
 						{/* Inner content */}
 						<div className="relative z-10 flex items-center justify-between w-full px-4">
@@ -1550,7 +1564,7 @@ export default function LandingPage() {
 						{mobileMenuOpen && (
 							<div className="absolute top-full left-0 right-0 mt-3 mx-2 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden z-[100]">
 								<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent opacity-50" />
-								<div className="relative p-5 bg-[#0a0a0a] backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl shadow-black/50">
+								<div className="relative p-5 marketing-dark-deep backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl shadow-black/50">
 									<a
 										href="#pricing"
 										onClick={() => setMobileMenuOpen(false)}
@@ -1605,23 +1619,23 @@ export default function LandingPage() {
 						style={{ animationDelay: "2s" }}
 					/>
 
-					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.92fr_1.08fr]">
-						<div className="space-y-7 text-center lg:text-left">
+					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+						<div className="space-y-8 text-center lg:text-left">
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
 								<div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-blue-600" />
-									Founders: primeiras arenas por R$ 49/mês
+									Founders aberto para arenas que querem operar melhor
 								</div>
 							</div>
 
 							<div className="space-y-5">
-								<h1 className="text-[2.85rem] font-black leading-[0.96] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
-									Saia do WhatsApp sem pagar caro por um sistema complexo.
+								<h1 className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
+									A agenda da sua arena, finalmente no lugar certo.
 								</h1>
-								<p className="mx-auto max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl lg:mx-0">
-									O ArenaSys é uma agenda online simples para quadras. Você
-									cadastra horários, envia um link de reserva e acompanha agenda,
-									receita e clientes em um painel direto.
+								<p className="mx-auto max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl lg:mx-0 lg:max-w-xl">
+									O ArenaSys organiza horários, reservas e clientes em um painel
+									simples. Você envia um link, o cliente escolhe o horário e sua
+									equipe acompanha tudo sem depender de conversa perdida.
 								</p>
 							</div>
 
@@ -1630,27 +1644,46 @@ export default function LandingPage() {
 									onClick={startSignup}
 									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-blue-600 px-7 text-base font-bold text-white shadow-[0_18px_38px_-20px_rgba(37,99,235,0.95)] transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] sm:w-auto focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
 									aria-label="Testar grátis agora - começar teste de 7 dias">
-									Entrar como Founder
+									Começar teste grátis
 									<ArrowRight className="h-5 w-5" />
 								</button>
 								<button
-									onClick={() => navigate("/login")}
+									onClick={() =>
+										document
+											.getElementById("pricing")
+											?.scrollIntoView({ behavior: "smooth" })
+									}
 									className="flex h-14 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-7 text-base font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto"
-									aria-label="Entrar no ArenaSys">
-									Entrar
+									aria-label="Ver oferta Founders">
+									Ver oferta
 								</button>
+							</div>
+
+							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600 lg:justify-start">
+								{[
+									"Sem app para o cliente",
+									"7 dias grátis",
+									"Setup guiado",
+								].map((item) => (
+									<div key={item} className="inline-flex items-center gap-2">
+										<Check className="h-4 w-4 text-blue-600" />
+										<span>{item}</span>
+									</div>
+								))}
 							</div>
 
 							<div className="grid grid-cols-3 gap-3 pt-1 text-left">
 								{[
-									["7 dias", "grátis"],
-									["R$ 49", "founders"],
-									["15 min", "para começar"],
+									["Link", "para reservar"],
+									["Agenda", "em tempo real"],
+									["Painel", "para gerir"],
 								].map(([value, label]) => (
 									<div
 										key={label}
-										className="rounded-xl border border-slate-200 bg-white/75 p-3 shadow-sm">
-										<p className="text-xl font-black text-slate-950">{value}</p>
+										className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+										<p className="text-lg font-black text-slate-950 sm:text-xl">
+											{value}
+										</p>
 										<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
 											{label}
 										</p>
@@ -1663,55 +1696,74 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- SEÇÃO PROBLEMA: com cards 3D tilt --- */}
+				{/* --- SEÇÃO PROBLEMA: diagnostico da operacao --- */}
 				<section className="relative px-4 py-24">
-					<div className="max-w-5xl mx-auto">
-						<ScrollReveal className="text-center mb-12">
-							<p className="text-red-400/80 text-sm font-bold uppercase tracking-widest mb-3">
-								Parece familiar?
+					<div className="mx-auto max-w-6xl">
+						<ScrollReveal className="mx-auto mb-14 max-w-3xl text-center">
+							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-red-400/80">
+								O custo invisivel da agenda manual
 							</p>
-							<h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white">
-								O problema aparece antes de parecer grande
+							<h2 className="text-3xl font-black text-white md:text-4xl lg:text-5xl">
+								Enquanto a reserva depende de conversa, sua operação depende de
+								memória.
 							</h2>
 							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-gray-300">
-								Quando a agenda fica espalhada, a equipe perde tempo, o cliente
-								espera resposta e os conflitos começam.
+								O WhatsApp continua útil para relacionamento. O problema começa
+								quando ele vira agenda, caixa, histórico e controle ao mesmo
+								tempo.
 							</p>
 						</ScrollReveal>
 
-						<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+						<div className="grid gap-5 lg:grid-cols-3">
 							{[
 								{
 									icon: MessageSquare,
-									enemy: "WhatsApp",
-									pain: "Perguntas repetidas sobre horário tomam o dia da equipe.",
+									label: "Atendimento preso no chat",
+									pain: "A equipe responde a mesma pergunta de horário várias vezes por dia, mesmo quando a quadra está livre.",
+									impact: "tempo perdido",
 								},
 								{
 									icon: CalendarDays,
-									enemy: "Agenda manual",
-									pain: "Reservas soltas aumentam o risco de conflito e esquecimento.",
+									label: "Agenda sem fonte única",
+									pain: "Reservas ficam em mensagens, cadernos e lembranças. Basta uma troca de turno para o conflito aparecer.",
+									impact: "risco de conflito",
 								},
 								{
 									icon: CreditCard,
-									enemy: "No-show",
-									pain: "Sem controle simples, fica difícil saber o que entrou e o que ficou pendente.",
+									label: "Receita difícil de enxergar",
+									pain: "Sem um painel simples, fica mais difícil saber o que entrou, o que está pendente e quais horários vendem melhor.",
+									impact: "visão fraca",
 								},
 							].map((item, i) => (
-								<ScrollReveal key={i} delay={i * 100}>
-									<TiltCard className="h-full p-8 rounded-3xl bg-gradient-to-br from-red-500/10 to-red-500/5 border border-red-500/20 hover:border-red-500/40 transition-colors duration-300">
-										<div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mb-5">
-											<item.icon className="w-7 h-7 text-red-400" />
+								<ScrollReveal key={item.label} delay={i * 100}>
+									<TiltCard className="group h-full rounded-3xl border border-white/10 bg-white/[0.035] p-7 backdrop-blur-sm transition-colors duration-300 hover:border-red-400/40">
+										<div className="mb-6 flex items-center justify-between gap-4">
+											<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/10">
+												<item.icon className="h-7 w-7 text-red-300" />
+											</div>
+											<span className="rounded-full border border-red-400/15 bg-red-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-200">
+												{item.impact}
+											</span>
 										</div>
-										<h3 className="text-white font-bold text-xl mb-3">
-											{item.enemy}
+										<h3 className="mb-3 text-xl font-bold text-white">
+											{item.label}
 										</h3>
-										<p className="text-gray-300 text-base leading-relaxed">
+										<p className="text-base leading-relaxed text-gray-300">
 											{item.pain}
 										</p>
 									</TiltCard>
 								</ScrollReveal>
 							))}
 						</div>
+
+						<ScrollReveal delay={250}>
+							<div className="mt-8 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 text-center backdrop-blur-sm">
+								<p className="text-lg font-semibold leading-8 text-emerald-50">
+									A solução não é abandonar o WhatsApp. É tirar a agenda de
+									dentro dele.
+								</p>
+							</div>
+						</ScrollReveal>
 					</div>
 				</section>
 
@@ -1960,13 +2012,13 @@ export default function LandingPage() {
 					<ScrollReveal>
 						<div className="max-w-3xl mx-auto text-center relative z-10">
 							<h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
-								Valide o ArenaSys na sua arena
+								Coloque sua arena em uma agenda que trabalha por você
 								<br />
-								<span className="text-emerald-400">por R$ 49/mês.</span>
+								<span className="text-emerald-400">antes do próximo horário cheio.</span>
 							</h2>
 							<p className="text-gray-300 text-xl mb-10 max-w-xl mx-auto">
-								Oferta Founders limitada às primeiras arenas. 7 dias grátis, sem
-								cartão e com suporte direto.
+								Entre no Founders, teste por 7 dias sem cartão e organize suas
+								reservas com suporte direto.
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
