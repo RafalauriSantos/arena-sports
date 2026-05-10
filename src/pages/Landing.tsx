@@ -1097,6 +1097,9 @@ export default function LandingPage() {
 		remaining: number;
 	} | null>(null);
 	const startSignup = () => navigate("/login?mode=signup");
+	const hasActiveFoundersOffer =
+		!foundersProgress || foundersProgress.remaining > 0;
+	const foundersCap = foundersProgress?.cap ?? 20;
 
 	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
 	// Sem isto, o token fica na home e a tela de "Nova senha" nunca aparece.
@@ -1852,7 +1855,7 @@ export default function LandingPage() {
 				{/* --- SEÇÃO PREÇO: com glow e animações --- */}
 				<section
 					id="pricing"
-					className="relative py-32 px-4 border-y border-white/5 overflow-hidden">
+					className="relative scroll-mt-24 py-32 px-4 border-y border-white/5 overflow-hidden">
 					{/* Background glow */}
 					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[150px] animate-pulse-glow" />
 
@@ -1909,9 +1912,9 @@ export default function LandingPage() {
 
 						<ScrollReveal delay={200}>
 							<TiltCard className="relative rounded-3xl p-8 pt-14 md:p-10 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
-								{foundersProgress && foundersProgress.remaining > 0 && (
+								{hasActiveFoundersOffer && (
 									<div className="absolute -top-4 md:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs md:text-sm font-bold px-4 md:px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
-										FOUNDERS: primeiras {foundersProgress.cap} arenas
+										FOUNDERS: primeiras {foundersCap} arenas
 									</div>
 								)}
 
@@ -1924,7 +1927,7 @@ export default function LandingPage() {
 										real da sua arena.
 									</h3>
 
-									{foundersProgress && foundersProgress.remaining > 0 ?
+									{hasActiveFoundersOffer ?
 										<>
 											{/* Preço Founders */}
 											<div className="flex items-baseline justify-center gap-2 mb-3">
@@ -1945,11 +1948,15 @@ export default function LandingPage() {
 												</span>
 											</div>
 											<p className="text-gray-300 text-sm">
-												Restam{" "}
-												<span className="text-white font-bold">
-													{foundersProgress.remaining} vagas
-												</span>{" "}
-												para entrar nessa condição
+												{foundersProgress ?
+													<>
+														Restam{" "}
+														<span className="text-white font-bold">
+															{foundersProgress.remaining} vagas
+														</span>{" "}
+														para entrar nessa condição
+													</>
+												:	"Condição ativa enquanto as vagas Founders estiverem abertas"}
 											</p>
 										</>
 									:	<>
@@ -1968,7 +1975,7 @@ export default function LandingPage() {
 								</div>
 
 								{/* Comparativo de condicao */}
-								{foundersProgress && foundersProgress.remaining > 0 && (
+								{hasActiveFoundersOffer && (
 									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
 										<div className="text-center">
 											<p className="text-gray-300 text-xs uppercase tracking-wider mb-1">
@@ -2041,7 +2048,7 @@ export default function LandingPage() {
 				{/* --- FAQ --- */}
 				<section
 					id="faq"
-					className="relative py-28 px-4 border-t border-white/5">
+					className="relative scroll-mt-24 py-28 px-4 border-t border-white/5">
 					<div className="max-w-3xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
 							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-emerald-300/80">
