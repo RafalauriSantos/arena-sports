@@ -1844,37 +1844,56 @@ export default function LandingPage() {
 					<div className="max-w-4xl mx-auto relative z-10">
 						<ScrollReveal className="text-center mb-16">
 							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
-								Oferta simples para conquistar as primeiras arenas
+								Entre cedo. Organize sua arena com acompanhamento direto.
 							</h2>
 							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
-								Entre como Founder, use tudo por um preço menor e ajude a moldar
-								o ArenaSys com suporte direto.
+								O Founders é para as primeiras arenas que querem implantar o
+								ArenaSys com suporte próximo, preço travado e espaço para
+								influenciar a evolução do produto.
 							</p>
 						</ScrollReveal>
 
 						<ScrollReveal delay={100}>
-							<div className="grid sm:grid-cols-2 gap-6 mb-10">
-								<div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center">
-									<p className="text-gray-300 text-sm uppercase tracking-wider mb-3">
-										Preço normal
+							<div className="grid gap-4 md:grid-cols-3 mb-10">
+								<div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+									<p className="text-sm font-bold uppercase tracking-wider text-gray-400">
+										Implantação
 									</p>
-									<p className="text-4xl font-black text-white">R$ 97</p>
-									<p className="mt-2 text-sm text-gray-300">plano Pro mensal</p>
+									<p className="mt-3 text-2xl font-black text-white">
+										Setup guiado
+									</p>
+									<p className="mt-2 text-sm leading-6 text-gray-300">
+										Ajuda para colocar quadras, horários e fluxo principal no ar.
+									</p>
 								</div>
-								<div className="p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-center animate-border-glow">
-									<p className="text-emerald-400 text-sm uppercase tracking-wider mb-3">
-										Founders
+								<div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 animate-border-glow">
+									<p className="text-sm font-bold uppercase tracking-wider text-emerald-300">
+										Condição Founders
 									</p>
-									<p className="text-4xl font-black text-emerald-400">R$ 49</p>
-									<p className="mt-2 text-sm text-gray-300">
-										para as primeiras 20 arenas
+									<p className="mt-3 text-2xl font-black text-emerald-300">
+										Preço travado
+									</p>
+									<p className="mt-2 text-sm leading-6 text-gray-300">
+										Entrada antecipada para as primeiras arenas, com plano
+										mensal reduzido.
+									</p>
+								</div>
+								<div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+									<p className="text-sm font-bold uppercase tracking-wider text-gray-400">
+										Produto
+									</p>
+									<p className="mt-3 text-2xl font-black text-white">
+										Feedback direto
+									</p>
+									<p className="mt-2 text-sm leading-6 text-gray-300">
+										Sua operação ajuda a priorizar melhorias reais da agenda.
 									</p>
 								</div>
 							</div>
 						</ScrollReveal>
 
 						<ScrollReveal delay={200}>
-							<TiltCard className="relative rounded-3xl p-10 pt-14 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
+							<TiltCard className="relative rounded-3xl p-8 pt-14 md:p-10 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
 								{foundersProgress && foundersProgress.remaining > 0 && (
 									<div className="absolute -top-4 md:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs md:text-sm font-bold px-4 md:px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
 										FOUNDERS: primeiras {foundersProgress.cap} arenas
@@ -1885,6 +1904,10 @@ export default function LandingPage() {
 									<div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-400 mb-6">
 										7 dias grátis • sem cartão • suporte direto
 									</div>
+									<h3 className="mx-auto mb-5 max-w-2xl text-2xl font-black text-white md:text-4xl">
+										Uma condição de entrada para validar o ArenaSys na operação
+										real da sua arena.
+									</h3>
 
 									{foundersProgress && foundersProgress.remaining > 0 ?
 										<>
@@ -1900,18 +1923,18 @@ export default function LandingPage() {
 											</div>
 											<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3">
 												<span className="text-emerald-400 text-sm font-bold">
-													Oferta de validação
+													Founders
 												</span>
 												<span className="text-gray-300 text-sm">
 													• preço travado por 12 meses
 												</span>
 											</div>
 											<p className="text-gray-300 text-sm">
-												Apenas{" "}
+												Restam{" "}
 												<span className="text-white font-bold">
 													{foundersProgress.remaining} vagas
 												</span>{" "}
-												com esse preço travado
+												para entrar nessa condição
 											</p>
 										</>
 									:	<>
@@ -1929,15 +1952,17 @@ export default function LandingPage() {
 									}
 								</div>
 
-								{/* Comparativo de economia */}
+								{/* Comparativo de condicao */}
 								{foundersProgress && foundersProgress.remaining > 0 && (
 									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
 										<div className="text-center">
 											<p className="text-gray-300 text-xs uppercase tracking-wider mb-1">
-												Plano normal
+												Depois do Founders
 											</p>
 											<p className="text-white font-bold">R$ 97/mês</p>
-											<p className="text-gray-400 text-xs">para novas arenas</p>
+											<p className="text-gray-400 text-xs">
+												plano Pro mensal
+											</p>
 										</div>
 										<div className="text-center border-l border-white/10">
 											<p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">
@@ -1953,11 +1978,11 @@ export default function LandingPage() {
 
 								<ul className="space-y-4 mb-8">
 									{[
-										"Agenda organizada — acabou conflito de horário",
+										"Agenda organizada para reduzir conflito de horário",
 										"Cliente reserva pelo link, sem instalar app",
-										"Relatório financeiro — veja quanto faturou",
-										"Mensalistas controlados",
-										"Setup assistido e suporte direto no WhatsApp",
+										"Painel para acompanhar receita, reservas e pendências",
+										"Mensalistas e horários recorrentes sob controle",
+										"Setup assistido e suporte direto na implantação",
 									].map((item, i) => (
 										<li
 											key={i}
