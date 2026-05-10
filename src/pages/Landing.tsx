@@ -391,24 +391,39 @@ function AnimatedValue({
 // --- FAQ: linguagem simples ---
 const faqList = [
 	{
-		question: "Quanto tempo leva pra configurar?",
+		question: "Quanto tempo leva para começar?",
 		answer:
-			"Menos de 15 minutos. Você cadastra as quadras, os preços, e seu link já está pronto pra mandar pro cliente.",
+			"A configuração inicial é simples: você cadastra quadras, horários, preços e já pode compartilhar o link de reserva com seus clientes.",
 	},
 	{
-		question: "Preciso instalar algo?",
+		question: "Meu cliente precisa instalar aplicativo?",
 		answer:
-			"Não. Tudo funciona no navegador — celular, tablet ou computador. Nada pra baixar.",
+			"Não. O cliente acessa o link pelo navegador do celular, escolhe o horário disponível e envia a solicitação de reserva.",
 	},
 	{
-		question: "Como o cliente paga?",
+		question: "Eu preciso parar de usar WhatsApp?",
 		answer:
-			"Você cobra como sempre fez: no balcão. O ArenaSys só organiza a agenda.",
+			"Não. O WhatsApp pode continuar como canal de relacionamento. A diferença é que a agenda e o controle deixam de depender só das conversas.",
 	},
 	{
-		question: "Posso cancelar quando quiser?",
+		question: "Como funciona o pagamento da reserva?",
 		answer:
-			"Pode. Sem multa, sem burocracia. A gente confia que você vai gostar.",
+			"Você pode manter o fluxo atual: pagamento no local ou combinado pelo WhatsApp. O ArenaSys ajuda a organizar reserva, status e acompanhamento.",
+	},
+	{
+		question: "Funciona para mais de uma quadra?",
+		answer:
+			"Sim. Você pode cadastrar múltiplas quadras, horários e regras para organizar a disponibilidade da arena em uma visão única.",
+	},
+	{
+		question: "Preciso de cartão para testar?",
+		answer:
+			"Não. O teste começa sem cartão, para você validar se o fluxo faz sentido na operação real da sua arena.",
+	},
+	{
+		question: "Posso cancelar se não fizer sentido?",
+		answer:
+			"Pode. A proposta é simples: testar, validar na rotina e continuar apenas se o ArenaSys ajudar sua operação.",
 	},
 ];
 
@@ -2029,8 +2044,11 @@ export default function LandingPage() {
 					className="relative py-28 px-4 border-t border-white/5">
 					<div className="max-w-3xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
+							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-emerald-300/80">
+								Antes de testar
+							</p>
 							<h2 className="text-3xl md:text-5xl font-black text-white">
-								Dúvidas rápidas
+								Respostas diretas para decidir sem enrolação.
 							</h2>
 						</ScrollReveal>
 
@@ -2059,19 +2077,21 @@ export default function LandingPage() {
 					<ScrollReveal>
 						<div className="max-w-3xl mx-auto text-center relative z-10">
 							<h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
-								Coloque sua arena em uma agenda que trabalha por você
+								Comece pela próxima reserva.
 								<br />
-								<span className="text-emerald-400">antes do próximo horário cheio.</span>
+								<span className="text-emerald-400">
+									Organize o resto a partir dela.
+								</span>
 							</h2>
 							<p className="text-gray-300 text-xl mb-10 max-w-xl mx-auto">
-								Entre no Founders, teste por 7 dias sem cartão e organize suas
-								reservas com suporte direto.
+								Teste por 7 dias sem cartão, coloque seu link no ar e veja se o
+								fluxo encaixa na rotina da sua arena.
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
 								className="relative overflow-hidden h-16 px-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_60px_-10px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.8)] active:scale-95 animate-border-glow btn-shine inline-flex items-center gap-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-								aria-label="Entrar como Founder - começar teste grátis">
-								Entrar como Founder <ArrowRight className="w-5 h-5" />
+								aria-label="Começar teste grátis do ArenaSys">
+								Começar teste grátis <ArrowRight className="w-5 h-5" />
 							</button>
 						</div>
 					</ScrollReveal>
