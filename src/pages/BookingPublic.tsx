@@ -35,12 +35,6 @@ import { formatFullAddress } from "@/lib/cep";
 // Versão do componente para detecção de cache
 const BOOKING_PUBLIC_VERSION = "v2.1.1-2026-02-11";
 
-console.log(`🔥 BOOKINGPUBLIC.TSX CARREGADO - ${BOOKING_PUBLIC_VERSION}`, {
-	userAgent: navigator.userAgent,
-	timestamp: new Date().toISOString(),
-	serviceWorker: "serviceWorker" in navigator ? "disponível" : "indisponível",
-});
-
 // --- Tipos ---
 interface Court {
 	id: string;
@@ -424,10 +418,7 @@ export default function BookingPublic() {
 					}
 
 					const bookingDateStr = format(new Date(startTimeIso), "yyyy-MM-dd");
-					const currentDateStr = format(
-						selectedDateRef.current,
-						"yyyy-MM-dd",
-					);
+					const currentDateStr = format(selectedDateRef.current, "yyyy-MM-dd");
 
 					if (bookingDateStr === currentDateStr) {
 						reloadCurrentDate();
@@ -474,21 +465,8 @@ export default function BookingPublic() {
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 		const applyDiscount = diffDays >= 7;
 
-		// 🔍 DEBUG: Log dos slots ocupados [BUILD: 2026-02-05T10:30]
-		console.log("🔍 [DEBUG v2] Slots ocupados RAW:", occupiedSlots);
-		console.log(
-			"🔍 [DEBUG v2] Courts disponíveis:",
-			courts.map((c) => ({ id: c.id, name: c.name })),
-		);
-
 		const occupied = new Set(
 			occupiedSlots.map((s) => `${s.court_id}-${s.slot_time}`),
-		);
-		console.log(
-			"🔍 [DEBUG v2] Set de ocupados (total:",
-			occupied.size,
-			"):",
-			Array.from(occupied),
 		);
 
 		// Horários de operação por dia da semana
@@ -520,16 +498,6 @@ export default function BookingPublic() {
 
 				// Bloqueio 2: Ocupado (avulso ou mensalista)
 				const isOccupied = occupied.has(slotKey);
-
-				// Log APENAS dos horários 12:00 e 20:00
-				if (time === "12:00" || time === "20:00") {
-					console.log(`🔎 Slot ${time} na quadra ${court.name}:`, {
-						slotKey,
-						courtId: court.id,
-						isOccupied,
-						existeNoSet: occupied.has(slotKey),
-					});
-				}
 
 				// Mostra TODOS os horários, mas marca os ocupados
 				slots.push({
@@ -621,12 +589,6 @@ export default function BookingPublic() {
 		setReserveError(null);
 
 		try {
-			console.log("🎯 [BookingPublic] Iniciando reserva...", {
-				slot: selectedSlot.slot.time,
-				court: selectedSlot.courtName,
-				duration: bookingDuration,
-			});
-
 			const dateStr = format(selectedDate, "yyyy-MM-dd");
 			const startTime = selectedSlot.slot.time;
 			const [hour, minute] = startTime.split(":");
@@ -660,11 +622,6 @@ export default function BookingPublic() {
 			const startTimestamp = formatWithTimezone(startDate);
 			const endTimestamp = formatWithTimezone(endDate);
 
-			console.log("⏰ [BookingPublic] Timestamps calculados:", {
-				startTimestamp,
-				endTimestamp,
-			});
-
 			// ✅ VALIDAÇÃO CRÍTICA: Verifica se o slot ainda está livre (ANTES de inserir)
 			const { data: checkData } = await supabase.rpc(
 				"fn_public_get_occupied_slots",
@@ -680,15 +637,9 @@ export default function BookingPublic() {
 				).map((r) => `${r.court_id}-${r.slot_time.slice(0, 5)}`),
 			);
 
-			console.log("🔍 [BookingPublic] Slots ocupados atualizados:", {
-				total: occupied.size,
-				slots: Array.from(occupied),
-			});
-
 			// Verifica se o slot inicial está livre
 			const slotKey = `${selectedSlot.courtId}-${startTime}`;
 			if (occupied.has(slotKey)) {
-				console.error("❌ [BookingPublic] Slot ocupado:", slotKey);
 				throw new Error(
 					"Horário acabou de ser reservado. Escolha outro horário.",
 				);
@@ -702,10 +653,6 @@ export default function BookingPublic() {
 				const nextSlotKey = `${selectedSlot.courtId}-${nextTime}`;
 
 				if (occupied.has(nextSlotKey)) {
-					console.error(
-						"❌ [BookingPublic] Próximo slot ocupado:",
-						nextSlotKey,
-					);
 					throw new Error(
 						"O horário das " +
 							nextTime +
@@ -746,18 +693,6 @@ export default function BookingPublic() {
 				bookingDuration,
 			);
 
-			// Debug: Verificar dados antes de inserir
-			console.log("🔍 [BookingPublic] Dados da reserva antes de inserir:", {
-				court_id: selectedSlot.courtId,
-				tenant_id: tenantId,
-				status: "pending_payment",
-				customer_name: playerName.trim(),
-				customer_phone: unformatPhone(playerPhone),
-				start_time: startTimestamp,
-				end_time: endTimestamp,
-				total_price: finalPrice,
-			});
-
 			// Cria a reserva
 			const { error, data: newBooking } = await supabase
 				.from("bookings")
@@ -776,20 +711,8 @@ export default function BookingPublic() {
 				.single();
 
 			if (error) {
-				console.error("❌ [BookingPublic] Erro detalhado ao criar reserva:", {
-					code: error.code,
-					message: error.message,
-					details: error.details,
-					hint: error.hint,
-				});
 				throw error;
 			}
-
-			console.log("✅ [BookingPublic] Reserva criada com sucesso:", {
-				id: newBooking?.id,
-				status: newBooking?.status,
-				customer: newBooking?.customer_name,
-			});
 
 			// ✅ ATUALIZA IMEDIATAMENTE o estado local (sem esperar real-time)
 			// Marca o slot inicial e, se for 1h30, também o próximo slot como ocupado
@@ -804,10 +727,6 @@ export default function BookingPublic() {
 					)
 				) {
 					newSlots.push({
-						court_id: selectedSlot.courtId,
-						slot_time: startTime,
-					});
-					console.log("📌 [BookingPublic] Slot inicial marcado como ocupado:", {
 						court_id: selectedSlot.courtId,
 						slot_time: startTime,
 					});
@@ -828,20 +747,8 @@ export default function BookingPublic() {
 							court_id: selectedSlot.courtId,
 							slot_time: nextTime,
 						});
-						console.log(
-							"📌 [BookingPublic] Próximo slot marcado como ocupado:",
-							{
-								court_id: selectedSlot.courtId,
-								slot_time: nextTime,
-							},
-						);
 					}
 				}
-
-				console.log(
-					"🔄 [BookingPublic] Estado local atualizado. Total de slots ocupados:",
-					newSlots.length,
-				);
 				return newSlots;
 			});
 
@@ -860,18 +767,6 @@ export default function BookingPublic() {
 				setBookingDuration(60);
 			}, 3000);
 		} catch (error: unknown) {
-			console.error("❌ [BookingPublic] Erro ao criar reserva:", error);
-			type NavigatorWithConnection = Navigator & {
-				connection?: { effectiveType?: string };
-			};
-			console.error("📱 Info do dispositivo:", {
-				userAgent: navigator.userAgent,
-				version: BOOKING_PUBLIC_VERSION,
-				connection:
-					(navigator as NavigatorWithConnection).connection?.effectiveType ??
-					"unknown",
-			});
-
 			let message: string;
 			if (error instanceof Error) {
 				message = error.message;
@@ -1431,7 +1326,6 @@ Qual a chave PIX?`;
 									</div>
 									<button
 										onClick={() => {
-											console.log("🔄 Forçando atualização da página...");
 											// Limpa cache do service worker se disponível
 											if ("caches" in window) {
 												caches.keys().then((keys) => {
