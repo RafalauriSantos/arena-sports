@@ -1785,38 +1785,48 @@ export default function LandingPage() {
 				<section id="como-funciona" className="relative py-28 px-4">
 					<div className="max-w-5xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
+							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-emerald-300/80">
+								Da primeira quadra ao primeiro link
+							</p>
 							<h2 className="text-3xl md:text-5xl font-black text-white mb-4">
-								Funciona em 3 passos
+								Começa simples. Continua organizado.
 							</h2>
+							<p className="mx-auto max-w-2xl text-lg leading-8 text-gray-300">
+								A ideia não é trocar toda a operação de uma vez. É colocar o
+								fluxo principal de reservas em um lugar que a equipe consiga
+								confiar.
+							</p>
 						</ScrollReveal>
 
 						<div className="grid md:grid-cols-3 gap-8">
 							{[
 								{
 									step: "1",
-									title: "Cadastre sua arena",
-									desc: "Quadras, horários e preços. 15 minutos.",
+									title: "Configure a base",
+									desc: "Cadastre quadras, horários, preços e regras principais da sua operação.",
 								},
 								{
 									step: "2",
-									title: "Mande o link",
-									desc: "Cliente vê disponibilidade e reserva sozinho.",
+									title: "Envie o link",
+									desc: "O cliente consulta disponibilidade e solicita a reserva sem esperar resposta manual.",
 								},
 								{
 									step: "3",
-									title: "Receba e confirme",
-									desc: "Você cobra no balcão, como sempre fez.",
+									title: "Acompanhe no painel",
+									desc: "Sua equipe confirma pagamentos, visualiza reservas e mantém a agenda atualizada.",
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.step} delay={i * 150}>
-									<TiltCard className="text-center p-8 rounded-3xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
-										<div className="w-20 h-20 bg-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-emerald-400 font-black text-3xl border border-emerald-500/30">
+									<TiltCard className="h-full rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur-sm transition-colors duration-300 hover:border-emerald-500/30">
+										<div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-emerald-500/30 bg-emerald-500/20 text-3xl font-black text-emerald-300">
 											{item.step}
 										</div>
-										<h3 className="text-white font-bold text-xl mb-3">
+										<h3 className="mb-3 text-xl font-bold text-white">
 											{item.title}
 										</h3>
-										<p className="text-gray-300 text-base">{item.desc}</p>
+										<p className="text-base leading-7 text-gray-300">
+											{item.desc}
+										</p>
 									</TiltCard>
 								</ScrollReveal>
 							))}
