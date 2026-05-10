@@ -22,7 +22,7 @@ export function LoadingSpinner({
 			className={cn(
 				"border-2 border-current border-t-transparent rounded-full animate-spin",
 				sizeClasses[size],
-				className
+				className,
 			)}
 		/>
 	);
@@ -34,7 +34,7 @@ export function PageLoading({
 	message?: string;
 }) {
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center">
+		<div className="min-h-screen marketing-dark text-white flex items-center justify-center">
 			<div className="text-center space-y-4">
 				<LoadingSpinner size="lg" className="text-emerald-500 mx-auto" />
 				<p className="text-gray-300 text-sm">{message}</p>
@@ -58,7 +58,7 @@ export function ButtonLoading({
 			className={cn(
 				"flex items-center justify-center gap-2 transition-all",
 				loading && "cursor-not-allowed opacity-70",
-				className
+				className,
 			)}
 			disabled={loading}
 			{...props}>

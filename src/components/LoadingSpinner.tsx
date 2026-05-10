@@ -5,7 +5,7 @@
 export function LoadingSpinner() {
 	return (
 		<div
-			className="min-h-screen bg-[#02040a] text-white flex items-center justify-center"
+			className="min-h-screen marketing-dark text-white flex items-center justify-center"
 			role="status"
 			aria-label="Carregando">
 			<div className="flex flex-col items-center gap-4">

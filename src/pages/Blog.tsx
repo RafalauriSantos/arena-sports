@@ -59,7 +59,7 @@ export function Blog() {
 	];
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white">
+		<div className="min-h-screen marketing-dark text-white">
 			<SEO
 				title="Blog | Dicas de Gestão para Arenas Esportivas"
 				description="Artigos sobre gestão de quadras esportivas, marketing, finanças e tecnologia. Aprenda a aumentar o faturamento da sua arena."
@@ -110,11 +110,12 @@ export function Blog() {
 					<p className="text-gray-300 mb-6">
 						Receba dicas semanais de gestão de arenas direto no seu email
 					</p>
-					<button
+					<a
+						href="mailto:contato@arenasys.com.br?subject=Quero%20receber%20novidades%20do%20ArenaSys"
 						aria-label="Assinar newsletter do ArenaSys"
-						className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+						className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-flex">
 						Assinar Newsletter
-					</button>
+					</a>
 				</div>
 			</main>
 

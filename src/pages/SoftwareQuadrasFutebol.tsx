@@ -11,10 +11,10 @@ export function SoftwareQuadrasFutebol() {
 	const navigate = useNavigate();
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white">
+		<div className="min-h-screen marketing-dark text-white">
 			<SEO
 				title="Software para Quadras de Futebol e Society | Gestão Completa"
-				description="Software completo para gestão de quadras de futebol society, futsal e campo. Agendamento online, pagamento PIX, controle de horários. Teste grátis 7 dias."
+				description="Software completo para gestão de quadras de futebol society, futsal e campo. Agendamento online, pagamento no local ou via WhatsApp, controle de horários. Teste grátis 7 dias."
 				keywords="software quadras futebol, sistema quadra society, gestão futsal, agendamento campo futebol, sistema aluguel quadra society"
 				canonical="/software-quadras-futebol"
 			/>
@@ -47,8 +47,8 @@ export function SoftwareQuadrasFutebol() {
 							em tempo real
 						</li>
 						<li>
-							✅ <strong>Pagamentos automáticos via PIX</strong> - receba na
-							hora
+							✅ <strong>Pagamento no local ou via WhatsApp</strong> - escolha o
+							fluxo ideal para sua arena
 						</li>
 						<li>
 							✅ <strong>Link público para clientes</strong> - agendam sozinhos
@@ -116,7 +116,7 @@ export function SoftwareQuadrasFutebol() {
 							comece a receber reservas.
 						</p>
 						<button
-							onClick={() => navigate("/welcome")}
+							onClick={() => navigate("/login?mode=signup")}
 							aria-label="Começar teste grátis de 7 dias do ArenaSys"
 							className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 							Começar Teste Grátis
@@ -127,7 +127,8 @@ export function SoftwareQuadrasFutebol() {
 					<ul className="text-gray-300 space-y-4 mb-8">
 						<li>
 							<strong>Arena com 3 quadras society:</strong> Reduziu conflitos de
-							100% para 0%. Clientes agendam pelo link, pagam PIX automático.
+							100% para 0%. Clientes agendam pelo link e confirmam o pagamento
+							no local ou via WhatsApp.
 						</li>
 						<li>
 							<strong>Campo de futsal com mensalistas:</strong> Sistema garante

@@ -11,10 +11,10 @@ export function SistemaBeachTennis() {
 	const navigate = useNavigate();
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white">
+		<div className="min-h-screen marketing-dark text-white">
 			<SEO
 				title="Sistema de Agendamento para Beach Tennis | Gestão de Quadras"
-				description="Sistema especializado em quadras de beach tennis e padel. Agendamento online, pagamento PIX, controle de horários e mensalistas. Teste grátis 7 dias."
+				description="Sistema especializado em quadras de beach tennis e padel. Agendamento online, pagamento no local ou via WhatsApp, controle de horários e mensalistas. Teste grátis 7 dias."
 				keywords="sistema beach tennis, agendamento padel, software quadra beach tennis, gestão beach tennis, sistema reserva beach"
 				canonical="/sistema-beach-tennis"
 			/>
@@ -47,8 +47,8 @@ export function SistemaBeachTennis() {
 							para beach
 						</li>
 						<li>
-							💳 <strong>Pagamento antecipado PIX</strong> - reduz no-show a
-							zero
+							💳 <strong>Pagamento no local ou via WhatsApp</strong> - fluxo
+							simples para o cliente
 						</li>
 						<li>
 							📱 <strong>Link exclusivo</strong> - clientes agendam pelo celular
@@ -89,9 +89,11 @@ export function SistemaBeachTennis() {
 						</div>
 						<div className="bg-white/5 p-6 rounded-lg">
 							<h3 className="text-xl font-semibold mb-2">
-								💰 Pagamento garantido
+								💰 Pagamento flexivel
 							</h3>
-							<p className="text-gray-300">PIX na reserva - sem calote</p>
+							<p className="text-gray-300">
+								Pagamento no local ou via WhatsApp
+							</p>
 						</div>
 					</div>
 
@@ -111,7 +113,7 @@ export function SistemaBeachTennis() {
 						</li>
 						<li>
 							<strong>Clientes agendam sozinhos:</strong> Escolhem quadra,
-							horário, pagam PIX.
+							horário e confirmam o pagamento no local ou via WhatsApp.
 						</li>
 						<li>
 							<strong>Você só confirma:</strong> Tudo aparece no dashboard. Zero
@@ -128,7 +130,7 @@ export function SistemaBeachTennis() {
 							complicação.
 						</p>
 						<button
-							onClick={() => navigate("/welcome")}
+							onClick={() => navigate("/login?mode=signup")}
 							aria-label="Começar teste grátis de 7 dias do sistema para beach tennis"
 							className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 							Começar Teste Grátis

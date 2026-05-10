@@ -597,7 +597,7 @@ const Login = () => {
 	};
 
 	return (
-		<div className="login-light min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-blue-200">
+		<div className="login-light min-h-screen w-full flex marketing-dark text-white relative overflow-hidden font-sans selection:bg-blue-200">
 			{/* 1. FUNDO IMERSIVO - FIXED para evitar espaço extra no mobile */}
 			<div className="fixed inset-0 z-0">
 				{/* Imagem de fundo de alta qualidade (Esportes) */}

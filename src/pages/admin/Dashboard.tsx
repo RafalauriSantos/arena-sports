@@ -631,7 +631,8 @@ const ArenaSysStatusHero = ({
 					<div className="inline-flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20">
 						<span className={`h-2 w-2 rounded-full ${planPill.color}`} />
 						<h3 className="text-[10px] sm:text-xs font-medium text-amber-100">
-							{planPill.text}: <span className="text-slate-300">{planLabel}</span>
+							{planPill.text}:{" "}
+							<span className="text-slate-300">{planLabel}</span>
 						</h3>
 					</div>
 				</div>
@@ -1306,7 +1307,7 @@ export default function DashboardHome() {
 				foundersAnnual: "R$ 814,80/ano (12x de R$ 67,90)",
 				highlights: [
 					"Agenda inteligente e link público de reservas",
-					"Pagamento via Pix integrado",
+					"Pagamento no local ou via WhatsApp",
 					"Múltiplas quadras e gestão de mensalistas",
 					"Relatórios avançados e suporte prioritário",
 				],

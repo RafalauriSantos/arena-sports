@@ -272,7 +272,7 @@ export default function Welcome() {
 
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center">
+			<div className="min-h-screen marketing-dark text-white flex items-center justify-center">
 				<div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
 			</div>
 		);
@@ -309,7 +309,7 @@ export default function Welcome() {
 	};
 
 	return (
-		<div className="min-h-screen w-full flex bg-[#02040a] text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
+		<div className="min-h-screen w-full flex marketing-dark text-white relative overflow-hidden font-sans selection:bg-emerald-500/30">
 			{showConfetti && <Confetti />}
 
 			{/* Barra de progresso fininha no topo (elemento memorável) */}

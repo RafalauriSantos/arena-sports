@@ -11,10 +11,10 @@ export function GestaoQuadraSociety() {
 	const navigate = useNavigate();
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white">
+		<div className="min-h-screen marketing-dark text-white">
 			<SEO
 				title="Sistema de Gestão para Quadra Society | Agendamento e Pagamentos"
-				description="Software completo para gestão de quadra society. Controle de horários, agendamento online, pagamento PIX, mensalistas. Teste grátis 7 dias sem cartão."
+				description="Software completo para gestão de quadra society. Controle de horários, agendamento online, pagamento no local ou via WhatsApp, mensalistas. Teste grátis 7 dias sem cartão."
 				keywords="gestão quadra society, sistema quadra society, software aluguel society, agendamento society, controle horários society"
 				canonical="/gestao-quadra-society"
 			/>
@@ -81,11 +81,10 @@ export function GestaoQuadraSociety() {
 						</div>
 						<div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-6">
 							<h3 className="text-xl font-semibold mb-2">
-								✅ Pagamento garantido
+								✅ Pagamento flexivel
 							</h3>
 							<p className="text-gray-300">
-								PIX obrigatório na reserva. Cliente não paga? Não reserva.
-								Simples. Zero inadimplência.
+								Pagamento no local ou via WhatsApp, com confirmacao manual.
 							</p>
 						</div>
 						<div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-6">
@@ -179,7 +178,7 @@ export function GestaoQuadraSociety() {
 							cartão de crédito. Sem compromisso.
 						</p>
 						<button
-							onClick={() => navigate("/welcome")}
+							onClick={() => navigate("/login?mode=signup")}
 							aria-label="Começar teste grátis de 7 dias do sistema para quadra society"
 							className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 							Começar Teste Grátis Agora

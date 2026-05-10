@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
 			// Renderiza UI de erro padrão
 			return (
-				<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center p-4">
+				<div className="min-h-screen marketing-dark text-white flex items-center justify-center p-4">
 					<div className="max-w-md w-full space-y-6">
 						<div className="bg-[#0F1115] border border-red-500/20 rounded-2xl p-6 shadow-2xl">
 							<div className="flex items-center gap-3 mb-4">
@@ -71,7 +71,8 @@ export class ErrorBoundary extends Component<Props, State> {
 							</div>
 
 							<p className="text-gray-300 text-sm mb-2">
-								Ocorreu um erro ao carregar esta página. Isso pode ser causado por:
+								Ocorreu um erro ao carregar esta página. Isso pode ser causado
+								por:
 							</p>
 
 							<ul className="text-gray-300 text-xs space-y-1 mb-6 list-disc list-inside">
@@ -100,16 +101,14 @@ export class ErrorBoundary extends Component<Props, State> {
 							<div className="flex flex-col sm:flex-row gap-3">
 								<Button
 									onClick={this.handleReset}
-									className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold"
-								>
+									className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold">
 									<RefreshCw className="w-4 h-4 mr-2" />
 									Recarregar Página
 								</Button>
 								<Button
 									onClick={this.handleGoHome}
 									variant="outline"
-									className="flex-1 border-white/20 hover:bg-white/5"
-								>
+									className="flex-1 border-white/20 hover:bg-white/5">
 									<Home className="w-4 h-4 mr-2" />
 									Ir para Home
 								</Button>
@@ -117,8 +116,8 @@ export class ErrorBoundary extends Component<Props, State> {
 						</div>
 
 						<div className="text-center text-xs text-gray-400">
-							Se o problema persistir, tente limpar o cache do navegador (Ctrl+Shift+R) ou
-							entre em contato com o suporte.
+							Se o problema persistir, tente limpar o cache do navegador
+							(Ctrl+Shift+R) ou entre em contato com o suporte.
 						</div>
 					</div>
 				</div>

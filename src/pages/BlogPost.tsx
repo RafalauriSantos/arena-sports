@@ -136,7 +136,7 @@ export function BlogPost() {
 
 	if (!article) {
 		return (
-			<div className="min-h-screen bg-[#02040a] text-white flex items-center justify-center">
+			<div className="min-h-screen marketing-dark text-white flex items-center justify-center">
 				<div className="text-center">
 					<h1 className="text-4xl font-bold mb-4">Artigo não encontrado</h1>
 					<button
@@ -151,7 +151,7 @@ export function BlogPost() {
 	}
 
 	return (
-		<div className="min-h-screen bg-[#02040a] text-white">
+		<div className="min-h-screen marketing-dark text-white">
 			<SEO
 				title={article.title}
 				description={article.description}
@@ -199,7 +199,7 @@ export function BlogPost() {
 							agendamento e pagamentos.
 						</p>
 						<button
-							onClick={() => navigate("/welcome")}
+							onClick={() => navigate("/login?mode=signup")}
 							aria-label="Começar teste grátis do ArenaSys"
 							className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
 							Começar Teste Grátis

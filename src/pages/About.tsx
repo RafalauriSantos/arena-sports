@@ -15,9 +15,9 @@ export default function About() {
 	const navigate = useNavigate();
 
 	return (
-		<main role="main" className="min-h-screen bg-[#02040a] text-white">
+		<main role="main" className="min-h-screen marketing-dark text-white">
 			{/* Header */}
-			<header className="border-b border-white/[0.04] sticky top-0 bg-[#02040a]/80 backdrop-blur-xl z-50">
+			<header className="border-b border-white/[0.04] sticky top-0 marketing-dark-muted backdrop-blur-xl z-50">
 				<div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
 					<Link
 						to="/"

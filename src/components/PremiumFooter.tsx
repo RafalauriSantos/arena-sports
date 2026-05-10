@@ -1,10 +1,23 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Zap, Lock, ShieldCheck } from "lucide-react";
 
 export function PremiumFooter() {
+	const [newsletterEmail, setNewsletterEmail] = useState("");
+
+	const handleNewsletterSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const email = newsletterEmail.trim();
+		if (!email) return;
+		const subject = encodeURIComponent("Quero receber novidades do ArenaSys");
+		const body = encodeURIComponent(`Email: ${email}`);
+		window.location.href = `mailto:contato@arenasys.com.br?subject=${subject}&body=${body}`;
+		setNewsletterEmail("");
+	};
+
 	return (
-		<footer className="relative z-50 bg-[#050507] border-t border-emerald-500/10">
+		<footer className="relative z-50 marketing-dark-panel border-t border-emerald-500/10">
 			{/* Newsletter Section */}
 			<div className="border-b border-white/[0.04]">
 				<div className="max-w-6xl mx-auto px-6 py-12">
@@ -17,16 +30,24 @@ export function PremiumFooter() {
 								Receba dicas de gestão e atualizações do ArenaSys.
 							</p>
 						</div>
-						<div className="flex items-center gap-3 w-full md:w-auto">
+						<form
+							onSubmit={handleNewsletterSubmit}
+							className="flex items-center gap-3 w-full md:w-auto">
 							<input
 								type="email"
+								value={newsletterEmail}
+								onChange={(event) => setNewsletterEmail(event.target.value)}
+								required
 								placeholder="seu@email.com"
+								aria-label="Email para receber novidades"
 								className="flex-1 md:w-64 h-10 px-4 bg-white/[0.04] border border-white/10 rounded-lg text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
 							/>
-							<Button className="h-10 px-5 bg-white text-black font-medium text-sm rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap">
+							<Button
+								type="submit"
+								className="h-10 px-5 bg-white text-black font-medium text-sm rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap">
 								Inscrever-se
 							</Button>
-						</div>
+						</form>
 					</div>
 				</div>
 			</div>
