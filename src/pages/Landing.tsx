@@ -1133,7 +1133,7 @@ function ProductSuiteSection({
 	};
 
 	return (
-		<section className="relative px-4 py-24">
+		<section className="relative bg-[#f8fbff] px-4 py-24">
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
@@ -1551,7 +1551,7 @@ export default function LandingPage() {
           100% { background-position: 200% center; }
         }
         .animate-text-shimmer {
-          background: linear-gradient(90deg, #fff 0%, #fff 40%, #10b981 50%, #fff 60%, #fff 100%);
+          background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 38%, #0284c7 52%, #0f172a 70%, #0f172a 100%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           background-clip: text;
@@ -1569,7 +1569,7 @@ export default function LandingPage() {
           left: 50%;
           width: 0;
           height: 2px;
-          background: linear-gradient(90deg, transparent, #10b981, transparent);
+          background: linear-gradient(90deg, transparent, #2563eb, transparent);
           transition: all 0.3s ease;
           transform: translateX(-50%);
         }
@@ -1615,112 +1615,103 @@ export default function LandingPage() {
 				{/* ═══════════════════════════════════════════════════════════════════
 				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
 				    ═══════════════════════════════════════════════════════════════════ */}
-				<header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
-					{/* Outer glow layer */}
-					<div className="absolute inset-0 flex justify-center pt-4 px-4 pointer-events-none">
-						<div className="w-full max-w-4xl h-12 rounded-full bg-emerald-500/5 blur-xl" />
-					</div>
+				<header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
+					<div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-blue-950/35 to-transparent pointer-events-none" />
 
-					<nav className="relative flex items-center justify-between w-full max-w-4xl h-14 rounded-full">
-						{/* Animated gradient border */}
-						<div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/50 via-cyan-500/50 to-emerald-500/50 animate-gradient opacity-60" />
-						<div className="absolute inset-[1px] rounded-full marketing-dark-deep-95 backdrop-blur-2xl" />
-
-						{/* Inner content */}
-						<div className="relative z-10 flex items-center justify-between w-full px-4">
-							{/* Logo com órbitas */}
+					<nav className="relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible rounded-2xl border border-white/70 bg-white/95 px-3 shadow-[0_18px_60px_-32px_rgba(15,23,42,0.55)] ring-1 ring-blue-950/5 backdrop-blur-2xl">
+						<div className="relative z-10 flex w-full items-center justify-between">
 							<div
-								className="flex items-center gap-3 cursor-pointer group"
+								className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 group"
 								onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-								<div className="relative flex items-center justify-center w-9 h-9">
-									{/* Orbiting particles */}
-									<div className="absolute inset-0 flex items-center justify-center">
-										<div className="absolute w-1.5 h-1.5 bg-emerald-400 rounded-full animate-orbit" />
-										<div className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-orbit-reverse opacity-60" />
-									</div>
-									{/* Core logo */}
-									<div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-shadow duration-300">
-										<Zap className="w-4 h-4 text-black" />
+								<div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/25 transition-transform duration-300 group-hover:-translate-y-0.5">
+									<div className="absolute inset-1 rounded-xl border border-white/25" />
+									<div className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-white text-blue-700">
+										<Zap className="h-4 w-4" />
 									</div>
 								</div>
-								<span className="font-black text-base tracking-tight hidden sm:inline animate-text-shimmer">
-									ArenaSys
-								</span>
+								<div className="leading-none">
+									<span className="block text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+										ArenaSys
+									</span>
+									<span className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600 sm:block">
+										reservas esportivas
+									</span>
+								</div>
 							</div>
 
-							{/* Navigation links com efeito especial */}
-							<div className="hidden md:flex items-center gap-1">
+							<div className="hidden items-center gap-1 rounded-full bg-blue-50/80 p-1 md:flex">
 								<a
 									href="#pricing"
-									className="nav-link px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-300">
+									className="nav-link rounded-full px-4 py-2 text-sm font-bold text-slate-700 transition-colors duration-300 hover:bg-white hover:text-blue-700">
 									Planos
 								</a>
 								<a
 									href="#faq"
-									className="nav-link px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-300">
+									className="nav-link rounded-full px-4 py-2 text-sm font-bold text-slate-700 transition-colors duration-300 hover:bg-white hover:text-blue-700">
 									FAQ
 								</a>
 							</div>
 
-							{/* CTAs */}
-							<div className="hidden md:flex items-center gap-3">
+							<div className="hidden items-center gap-3 md:flex">
 								<button
 									onClick={() => navigate("/login")}
 									aria-label="Fazer login no ArenaSys"
-									className="text-sm font-medium text-gray-300 hover:text-white transition-all duration-300 px-3 py-2 rounded-full hover:bg-white/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]">
+									className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition-all duration-300 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"
+									style={{
+										color: "#334155",
+										WebkitTextFillColor: "#334155",
+									}}>
 									Login
 								</button>
 								<button
 									onClick={() => navigate("/login?mode=signup")}
-									className="relative h-10 px-5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 text-black overflow-hidden group magnetic-btn shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
+									className="relative h-11 overflow-hidden rounded-full bg-blue-600 px-5 text-sm font-black text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"
 									aria-label="Criar agenda online no ArenaSys">
 									<span className="relative z-10 flex items-center gap-1">
 										Criar agenda
-										<Sparkles className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+										<ArrowRight className="h-3.5 w-3.5" />
 									</span>
-									<div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 								</button>
 							</div>
 
-							{/* Mobile menu button */}
 							<button
-								className="md:hidden relative p-2 text-gray-300 hover:text-white transition-colors"
+								className="relative rounded-full border border-slate-200 p-3 text-slate-700 transition-colors hover:bg-blue-50 md:hidden"
 								aria-label="Abrir menu de navegação"
-								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+								style={{ color: "#334155" }}>
 								<div
-									className={`w-5 h-0.5 bg-current transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[3px]" : ""}`}
+									className={`h-0.5 w-5 bg-slate-700 transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[3px]" : ""}`}
 								/>
 								<div
-									className={`w-5 h-0.5 bg-current mt-1.5 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-[5px]" : ""}`}
+									className={`mt-1.5 h-0.5 w-5 bg-slate-700 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-[5px]" : ""}`}
 								/>
 							</button>
 						</div>
 
 						{/* Mobile menu */}
 						{mobileMenuOpen && (
-							<div className="absolute top-full left-0 right-0 mt-3 mx-2 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden z-[100]">
-								<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent opacity-50" />
-								<div className="relative p-5 marketing-dark-deep backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl shadow-black/50">
+							<div className="absolute left-0 right-0 top-full z-[100] mx-2 mt-3 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden">
+								<div className="relative rounded-3xl border border-blue-100 bg-white p-5 shadow-2xl shadow-blue-950/20">
 									<a
 										href="#pricing"
 										onClick={() => setMobileMenuOpen(false)}
-										className="block p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-lg font-medium transition-colors">
+										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
 										Planos
 									</a>
 									<a
 										href="#faq"
 										onClick={() => setMobileMenuOpen(false)}
-										className="block p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-lg font-medium transition-colors">
+										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
 										FAQ
 									</a>
-									<div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-3" />
+									<div className="my-3 h-px bg-blue-100" />
 									<button
 										aria-label="Fazer login no ArenaSys"
 										onClick={() => {
 											setMobileMenuOpen(false);
 											navigate("/login");
 										}}
-										className="w-full p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-base text-left transition-colors">
+										className="w-full rounded-2xl p-4 text-left text-base font-bold text-slate-700 transition-colors hover:bg-blue-50">
 										Login
 									</button>
 									<button
@@ -1729,9 +1720,9 @@ export default function LandingPage() {
 											setMobileMenuOpen(false);
 											navigate("/login?mode=signup");
 										}}
-										className="w-full mt-2 h-14 bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-bold text-lg rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+										className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 text-lg font-black text-white shadow-lg shadow-blue-600/25">
 										Criar agenda
-										<Sparkles className="w-4 h-4" />
+										<ArrowRight className="h-4 w-4" />
 									</button>
 								</div>
 							</div>
@@ -1740,35 +1731,27 @@ export default function LandingPage() {
 				</header>
 
 				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
-				<section className="relative px-4 pb-20 pt-28 sm:pt-32 lg:pb-24 lg:pt-40 overflow-hidden">
-					{/* Floating sparkles */}
-					<div
-						className="absolute top-40 left-[15%] w-2 h-2 bg-emerald-500/40 rounded-full animate-float"
-						style={{ animationDelay: "0s" }}
-					/>
-					<div
-						className="absolute top-60 right-[20%] w-1.5 h-1.5 bg-emerald-400/30 rounded-full animate-float"
-						style={{ animationDelay: "1s" }}
-					/>
-					<div
-						className="absolute bottom-40 left-[25%] w-1 h-1 bg-cyan-400/30 rounded-full animate-float"
-						style={{ animationDelay: "2s" }}
-					/>
+				<section className="relative isolate overflow-hidden bg-[#075bd8] px-4 pb-24 pt-32 text-white sm:pt-36 lg:pb-28 lg:pt-40">
+					<div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_82%_20%,rgba(125,211,252,0.28),transparent_30%),linear-gradient(135deg,#0b72f0_0%,#075bd8_48%,#0347aa_100%)]" />
+					<div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#f8fbff]" />
+					<div className="absolute -bottom-px left-0 right-0 h-16 rounded-t-[3.5rem] bg-[#f8fbff]" />
+					<div className="absolute left-[8%] top-32 hidden h-20 w-20 rounded-[2rem] border border-white/15 bg-white/5 rotate-12 lg:block" />
+					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/15 bg-white/5 lg:block" />
 
 					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
 						<div className="space-y-8 text-center lg:text-left">
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
-								<div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-									<Sparkles className="h-4 w-4 text-blue-600" />
+								<div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm font-bold text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+									<Sparkles className="h-4 w-4 text-amber-200" />
 									Agenda, reservas e gestão em um só lugar
 								</div>
 							</div>
 
 							<div className="space-y-5">
-								<h1 className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
+								<h1 className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl">
 									Sistema de reservas para arenas esportivas.
 								</h1>
-								<p className="mx-auto max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl lg:mx-0 lg:max-w-xl">
+								<p className="mx-auto max-w-2xl text-lg font-medium leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl">
 									Organize quadras, horários, clientes e pagamentos em um link
 									público e um painel simples para sua equipe acompanhar a
 									operação.
@@ -1778,7 +1761,7 @@ export default function LandingPage() {
 							<div className="flex flex-col items-center gap-4 pt-2 sm:flex-row lg:items-start">
 								<button
 									onClick={startSignup}
-									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-lg bg-blue-600 px-7 text-base font-bold text-white shadow-[0_18px_38px_-20px_rgba(37,99,235,0.95)] transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] sm:w-auto sm:min-w-[282px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-amber-300 px-7 text-base font-black text-blue-950 shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[0.98] sm:w-auto sm:min-w-[282px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-100"
 									aria-label="Testar grátis agora - começar teste de 7 dias">
 									Criar minha agenda online
 									<ArrowRight className="h-5 w-5" />
@@ -1789,20 +1772,20 @@ export default function LandingPage() {
 											.getElementById("como-funciona")
 											?.scrollIntoView({ behavior: "smooth" })
 									}
-									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-slate-300 bg-white px-7 text-base font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto sm:min-w-[200px]"
+									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-white/35 bg-white/15 px-7 text-base font-black text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/25 sm:w-auto sm:min-w-[200px]"
 									aria-label="Ver como funciona o ArenaSys">
 									Ver como funciona
 								</button>
 							</div>
 
-							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600 lg:justify-start">
+							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50 lg:justify-start">
 								{[
 									"Link próprio para reservas",
 									"Sem app para o cliente",
 									"Pagamento no balcão ou combinado",
 								].map((item) => (
 									<div key={item} className="inline-flex items-center gap-2">
-										<Check className="h-4 w-4 text-blue-600" />
+										<Check className="h-4 w-4 text-amber-200" />
 										<span>{item}</span>
 									</div>
 								))}
@@ -1816,11 +1799,11 @@ export default function LandingPage() {
 								].map(([value, label]) => (
 									<div
 										key={label}
-										className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
-										<p className="text-lg font-black text-slate-950 sm:text-xl">
+										className="rounded-2xl border border-white/20 bg-white/12 p-3 shadow-sm backdrop-blur-sm">
+										<p className="text-lg font-black text-white sm:text-xl">
 											{value}
 										</p>
-										<p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+										<p className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-100">
 											{label}
 										</p>
 									</div>
@@ -1833,17 +1816,17 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- SEÇÃO PROBLEMA: diagnostico da operacao --- */}
-				<section className="relative px-4 py-24">
+				<section className="relative bg-[#f8fbff] px-4 py-24">
 					<div className="mx-auto max-w-6xl">
 						<ScrollReveal className="mx-auto mb-14 max-w-3xl text-center">
 							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-red-400/80">
 								O custo invisivel da agenda manual
 							</p>
-							<h2 className="text-3xl font-black text-white md:text-4xl lg:text-5xl">
+							<h2 className="text-3xl font-black text-slate-950 md:text-4xl lg:text-5xl">
 								Enquanto a reserva depende de conversa, sua operação depende de
 								memória.
 							</h2>
-							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-gray-300">
+							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600">
 								O WhatsApp continua útil para relacionamento. O problema começa
 								quando ele vira agenda, caixa, histórico e controle ao mesmo
 								tempo.
@@ -1872,19 +1855,19 @@ export default function LandingPage() {
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.label} delay={i * 100}>
-									<TiltCard className="group h-full rounded-3xl border border-white/10 bg-white/[0.035] p-7 backdrop-blur-sm transition-colors duration-300 hover:border-red-400/40">
+									<TiltCard className="group h-full rounded-3xl border border-slate-200 bg-white p-7 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.55)] transition-colors duration-300 hover:border-red-300">
 										<div className="mb-6 flex items-center justify-between gap-4">
 											<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/10">
 												<item.icon className="h-7 w-7 text-red-300" />
 											</div>
-											<span className="rounded-full border border-red-400/15 bg-red-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-200">
+											<span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-500">
 												{item.impact}
 											</span>
 										</div>
-										<h3 className="mb-3 text-xl font-bold text-white">
+										<h3 className="mb-3 text-xl font-bold text-slate-950">
 											{item.label}
 										</h3>
-										<p className="text-base leading-relaxed text-gray-300">
+										<p className="text-base leading-relaxed text-slate-600">
 											{item.pain}
 										</p>
 									</TiltCard>
@@ -1893,8 +1876,8 @@ export default function LandingPage() {
 						</div>
 
 						<ScrollReveal delay={250}>
-							<div className="mt-8 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-6 text-center backdrop-blur-sm">
-								<p className="text-lg font-semibold leading-8 text-emerald-50">
+							<div className="mt-8 rounded-3xl border border-blue-100 bg-blue-600 p-6 text-center shadow-[0_24px_70px_-48px_rgba(15,23,42,0.55)]">
+								<p className="text-lg font-semibold leading-8 text-white">
 									A solução não é abandonar o WhatsApp. É tirar a agenda de
 									dentro dele.
 								</p>
