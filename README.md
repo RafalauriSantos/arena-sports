@@ -2,119 +2,84 @@
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f766e,50:0d9488,100:10b981&height=96&section=header&text=ArenaSys&fontSize=44&fontColor=ffffff&animation=fadeIn&fontAlignY=34" alt="ArenaSys" />
 
-### Plataforma SaaS para gestao de arenas esportivas
+### SaaS privado para gestao de arenas esportivas
 
-Agendamento online, operacao diaria e visao de negocio em um unico sistema.
+Reserva online, operacao administrativa e base multi-tenant para arenas, quadras society e beach tennis.
 
 [![Demo](https://img.shields.io/badge/Demo-arenasys.com.br-16a34a?style=for-the-badge)](https://arenasys.com.br)
 [![Deploy](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel)](https://arenasys.com.br)
-[![Stack](https://img.shields.io/badge/React%20%2B%20Vite%20%2B%20Supabase-0f766e?style=for-the-badge)](#stack)
+[![Stack](https://img.shields.io/badge/React%20%2B%20TypeScript%20%2B%20Supabase-0f766e?style=for-the-badge)](#stack)
 
 </div>
 
-## Visao Geral
+## Sobre
 
-ArenaSys e um SaaS multi-tenant para complexos esportivos. Cada arena possui ambiente isolado, agenda publica por link e painel administrativo para operacao e crescimento.
+ArenaSys e um SaaS privado criado para ajudar donos de arenas esportivas a sair de uma operacao dependente de conversas soltas, planilhas e memoria da equipe.
 
-Principais fluxos:
+O produto combina uma landing comercial, um link publico de reservas por arena e um painel administrativo para acompanhar agenda, clientes, horarios e status das reservas. A arquitetura foi pensada para suportar multiplas arenas dentro da mesma plataforma, mantendo dados e operacao separados por tenant.
 
-- Onboarding da arena e configuracao inicial
-- Agenda publica em `/agendar/:subdomain`
-- Login admin, dashboard e operacao diaria
-- Recuperacao de senha com tela dedicada
+> [!NOTE]
+> Este repositorio apresenta uma amostra controlada do projeto. Detalhes internos de infraestrutura, chaves, operacao comercial e decisoes sensiveis ficam fora deste README.
 
-> [!TIP]
-> Este README foi propositalmente reduzido para onboarding rapido. Conteudo detalhado esta em [docs/README_DOCS.md](docs/README_DOCS.md).
+## O Que Foi Construido
+
+- Landing page comercial com copy, SEO e fluxo de conversao.
+- Agenda publica por arena em rota dedicada.
+- Painel administrativo para operacao diaria.
+- Cadastro, login, recuperacao de senha e onboarding inicial.
+- Gestao de reservas, horarios, status e disponibilidade.
+- Base multi-tenant com isolamento por arena.
+- Realtime aplicado onde a operacao precisa refletir mudancas de agenda.
+- Integracao de assinatura do SaaS com provedor de pagamento.
+- Pipeline de validacao com lint, build, QA e deploy automatizado.
+
+## Produto
+
+O ArenaSys separa dois fluxos que costumam ficar misturados em arenas pequenas e medias:
+
+- **Operacao da arena:** dono/equipe gerenciam agenda, reservas, clientes e configuracoes.
+- **Experiencia do jogador:** cliente acessa um link publico, escolhe quadra/campo, data e horario, e conclui a reserva.
+
+O fluxo atual permite manter o pagamento no balcao. A evolucao planejada e permitir que o jogador pague a reserva pelo proprio link publico via Pix ou cartao, com confirmacao automatica, bloqueio temporario do horario e conciliacao financeira por arena.
+
+## Destaques Tecnicos
+
+- Aplicacao frontend moderna com React, TypeScript e Vite.
+- Backend gerenciado com Supabase Auth, Postgres, Realtime e Edge Functions.
+- Modelagem multi-tenant para suportar multiplos donos de arena.
+- Politicas e funcoes de banco para proteger fluxos publicos e administrativos.
+- Integracao de pagamentos separando assinatura do SaaS e futuro pagamento de reservas.
+- Testes e validacoes automatizadas para rotas publicas, fluxos criticos e qualidade visual.
+- Deploy em Vercel com esteira de CI no GitHub Actions.
 
 ## Stack
 
-- Frontend: React 18, TypeScript, Vite 7, Tailwind CSS
-- UI e DX: Radix UI, Lucide, React Hook Form, Zod
-- Dados: TanStack Query, Supabase (Auth, Realtime, Postgres)
-- Runtime: Bun (recomendado), Node 18+ (suporte)
-- Deploy: Vercel
+| Area | Tecnologias |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, React Router |
+| UI | Tailwind CSS, Radix UI, Lucide |
+| Dados | Supabase, PostgreSQL, TanStack Query |
+| Auth e realtime | Supabase Auth, Supabase Realtime |
+| Pagamentos | Asaas |
+| Qualidade | Playwright, ESLint, scripts de QA |
+| Deploy | Vercel, GitHub Actions |
 
-## Setup Rapido
+## Aprendizados e Decisoes
 
-### 1) Requisitos
+- Um SaaS de nicho precisa equilibrar simplicidade comercial com uma base tecnica pronta para crescer.
+- Pagamento da assinatura do dono e pagamento da reserva do jogador sao fluxos diferentes e devem evoluir separadamente.
+- Realtime deve ser aplicado com criterio: agenda precisa de sincronizacao, paginas institucionais nao.
+- A landing precisa vender a mudanca operacional, nao apenas listar funcionalidades.
+- O repositorio precisa ficar limpo o bastante para desenvolvimento continuo sem expor detalhes sensiveis de negocio.
 
-- Bun 1.3+
-- Node.js 18+
-- Conta Supabase com projeto ativo
+## Status
 
-### 2) Instalar e rodar
+Projeto privado em desenvolvimento ativo.
 
-```bash
-git clone https://github.com/RafalauriSantos/arena-sports.git
-cd arena-sports
-bun install
-bun dev
-```
+Frentes atuais:
 
-### 3) Variaveis de ambiente
-
-Crie `.env.local` na raiz:
-
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-```
-
-> [!WARNING]
-> Nunca exponha `SUPABASE_SERVICE_ROLE_KEY` no frontend. Use apenas em ambientes/servicos seguros.
-
-## Comandos Essenciais
-
-```bash
-# Desenvolvimento
-bun dev
-
-# Build local
-bun run build
-
-# Build para Vercel (injecao SEO)
-bun run build:vercel
-
-# Preview
-bun run preview
-
-# Lint
-bun run lint
-
-# Testes principais
-bun run test
-bun run test:flow
-bun run test:tenant-isolation
-```
-
-## Deploy
-
-- Producao: push na branch `main`
-- Build command: definido em [vercel.json](vercel.json)
-- Dominio principal: https://arenasys.com.br
-
-Checklist curto de release:
-
-- Testes essenciais passando
-- Build sem erros
-- Variaveis de ambiente configuradas
-- Fluxos criticos validados (login, cadastro, reset de senha, agendamento)
-
-## Estrutura Enxuta
-
-```text
-src/                # app React (pages, components, hooks)
-supabase/           # migrations e configuracao backend
-scripts/            # automacoes de teste, auditoria e operacao
-docs/               # guias detalhados (SEO, performance, etc.)
-```
-
-## Documentacao Detalhada
-
-- Indice geral: [docs/README_DOCS.md](docs/README_DOCS.md)
-- Backlog local de evolucao: [MELHORIAS_PENDENTES.md](MELHORIAS_PENDENTES.md)
-
-## Roadmap
-
-As proximas melhorias priorizadas estao em [MELHORIAS_PENDENTES.md](MELHORIAS_PENDENTES.md), espelhadas do Notion e organizadas por fase.
+- refinamento da landing page e posicionamento comercial;
+- organizacao de documentacao interna;
+- planejamento do pagamento online de reservas;
+- limpeza tecnica gradual do projeto;
+- endurecimento de fluxos criticos antes de novas features grandes.
