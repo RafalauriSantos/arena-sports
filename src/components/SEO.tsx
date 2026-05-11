@@ -16,8 +16,8 @@ interface SEOProps {
 }
 
 export function SEO({
-	title = "ArenaSys - Sistema de Gestão e Agendamento de Quadras Esportivas",
-	description = "Agenda online simples para quadras esportivas. Saia do WhatsApp, envie um link de reserva e organize horários em minutos. Teste grátis por 7 dias.",
+	title = "ArenaSys - Sistema de Reservas para Arenas Esportivas",
+	description = "Sistema de reservas para arenas esportivas. Organize quadras, horarios, clientes e pagamentos em um link publico e um painel simples para sua equipe.",
 	keywords = "sistema gestão quadras, agendamento quadras esportivas, software arena, gestão reservas esportivas, sistema agendamento online, software para quadras, gestão de quadra society, sistema booking esportivo, SaaS quadras, agendamento automático quadras",
 	ogImage = "https://arenasys.com.br/og-image.jpg",
 	canonical,

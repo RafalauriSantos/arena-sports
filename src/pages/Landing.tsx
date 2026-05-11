@@ -879,98 +879,204 @@ function DashboardAppScreen() {
 
 function HeroProductPreview() {
 	const daySlots = [
-		{ time: "07:00", court: "Campo menor", status: "Livre", tone: "blue" },
-		{ time: "08:00", court: "Campo maior", status: "Pago", tone: "green" },
-		{ time: "09:00", court: "Campo menor", status: "Sinal", tone: "amber" },
-		{ time: "10:00", court: "Campo maior", status: "Livre", tone: "blue" },
+		{
+			time: "18:00",
+			court: "Society 1",
+			client: "Lucas P.",
+			status: "Confirmada",
+			tone: "green",
+		},
+		{
+			time: "19:00",
+			court: "Society 2",
+			client: "Mariana S.",
+			status: "Sinal",
+			tone: "amber",
+		},
+		{
+			time: "20:00",
+			court: "Beach Tennis",
+			client: "Horario livre",
+			status: "Livre",
+			tone: "blue",
+		},
+		{
+			time: "21:00",
+			court: "Society 1",
+			client: "Rafael L.",
+			status: "Confirmada",
+			tone: "green",
+		},
 	];
 
 	return (
-		<div className="relative mx-auto w-full max-w-[560px] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-			<div className="absolute -inset-6 rounded-[2rem] bg-blue-500/10 blur-3xl" />
-			<div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_28px_90px_-42px_rgba(15,23,42,0.55)]">
-				<div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-5 py-4">
-					<div>
-						<p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-600">
-							Painel ArenaSys
-						</p>
-						<h2 className="mt-1 text-lg font-black text-slate-950">
-							Visão de hoje
-						</h2>
-					</div>
-					<div className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-						Online
-					</div>
-				</div>
+		<div className="relative mx-auto w-full max-w-[620px] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+			<div className="absolute -inset-5 rounded-[2rem] bg-blue-500/10 blur-3xl" />
+			<div className="absolute -bottom-8 -right-4 hidden h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl sm:block" />
 
-				<div className="grid gap-4 p-5 sm:grid-cols-3">
-					{[
-						{ label: "Receita", value: "R$ 1.840", hint: "+18%" },
-						{ label: "Jogos", value: "14", hint: "4 livres" },
-						{ label: "Ocupação", value: "72%", hint: "boa demanda" },
-					].map((metric) => (
-						<div
-							key={metric.label}
-							className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-							<p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-								{metric.label}
-							</p>
-							<p className="mt-2 text-2xl font-black text-slate-950">
-								{metric.value}
-							</p>
-							<p className="mt-1 text-xs font-semibold text-blue-600">
-								{metric.hint}
-							</p>
+			<div className="relative rounded-[1.65rem] border border-slate-200 bg-white p-3 shadow-[0_30px_100px_-45px_rgba(15,23,42,0.62)]">
+				<div className="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-950">
+					<div className="flex items-center justify-between border-b border-white/10 bg-slate-900 px-4 py-3">
+						<div className="flex items-center gap-2">
+							<div className="flex gap-1.5">
+								<span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+								<span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+								<span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+							</div>
+							<span className="ml-2 text-xs font-bold text-slate-400">
+								app.arenasys.com.br/dashboard
+							</span>
 						</div>
-					))}
-				</div>
+						<span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-emerald-300">
+							Online agora
+						</span>
+					</div>
 
-				<div className="grid gap-4 px-5 pb-5 lg:grid-cols-[1.15fr_0.85fr]">
-					<div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-						<div className="mb-4 flex items-center justify-between">
-							<h3 className="text-sm font-black text-slate-950">
-								Agenda das quadras
-							</h3>
-							<span className="text-xs font-semibold text-slate-500">Hoje</span>
-						</div>
-						<div className="space-y-2">
-							{daySlots.map((slot) => (
-								<div
-									key={`${slot.time}-${slot.court}`}
-									className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
-									<span className="font-mono text-sm font-black text-slate-950">
-										{slot.time}
-									</span>
-									<span className="truncate text-sm font-semibold text-slate-700">
-										{slot.court}
-									</span>
-									<span
-										className={cn(
-											"rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wide",
-											slot.tone === "green" && "bg-emerald-50 text-emerald-700",
-											slot.tone === "amber" && "bg-amber-50 text-amber-700",
-											slot.tone === "blue" && "bg-blue-50 text-blue-700",
-										)}>
-										{slot.status}
+					<div className="grid min-h-[420px] gap-0 lg:grid-cols-[0.92fr_1.08fr]">
+						<div className="border-b border-white/10 bg-slate-950 p-4 lg:border-b-0 lg:border-r">
+							<div className="mb-5 flex items-center justify-between">
+								<div>
+									<p className="text-[11px] font-black uppercase tracking-[0.24em] text-blue-300">
+										Visao da arena
+									</p>
+									<h3 className="mt-1 text-xl font-black text-white">
+										Hoje, 16 jan
+									</h3>
+								</div>
+								<div className="rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-right">
+									<p className="text-[10px] font-bold uppercase text-slate-300">
+										Ocupacao
+									</p>
+									<p className="text-lg font-black text-white">72%</p>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-2 gap-3">
+								{[
+									["Reservas", "18", "+5 hoje"],
+									["Receita", "R$ 1.840", "previsto"],
+									["Livres", "6", "proximos horarios"],
+									["Pendentes", "3", "sinal/balcao"],
+								].map(([label, value, hint]) => (
+									<div
+										key={label}
+										className="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
+										<p className="text-[10px] font-bold uppercase tracking-wide text-slate-300">
+											{label}
+										</p>
+										<p className="mt-2 text-xl font-black text-white">
+											{value}
+										</p>
+										<p className="mt-1 text-[11px] font-semibold text-blue-200">
+											{hint}
+										</p>
+									</div>
+								))}
+							</div>
+
+							<div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.08] p-4">
+								<div className="mb-3 flex items-center justify-between">
+									<p className="text-xs font-black uppercase tracking-wide text-slate-300">
+										Fluxo de hoje
+									</p>
+									<span className="text-[11px] font-bold text-emerald-300">
+										tempo real
 									</span>
 								</div>
-							))}
+								<div className="space-y-3">
+									{[
+										["Confirmadas", "12", "78%", "bg-emerald-400"],
+										["Aguardando sinal", "3", "42%", "bg-amber-300"],
+										["Horarios livres", "6", "58%", "bg-blue-300"],
+									].map(([label, value, width, color]) => (
+										<div key={label}>
+											<div className="mb-1 flex items-center justify-between">
+												<span className="text-[11px] font-bold text-slate-200">
+													{label}
+												</span>
+												<span className="text-[11px] font-black text-white">
+													{value}
+												</span>
+											</div>
+											<div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+												<div
+													className={cn("h-full rounded-full", color)}
+													style={{ width }}
+												/>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
 						</div>
-					</div>
 
-					<div className="rounded-xl border border-blue-200 bg-blue-600 p-4 text-white">
-						<p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">
-							Link público
-						</p>
-						<p className="mt-3 text-2xl font-black leading-tight">
-							Cliente reserva sem chamar no WhatsApp
-						</p>
-						<div className="mt-5 rounded-lg bg-white/15 p-3 text-sm font-semibold">
-							/agendar/arena-society
-						</div>
-						<div className="mt-4 flex items-center gap-2 text-sm text-blue-50">
-							<Check className="h-4 w-4" />
-							Disponibilidade em tempo real
+						<div className="bg-slate-50 p-4">
+							<div className="mb-4 flex items-center justify-between">
+								<div>
+									<p className="text-[11px] font-black uppercase tracking-[0.22em] text-blue-600">
+										Agenda publica + painel
+									</p>
+									<h3 className="mt-1 text-xl font-black text-slate-950">
+										Quadras e horarios em uma fila clara
+									</h3>
+								</div>
+							</div>
+
+							<div className="space-y-2.5">
+								{daySlots.map((slot) => (
+									<div
+										key={`${slot.time}-${slot.court}`}
+										className="grid grid-cols-[4.25rem_1fr_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm">
+										<span className="font-mono text-sm font-black text-slate-950">
+											{slot.time}
+										</span>
+										<div className="min-w-0">
+											<p className="truncate text-sm font-black text-slate-800">
+												{slot.court}
+											</p>
+											<p className="truncate text-xs font-semibold text-slate-500">
+												{slot.client}
+											</p>
+										</div>
+										<span
+											className={cn(
+												"rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide",
+												slot.tone === "green" &&
+													"bg-emerald-50 text-emerald-700",
+												slot.tone === "amber" && "bg-amber-50 text-amber-700",
+												slot.tone === "blue" && "bg-blue-50 text-blue-700",
+											)}>
+											{slot.status}
+										</span>
+									</div>
+								))}
+							</div>
+
+							<div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.95fr]">
+								<div
+									className="rounded-2xl bg-blue-600 p-4 text-white shadow-lg shadow-blue-950/20">
+									<p className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-100">
+										Link proprio
+									</p>
+									<p className="mt-2 text-xl font-black leading-tight">
+										/agendar/arena-society
+									</p>
+									<p className="mt-3 text-sm font-medium leading-5 text-blue-50">
+										Cliente escolhe horario sem esperar resposta manual.
+									</p>
+								</div>
+								<div className="rounded-2xl border border-slate-200 bg-white p-4">
+									<p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">
+										Pagamento
+									</p>
+									<p className="mt-2 text-lg font-black text-slate-950">
+										Balcao hoje
+									</p>
+									<p className="mt-2 text-sm font-semibold leading-5 text-slate-500">
+										Pix/cartao pelo link em evolucao.
+									</p>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -987,7 +1093,7 @@ function ProductSuiteSection({
 	const products = [
 		{
 			icon: CalendarDays,
-			title: "Agenda confiável",
+			title: "Agenda online",
 			desc: "Horários livres, reservas, bloqueios e ocupação em uma visão única para a equipe.",
 			result: "Menos conflito de horário",
 			action: "Organizar agenda",
@@ -995,7 +1101,7 @@ function ProductSuiteSection({
 		},
 		{
 			icon: MessageSquare,
-			title: "Link de reserva",
+			title: "Link proprio",
 			desc: "O cliente vê disponibilidade, escolhe quadra e solicita a reserva sem instalar aplicativo.",
 			result: "Menos atendimento repetido",
 			action: "Criar link público",
@@ -1003,7 +1109,7 @@ function ProductSuiteSection({
 		},
 		{
 			icon: BarChart3,
-			title: "Painel da operação",
+			title: "Painel de gestão",
 			desc: "Receita do dia, ocupação, pagamentos confirmados e pendências sem depender de planilha.",
 			result: "Mais clareza para decidir",
 			action: "Ver relatórios",
@@ -1032,15 +1138,15 @@ function ProductSuiteSection({
 				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
 						<p className="text-sm font-black uppercase tracking-[0.22em] text-blue-600">
-							Do chat ao painel
+							Reservas, agenda e gestão
 						</p>
 						<h2 className="mt-3 max-w-2xl text-3xl font-black tracking-tight text-slate-950 md:text-5xl">
-							Uma camada simples para organizar o que hoje fica espalhado.
+							Um sistema para tirar a reserva do improviso.
 						</h2>
 						<p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-							O ArenaSys não tenta mudar a rotina da sua arena de uma vez. Ele
-							coloca reservas, horários e clientes em um fluxo mais fácil de
-							acompanhar.
+							Comece pelo fluxo que mais pesa no dia a dia: mostrar horários,
+							receber pedidos de reserva e dar para a equipe uma fonte única da
+							agenda.
 						</p>
 					</div>
 					<button
@@ -1156,8 +1262,8 @@ export default function LandingPage() {
 	return (
 		<>
 			<SEO
-				title="Sistema de gestão e agendamento de quadras esportivas | ArenaSys"
-				description="Agenda online para quadras esportivas. Coloque horários, reservas e clientes em um painel simples, envie um link para reservas e acompanhe a operação da sua arena com clareza."
+				title="Sistema de reservas para arenas esportivas | ArenaSys"
+				description="Organize quadras, horários, clientes e pagamentos em um link público e um painel simples para sua equipe acompanhar a operação da arena."
 				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
@@ -1547,7 +1653,7 @@ export default function LandingPage() {
 								<a
 									href="#pricing"
 									className="nav-link px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-300">
-									Preço
+									Planos
 								</a>
 								<a
 									href="#faq"
@@ -1567,9 +1673,9 @@ export default function LandingPage() {
 								<button
 									onClick={() => navigate("/login?mode=signup")}
 									className="relative h-10 px-5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 text-black overflow-hidden group magnetic-btn shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-									aria-label="Começar teste grátis de 7 dias do ArenaSys">
+									aria-label="Criar agenda online no ArenaSys">
 									<span className="relative z-10 flex items-center gap-1">
-										Testar grátis
+										Criar agenda
 										<Sparkles className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
 									</span>
 									<div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1599,7 +1705,7 @@ export default function LandingPage() {
 										href="#pricing"
 										onClick={() => setMobileMenuOpen(false)}
 										className="block p-4 hover:bg-white/5 rounded-2xl text-gray-300 text-lg font-medium transition-colors">
-										Preço
+										Planos
 									</a>
 									<a
 										href="#faq"
@@ -1618,13 +1724,13 @@ export default function LandingPage() {
 										Login
 									</button>
 									<button
-										aria-label="Começar teste grátis de 7 dias"
+										aria-label="Criar agenda online no ArenaSys"
 										onClick={() => {
 											setMobileMenuOpen(false);
 											navigate("/login?mode=signup");
 										}}
 										className="w-full mt-2 h-14 bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-bold text-lg rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
-										Testar grátis
+										Criar agenda
 										<Sparkles className="w-4 h-4" />
 									</button>
 								</div>
@@ -1654,46 +1760,46 @@ export default function LandingPage() {
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
 								<div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-blue-600" />
-									Founders aberto para arenas que querem operar melhor
+									Agenda, reservas e gestão em um só lugar
 								</div>
 							</div>
 
 							<div className="space-y-5">
 								<h1 className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
-									A agenda da sua arena, finalmente no lugar certo.
+									Sistema de reservas para arenas esportivas.
 								</h1>
 								<p className="mx-auto max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl lg:mx-0 lg:max-w-xl">
-									O ArenaSys organiza horários, reservas e clientes em um painel
-									simples. Você envia um link, o cliente escolhe o horário e sua
-									equipe acompanha tudo sem depender de conversa perdida.
+									Organize quadras, horários, clientes e pagamentos em um link
+									público e um painel simples para sua equipe acompanhar a
+									operação.
 								</p>
 							</div>
 
 							<div className="flex flex-col items-center gap-4 pt-2 sm:flex-row lg:items-start">
 								<button
 									onClick={startSignup}
-									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-blue-600 px-7 text-base font-bold text-white shadow-[0_18px_38px_-20px_rgba(37,99,235,0.95)] transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] sm:w-auto focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-lg bg-blue-600 px-7 text-base font-bold text-white shadow-[0_18px_38px_-20px_rgba(37,99,235,0.95)] transition-all duration-200 hover:bg-blue-700 active:scale-[0.98] sm:w-auto sm:min-w-[282px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
 									aria-label="Testar grátis agora - começar teste de 7 dias">
-									Começar teste grátis
+									Criar minha agenda online
 									<ArrowRight className="h-5 w-5" />
 								</button>
 								<button
 									onClick={() =>
 										document
-											.getElementById("pricing")
+											.getElementById("como-funciona")
 											?.scrollIntoView({ behavior: "smooth" })
 									}
-									className="flex h-14 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-7 text-base font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto"
-									aria-label="Ver oferta Founders">
-									Ver oferta
+									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-slate-300 bg-white px-7 text-base font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto sm:min-w-[200px]"
+									aria-label="Ver como funciona o ArenaSys">
+									Ver como funciona
 								</button>
 							</div>
 
 							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600 lg:justify-start">
 								{[
+									"Link próprio para reservas",
 									"Sem app para o cliente",
-									"7 dias grátis",
-									"Setup guiado",
+									"Pagamento no balcão ou combinado",
 								].map((item) => (
 									<div key={item} className="inline-flex items-center gap-2">
 										<Check className="h-4 w-4 text-blue-600" />
@@ -1704,9 +1810,9 @@ export default function LandingPage() {
 
 							<div className="grid grid-cols-3 gap-3 pt-1 text-left">
 								{[
-									["Link", "para reservar"],
-									["Agenda", "em tempo real"],
-									["Painel", "para gerir"],
+									["Link", "publico da arena"],
+									["Agenda", "por quadra e horario"],
+									["Painel", "para operar"],
 								].map(([value, label]) => (
 									<div
 										key={label}
@@ -1862,12 +1968,11 @@ export default function LandingPage() {
 					<div className="max-w-4xl mx-auto relative z-10">
 						<ScrollReveal className="text-center mb-16">
 							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
-								Entre cedo. Organize sua arena com acompanhamento direto.
+								Comece com uma agenda online antes de mudar toda a operação.
 							</h2>
 							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
-								O Founders é para as primeiras arenas que querem implantar o
-								ArenaSys com suporte próximo, preço travado e espaço para
-								influenciar a evolução do produto.
+								Para as primeiras arenas, o acesso antecipado inclui implantação
+								assistida, suporte próximo e uma condição de entrada mais leve.
 							</p>
 						</ScrollReveal>
 
@@ -1886,14 +1991,14 @@ export default function LandingPage() {
 								</div>
 								<div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 animate-border-glow">
 									<p className="text-sm font-bold uppercase tracking-wider text-emerald-300">
-										Condição Founders
+										Acesso antecipado
 									</p>
 									<p className="mt-3 text-2xl font-black text-emerald-300">
-										Preço travado
+										Condição inicial
 									</p>
 									<p className="mt-2 text-sm leading-6 text-gray-300">
-										Entrada antecipada para as primeiras arenas, com plano
-										mensal reduzido.
+										Valor reduzido para as primeiras arenas validarem o produto
+										com acompanhamento direto.
 									</p>
 								</div>
 								<div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
@@ -1914,17 +2019,16 @@ export default function LandingPage() {
 							<TiltCard className="relative rounded-3xl p-8 pt-14 md:p-10 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
 								{hasActiveFoundersOffer && (
 									<div className="absolute -top-4 md:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs md:text-sm font-bold px-4 md:px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
-										FOUNDERS: primeiras {foundersCap} arenas
+										Acesso antecipado: primeiras {foundersCap} arenas
 									</div>
 								)}
 
 								<div className="text-center mb-8">
 									<div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-400 mb-6">
-										7 dias grátis • sem cartão • suporte direto
+										7 dias grátis • sem cartão • implantação assistida
 									</div>
 									<h3 className="mx-auto mb-5 max-w-2xl text-2xl font-black text-white md:text-4xl">
-										Uma condição de entrada para validar o ArenaSys na operação
-										real da sua arena.
+										Coloque o link de reservas no ar e valide com clientes reais.
 									</h3>
 
 									{hasActiveFoundersOffer ?
@@ -1941,7 +2045,7 @@ export default function LandingPage() {
 											</div>
 											<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3">
 												<span className="text-emerald-400 text-sm font-bold">
-													Founders
+													Acesso antecipado
 												</span>
 												<span className="text-gray-300 text-sm">
 													• preço travado por 12 meses
@@ -1956,7 +2060,7 @@ export default function LandingPage() {
 														</span>{" "}
 														para entrar nessa condição
 													</>
-												:	"Condição ativa enquanto as vagas Founders estiverem abertas"}
+												:	"Condição ativa enquanto as vagas de acesso antecipado estiverem abertas"}
 											</p>
 										</>
 									:	<>
@@ -1979,7 +2083,7 @@ export default function LandingPage() {
 									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
 										<div className="text-center">
 											<p className="text-gray-300 text-xs uppercase tracking-wider mb-1">
-												Depois do Founders
+												Plano regular
 											</p>
 											<p className="text-white font-bold">R$ 97/mês</p>
 											<p className="text-gray-400 text-xs">
@@ -1988,7 +2092,7 @@ export default function LandingPage() {
 										</div>
 										<div className="text-center border-l border-white/10">
 											<p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">
-												Founders
+												Acesso antecipado
 											</p>
 											<p className="text-emerald-400 font-bold">R$ 49/mês</p>
 											<p className="text-emerald-400/60 text-xs">
@@ -2000,11 +2104,11 @@ export default function LandingPage() {
 
 								<ul className="space-y-4 mb-8">
 									{[
-										"Agenda organizada para reduzir conflito de horário",
-										"Cliente reserva pelo link, sem instalar app",
-										"Painel para acompanhar receita, reservas e pendências",
-										"Mensalistas e horários recorrentes sob controle",
-										"Setup assistido e suporte direto na implantação",
+										"Agenda online com quadras, horários e bloqueios",
+										"Link público para o cliente consultar disponibilidade",
+										"Painel para acompanhar reservas, receita e pendências",
+										"Pagamento no balcão ou combinado no fluxo atual",
+										"Implantação assistida para colocar a primeira arena no ar",
 									].map((item, i) => (
 										<li
 											key={i}
@@ -2020,8 +2124,8 @@ export default function LandingPage() {
 								<button
 									onClick={() => navigate("/login?mode=signup")}
 									className="relative overflow-hidden w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] btn-shine focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-									aria-label="Entrar como Founder - começar teste grátis de 7 dias">
-									Entrar como Founder
+									aria-label="Começar acesso antecipado - teste grátis de 7 dias">
+									Começar acesso antecipado
 								</button>
 
 								{foundersProgress && (
@@ -2036,7 +2140,7 @@ export default function LandingPage() {
 										</div>
 										<p className="text-center text-sm text-gray-300 mt-3">
 											{foundersProgress.remaining} de {foundersProgress.cap}{" "}
-											vagas Founders restantes
+											vagas de acesso antecipado restantes
 										</p>
 									</div>
 								)}
