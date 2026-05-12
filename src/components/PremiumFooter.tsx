@@ -63,14 +63,14 @@ export function PremiumFooter() {
 						<ul className="space-y-3">
 							<li>
 								<a
-									href="#pricing"
+									href="#comecar"
 									className="text-gray-300 text-[13px] hover:text-white transition-colors">
-									Preços
+									Começar
 								</a>
 							</li>
 							<li>
 								<a
-									href="#comparison"
+									href="#solucoes"
 									className="text-gray-300 text-[13px] hover:text-white transition-colors">
 									Recursos
 								</a>

@@ -1625,3 +1625,26 @@
 .landing-light .landing-device .bg-black\/40 {
   background-color: #050507 !important;
 }
+
+.landing-light .landing-dark-section {
+  color: #f8fafc !important;
+  background-color: #030817 !important;
+}
+
+.landing-light .landing-dark-section .text-white {
+  color: #ffffff !important;
+}
+
+.landing-light .landing-dark-section .text-gray-300 {
+  color: #cbd5e1 !important;
+}
+
+.landing-light .landing-dark-section .text-blue-300,
+.landing-light .landing-dark-section .text-blue-300\/90 {
+  color: #93c5fd !important;
+}
+
+.landing-light .landing-dark-section .border-white\/5,
+.landing-light .landing-dark-section .border-white\/10 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}

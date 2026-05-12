@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabaseClient";
 import { SEO } from "@/components/SEO";
 import { PremiumFooter } from "@/components/PremiumFooter";
 
@@ -393,7 +392,7 @@ const faqList = [
 	{
 		question: "Quanto tempo leva para começar?",
 		answer:
-			"A configuração inicial é simples: você cadastra quadras, horários, preços e já pode compartilhar o link de reserva com seus clientes.",
+			"A configuração inicial é simples: você cadastra quadras, horários, valores e já pode compartilhar o link de reserva com seus clientes.",
 	},
 	{
 		question: "Meu cliente precisa instalar aplicativo?",
@@ -1239,15 +1238,7 @@ function ProductSuiteSection({
 export default function LandingPage() {
 	const navigate = useNavigate();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const [foundersProgress, setFoundersProgress] = useState<{
-		cap: number;
-		sold: number;
-		remaining: number;
-	} | null>(null);
 	const startSignup = () => navigate("/login?mode=signup");
-	const hasActiveFoundersOffer =
-		!foundersProgress || foundersProgress.remaining > 0;
-	const foundersCap = foundersProgress?.cap ?? 20;
 
 	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
 	// Sem isto, o token fica na home e a tela de "Nova senha" nunca aparece.
@@ -1272,33 +1263,6 @@ export default function LandingPage() {
 			const q = window.location.search;
 			window.location.replace(`/reset-password${q}`);
 		}
-	}, []);
-
-	useEffect(() => {
-		let mounted = true;
-		(async () => {
-			const rpcClient = supabase as unknown as {
-				rpc: (
-					fn: string,
-				) => Promise<{ data: unknown; error: { message: string } | null }>;
-			};
-			const { data, error } = await rpcClient.rpc("get_founders_progress");
-			if (!mounted) return;
-			if (error || !data) {
-				setFoundersProgress(null);
-				return;
-			}
-			const row = (Array.isArray(data) ? data[0] : data) as
-				| { cap?: number; sold?: number; remaining?: number }
-				| undefined;
-			const cap = Number(row?.cap ?? 20);
-			const sold = Number(row?.sold ?? 0);
-			const remaining = Number(row?.remaining ?? Math.max(0, cap - sold));
-			setFoundersProgress({ cap, sold, remaining });
-		})();
-		return () => {
-			mounted = false;
-		};
 	}, []);
 
 	return (
@@ -1703,10 +1667,10 @@ export default function LandingPage() {
 									Como funciona
 								</a>
 								<a
-									href="#pricing"
+									href="#comecar"
 									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									Planos
+									Começar
 								</a>
 								<a
 									href="#faq"
@@ -1769,10 +1733,10 @@ export default function LandingPage() {
 										Como funciona
 									</a>
 									<a
-										href="#pricing"
+										href="#comecar"
 										onClick={() => setMobileMenuOpen(false)}
 										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
-										Planos
+										Começar
 									</a>
 									<a
 										href="#faq"
@@ -1812,9 +1776,9 @@ export default function LandingPage() {
 					<div className="absolute left-[6%] top-32 hidden h-24 w-24 rounded-[2rem] border border-white/18 bg-white/10 rotate-12 lg:block" />
 					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/18 bg-white/10 lg:block" />
 
-					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.91fr_1.09fr]">
-						<div className="space-y-8 text-center lg:text-left">
-							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+					<div className="relative z-10 mx-auto max-w-5xl">
+						<div className="mx-auto max-w-4xl space-y-8 text-center">
+							<div className="flex flex-wrap justify-center gap-2">
 								<div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/14 px-5 py-2.5 text-sm font-black text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-amber-200" />
 									<span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
@@ -1830,7 +1794,7 @@ export default function LandingPage() {
 									A solução completa para vender horários.
 								</h1>
 								<p
-									className="mx-auto max-w-2xl text-lg font-extrabold leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl"
+									className="mx-auto max-w-2xl text-lg font-extrabold leading-8 text-blue-50 sm:text-xl"
 									style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
 									Transforme sua agenda em um link de reservas, organize cada
 									quadra por horário e acompanhe pagamentos, clientes e ocupação
@@ -1838,7 +1802,7 @@ export default function LandingPage() {
 								</p>
 							</div>
 
-							<div className="flex flex-col items-center gap-4 pt-2 sm:flex-row lg:items-start">
+							<div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row">
 								<button
 									onClick={startSignup}
 									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-[#ffd33d] px-8 text-base font-black text-[#062b6f] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#ffe06a] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-100"
@@ -1859,7 +1823,7 @@ export default function LandingPage() {
 								</button>
 							</div>
 
-							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50 lg:justify-start">
+							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50">
 								{[
 									"Link próprio para reservas",
 									"Sem app para o cliente",
@@ -1877,35 +1841,7 @@ export default function LandingPage() {
 									</div>
 								))}
 							</div>
-
-							<div className="grid grid-cols-3 gap-3 pt-1 text-left">
-								{[
-									["Link", "publico da arena"],
-									["Agenda", "por quadra e horario"],
-									["Painel", "para operar"],
-								].map(([value, label]) => (
-									<div
-										key={label}
-										className="rounded-2xl border border-white/20 bg-white/12 p-3 shadow-sm backdrop-blur-sm">
-										<p
-											className="text-lg font-black text-white sm:text-xl"
-											style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-											{value}
-										</p>
-										<p
-											className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-100"
-											style={{
-												color: "#dbeafe",
-												WebkitTextFillColor: "#dbeafe",
-											}}>
-											{label}
-										</p>
-									</div>
-								))}
-							</div>
 						</div>
-
-						<HeroProductPreview />
 					</div>
 				</section>
 
@@ -2006,7 +1942,7 @@ export default function LandingPage() {
 								{
 									step: "1",
 									title: "Configure a base",
-									desc: "Cadastre quadras, horários, preços e regras principais da sua operação.",
+									desc: "Cadastre quadras, horários, valores e regras principais da sua operação.",
 								},
 								{
 									step: "2",
@@ -2037,193 +1973,135 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- SEÇÃO PREÇO: com glow e animações --- */}
+				{/* --- PRÓXIMO PASSO: descoberta antes de preço --- */}
 				<section
-					id="pricing"
-					className="relative scroll-mt-24 py-32 px-4 border-y border-white/5 overflow-hidden">
-					{/* Background glow */}
-					<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[150px] animate-pulse-glow" />
+					id="comecar"
+					className="landing-dark-section relative scroll-mt-24 overflow-hidden border-y border-white/5 bg-[#030817] px-4 py-28 sm:py-32">
+					<div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/30 to-transparent" />
+					<div className="absolute left-[8%] top-12 h-56 w-56 rounded-full bg-blue-500/10 blur-[110px]" />
+					<div className="absolute bottom-10 right-[12%] h-64 w-64 rounded-full bg-emerald-400/10 blur-[130px]" />
 
-					<div className="max-w-4xl mx-auto relative z-10">
-						<ScrollReveal className="text-center mb-16">
-							<h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6">
-								Comece com uma agenda online antes de mudar toda a operação.
-							</h2>
-							<p className="text-gray-300 text-xl max-w-2xl mx-auto">
-								Para as primeiras arenas, o acesso antecipado inclui implantação
-								assistida, suporte próximo e uma condição de entrada mais leve.
+					<div className="relative z-10 mx-auto max-w-6xl">
+						<ScrollReveal className="mb-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+							<div>
+								<p className="mb-3 text-sm font-bold uppercase tracking-widest text-blue-300/90">
+									Próximo passo
+								</p>
+								<h2 className="max-w-3xl text-3xl font-black leading-tight text-white md:text-5xl lg:text-6xl">
+									Comece pela agenda piloto. Decida o resto com clareza.
+								</h2>
+							</div>
+							<p className="max-w-2xl text-lg leading-8 text-gray-300 lg:justify-self-end">
+								A primeira conversa precisa mostrar valor real: uma agenda
+								publicada, quadras configuradas e um caminho simples para o
+								cliente reservar sem depender de troca de mensagens.
 							</p>
 						</ScrollReveal>
 
 						<ScrollReveal delay={100}>
-							<div className="grid gap-4 md:grid-cols-3 mb-10">
-								<div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-									<p className="text-sm font-bold uppercase tracking-wider text-gray-400">
-										Implantação
-									</p>
-									<p className="mt-3 text-2xl font-black text-white">
-										Setup guiado
-									</p>
-									<p className="mt-2 text-sm leading-6 text-gray-300">
-										Ajuda para colocar quadras, horários e fluxo principal no ar.
-									</p>
-								</div>
-								<div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 animate-border-glow">
-									<p className="text-sm font-bold uppercase tracking-wider text-emerald-300">
-										Acesso antecipado
-									</p>
-									<p className="mt-3 text-2xl font-black text-emerald-300">
-										Condição inicial
-									</p>
-									<p className="mt-2 text-sm leading-6 text-gray-300">
-										Valor reduzido para as primeiras arenas validarem o produto
-										com acompanhamento direto.
-									</p>
-								</div>
-								<div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-									<p className="text-sm font-bold uppercase tracking-wider text-gray-400">
-										Produto
-									</p>
-									<p className="mt-3 text-2xl font-black text-white">
-										Feedback direto
-									</p>
-									<p className="mt-2 text-sm leading-6 text-gray-300">
-										Sua operação ajuda a priorizar melhorias reais da agenda.
-									</p>
-								</div>
+							<div className="mb-8 grid gap-4 md:grid-cols-3">
+								{[
+									{
+										label: "Diagnóstico",
+										title: "Ler a operação",
+										desc: "Entender como chegam as reservas, quais quadras entram primeiro e onde a equipe perde tempo.",
+									},
+									{
+										label: "Agenda piloto",
+										title: "Publicar um link real",
+										desc: "Colocar uma versão enxuta no ar para testar o fluxo com reservas da rotina da arena.",
+									},
+									{
+										label: "Decisão",
+										title: "Expandir com segurança",
+										desc: "Depois da validação, ampliar quadras, regras e acompanhamento sem mudar tudo no escuro.",
+									},
+								].map((item) => (
+									<div
+										key={item.label}
+										className="group h-full rounded-3xl border border-white/10 bg-white/[0.045] p-6 transition-colors duration-300 hover:border-blue-300/35">
+										<p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-300">
+											{item.label}
+										</p>
+										<p className="mt-4 text-2xl font-black text-white">
+											{item.title}
+										</p>
+										<p className="mt-3 text-sm leading-6 text-gray-300">
+											{item.desc}
+										</p>
+									</div>
+								))}
 							</div>
 						</ScrollReveal>
 
 						<ScrollReveal delay={200}>
-							<TiltCard className="relative rounded-3xl p-8 pt-14 md:p-10 md:pt-10 bg-black/40 backdrop-blur-md border border-white/10 hover:border-emerald-500/30 transition-colors duration-300">
-								{hasActiveFoundersOffer && (
-									<div className="absolute -top-4 md:-top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs md:text-sm font-bold px-4 md:px-6 py-2 rounded-full shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
-										Acesso antecipado: primeiras {foundersCap} arenas
+							<div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
+								<div className="relative overflow-hidden rounded-3xl bg-white p-8 text-slate-950 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.9)] md:p-10">
+									<div className="absolute right-0 top-0 h-40 w-40 translate-x-8 -translate-y-8 rounded-full bg-blue-100 blur-2xl" />
+									<div className="relative">
+										<p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-blue-700">
+											Agenda piloto
+										</p>
+										<h3 className="max-w-xl text-3xl font-black leading-tight md:text-4xl">
+											Publique uma experiência pequena, real e fácil de avaliar.
+										</h3>
+										<p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+											O dono da arena não precisa comprar uma promessa. Ele precisa
+											ver uma quadra funcionando no link, a equipe acompanhando no
+											painel e o cliente entendendo como reservar.
+										</p>
+										<div className="mt-8 grid gap-4 sm:grid-cols-2">
+											<div className="border-l-4 border-blue-500 pl-4">
+												<p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+													Entrada leve
+												</p>
+												<p className="mt-1 text-base font-black text-slate-950">
+													7 dias grátis, sem cartão
+												</p>
+											</div>
+											<div className="border-l-4 border-emerald-400 pl-4">
+												<p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+													Acompanhamento
+												</p>
+												<p className="mt-1 text-base font-black text-slate-950">
+													Primeira agenda assistida
+												</p>
+											</div>
+										</div>
 									</div>
-								)}
-
-								<div className="text-center mb-8">
-									<div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-400 mb-6">
-										7 dias grátis • sem cartão • implantação assistida
-									</div>
-									<h3 className="mx-auto mb-5 max-w-2xl text-2xl font-black text-white md:text-4xl">
-										Coloque o link de reservas no ar e valide com clientes reais.
-									</h3>
-
-									{hasActiveFoundersOffer ?
-										<>
-											{/* Preço Founders */}
-											<div className="flex items-baseline justify-center gap-2 mb-3">
-												<span className="text-2xl text-gray-300 line-through">
-													R$ 97
-												</span>
-												<span className="text-6xl font-black text-emerald-400">
-													R$ 49
-												</span>
-												<span className="text-gray-300 text-xl">/mês</span>
-											</div>
-											<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-3">
-												<span className="text-emerald-400 text-sm font-bold">
-													Acesso antecipado
-												</span>
-												<span className="text-gray-300 text-sm">
-													• preço travado por 12 meses
-												</span>
-											</div>
-											<p className="text-gray-300 text-sm">
-												{foundersProgress ?
-													<>
-														Restam{" "}
-														<span className="text-white font-bold">
-															{foundersProgress.remaining} vagas
-														</span>{" "}
-														para entrar nessa condição
-													</>
-												:	"Condição ativa enquanto as vagas de acesso antecipado estiverem abertas"}
-											</p>
-										</>
-									:	<>
-											{/* Preço normal */}
-											<div className="flex items-baseline justify-center gap-2 mb-2">
-												<span className="text-6xl font-black text-white">
-													R$ 97
-												</span>
-												<span className="text-gray-300 text-xl">/mês</span>
-											</div>
-											<p className="text-gray-300">
-												Plano mensal • Cancele quando quiser
-											</p>
-										</>
-									}
 								</div>
 
-								{/* Comparativo de condicao */}
-								{hasActiveFoundersOffer && (
-									<div className="grid grid-cols-2 gap-3 mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-										<div className="text-center">
-											<p className="text-gray-300 text-xs uppercase tracking-wider mb-1">
-												Plano regular
-											</p>
-											<p className="text-white font-bold">R$ 97/mês</p>
-											<p className="text-gray-400 text-xs">
-												plano Pro mensal
-											</p>
-										</div>
-										<div className="text-center border-l border-white/10">
-											<p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">
-												Acesso antecipado
-											</p>
-											<p className="text-emerald-400 font-bold">R$ 49/mês</p>
-											<p className="text-emerald-400/60 text-xs">
-												por 12 meses para as primeiras arenas
-											</p>
-										</div>
-									</div>
-								)}
+								<div className="rounded-3xl border border-white/10 bg-white/[0.045] p-7 backdrop-blur-sm md:p-8">
+									<p className="mb-6 text-sm font-black uppercase tracking-[0.2em] text-blue-300">
+										O que entra no piloto
+									</p>
+									<ul className="space-y-4">
+										{[
+											"Agenda online com quadras, horários e bloqueios",
+											"Link público para o cliente consultar disponibilidade",
+											"Painel para acompanhar reservas, receita e pendências",
+											"Pagamento no balcão ou combinado no fluxo atual",
+											"Implantação assistida para colocar a primeira arena no ar",
+										].map((item) => (
+											<li
+												key={item}
+												className="flex items-start gap-3 text-base font-semibold leading-6 text-white">
+												<div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+													<Check className="h-4 w-4 text-blue-200" />
+												</div>
+												<span>{item}</span>
+											</li>
+										))}
+									</ul>
 
-								<ul className="space-y-4 mb-8">
-									{[
-										"Agenda online com quadras, horários e bloqueios",
-										"Link público para o cliente consultar disponibilidade",
-										"Painel para acompanhar reservas, receita e pendências",
-										"Pagamento no balcão ou combinado no fluxo atual",
-										"Implantação assistida para colocar a primeira arena no ar",
-									].map((item, i) => (
-										<li
-											key={i}
-											className="flex items-center gap-3 text-white text-lg">
-											<div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-												<Check className="w-4 h-4 text-emerald-500" />
-											</div>
-											<span>{item}</span>
-										</li>
-									))}
-								</ul>
-
-								<button
-									onClick={() => navigate("/login?mode=signup")}
-									className="relative overflow-hidden w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] btn-shine focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
-									aria-label="Começar acesso antecipado - teste grátis de 7 dias">
-									Começar acesso antecipado
-								</button>
-
-								{foundersProgress && (
-									<div className="mt-6">
-										<div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
-											<div
-												className="h-full bg-emerald-500 transition-all duration-500"
-												style={{
-													width: `${Math.min(100, (foundersProgress.sold / foundersProgress.cap) * 100)}%`,
-												}}
-											/>
-										</div>
-										<p className="text-center text-sm text-gray-300 mt-3">
-											{foundersProgress.remaining} de {foundersProgress.cap}{" "}
-											vagas de acesso antecipado restantes
-										</p>
-									</div>
-								)}
-							</TiltCard>
+									<button
+										onClick={() => navigate("/login?mode=signup")}
+										className="btn-shine relative mt-8 h-16 w-full overflow-hidden rounded-2xl bg-[#ffd33d] text-lg font-black text-[#062b6f] transition-all duration-300 hover:bg-[#ffe06a] hover:shadow-[0_0_40px_rgba(250,204,21,0.22)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-200/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
+										aria-label="Criar minha agenda online - teste grátis de 7 dias">
+										Criar minha agenda online
+									</button>
+								</div>
+							</div>
 						</ScrollReveal>
 					</div>
 				</section>
