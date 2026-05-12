@@ -1105,16 +1105,16 @@ function OutcomeStrip() {
 	];
 
 	return (
-		<section className="relative bg-[#f8fbff] px-4 pb-8">
-			<div className="mx-auto -mt-10 grid max-w-6xl gap-4 rounded-[2rem] border border-blue-100 bg-white p-4 shadow-[0_28px_90px_-58px_rgba(15,23,42,0.65)] md:grid-cols-3 md:p-6">
+		<section className="goomer-style relative bg-[#f8fbff] px-5 pb-8">
+			<div className="mx-auto -mt-8 grid max-w-6xl gap-4 rounded-[2.15rem] border border-blue-100 bg-white p-4 shadow-[0_28px_90px_-58px_rgba(15,23,42,0.65)] md:grid-cols-3 md:p-6">
 				{outcomes.map((item) => (
 					<div
 						key={item.label}
-						className="rounded-3xl border border-slate-100 bg-slate-50 px-5 py-6">
-						<p className="text-3xl font-black tracking-tight text-blue-700">
+						className="rounded-[1.75rem] border border-slate-100 bg-slate-50 px-5 py-6">
+						<p className="text-3xl font-black text-[#0b64d8]">
 							{item.value}
 						</p>
-						<p className="mt-1 text-sm font-black uppercase tracking-[0.16em] text-slate-950">
+						<p className="mt-1 text-sm font-black uppercase text-slate-950">
 							{item.label}
 						</p>
 						<p className="mt-3 text-sm leading-6 text-slate-600">
@@ -1618,6 +1618,20 @@ export default function LandingPage() {
         .nav-link:hover::before {
           width: 100%;
         }
+        .goomer-style {
+          font-family: "Nunito Sans", "Montserrat", "Arial Rounded MT Bold", "Aptos", "Trebuchet MS", system-ui, sans-serif;
+          letter-spacing: 0;
+        }
+        .goomer-logo {
+          font-family: "Nunito Sans", "Arial Rounded MT Bold", "Aptos", "Trebuchet MS", system-ui, sans-serif;
+          font-weight: 950;
+          letter-spacing: 0;
+        }
+        .goomer-hero-title {
+          font-family: "Nunito Sans", "Arial Rounded MT Bold", "Aptos", "Trebuchet MS", system-ui, sans-serif;
+          font-weight: 950;
+          letter-spacing: 0;
+        }
         .magnetic-btn {
           transition: transform 0.2s ease-out;
         }
@@ -1657,7 +1671,7 @@ export default function LandingPage() {
 				{/* ═══════════════════════════════════════════════════════════════════
 				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
 				    ═══════════════════════════════════════════════════════════════════ */}
-				<header className="absolute left-0 right-0 top-0 z-50 flex justify-center px-4 pt-6">
+				<header className="goomer-style absolute left-0 right-0 top-0 z-50 flex justify-center px-5 pt-7">
 					<nav className="relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
 							<div
@@ -1665,38 +1679,38 @@ export default function LandingPage() {
 								onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
 								<div className="leading-none">
 									<span
-										className="block text-[2rem] font-black tracking-tight text-white sm:text-[2.45rem]"
+										className="goomer-logo block text-[2.05rem] leading-none text-white sm:text-[2.55rem]"
 										style={{
 											color: "#fff",
 											WebkitTextFillColor: "#fff",
 										}}>
-										ArenaSys
+										Arenasys
 									</span>
 								</div>
 							</div>
 
-							<div className="hidden items-center gap-1 md:flex">
+							<div className="hidden items-center gap-2 md:flex">
 								<a
 									href="#solucoes"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Soluções
 								</a>
 								<a
 									href="#como-funciona"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Como funciona
 								</a>
 								<a
 									href="#pricing"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Planos
 								</a>
 								<a
 									href="#faq"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									FAQ
 								</a>
@@ -1706,7 +1720,7 @@ export default function LandingPage() {
 								<button
 									onClick={() => navigate("/login")}
 									aria-label="Fazer login no ArenaSys"
-									className="rounded-full border border-white/45 bg-white/10 px-5 py-2.5 text-sm font-black text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
+									className="rounded-full border border-white/50 bg-transparent px-7 py-3 text-[0.93rem] font-black text-white transition-all duration-300 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
 									style={{
 										color: "#fff",
 										WebkitTextFillColor: "#fff",
@@ -1715,11 +1729,11 @@ export default function LandingPage() {
 								</button>
 								<button
 									onClick={() => navigate("/login?mode=signup")}
-									className="relative h-11 overflow-hidden rounded-full bg-amber-300 px-5 text-sm font-black text-blue-950 shadow-lg shadow-blue-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-100"
+									className="relative h-12 overflow-hidden rounded-full bg-[#ffd33d] px-7 text-[0.93rem] font-black text-[#062b6f] shadow-lg shadow-blue-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffe06a] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-100"
 									aria-label="Criar agenda online no ArenaSys">
-									<span className="relative z-10 flex items-center gap-1">
+									<span className="relative z-10 flex items-center gap-2">
 										Criar agenda
-										<ArrowRight className="h-3.5 w-3.5" />
+										<ArrowRight className="h-4 w-4" />
 									</span>
 								</button>
 							</div>
@@ -1793,17 +1807,15 @@ export default function LandingPage() {
 				</header>
 
 				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
-				<section className="relative isolate overflow-hidden bg-[#075bd8] px-4 pb-24 pt-32 text-white sm:pt-36 lg:pb-28 lg:pt-40">
-					<div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_82%_20%,rgba(125,211,252,0.28),transparent_30%),linear-gradient(135deg,#0b72f0_0%,#075bd8_48%,#0347aa_100%)]" />
-					<div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#f8fbff]" />
-					<div className="absolute -bottom-px left-0 right-0 h-16 rounded-t-[3.5rem] bg-[#f8fbff]" />
-					<div className="absolute left-[8%] top-32 hidden h-20 w-20 rounded-[2rem] border border-white/15 bg-white/5 rotate-12 lg:block" />
-					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/15 bg-white/5 lg:block" />
+				<section className="goomer-style relative isolate overflow-hidden bg-[#075bd8] px-5 pb-28 pt-32 text-white sm:pt-36 lg:pb-28 lg:pt-40">
+					<div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,0.24),transparent_24%),radial-gradient(circle_at_76%_16%,rgba(255,255,255,0.16),transparent_20%),linear-gradient(135deg,#1d8cff_0%,#0b71ee_45%,#0759cf_100%)]" />
+					<div className="absolute left-[6%] top-32 hidden h-24 w-24 rounded-[2rem] border border-white/18 bg-white/10 rotate-12 lg:block" />
+					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/18 bg-white/10 lg:block" />
 
-					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+					<div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.91fr_1.09fr]">
 						<div className="space-y-8 text-center lg:text-left">
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
-								<div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm font-bold text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+								<div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/14 px-5 py-2.5 text-sm font-black text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-amber-200" />
 									<span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 										O sistema completo para reservas esportivas
@@ -1813,12 +1825,12 @@ export default function LandingPage() {
 
 							<div className="space-y-5">
 								<h1
-									className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl"
+									className="goomer-hero-title text-[3.05rem] leading-[0.96] text-white sm:text-6xl lg:text-[5.15rem]"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									A solução completa para vender horários.
 								</h1>
 								<p
-									className="mx-auto max-w-2xl text-lg font-medium leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl"
+									className="mx-auto max-w-2xl text-lg font-extrabold leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl"
 									style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
 									Transforme sua agenda em um link de reservas, organize cada
 									quadra por horário e acompanhe pagamentos, clientes e ocupação
@@ -1829,7 +1841,7 @@ export default function LandingPage() {
 							<div className="flex flex-col items-center gap-4 pt-2 sm:flex-row lg:items-start">
 								<button
 									onClick={startSignup}
-									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-amber-300 px-7 text-base font-black text-blue-950 shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[0.98] sm:w-auto sm:min-w-[282px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-100"
+									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-[#ffd33d] px-8 text-base font-black text-[#062b6f] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#ffe06a] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-100"
 									aria-label="Testar grátis agora - começar teste de 7 dias">
 									Criar minha agenda online
 									<ArrowRight className="h-5 w-5" />
@@ -1840,8 +1852,9 @@ export default function LandingPage() {
 											.getElementById("como-funciona")
 											?.scrollIntoView({ behavior: "smooth" })
 									}
-									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-white/35 bg-white/15 px-7 text-base font-black text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/25 sm:w-auto sm:min-w-[200px]"
-									aria-label="Ver como funciona o ArenaSys">
+									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-white/45 bg-white/12 px-8 text-base font-black text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 sm:w-auto sm:min-w-[210px]"
+									aria-label="Ver como funciona o ArenaSys"
+									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Ver como funciona
 								</button>
 							</div>
