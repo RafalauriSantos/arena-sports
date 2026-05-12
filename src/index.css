@@ -1569,6 +1569,16 @@
   box-shadow: 0 18px 48px -28px rgba(15, 23, 42, 0.35);
 }
 
+.landing-light .landing-hero-header,
+.landing-light>header.landing-hero-header.fixed {
+  background: #0b71ee !important;
+  box-shadow: none !important;
+}
+
+.landing-light .landing-hero-nav {
+  box-shadow: none !important;
+}
+
 .landing-light .animate-text-shimmer {
   background: linear-gradient(90deg, #0f172a, #2563eb, #0f172a);
   -webkit-background-clip: text;

@@ -1635,8 +1635,8 @@ export default function LandingPage() {
 				{/* ═══════════════════════════════════════════════════════════════════
 				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
 				    ═══════════════════════════════════════════════════════════════════ */}
-				<header className="goomer-style absolute left-0 right-0 top-0 z-50 flex justify-center px-5 pt-7">
-					<nav className="relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
+				<header className="landing-hero-header goomer-style fixed left-0 right-0 top-0 z-50 flex justify-center px-5 py-5">
+					<nav className="landing-hero-nav relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
 							<div
 								className="flex cursor-pointer items-center rounded-xl py-1.5 group"
@@ -1771,8 +1771,8 @@ export default function LandingPage() {
 				</header>
 
 				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
-				<section className="goomer-style relative isolate overflow-hidden bg-[#075bd8] px-5 pb-28 pt-32 text-white sm:pt-36 lg:pb-28 lg:pt-40">
-					<div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,0.24),transparent_24%),radial-gradient(circle_at_76%_16%,rgba(255,255,255,0.16),transparent_20%),linear-gradient(135deg,#1d8cff_0%,#0b71ee_45%,#0759cf_100%)]" />
+				<section className="goomer-style relative isolate overflow-hidden bg-[#0b71ee] px-5 pb-28 pt-36 text-white sm:pt-40 lg:pb-28 lg:pt-44">
+					<div className="absolute inset-0 bg-[#0b71ee]" />
 					<div className="absolute left-[6%] top-32 hidden h-24 w-24 rounded-[2rem] border border-white/18 bg-white/10 rotate-12 lg:block" />
 					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/18 bg-white/10 lg:block" />
 
