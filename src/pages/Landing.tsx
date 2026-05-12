@@ -1085,6 +1085,48 @@ function HeroProductPreview() {
 	);
 }
 
+function OutcomeStrip() {
+	const outcomes = [
+		{
+			value: "24/7",
+			label: "reservas pelo link",
+			desc: "O cliente consulta horários mesmo fora do atendimento da equipe.",
+		},
+		{
+			value: "- mensagens",
+			label: "no WhatsApp",
+			desc: "A agenda deixa de depender de pergunta e resposta manual.",
+		},
+		{
+			value: "+ controle",
+			label: "por quadra",
+			desc: "Reservas, bloqueios e pagamentos ficam claros para a operação.",
+		},
+	];
+
+	return (
+		<section className="relative bg-[#f8fbff] px-4 pb-8">
+			<div className="mx-auto -mt-10 grid max-w-6xl gap-4 rounded-[2rem] border border-blue-100 bg-white p-4 shadow-[0_28px_90px_-58px_rgba(15,23,42,0.65)] md:grid-cols-3 md:p-6">
+				{outcomes.map((item) => (
+					<div
+						key={item.label}
+						className="rounded-3xl border border-slate-100 bg-slate-50 px-5 py-6">
+						<p className="text-3xl font-black tracking-tight text-blue-700">
+							{item.value}
+						</p>
+						<p className="mt-1 text-sm font-black uppercase tracking-[0.16em] text-slate-950">
+							{item.label}
+						</p>
+						<p className="mt-3 text-sm leading-6 text-slate-600">
+							{item.desc}
+						</p>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+
 function ProductSuiteSection({
 	onPrimaryAction,
 }: {
@@ -1093,32 +1135,32 @@ function ProductSuiteSection({
 	const products = [
 		{
 			icon: CalendarDays,
-			title: "Agenda online",
-			desc: "Horários livres, reservas, bloqueios e ocupação em uma visão única para a equipe.",
-			result: "Menos conflito de horário",
-			action: "Organizar agenda",
+			title: "Reservas por quadra",
+			desc: "Mostre horários livres, bloqueios e reservas confirmadas por data, campo e modalidade.",
+			result: "Agenda sempre consultável",
+			action: "Organizar horários",
 			tone: "blue",
 		},
 		{
 			icon: MessageSquare,
-			title: "Link proprio",
-			desc: "O cliente vê disponibilidade, escolhe quadra e solicita a reserva sem instalar aplicativo.",
-			result: "Menos atendimento repetido",
-			action: "Criar link público",
+			title: "Link público da arena",
+			desc: "Compartilhe um endereço simples para o cliente escolher o horário sem instalar aplicativo.",
+			result: "Menos conversa operacional",
+			action: "Publicar link",
 			tone: "cyan",
 		},
 		{
 			icon: BarChart3,
-			title: "Painel de gestão",
-			desc: "Receita do dia, ocupação, pagamentos confirmados e pendências sem depender de planilha.",
-			result: "Mais clareza para decidir",
-			action: "Ver relatórios",
+			title: "Painel da operação",
+			desc: "Acompanhe ocupação, receita prevista, pendências e fluxo do dia sem abrir planilhas.",
+			result: "Decisão mais rápida",
+			action: "Ver painel",
 			tone: "indigo",
 		},
 		{
 			icon: Users,
 			title: "Mensalistas",
-			desc: "Controle clientes fixos, horários recorrentes e pendências sem misturar tudo na agenda avulsa.",
+			desc: "Separe clientes fixos, horários recorrentes e pendências do fluxo de reservas avulsas.",
 			result: "Recorrência sob controle",
 			action: "Gerenciar fixos",
 			tone: "amber",
@@ -1133,26 +1175,26 @@ function ProductSuiteSection({
 	};
 
 	return (
-		<section className="relative bg-[#f8fbff] px-4 py-24">
+		<section id="solucoes" className="relative bg-white px-4 py-24 scroll-mt-24">
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
 						<p className="text-sm font-black uppercase tracking-[0.22em] text-blue-600">
-							Reservas, agenda e gestão
+							Soluções para arenas
 						</p>
 						<h2 className="mt-3 max-w-2xl text-3xl font-black tracking-tight text-slate-950 md:text-5xl">
-							Um sistema para tirar a reserva do improviso.
+							Tudo que a operação precisa para vender horários com clareza.
 						</h2>
 						<p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-							Comece pelo fluxo que mais pesa no dia a dia: mostrar horários,
-							receber pedidos de reserva e dar para a equipe uma fonte única da
-							agenda.
+							Assim como um cardápio digital organiza pedidos, o ArenaSys
+							organiza a disponibilidade da sua arena: reservas, quadras,
+							clientes e pagamentos em uma experiência única.
 						</p>
 					</div>
 					<button
 						onClick={onPrimaryAction}
-						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 lg:justify-self-end">
-						Testar na minha arena
+						className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-6 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700 lg:justify-self-end">
+						Escolher solução ideal
 						<ArrowRight className="h-4 w-4" />
 					</button>
 				</div>
@@ -1161,7 +1203,7 @@ function ProductSuiteSection({
 					{products.map((product) => (
 						<article
 							key={product.title}
-							className="group flex min-h-[260px] flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/10">
+							className="group flex min-h-[300px] flex-col rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-[0_20px_70px_-55px_rgba(15,23,42,0.65)] transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-950/10">
 							<div
 								className={cn(
 									"mb-5 flex h-12 w-12 items-center justify-center rounded-xl border",
@@ -1615,39 +1657,47 @@ export default function LandingPage() {
 				{/* ═══════════════════════════════════════════════════════════════════
 				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
 				    ═══════════════════════════════════════════════════════════════════ */}
-				<header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
-					<div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-blue-950/35 to-transparent pointer-events-none" />
-
-					<nav className="relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible rounded-2xl border border-white/70 bg-white/95 px-3 shadow-[0_18px_60px_-32px_rgba(15,23,42,0.55)] ring-1 ring-blue-950/5 backdrop-blur-2xl">
+				<header className="absolute left-0 right-0 top-0 z-50 flex justify-center px-4 pt-6">
+					<nav className="relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
 							<div
-								className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 group"
+								className="flex cursor-pointer items-center gap-3 rounded-xl py-1.5 group"
 								onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-								<div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/25 transition-transform duration-300 group-hover:-translate-y-0.5">
-									<div className="absolute inset-1 rounded-xl border border-white/25" />
-									<div className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-white text-blue-700">
+								<div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-blue-700 shadow-lg shadow-blue-950/20 transition-transform duration-300 group-hover:-translate-y-0.5">
+									<div className="absolute inset-1 rounded-xl border border-blue-100" />
+									<div className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white">
 										<Zap className="h-4 w-4" />
 									</div>
 								</div>
 								<div className="leading-none">
-									<span className="block text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+									<span className="block text-2xl font-black tracking-tight text-white sm:text-[1.85rem]">
 										ArenaSys
 									</span>
-									<span className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600 sm:block">
-										reservas esportivas
+									<span className="hidden text-[11px] font-black uppercase tracking-[0.16em] text-blue-100 sm:block">
+										Sistema de Reservas para Arenas Esportivas
 									</span>
 								</div>
 							</div>
 
-							<div className="hidden items-center gap-1 rounded-full bg-blue-50/80 p-1 md:flex">
+							<div className="hidden items-center gap-1 md:flex">
+								<a
+									href="#solucoes"
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
+									Soluções
+								</a>
+								<a
+									href="#como-funciona"
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
+									Como funciona
+								</a>
 								<a
 									href="#pricing"
-									className="nav-link rounded-full px-4 py-2 text-sm font-bold text-slate-700 transition-colors duration-300 hover:bg-white hover:text-blue-700">
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
 									Planos
 								</a>
 								<a
 									href="#faq"
-									className="nav-link rounded-full px-4 py-2 text-sm font-bold text-slate-700 transition-colors duration-300 hover:bg-white hover:text-blue-700">
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
 									FAQ
 								</a>
 							</div>
@@ -1656,16 +1706,16 @@ export default function LandingPage() {
 								<button
 									onClick={() => navigate("/login")}
 									aria-label="Fazer login no ArenaSys"
-									className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition-all duration-300 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"
+									className="rounded-full border border-white/45 bg-white/10 px-5 py-2.5 text-sm font-black text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
 									style={{
-										color: "#334155",
-										WebkitTextFillColor: "#334155",
+										color: "#fff",
+										WebkitTextFillColor: "#fff",
 									}}>
-									Login
+									Entrar
 								</button>
 								<button
 									onClick={() => navigate("/login?mode=signup")}
-									className="relative h-11 overflow-hidden rounded-full bg-blue-600 px-5 text-sm font-black text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"
+									className="relative h-11 overflow-hidden rounded-full bg-amber-300 px-5 text-sm font-black text-blue-950 shadow-lg shadow-blue-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-100"
 									aria-label="Criar agenda online no ArenaSys">
 									<span className="relative z-10 flex items-center gap-1">
 										Criar agenda
@@ -1675,15 +1725,15 @@ export default function LandingPage() {
 							</div>
 
 							<button
-								className="relative rounded-full border border-slate-200 p-3 text-slate-700 transition-colors hover:bg-blue-50 md:hidden"
+								className="relative rounded-full border border-white/45 bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 md:hidden"
 								aria-label="Abrir menu de navegação"
 								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-								style={{ color: "#334155" }}>
+								style={{ color: "#fff" }}>
 								<div
-									className={`h-0.5 w-5 bg-slate-700 transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[3px]" : ""}`}
+									className={`h-0.5 w-5 bg-white transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-[3px]" : ""}`}
 								/>
 								<div
-									className={`mt-1.5 h-0.5 w-5 bg-slate-700 transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-[5px]" : ""}`}
+									className={`mt-1.5 h-0.5 w-5 bg-white transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-[5px]" : ""}`}
 								/>
 							</button>
 						</div>
@@ -1692,6 +1742,18 @@ export default function LandingPage() {
 						{mobileMenuOpen && (
 							<div className="absolute left-0 right-0 top-full z-[100] mx-2 mt-3 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden">
 								<div className="relative rounded-3xl border border-blue-100 bg-white p-5 shadow-2xl shadow-blue-950/20">
+									<a
+										href="#solucoes"
+										onClick={() => setMobileMenuOpen(false)}
+										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
+										Soluções
+									</a>
+									<a
+										href="#como-funciona"
+										onClick={() => setMobileMenuOpen(false)}
+										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
+										Como funciona
+									</a>
 									<a
 										href="#pricing"
 										onClick={() => setMobileMenuOpen(false)}
@@ -1712,7 +1774,7 @@ export default function LandingPage() {
 											navigate("/login");
 										}}
 										className="w-full rounded-2xl p-4 text-left text-base font-bold text-slate-700 transition-colors hover:bg-blue-50">
-										Login
+										Entrar
 									</button>
 									<button
 										aria-label="Criar agenda online no ArenaSys"
@@ -1743,18 +1805,18 @@ export default function LandingPage() {
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
 								<div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm font-bold text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-amber-200" />
-									Agenda, reservas e gestão em um só lugar
+									O sistema completo para reservas esportivas
 								</div>
 							</div>
 
 							<div className="space-y-5">
 								<h1 className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl">
-									Sistema de reservas para arenas esportivas.
+									A solução completa para vender horários.
 								</h1>
 								<p className="mx-auto max-w-2xl text-lg font-medium leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl">
-									Organize quadras, horários, clientes e pagamentos em um link
-									público e um painel simples para sua equipe acompanhar a
-									operação.
+									Transforme sua agenda em um link de reservas, organize cada
+									quadra por horário e acompanhe pagamentos, clientes e ocupação
+									em um painel simples.
 								</p>
 							</div>
 
@@ -1815,8 +1877,10 @@ export default function LandingPage() {
 					</div>
 				</section>
 
+				<OutcomeStrip />
+
 				{/* --- SEÇÃO PROBLEMA: diagnostico da operacao --- */}
-				<section className="relative bg-[#f8fbff] px-4 py-24">
+				<section className="relative bg-[#f8fbff] px-4 py-20">
 					<div className="mx-auto max-w-6xl">
 						<ScrollReveal className="mx-auto mb-14 max-w-3xl text-center">
 							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-red-400/80">

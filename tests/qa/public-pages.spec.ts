@@ -3,7 +3,7 @@ import { disableServiceWorker } from "../utils/browser";
 import { expectNoHorizontalOverflow, trackPageIssues } from "../utils/page-issues";
 
 const publicRoutes = [
-	{ path: "/", heading: /Sistema de reservas para arenas esportivas/i },
+	{ path: "/", heading: /A solução completa para vender horários/i },
 	{ path: "/about", heading: /Libertar donos de arena/i },
 	{ path: "/support", heading: /Central de Suporte/i },
 	{ path: "/privacy", heading: /Pol[ií]tica de Privacidade/i },
