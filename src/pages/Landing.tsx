@@ -1661,20 +1661,16 @@ export default function LandingPage() {
 					<nav className="relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
 							<div
-								className="flex cursor-pointer items-center gap-3 rounded-xl py-1.5 group"
+								className="flex cursor-pointer items-center rounded-xl py-1.5 group"
 								onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-								<div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-blue-700 shadow-lg shadow-blue-950/20 transition-transform duration-300 group-hover:-translate-y-0.5">
-									<div className="absolute inset-1 rounded-xl border border-blue-100" />
-									<div className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white">
-										<Zap className="h-4 w-4" />
-									</div>
-								</div>
 								<div className="leading-none">
-									<span className="block text-2xl font-black tracking-tight text-white sm:text-[1.85rem]">
+									<span
+										className="block text-[2rem] font-black tracking-tight text-white sm:text-[2.45rem]"
+										style={{
+											color: "#fff",
+											WebkitTextFillColor: "#fff",
+										}}>
 										ArenaSys
-									</span>
-									<span className="hidden text-[11px] font-black uppercase tracking-[0.16em] text-blue-100 sm:block">
-										Sistema de Reservas para Arenas Esportivas
 									</span>
 								</div>
 							</div>
@@ -1682,22 +1678,26 @@ export default function LandingPage() {
 							<div className="hidden items-center gap-1 md:flex">
 								<a
 									href="#solucoes"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Soluções
 								</a>
 								<a
 									href="#como-funciona"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Como funciona
 								</a>
 								<a
 									href="#pricing"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Planos
 								</a>
 								<a
 									href="#faq"
-									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12">
+									className="nav-link rounded-full px-4 py-2 text-sm font-black text-white transition-colors duration-300 hover:bg-white/12"
+									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									FAQ
 								</a>
 							</div>
@@ -1805,15 +1805,21 @@ export default function LandingPage() {
 							<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
 								<div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm font-bold text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
 									<Sparkles className="h-4 w-4 text-amber-200" />
-									O sistema completo para reservas esportivas
+									<span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
+										O sistema completo para reservas esportivas
+									</span>
 								</div>
 							</div>
 
 							<div className="space-y-5">
-								<h1 className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl">
+								<h1
+									className="text-[2.85rem] font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl"
+									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									A solução completa para vender horários.
 								</h1>
-								<p className="mx-auto max-w-2xl text-lg font-medium leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl">
+								<p
+									className="mx-auto max-w-2xl text-lg font-medium leading-8 text-blue-50 sm:text-xl lg:mx-0 lg:max-w-xl"
+									style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
 									Transforme sua agenda em um link de reservas, organize cada
 									quadra por horário e acompanhe pagamentos, clientes e ocupação
 									em um painel simples.
@@ -1848,7 +1854,13 @@ export default function LandingPage() {
 								].map((item) => (
 									<div key={item} className="inline-flex items-center gap-2">
 										<Check className="h-4 w-4 text-amber-200" />
-										<span>{item}</span>
+										<span
+											style={{
+												color: "#eff6ff",
+												WebkitTextFillColor: "#eff6ff",
+											}}>
+											{item}
+										</span>
 									</div>
 								))}
 							</div>
@@ -1862,10 +1874,17 @@ export default function LandingPage() {
 									<div
 										key={label}
 										className="rounded-2xl border border-white/20 bg-white/12 p-3 shadow-sm backdrop-blur-sm">
-										<p className="text-lg font-black text-white sm:text-xl">
+										<p
+											className="text-lg font-black text-white sm:text-xl"
+											style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 											{value}
 										</p>
-										<p className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-100">
+										<p
+											className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-100"
+											style={{
+												color: "#dbeafe",
+												WebkitTextFillColor: "#dbeafe",
+											}}>
 											{label}
 										</p>
 									</div>
