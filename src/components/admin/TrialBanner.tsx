@@ -4,6 +4,7 @@
  */
 
 import { AlertCircle, Clock, Sparkles, X } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,53 +34,65 @@ export function TrialBanner({ tenantId }: TrialBannerProps) {
 		navigate("/dashboard?view=config&tab=billing");
 	};
 
+	const handleBannerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			handleBannerClick();
+		}
+	};
+
 	return (
 		<div className="w-full flex justify-center py-2 px-4">
 			<div
+				role="button"
+				tabIndex={0}
 				onClick={handleBannerClick}
+				onKeyDown={handleBannerKeyDown}
 				className={cn(
-					"inline-flex items-center gap-2 px-4 py-1.5 rounded-full cursor-pointer transition-all duration-300 hover:scale-[1.02]",
+					"inline-flex items-center gap-2 rounded-full px-4 py-1.5 cursor-pointer transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-200",
 					isLastHours ?
-						"bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/40 animate-pulse"
+						"bg-red-50 border border-red-200"
 					: isCritical ?
-						"bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30"
+						"bg-red-50 border border-red-200"
 					: isUrgent ?
-						"bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30"
-					:	"bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/30",
+						"bg-yellow-50 border border-yellow-200"
+					:	"bg-blue-50 border border-blue-100",
 				)}>
 				{isLastHours ?
-					<AlertCircle className="h-3.5 w-3.5 text-red-400 animate-pulse" />
+					<AlertCircle className="h-3.5 w-3.5 text-red-600" />
 				: isCritical ?
-					<AlertCircle className="h-3.5 w-3.5 text-red-400" />
+					<AlertCircle className="h-3.5 w-3.5 text-red-600" />
 				: isUrgent ?
-					<Clock className="h-3.5 w-3.5 text-orange-400" />
-				:	<Sparkles className="h-3.5 w-3.5 text-amber-400" />}
+					<Clock className="h-3.5 w-3.5 text-yellow-700" />
+				:	<Sparkles className="h-3.5 w-3.5 text-[#0b71ee]" />}
 
 				<span className="text-xs font-medium">
 					{isLastHours ?
-						<span className="text-red-300">
-							🚨 Últimas {trial.hoursRemaining}h de trial
+						<span className="font-black text-red-700">
+							Últimas {trial.hoursRemaining}h de trial
 						</span>
 					: isCritical ?
-						<span className="text-red-300">⚠️ Último dia de trial</span>
+						<span className="font-black text-red-700">Último dia de trial</span>
 					: isUrgent ?
-						<span className="text-orange-300">
-							⏰ {trial.daysRemaining} dias restantes
+						<span className="font-black text-yellow-800">
+							{trial.daysRemaining} dias restantes
 						</span>
-					:	<span className="text-amber-300">
-							💎 Trial: {trial.daysRemaining} dias restantes
+					:	<span className="font-black text-[#062b6f]">
+							Trial: {trial.daysRemaining} dias restantes
 						</span>
 					}
 				</span>
 
 				{canDismiss && (
 					<button
+						type="button"
+						aria-label="Fechar aviso de trial"
 						onClick={(e) => {
 							e.stopPropagation();
 							setDismissed(true);
 						}}
-						className="ml-1 p-0.5 rounded-full hover:bg-white/10 transition-colors">
-						<X className="h-3 w-3 text-gray-300 hover:text-white" />
+						className="ml-1 rounded-full p-0.5 transition-colors hover:bg-slate-950/10">
+						<X className="h-3 w-3 text-slate-500 hover:text-slate-900" />
 					</button>
 				)}
 			</div>

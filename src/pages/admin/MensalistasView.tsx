@@ -1,8 +1,16 @@
-import { useState, useEffect } from "react";
-import { Crown, Plus, Edit2, Trash2, Calendar, Clock, MapPin, Power, PowerOff } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import {
+	Calendar,
+	Clock,
+	Crown,
+	Edit2,
+	Plus,
+	Power,
+	PowerOff,
+	Trash2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,8 +19,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -20,23 +28,38 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabaseClient";
+import {
+	AdminEmptyState,
+	AdminPage,
+	AdminPageHeader,
+	AdminPanel,
+	AdminPill,
+	AdminToolbar,
+} from "@/components/admin/AdminUI";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 
 interface RecurringSlot {
 	id: string;
 	tenant_id: string;
 	court_id: string;
-	start_time: string; // HH:mm
-	end_time: string; // HH:mm
-	day_of_week: number; // 0-6 (0=domingo, 6=sábado)
+	start_time: string;
+	end_time: string;
+	day_of_week: number;
 	active: boolean;
 	created_at: string;
 	updated_at: string;
 	court?: {
 		name: string;
 	};
+}
+
+interface Court {
+	id: string;
+	name: string;
+	active: boolean;
 }
 
 const DAYS_OF_WEEK = [
@@ -49,10 +72,13 @@ const DAYS_OF_WEEK = [
 	{ value: 6, label: "Sábado" },
 ];
 
-interface Court {
-	id: string;
-	name: string;
-	active: boolean;
+const TIME_OPTIONS: string[] = [];
+for (let hour = 7; hour <= 23; hour++) {
+	for (let minute = 0; minute < 60; minute += 30) {
+		TIME_OPTIONS.push(
+			`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
+		);
+	}
 }
 
 export default function MensalistasView() {
@@ -63,7 +89,6 @@ export default function MensalistasView() {
 	const [loading, setLoading] = useState(true);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingSlot, setEditingSlot] = useState<RecurringSlot | null>(null);
-	
 	const [formData, setFormData] = useState({
 		court_id: "",
 		day_of_week: "",
@@ -71,7 +96,6 @@ export default function MensalistasView() {
 		end_time: "",
 	});
 
-	// Carregar dados
 	useEffect(() => {
 		if (!tenantId) return;
 		loadData();
@@ -83,7 +107,6 @@ export default function MensalistasView() {
 		setLoading(true);
 
 		try {
-			// Carregar quadras
 			const { data: courtsData, error: courtsError } = await supabase
 				.from("courts")
 				.select("id, name, active")
@@ -94,38 +117,48 @@ export default function MensalistasView() {
 			if (courtsError) throw courtsError;
 			setCourts(courtsData || []);
 
-			// Carregar mensalistas
 			const { data: slotsData, error: slotsError } = await supabase
 				.from("recurring_slots")
-				.select("id, tenant_id, court_id, start_time, end_time, day_of_week, active, created_at, updated_at")
+				.select(
+					"id, tenant_id, court_id, start_time, end_time, day_of_week, active, created_at, updated_at",
+				)
 				.eq("tenant_id", tenantId)
 				.order("day_of_week")
 				.order("start_time");
 
 			if (slotsError) throw slotsError;
-			
-			// Buscar nomes das quadras separadamente
-			const courtIds = [...new Set((slotsData || []).map((s: RecurringSlot) => s.court_id))];
+
+			const courtIds = [
+				...new Set((slotsData || []).map((slot: RecurringSlot) => slot.court_id)),
+			];
 			const { data: courtsForSlots } = await supabase
 				.from("courts")
 				.select("id, name")
 				.in("id", courtIds);
 
-			const courtsMap = new Map((courtsForSlots || []).map((c: { id: string; name: string }) => [c.id, c]));
+			const courtsMap = new Map(
+				(courtsForSlots || []).map((court: { id: string; name: string }) => [
+					court.id,
+					court,
+				]),
+			);
 
-			// Combinar dados
 			const normalizedSlots = (slotsData || []).map((slot: RecurringSlot) => ({
 				...slot,
-				court: courtsMap.get(slot.court_id) || { name: "Quadra não encontrada" },
+				court: courtsMap.get(slot.court_id) || {
+					name: "Quadra não encontrada",
+				},
 			}));
 
 			setRecurringSlots(normalizedSlots);
 		} catch (error: unknown) {
 			console.error("Erro ao carregar mensalistas:", error);
-			const errorMessage = error instanceof Error ? error.message : "Não foi possível carregar os mensalistas.";
 			toast({
 				title: "Erro",
-				description: errorMessage,
+				description:
+					error instanceof Error ?
+						error.message
+					:	"Não foi possível carregar os mensalistas.",
 				variant: "destructive",
 			});
 		} finally {
@@ -139,7 +172,7 @@ export default function MensalistasView() {
 			setFormData({
 				court_id: slot.court_id,
 				day_of_week: slot.day_of_week.toString(),
-				start_time: slot.start_time.slice(0, 5), // Remove segundos se houver
+				start_time: slot.start_time.slice(0, 5),
 				end_time: slot.end_time.slice(0, 5),
 			});
 		} else {
@@ -162,8 +195,12 @@ export default function MensalistasView() {
 	const handleSubmit = async () => {
 		if (!tenantId) return;
 
-		// Validações
-		if (!formData.court_id || !formData.day_of_week || !formData.start_time || !formData.end_time) {
+		if (
+			!formData.court_id ||
+			!formData.day_of_week ||
+			!formData.start_time ||
+			!formData.end_time
+		) {
 			toast({
 				title: "Campos obrigatórios",
 				description: "Preencha todos os campos.",
@@ -172,17 +209,16 @@ export default function MensalistasView() {
 			return;
 		}
 
-		// Validar horários
 		const [startHour, startMin] = formData.start_time.split(":").map(Number);
 		const [endHour, endMin] = formData.end_time.split(":").map(Number);
-		
 		const startMinutes = startHour * 60 + startMin;
 		const endMinutes = endHour * 60 + endMin;
 
 		if (endMinutes <= startMinutes) {
 			toast({
 				title: "Horário inválido",
-				description: "O horário de término deve ser depois do horário de início.",
+				description:
+					"O horário de término deve ser depois do horário de início.",
 				variant: "destructive",
 			});
 			return;
@@ -199,7 +235,6 @@ export default function MensalistasView() {
 			};
 
 			if (editingSlot) {
-				// UPDATE
 				const { error } = await supabase
 					.from("recurring_slots")
 					.update(slotData)
@@ -209,12 +244,10 @@ export default function MensalistasView() {
 				if (error) throw error;
 
 				toast({
-					title: "Sucesso!",
-					description: "Mensalista atualizado com sucesso.",
-					className: "bg-green-600 text-white border-none",
+					title: "Mensalista atualizado",
+					description: "O horário recorrente foi salvo.",
 				});
 			} else {
-				// INSERT
 				const { error } = await supabase
 					.from("recurring_slots")
 					.insert(slotData);
@@ -222,9 +255,8 @@ export default function MensalistasView() {
 				if (error) throw error;
 
 				toast({
-					title: "Sucesso!",
-					description: "Mensalista cadastrado com sucesso.",
-					className: "bg-green-600 text-white border-none",
+					title: "Mensalista cadastrado",
+					description: "O horário recorrente foi criado.",
 				});
 			}
 
@@ -232,10 +264,12 @@ export default function MensalistasView() {
 			loadData();
 		} catch (error: unknown) {
 			console.error("Erro ao salvar mensalista:", error);
-			const errorMessage = error instanceof Error ? error.message : "Não foi possível salvar o mensalista.";
 			toast({
 				title: "Erro",
-				description: errorMessage,
+				description:
+					error instanceof Error ?
+						error.message
+					:	"Não foi possível salvar o mensalista.",
 				variant: "destructive",
 			});
 		}
@@ -254,18 +288,22 @@ export default function MensalistasView() {
 			if (error) throw error;
 
 			toast({
-				title: "Sucesso!",
-				description: slot.active ? "Mensalista desativado." : "Mensalista ativado.",
-				className: "bg-green-600 text-white border-none",
+				title: slot.active ? "Mensalista pausado" : "Mensalista ativado",
+				description:
+					slot.active ?
+						"O horário saiu da lista ativa."
+					:	"O horário voltou para a lista ativa.",
 			});
 
 			loadData();
 		} catch (error: unknown) {
 			console.error("Erro ao alterar status:", error);
-			const errorMessage = error instanceof Error ? error.message : "Não foi possível alterar o status.";
 			toast({
 				title: "Erro",
-				description: errorMessage,
+				description:
+					error instanceof Error ?
+						error.message
+					:	"Não foi possível alterar o status.",
 				variant: "destructive",
 			});
 		}
@@ -273,7 +311,7 @@ export default function MensalistasView() {
 
 	const handleDelete = async (slot: RecurringSlot) => {
 		if (!tenantId) return;
-		if (!confirm(`Tem certeza que deseja excluir este mensalista?`)) return;
+		if (!confirm("Tem certeza que deseja excluir este mensalista?")) return;
 
 		try {
 			const { error } = await supabase
@@ -285,185 +323,219 @@ export default function MensalistasView() {
 			if (error) throw error;
 
 			toast({
-				title: "Sucesso!",
-				description: "Mensalista excluído com sucesso.",
-				className: "bg-green-600 text-white border-none",
+				title: "Mensalista removido",
+				description: "O horário recorrente foi excluído.",
 			});
 
 			loadData();
 		} catch (error: unknown) {
 			console.error("Erro ao excluir:", error);
-			const errorMessage = error instanceof Error ? error.message : "Não foi possível excluir o mensalista.";
 			toast({
 				title: "Erro",
-				description: errorMessage,
+				description:
+					error instanceof Error ?
+						error.message
+					:	"Não foi possível excluir o mensalista.",
 				variant: "destructive",
 			});
 		}
 	};
 
-	// Gerar horários (7h às 23h)
-	const generateTimeOptions = () => {
-		const times = [];
-		for (let h = 7; h <= 23; h++) {
-			for (let m = 0; m < 60; m += 30) {
-				const time = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-				times.push(time);
-			}
-		}
-		return times;
-	};
-
-	const timeOptions = generateTimeOptions();
+	const activeSlots = recurringSlots.filter((slot) => slot.active).length;
+	const inactiveSlots = recurringSlots.length - activeSlots;
 
 	if (loading) {
 		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-					<p className="text-muted-foreground">Carregando mensalistas...</p>
+			<AdminPage>
+				<AdminPageHeader
+					eyebrow="Recorrência"
+					title="Mensalistas"
+					description="Carregando horários recorrentes."
+				/>
+				<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+					{[1, 2, 3].map((item) => (
+						<div
+							key={item}
+							className="h-40 rounded-lg border border-slate-200 bg-white shadow-sm"
+						/>
+					))}
 				</div>
-			</div>
+			</AdminPage>
 		);
 	}
 
 	return (
-		<div className="space-y-6 p-4 md:p-8">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight flex items-center gap-2">
-						<Crown className="w-5 h-5 md:w-6 md:h-6 text-amber-500" />
-						Mensalistas
-					</h1>
-					<p className="text-sm text-gray-300 mt-0.5">
-						Horários recorrentes por quadra e dia
-					</p>
-				</div>
-				<Button
-					onClick={() => handleOpenModal()}
-					className="bg-primary hover:bg-primary/90 text-black font-bold">
-					<Plus className="w-4 h-4 mr-2" />
-					Novo Mensalista
-				</Button>
-			</div>
+		<AdminPage>
+			<AdminPageHeader
+				eyebrow="Recorrência"
+				title="Mensalistas"
+				description="Horários fixos semanais por quadra, dia e período."
+				meta={
+					<>
+						<AdminPill tone="blue">{activeSlots} ativo(s)</AdminPill>
+						{inactiveSlots > 0 && (
+							<AdminPill tone="slate">{inactiveSlots} pausado(s)</AdminPill>
+						)}
+					</>
+				}
+				actions={
+					<Button
+						onClick={() => handleOpenModal()}
+						className="h-10 gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+						<Plus className="h-4 w-4" />
+						Novo mensalista
+					</Button>
+				}
+			/>
 
-			{recurringSlots.length === 0 ? (
-				<Card className="bg-white/5 border-white/10">
-					<CardContent className="flex flex-col items-center justify-center py-16">
-						<Crown className="w-16 h-16 text-amber-500/50 mb-4" />
-						<h3 className="text-lg font-semibold text-white mb-2">
-							Nenhum mensalista cadastrado
-						</h3>
-						<p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-							Cadastre horários fixos semanais para seus mensalistas. Eles aparecerão automaticamente no calendário público.
-						</p>
-						<Button
-							onClick={() => handleOpenModal()}
-							className="bg-primary hover:bg-primary/90 text-black font-bold">
-							<Plus className="w-4 h-4 mr-2" />
-							Cadastrar Primeiro Mensalista
-						</Button>
-					</CardContent>
-				</Card>
-			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<AdminToolbar>
+				<div className="flex items-center gap-3 px-1 text-sm text-slate-600">
+					<Crown className="h-4 w-4 text-[#0b71ee]" />
+					<span>
+						Use esta tela para manter reservas recorrentes previsíveis, sem
+						misturar com pedidos avulsos da Agenda.
+					</span>
+				</div>
+			</AdminToolbar>
+
+			{recurringSlots.length === 0 ?
+				<AdminPanel>
+					<AdminEmptyState
+						icon={<Crown className="h-6 w-6" />}
+						title="Nenhum mensalista cadastrado"
+						description="Cadastre horários fixos para clientes recorrentes aparecerem na operação semanal."
+						action={
+							<Button
+								onClick={() => handleOpenModal()}
+								className="gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+								<Plus className="h-4 w-4" />
+								Cadastrar mensalista
+							</Button>
+						}
+					/>
+				</AdminPanel>
+			:	<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
 					{recurringSlots.map((slot) => {
-						const dayLabel = DAYS_OF_WEEK.find(d => d.value === slot.day_of_week)?.label || "Desconhecido";
+						const dayLabel =
+							DAYS_OF_WEEK.find((day) => day.value === slot.day_of_week)
+								?.label || "Desconhecido";
 						const courtName = slot.court?.name || "Quadra não encontrada";
 
 						return (
-							<Card
+							<AdminPanel
 								key={slot.id}
-								className={`bg-white/5 border-2 ${
-									slot.active
-										? "border-amber-500/50 hover:border-amber-500"
-										: "border-gray-500/30 opacity-60"
-								} transition-all`}>
-								<CardHeader>
-									<div className="flex items-start justify-between">
-										<div className="flex-1">
-											<CardTitle className="text-white flex items-center gap-2">
-												<Crown className={`w-5 h-5 ${slot.active ? "text-amber-500" : "text-gray-300"}`} />
-												{courtName}
-											</CardTitle>
-											<div className="mt-2 space-y-1">
-												<div className="flex items-center gap-2 text-sm text-muted-foreground">
-													<Calendar className="w-4 h-4" />
-													{dayLabel}
-												</div>
-												<div className="flex items-center gap-2 text-sm text-muted-foreground">
-													<Clock className="w-4 h-4" />
-													{slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
-												</div>
+								className={cn(
+									"p-4 transition-colors",
+									slot.active ? "hover:border-blue-200" : "opacity-70",
+								)}>
+								<div className="flex items-start justify-between gap-4">
+									<div className="min-w-0">
+										<div className="flex items-center gap-2">
+											<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
+												<Crown className="h-4 w-4" />
+											</div>
+											<div className="min-w-0">
+												<h3 className="truncate text-base font-semibold text-slate-950">
+													{courtName}
+												</h3>
+												<p className="text-xs text-slate-500">
+													Horário recorrente
+												</p>
 											</div>
 										</div>
-										<Badge
-											variant={slot.active ? "default" : "secondary"}
-											className={slot.active ? "bg-amber-500 text-black" : ""}>
-											{slot.active ? "Ativo" : "Inativo"}
-										</Badge>
 									</div>
-								</CardHeader>
-								<CardContent>
-									<div className="flex gap-2">
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => handleOpenModal(slot)}
-											className="flex-1">
-											<Edit2 className="w-4 h-4 mr-2" />
-											Editar
-										</Button>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => handleToggleActive(slot)}
-											className={slot.active ? "text-red-500 hover:text-red-600" : "text-green-500 hover:text-green-600"}>
-											{slot.active ? (
-												<PowerOff className="w-4 h-4" />
-											) : (
-												<Power className="w-4 h-4" />
-											)}
-										</Button>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => handleDelete(slot)}
-											className="text-red-500 hover:text-red-600">
-											<Trash2 className="w-4 h-4" />
-										</Button>
+									<Badge
+										className={
+											slot.active ?
+												"border-0 bg-blue-50 text-[#0b71ee]"
+											:	"border-0 bg-slate-100 text-slate-600"
+										}>
+										{slot.active ? "Ativo" : "Pausado"}
+									</Badge>
+								</div>
+
+								<div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200 pt-4">
+									<div>
+										<p className="flex items-center gap-1.5 text-xs text-slate-500">
+											<Calendar className="h-3.5 w-3.5" />
+											Dia
+										</p>
+										<p className="mt-1 text-sm font-semibold text-slate-950">
+											{dayLabel}
+										</p>
 									</div>
-								</CardContent>
-							</Card>
+									<div>
+										<p className="flex items-center gap-1.5 text-xs text-slate-500">
+											<Clock className="h-3.5 w-3.5" />
+											Horário
+										</p>
+										<p className="mt-1 text-sm font-semibold text-slate-950">
+											{slot.start_time.slice(0, 5)} -{" "}
+											{slot.end_time.slice(0, 5)}
+										</p>
+									</div>
+								</div>
+
+								<div className="mt-4 flex gap-2">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => handleOpenModal(slot)}
+										className="h-9 flex-1 gap-2 rounded-md border-slate-200 text-slate-700 hover:bg-slate-50">
+										<Edit2 className="h-4 w-4" />
+										Editar
+									</Button>
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={() => handleToggleActive(slot)}
+										className="h-9 w-9 rounded-md border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#0b71ee]"
+										aria-label={slot.active ? "Pausar mensalista" : "Ativar mensalista"}>
+										{slot.active ?
+											<PowerOff className="h-4 w-4" />
+										:	<Power className="h-4 w-4" />
+										}
+									</Button>
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={() => handleDelete(slot)}
+										className="h-9 w-9 rounded-md border-slate-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+										aria-label="Excluir mensalista">
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								</div>
+							</AdminPanel>
 						);
 					})}
 				</div>
-			)}
+			}
 
-			{/* Modal de Criar/Editar */}
 			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-				<DialogContent className="sm:max-w-[500px] rounded-2xl bg-surface-2 border border-white/10 text-white">
+				<DialogContent className="rounded-lg border border-slate-200 bg-white text-slate-900 sm:max-w-[500px]">
 					<DialogHeader>
-						<DialogTitle className="text-white">
-							{editingSlot ? "Editar Mensalista" : "Novo Mensalista"}
+						<DialogTitle>
+							{editingSlot ? "Editar mensalista" : "Novo mensalista"}
 						</DialogTitle>
-						<DialogDescription className="text-gray-300">
-							Configure o horário fixo semanal para este mensalista
+						<DialogDescription className="text-slate-500">
+							Configure quadra, dia e horário da recorrência semanal.
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="space-y-4 py-4">
+					<div className="space-y-4 py-2">
 						<div className="space-y-2">
 							<Label htmlFor="court">Quadra *</Label>
 							<Select
 								value={formData.court_id}
-								onValueChange={(value) => setFormData({ ...formData, court_id: value })}>
-								<SelectTrigger className="bg-white/5 border-white/10 text-white">
+								onValueChange={(value) =>
+									setFormData({ ...formData, court_id: value })
+								}>
+								<SelectTrigger id="court" className="rounded-md border-slate-200">
 									<SelectValue placeholder="Selecione a quadra" />
 								</SelectTrigger>
-								<SelectContent className="bg-[#1a1a1a] border-white/10">
+								<SelectContent>
 									{courts.map((court) => (
-										<SelectItem key={court.id} value={court.id} className="text-white">
+										<SelectItem key={court.id} value={court.id}>
 											{court.name}
 										</SelectItem>
 									))}
@@ -472,16 +544,18 @@ export default function MensalistasView() {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="day">Dia da Semana *</Label>
+							<Label htmlFor="day">Dia da semana *</Label>
 							<Select
 								value={formData.day_of_week}
-								onValueChange={(value) => setFormData({ ...formData, day_of_week: value })}>
-								<SelectTrigger className="bg-white/5 border-white/10 text-white">
+								onValueChange={(value) =>
+									setFormData({ ...formData, day_of_week: value })
+								}>
+								<SelectTrigger id="day" className="rounded-md border-slate-200">
 									<SelectValue placeholder="Selecione o dia" />
 								</SelectTrigger>
-								<SelectContent className="bg-[#1a1a1a] border-white/10">
+								<SelectContent>
 									{DAYS_OF_WEEK.map((day) => (
-										<SelectItem key={day.value} value={day.value.toString()} className="text-white">
+										<SelectItem key={day.value} value={day.value.toString()}>
 											{day.label}
 										</SelectItem>
 									))}
@@ -491,16 +565,20 @@ export default function MensalistasView() {
 
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="start_time">Horário de Início *</Label>
+								<Label htmlFor="start_time">Início *</Label>
 								<Select
 									value={formData.start_time}
-									onValueChange={(value) => setFormData({ ...formData, start_time: value })}>
-									<SelectTrigger className="bg-white/5 border-white/10 text-white">
+									onValueChange={(value) =>
+										setFormData({ ...formData, start_time: value })
+									}>
+									<SelectTrigger
+										id="start_time"
+										className="rounded-md border-slate-200">
 										<SelectValue placeholder="00:00" />
 									</SelectTrigger>
-									<SelectContent className="bg-[#1a1a1a] border-white/10 max-h-[200px]">
-										{timeOptions.map((time) => (
-											<SelectItem key={time} value={time} className="text-white">
+									<SelectContent className="max-h-[220px]">
+										{TIME_OPTIONS.map((time) => (
+											<SelectItem key={time} value={time}>
 												{time}
 											</SelectItem>
 										))}
@@ -509,16 +587,20 @@ export default function MensalistasView() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="end_time">Horário de Término *</Label>
+								<Label htmlFor="end_time">Término *</Label>
 								<Select
 									value={formData.end_time}
-									onValueChange={(value) => setFormData({ ...formData, end_time: value })}>
-									<SelectTrigger className="bg-white/5 border-white/10 text-white">
+									onValueChange={(value) =>
+										setFormData({ ...formData, end_time: value })
+									}>
+									<SelectTrigger
+										id="end_time"
+										className="rounded-md border-slate-200">
 										<SelectValue placeholder="00:00" />
 									</SelectTrigger>
-									<SelectContent className="bg-[#1a1a1a] border-white/10 max-h-[200px]">
-										{timeOptions.map((time) => (
-											<SelectItem key={time} value={time} className="text-white">
+									<SelectContent className="max-h-[220px]">
+										{TIME_OPTIONS.map((time) => (
+											<SelectItem key={time} value={time}>
 												{time}
 											</SelectItem>
 										))}
@@ -532,17 +614,17 @@ export default function MensalistasView() {
 						<Button
 							variant="outline"
 							onClick={handleCloseModal}
-							className="border-white/10 text-white hover:bg-white/10">
+							className="rounded-md border-slate-200 text-slate-600 hover:bg-slate-50">
 							Cancelar
 						</Button>
 						<Button
 							onClick={handleSubmit}
-							className="bg-primary hover:bg-primary/90 text-black font-bold">
-							{editingSlot ? "Salvar Alterações" : "Cadastrar"}
+							className="rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+							{editingSlot ? "Salvar alterações" : "Cadastrar"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</AdminPage>
 	);
 }

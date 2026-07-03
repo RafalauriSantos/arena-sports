@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap");
+
 /* --- Neon Border Dynamic Animation --- */
 .dynamic-neon-border {
   position: relative;
@@ -213,6 +215,19 @@
     --sidebar-ring: 222 72% 48%;
   }
 
+  body {
+    font-family: "Manrope", "Aptos", "Trebuchet MS", system-ui, sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: "Outfit", "Manrope", "Aptos", "Trebuchet MS", system-ui, sans-serif;
+  }
+
   .dark {
     --background: 0 0% 4%;
     --foreground: 0 0% 98%;
@@ -394,55 +409,105 @@
 }
 
 .login-light {
+  color-scheme: light;
   background:
-    radial-gradient(circle at 50% -12%, rgba(37, 99, 235, 0.10), transparent 34rem),
-    radial-gradient(circle at 100% 18%, rgba(14, 165, 233, 0.07), transparent 28rem),
-    linear-gradient(180deg, #eef4fb 0%, #f7faff 52%, #e8f1fb 100%) !important;
-  color: #0f172a !important;
+    linear-gradient(180deg, #0b71ee 0%, #0b71ee 58%, #0861cd 100%) !important;
+  color: #ffffff !important;
 }
 
-.login-light>.fixed>div:first-child {
-  opacity: 0.14 !important;
-  filter: saturate(0.9);
+.login-light .auth-field-photo {
+  background-image:
+    linear-gradient(90deg, rgba(11, 113, 238, 0.92), rgba(11, 113, 238, 0.84), rgba(8, 97, 205, 0.92)),
+    url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  filter: saturate(0.95) contrast(1.02);
+  opacity: 0.12;
+  transform: scale(1.02);
 }
 
-.login-light>.fixed>div:nth-child(2) {
+.login-light .auth-gradient {
   background:
-    linear-gradient(90deg, rgba(238, 244, 251, 0.98), rgba(247, 250, 255, 0.94), rgba(232, 241, 251, 0.74)) !important;
+    radial-gradient(circle at 12% 24%, rgba(255, 255, 255, 0.13), transparent 16rem),
+    radial-gradient(circle at 88% 18%, rgba(255, 211, 61, 0.10), transparent 15rem),
+    linear-gradient(180deg, rgba(11, 113, 238, 0.18), rgba(6, 43, 111, 0.16));
 }
 
-.login-light .text-white,
-.login-light .text-slate-100,
-.login-light .text-slate-200 {
-  color: #0f172a !important;
+.login-light.auth-landing-auth {
+  font-family: "Nunito Sans", "Montserrat", "Arial Rounded MT Bold", "Aptos", "Trebuchet MS", system-ui, sans-serif;
 }
 
-.login-light .text-gray-300,
-.login-light .text-gray-400,
-.login-light .text-slate-300,
-.login-light .text-slate-400 {
-  color: #475569 !important;
+.login-light.auth-landing-auth .text-white {
+  color: #ffffff !important;
 }
 
-.login-light [class*="bg-[#0b1118]"] {
-  background-color: rgba(251, 253, 255, 0.96) !important;
-  border-color: rgba(100, 116, 139, 0.30) !important;
-  box-shadow: 0 28px 80px -48px rgba(15, 23, 42, 0.50) !important;
+.login-light.auth-landing-auth .text-blue-50 {
+  color: #eff6ff !important;
+}
+
+.login-light.auth-landing-auth .text-blue-100 {
+  color: #dbeafe !important;
+}
+
+.login-light.auth-landing-auth .text-blue-200 {
+  color: #bfdbfe !important;
+}
+
+.login-light .auth-goomer,
+.login-light .auth-login-card {
+  letter-spacing: 0;
+}
+
+.login-light .auth-hero-title {
+  font-family: "Nunito Sans", "Arial Rounded MT Bold", "Aptos", "Trebuchet MS", system-ui, sans-serif;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.login-light .auth-card-glow {
+  background: linear-gradient(135deg, rgba(255, 211, 61, 0.32), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
+  filter: blur(30px);
+  opacity: 0.48;
+}
+
+.login-light .auth-login-card {
+  color: #062b6f;
 }
 
 .login-light input {
-  background-color: #f3f7fc !important;
-  color: #0f172a !important;
-  border-color: rgba(100, 116, 139, 0.36) !important;
+  background-color: #ffffff !important;
+  color: #062b6f !important;
+  border-color: rgba(11, 113, 238, 0.18) !important;
 }
 
 .login-light input::placeholder {
-  color: #94a3b8 !important;
+  color: rgba(6, 43, 111, 0.36) !important;
 }
 
-.login-light button[class*="bg-emerald"],
-.login-light button[class*="bg-blue"] {
+.login-light button[class*="bg-blue"],
+.login-light .bg-blue-600,
+.login-light .bg-\[\#0b71ee\] {
   color: #ffffff !important;
+}
+
+.login-light .bg-\[\#ffd33d\] {
+  color: #062b6f !important;
+}
+
+.login-light .toggle-premium {
+  flex: 0 0 auto;
+  background: rgba(11, 113, 238, 0.16);
+  border-color: rgba(11, 113, 238, 0.26);
+}
+
+.login-light .toggle-premium::after {
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+.login-light .toggle-premium.active {
+  background: #0b71ee;
+  border-color: #0b71ee;
 }
 
 .dashboard-light {

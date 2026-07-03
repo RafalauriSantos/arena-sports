@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
 	Lock,
-	Zap,
 	Trophy,
 	ShieldCheck,
 	CheckCircle2,
@@ -56,6 +55,18 @@ function extractRetrySeconds(message: string): number {
 	if (unit.startsWith("m")) return value * 60;
 	return value;
 }
+
+const authLabelClass = "text-[11px] font-black uppercase tracking-[0.22em] text-blue-950/58";
+const authInputClass =
+	"h-12 rounded-2xl border-blue-100 bg-white pl-11 text-blue-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_12px_24px_rgba(6,43,111,0.06)] placeholder:text-blue-950/35 focus-visible:ring-4 focus-visible:ring-[#ffd33d]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+const authIconClass =
+	"absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#0b71ee] pointer-events-none";
+const authPrimaryButtonClass =
+	"h-14 rounded-full bg-[#ffd33d] text-[#062b6f] font-black shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] hover:bg-[#ffe06a] active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-yellow-100 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+const authNoticeClass =
+	"rounded-2xl border border-blue-100 bg-blue-50 p-3 text-sm font-bold text-blue-900 shadow-sm";
+const authErrorClass =
+	"rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700 shadow-sm";
 
 const Login = () => {
 	const passwordRecoveryRef = useRef(false);
@@ -597,488 +608,465 @@ const Login = () => {
 	};
 
 	return (
-		<div className="login-light min-h-screen w-full flex marketing-dark text-white relative overflow-hidden font-sans selection:bg-blue-200">
-			{/* 1. FUNDO IMERSIVO - FIXED para evitar espaço extra no mobile */}
-			<div className="fixed inset-0 z-0">
-				{/* Imagem de fundo de alta qualidade (Esportes) */}
-				<div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-80" />
-				{/* Gradiente pesado para escurecer e focar no conteúdo */}
-				<div className="absolute inset-0 bg-gradient-to-r from-[#02040a] via-[#02040a]/92 to-[#02040a]/55" />
-				{/* Efeito de granulação (Noise) para textura premium */}
+		<div className="login-light auth-landing-auth min-h-screen w-full overflow-hidden bg-[#0b71ee] text-white selection:bg-yellow-200 selection:text-blue-950">
+			<div className="fixed inset-0 z-0 overflow-hidden">
+				<div className="auth-field-photo absolute inset-0" />
+				<div className="auth-gradient absolute inset-0" />
 				<div
-					className="absolute inset-0 opacity-[0.03]"
+					className="absolute inset-0 opacity-[0.035]"
 					style={{
 						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
 					}}
 				/>
 			</div>
 
-			{/* 2. CONTEÚDO PRINCIPAL (Z-Index alto) */}
-			<div className="relative z-10 w-full max-w-md sm:max-w-xl lg:max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between px-1 sm:px-4 py-3 sm:py-8 lg:py-0 h-full min-h-[100dvh] gap-4 sm:gap-8 lg:gap-10">
-				{/* ESQUERDA: Copy de Vendas Agressiva */}
-				<div className="w-full lg:w-1/2 space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-left-10 duration-700">
-					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-sm font-bold tracking-wide uppercase">
-						<Zap className="w-4 h-4 fill-emerald-400" />
-						Sistema de Alta Performance
-					</div>
-
-					<h1 className="text-2xl sm:text-4xl lg:text-6xl font-black tracking-tight leading-[1.1]">
-						Transforme horários vazios em{" "}
-						<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-300">
-							lucro automático.
+			<div className="relative z-10 flex min-h-[100dvh] w-full flex-col">
+				<header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+					<button
+						type="button"
+						onClick={() => navigate("/")}
+						className="group inline-flex items-center gap-3 rounded-xl py-1.5 text-left transition hover:-translate-y-0.5">
+						<span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-[#0b71ee] shadow-[0_18px_36px_-24px_rgba(2,6,23,0.75)]">
+							AS
 						</span>
-					</h1>
+						<span className="leading-none">
+							<span className="block text-base font-black tracking-tight text-white">
+								ArenaSys
+							</span>
+						</span>
+					</button>
 
-					<p className="text-sm sm:text-base text-slate-300 max-w-[16rem] sm:max-w-md leading-relaxed">
-						Pare de perder dinheiro com horários vagos e gestão manual. O{" "}
-						<strong>ArenaSys</strong> é o cérebro que automatiza suas reservas,
-						pagamentos e clientes enquanto você dorme.
-					</p>
+					<button
+						type="button"
+						onClick={() => navigate("/")}
+						className="rounded-full border border-white/45 bg-white/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white backdrop-blur-sm transition hover:bg-white/18 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35">
+						Voltar ao site
+					</button>
+				</header>
 
-					<div className="flex flex-col sm:flex-row gap-1 sm:gap-2 pt-2">
-						<div className="flex items-center gap-3 text-slate-300">
-							<CheckCircle2 className="w-5 h-5 text-emerald-500" />
-							<span>7 dias grátis para testar</span>
+				<main className="mx-auto grid w-full max-w-4xl flex-1 grid-cols-1 items-start gap-8 px-5 pb-8 pt-3 sm:px-8 lg:min-h-[660px] lg:grid-cols-[minmax(220px,0.52fr)_minmax(390px,440px)] lg:items-center lg:gap-12 lg:pb-14">
+					<section className="auth-goomer hidden max-w-[20rem] space-y-4 animate-in fade-in slide-in-from-left-6 duration-700 lg:flex lg:min-h-[600px] lg:flex-col lg:justify-center">
+						<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-base font-black text-[#0b71ee] shadow-[0_20px_42px_-30px_rgba(2,6,23,0.78)]">
+							AS
 						</div>
-						<div className="flex items-center gap-3 text-slate-300">
-							<CheckCircle2 className="w-5 h-5 text-emerald-500" />
-							<span>Setup em 3 minutos</span>
-						</div>
-					</div>
 
-					{/* Programa Founders - Prova Social Autêntica */}
-					<div className="border-t border-white/10 pt-4 sm:pt-6 mt-4 sm:mt-6">
-						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-200 text-xs font-bold tracking-wide uppercase">
-							<Zap className="w-3 h-3 fill-amber-200" />
-							Programa Founders - Vagas Limitadas
-						</div>
-						<p className="text-slate-300 text-sm mt-3 max-w-md">
-							Seja um dos primeiros arenas a transformar sua gestão. Condições
-							especiais para quem se juntar agora.
+						<p className="text-[11px] font-black uppercase tracking-[0.28em] text-blue-100">
+							ArenaSys
 						</p>
-					</div>
-				</div>
 
-				{/* DIREITA: O Card de Login "HUD" */}
-				<div className="w-full max-w-[18rem] sm:max-w-xs lg:w-[400px] animate-in fade-in slide-in-from-right-10 duration-700 delay-200">
-					<div className="relative group">
-						{/* Contorno sutil para separar o formulario do fundo */}
-						<div className="absolute -inset-px bg-gradient-to-r from-emerald-500/35 to-cyan-500/25 rounded-2xl blur opacity-10 transition duration-700"></div>
+						<h1 className="auth-hero-title text-4xl font-black leading-[1.02] text-white">
+							Acesso seguro à sua central.
+						</h1>
 
-						<div className="relative bg-[#0b1118]/95 backdrop-blur-xl border border-white/[0.12] p-7 sm:p-9 rounded-2xl shadow-xl shadow-black/35 transition-shadow duration-300">
-							{/* TELA DE CONFIRMAÇÃO DE EMAIL */}
-							{mode === "email-confirmation" ?
-								<div className="space-y-4 sm:space-y-6 text-center animate-in fade-in slide-in-from-bottom-4">
-									<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-2">
-										<Mail className="w-8 h-8 text-emerald-400" />
-									</div>
+						<p className="text-sm font-bold leading-6 [color:rgba(239,246,255,0.82)]">
+							Agenda, reservas e clientes em ambiente privado.
+						</p>
+					</section>
 
-									<div>
-										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-											Conta Criada com Sucesso! 🎉
-										</h2>
-										<p className="text-gray-300 text-sm">
-											Enviamos um email de confirmação para:
-										</p>
-										<p className="text-emerald-400 font-medium text-sm mt-1 break-all">
-											{signupEmail || email}
-										</p>
-									</div>
+					<section className="flex w-full justify-center animate-in fade-in slide-in-from-right-6 duration-700 delay-150 lg:min-h-[600px] lg:items-center">
+						<div className="relative mx-auto w-full max-w-[440px]">
+							<div className="auth-card-glow absolute -inset-4 rounded-[2rem]" />
 
-									{successMessage && (
-										<div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm text-center">
-											{successMessage}
+							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-[2rem] border border-white/80 bg-white p-5 shadow-[0_34px_90px_-46px_rgba(2,6,23,0.9)] backdrop-blur-2xl sm:min-h-[620px] sm:p-7">
+								<div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-[#ffd33d]" />
+
+								{mode === "email-confirmation" ?
+									<div className="space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
+										<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-200 bg-[#ffd33d] text-[#062b6f] shadow-inner">
+											<Mail className="h-8 w-8" />
 										</div>
-									)}
 
-									{error && (
-										<div className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
-											{error}
-										</div>
-									)}
-
-									<div className="space-y-3 text-left bg-white/5 rounded-lg p-4 border border-white/10">
-										<div className="flex items-start gap-3">
-											<CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-											<p className="text-gray-300 text-sm">
-												Verifique sua caixa de entrada e clique no link de
-												confirmação
+										<div>
+											<h2 className="text-2xl font-black tracking-tight text-[#062b6f]">
+												Confirme seu email
+											</h2>
+											<p className="mt-2 text-sm leading-6 text-slate-600">
+												Enviamos o link para:
+											</p>
+											<p className="mt-1 break-all text-sm font-black text-[#0b71ee]">
+												{signupEmail || email}
 											</p>
 										</div>
-										<div className="flex items-start gap-3">
-											<CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-											<p className="text-gray-300 text-sm">
-												Não recebeu? Verifique a pasta de <strong>Spam</strong>{" "}
-												ou lixo eletrônico
-											</p>
-										</div>
-										<div className="flex items-start gap-3">
-											<CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-											<p className="text-gray-300 text-sm">
-												Após confirmar, você poderá fazer login e começar a usar
-											</p>
-										</div>
-									</div>
 
-									<div className="flex flex-col gap-3 pt-2">
-										<Button
-											onClick={async () => {
-												// Reenviar email de confirmação
-												setIsLoading(true);
-												setError(null);
-												setSuccessMessage(null);
-												const targetEmail = signupEmail || email;
-												const { error: resendError } =
-													await supabase.auth.resend({
-														type: "signup",
-														email: targetEmail,
-														options: {
-															emailRedirectTo: `${window.location.origin}/welcome`,
-														},
-													});
-												setIsLoading(false);
-												if (resendError) {
-													setError(
-														resendError.message ||
-															"Erro ao reenviar email. Tente novamente.",
-													);
-													setSuccessMessage(null);
-												} else {
+										{successMessage && (
+											<div className={authNoticeClass}>{successMessage}</div>
+										)}
+
+										{error && <div className={authErrorClass}>{error}</div>}
+
+										<div className="space-y-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-left">
+											{[
+												"Abra sua caixa de entrada e clique no link de confirmação.",
+												"Se não encontrar, confira spam ou lixo eletrônico.",
+												"Depois de confirmar, volte para fazer login na central.",
+											].map((item) => (
+												<div key={item} className="flex items-start gap-3">
+													<CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#0b71ee]" />
+													<p className="text-sm leading-6 text-slate-600">{item}</p>
+												</div>
+											))}
+										</div>
+
+										<div className="grid gap-3 pt-1">
+											<Button
+												onClick={async () => {
+													setIsLoading(true);
 													setError(null);
-													setSuccessMessage(
-														"✅ Email reenviado com sucesso! Verifique sua caixa de entrada.",
-													);
-													// Limpar mensagem após 5 segundos
-													setTimeout(() => {
+													setSuccessMessage(null);
+													const targetEmail = signupEmail || email;
+													const { error: resendError } =
+														await supabase.auth.resend({
+															type: "signup",
+															email: targetEmail,
+															options: {
+																emailRedirectTo: `${window.location.origin}/welcome`,
+															},
+														});
+													setIsLoading(false);
+													if (resendError) {
+														setError(
+															resendError.message ||
+																"Erro ao reenviar email. Tente novamente.",
+														);
 														setSuccessMessage(null);
-													}, 5000);
-												}
-											}}
-											disabled={isLoading}
-											variant="outline"
-											className="w-full border-white/20 hover:bg-white/5 text-white">
-											{isLoading ? "Enviando..." : "Reenviar Email"}
-										</Button>
-										<Button
-											onClick={async () => {
-												// Tentar login novamente após confirmação
-												setMode("signin");
-												setEmail(signupEmail || email);
-												setSignupEmail("");
-												setError(null);
-												setSuccessMessage(null);
-											}}
-											className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm sm:text-base">
-											Tentar Login Novamente
-										</Button>
-									</div>
+													} else {
+														setError(null);
+														setSuccessMessage(
+															"Email reenviado com sucesso. Verifique sua caixa de entrada.",
+														);
+														setTimeout(() => {
+															setSuccessMessage(null);
+														}, 5000);
+													}
+												}}
+												disabled={isLoading}
+												variant="outline"
+												className="h-12 rounded-full border-blue-200 bg-white text-[#0b71ee] hover:bg-blue-50">
+												{isLoading ? "Enviando..." : "Reenviar email"}
+											</Button>
+											<Button
+												onClick={() => {
+													setMode("signin");
+													setEmail(signupEmail || email);
+													setSignupEmail("");
+													setError(null);
+													setSuccessMessage(null);
+												}}
+												className={authPrimaryButtonClass}>
+												Tentar login novamente
+											</Button>
+										</div>
 
-									<p className="text-xs text-gray-300 pt-2">
-										Já confirmou?{" "}
 										<button
+											type="button"
 											aria-label="Ir para página de login"
 											onClick={() => setMode("signin")}
-											className="text-emerald-400 hover:text-emerald-300 underline">
-											Fazer login aqui
+											className="text-sm font-bold text-slate-500 transition hover:text-blue-700">
+											Já confirmei, voltar ao login
 										</button>
-									</p>
-								</div>
-							: mode === "forgot-password" ?
-								<div className="space-y-4 sm:space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
-									<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-1">
-										<Lock className="w-8 h-8 text-emerald-400" />
 									</div>
-									<div>
-										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-											Redefinir senha
-										</h2>
-										<p className="text-gray-300 text-sm text-left">
-											Informe o email da sua conta. Enviaremos um link para você
-											criar uma nova senha.
-										</p>
-									</div>
-									{successMessage && (
-										<div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm text-center">
-											{successMessage}
-										</div>
-									)}
-									{error && (
-										<div className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
-											{error}
-										</div>
-									)}
-									<form
-										onSubmit={handleSendRecoveryEmail}
-										className="space-y-4 text-left">
-										<div className="space-y-1.5">
-											<Label className="text-xs uppercase text-gray-300 font-bold">
-												Email
-											</Label>
-											<div className="relative">
-												<ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
-												<Input
-													type="email"
-													value={email}
-													onChange={(e) => setEmail(e.target.value)}
-													autoComplete="email"
-													required
-													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
-													placeholder="gestor@arenasys.com"
-												/>
+								: mode === "forgot-password" ?
+									<div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
+										<div className="text-center">
+											<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-200 bg-[#ffd33d] text-[#062b6f] shadow-inner">
+												<Lock className="h-8 w-8" />
 											</div>
-										</div>
-										<Button
-											type="submit"
-											disabled={isLoading || recoveryCooldownSeconds > 0}
-											className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
-											{isLoading ?
-												"Enviando..."
-											: recoveryCooldownSeconds > 0 ?
-												`Aguarde ${recoveryCooldownSeconds}s`
-											:	"Enviar link"}
-										</Button>
-										{recoveryCooldownSeconds > 0 && (
-											<p className="text-xs text-gray-400 text-center">
-												Para evitar bloqueio do provedor de email, tente
-												novamente em {recoveryCooldownSeconds}s.
+											<h2 className="mt-5 text-2xl font-black tracking-tight text-[#062b6f]">
+												Redefinir senha
+											</h2>
+											<p className="mt-2 text-sm leading-6 text-slate-600">
+												Informe o email da sua conta e enviaremos um link seguro
+												para criar uma nova senha.
 											</p>
-										)}
-									</form>
-									<button
-										type="button"
-										onClick={() => {
-											setMode("signin");
-											setError(null);
-											setSuccessMessage(null);
-										}}
-										className="text-sm text-gray-300 hover:text-white underline">
-										Voltar ao login
-									</button>
-								</div>
-							: mode === "update-password" ?
-								<div className="space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-bottom-4">
-									<div className="text-center">
-										<div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center mb-2">
-											<Lock className="w-8 h-8 text-emerald-400" />
 										</div>
-										<h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-											Nova senha
-										</h2>
-										<p className="text-gray-300 text-sm">
-											Escolha uma senha forte para sua conta.
-										</p>
-									</div>
-									{error && (
-										<div className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
-											{error}
-										</div>
-									)}
-									<form
-										onSubmit={handleSetNewPassword}
-										className="space-y-3 text-left">
-										<div className="space-y-1.5">
-											<Label className="text-xs uppercase text-gray-300 font-bold">
-												Nova senha
-											</Label>
-											<div className="relative">
-												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
-												<Input
-													type="password"
-													value={newPassword}
-													onChange={(e) => setNewPassword(e.target.value)}
-													autoComplete="new-password"
-													minLength={6}
-													required
-													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
-													placeholder="Mínimo 6 caracteres"
-												/>
-											</div>
-										</div>
-										<div className="space-y-1.5">
-											<Label className="text-xs uppercase text-gray-300 font-bold">
-												Confirmar senha
-											</Label>
-											<div className="relative">
-												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
-												<Input
-													type="password"
-													value={confirmNewPassword}
-													onChange={(e) =>
-														setConfirmNewPassword(e.target.value)
-													}
-													autoComplete="new-password"
-													minLength={6}
-													required
-													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]"
-													placeholder="Repita a senha"
-												/>
-											</div>
-										</div>
-										<Button
-											type="submit"
-											disabled={isLoading}
-											className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
-											{isLoading ? "Salvando..." : "Salvar nova senha"}
-										</Button>
-									</form>
-								</div>
-							:	<>
-									<div className="text-center mb-4 sm:mb-6">
-										<h2 className="text-lg sm:text-xl font-bold text-white">
-											{mode === "signin" ? "Acessar Central" : "Começar Agora"}
-										</h2>
-										<p className="text-gray-300 text-[11px] sm:text-xs mt-1">
-											{mode === "signin" ?
-												"Digite suas credenciais de gestor."
-											:	"Crie sua conta em 30 segundos."}
-										</p>
-									</div>
 
-									<form
-										onSubmit={handleSubmit}
-										className="space-y-2.5 sm:space-y-4">
-										{mode === "signup" && (
-											<div className="space-y-1 sm:space-y-1.5">
-												<Label className="text-xs uppercase text-gray-300 font-bold">
-													Nome da Arena
-												</Label>
+										{successMessage && (
+											<div className={authNoticeClass}>{successMessage}</div>
+										)}
+										{error && <div className={authErrorClass}>{error}</div>}
+
+										<form
+											onSubmit={handleSendRecoveryEmail}
+											className="space-y-4 text-left">
+											<div className="space-y-2">
+												<Label className={authLabelClass}>Email</Label>
 												<div className="relative">
-													<Trophy className="absolute left-3 top-3 h-5 w-5 text-gray-300" />
+													<ShieldCheck className={authIconClass} />
 													<Input
-														value={arenaName}
-														onChange={(e) => setArenaName(e.target.value)}
-														autoComplete="organization"
-														className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
-														placeholder="Ex: ArenaSys Tatuí"
+														type="email"
+														value={email}
+														onChange={(e) => setEmail(e.target.value)}
+														autoComplete="email"
+														required
+														className={authInputClass}
+														placeholder="gestor@arenasys.com"
 													/>
 												</div>
 											</div>
-										)}
-
-										<div className="space-y-1 sm:space-y-1.5">
-											<Label className="text-xs uppercase text-gray-300 font-bold">
-												Email Corporativo
-											</Label>
-											<div className="relative">
-												<ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
-												<Input
-													type="email"
-													value={email}
-													onChange={(e) => setEmail(e.target.value)}
-													data-testid="login-email"
-													autoComplete="email"
-													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
-													placeholder="gestor@arenasys.com"
-												/>
-											</div>
-										</div>
-
-										<div className="space-y-1 sm:space-y-1.5">
-											<Label className="text-xs uppercase text-gray-300 font-bold">
-												Senha de Acesso
-											</Label>
-											<div className="relative">
-												<Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 pointer-events-none" />
-												<Input
-													type="password"
-													value={password}
-													onChange={(e) => setPassword(e.target.value)}
-													data-testid="login-password"
-													autoComplete={
-														mode === "signin" ? "current-password" : (
-															"new-password"
-														)
-													}
-													className="pl-10 h-12 rounded-lg bg-white/[0.07] border-white/15 text-white focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10] transition-all duration-200"
-													placeholder="••••••••"
-												/>
-											</div>
-										</div>
-
-										{mode === "signin" && (
-											<div className="flex justify-end -mt-0.5">
-												<button
-													type="button"
-													onClick={(e) => {
-														e.preventDefault();
-														e.stopPropagation();
-														setMode("forgot-password");
-														setError(null);
-														setSuccessMessage(null);
-													}}
-													className="text-xs text-emerald-400 hover:text-emerald-300 underline underline-offset-2">
-													Esqueceu a senha?
-												</button>
-											</div>
-										)}
-
-										{/* Checkbox "Lembrar-me" Premium Toggle */}
-										{mode === "signin" && (
-											<div
-												className="flex items-center gap-3 py-2 cursor-pointer group"
-												onClick={() => setRememberMe(!rememberMe)}>
-												<div
-													className={`toggle-premium ${rememberMe ? "active" : ""}`}
-												/>
-												<label className="text-sm text-gray-300 cursor-pointer select-none group-hover:text-white transition-colors">
-													Lembrar-me neste dispositivo
-												</label>
-											</div>
-										)}
-
-										{error && (
-											<div
-												role="alert"
-												className="p-3 rounded-lg bg-red-500/12 border border-red-500/30 text-red-200 text-sm text-center">
-												{error}
-											</div>
-										)}
-
-										<Button
-											type="submit"
-											disabled={isLoading}
-											data-testid="login-submit"
-											className="w-full h-11 sm:h-12 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm sm:text-base shadow-sm transition-colors duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0c10]">
-											{isLoading ?
-												"Conectando..."
-											:	<span className="flex items-center gap-2">
-													{mode === "signin" ?
-														"Entrar no Sistema"
-													:	"Liberar Meu Acesso"}
-													<ArrowRight className="w-5 h-5" />
-												</span>
-											}
-										</Button>
-									</form>
-
-									<div className="mt-2 sm:mt-4 text-center">
+											<Button
+												type="submit"
+												disabled={isLoading || recoveryCooldownSeconds > 0}
+												className={authPrimaryButtonClass}>
+												{isLoading ?
+													"Enviando..."
+												: recoveryCooldownSeconds > 0 ?
+													`Aguarde ${recoveryCooldownSeconds}s`
+												:	"Enviar link"}
+											</Button>
+											{recoveryCooldownSeconds > 0 && (
+												<p className="text-center text-xs text-slate-500">
+													Para evitar bloqueio do provedor de email, tente
+													novamente em {recoveryCooldownSeconds}s.
+												</p>
+											)}
+										</form>
 										<button
-											aria-label="Alternar entre login e cadastro"
+											type="button"
 											onClick={() => {
-												setMode(mode === "signin" ? "signup" : "signin");
+												setMode("signin");
 												setError(null);
 												setSuccessMessage(null);
-												setSignupEmail("");
-												setNewPassword("");
-												setConfirmNewPassword("");
 											}}
-											className="text-sm text-gray-300 hover:text-white transition-colors">
-											{mode === "signin" ?
-												"Não tem conta? Criar acesso grátis"
-											:	"Já tem conta? Fazer login"}
+											className="w-full text-sm font-black text-[#0b71ee] transition hover:text-[#062b6f]">
+											Voltar ao login
 										</button>
 									</div>
-								</>
-							}
-						</div>
+								: mode === "update-password" ?
+									<div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
+										<div className="text-center">
+											<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-200 bg-[#ffd33d] text-[#062b6f] shadow-inner">
+												<Lock className="h-8 w-8" />
+											</div>
+											<h2 className="mt-5 text-2xl font-black tracking-tight text-[#062b6f]">
+												Nova senha
+											</h2>
+											<p className="mt-2 text-sm leading-6 text-slate-600">
+												Escolha uma senha forte para proteger a central da arena.
+											</p>
+										</div>
+										{error && <div className={authErrorClass}>{error}</div>}
+										<form
+											onSubmit={handleSetNewPassword}
+											className="space-y-4 text-left">
+											<div className="space-y-2">
+												<Label className={authLabelClass}>Nova senha</Label>
+												<div className="relative">
+													<Lock className={authIconClass} />
+													<Input
+														type="password"
+														value={newPassword}
+														onChange={(e) => setNewPassword(e.target.value)}
+														autoComplete="new-password"
+														minLength={6}
+														required
+														className={authInputClass}
+														placeholder="Mínimo 6 caracteres"
+													/>
+												</div>
+											</div>
+											<div className="space-y-2">
+												<Label className={authLabelClass}>Confirmar senha</Label>
+												<div className="relative">
+													<Lock className={authIconClass} />
+													<Input
+														type="password"
+														value={confirmNewPassword}
+														onChange={(e) =>
+															setConfirmNewPassword(e.target.value)
+														}
+														autoComplete="new-password"
+														minLength={6}
+														required
+														className={authInputClass}
+														placeholder="Repita a senha"
+													/>
+												</div>
+											</div>
+											<Button
+												type="submit"
+												disabled={isLoading}
+												className={authPrimaryButtonClass}>
+												{isLoading ? "Salvando..." : "Salvar nova senha"}
+											</Button>
+										</form>
+									</div>
+								:	<>
+										<div className="mb-6">
+											<p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#0b71ee]">
+												{mode === "signin" ? "Acesso do gestor" : "Novo acesso"}
+											</p>
+											<h2 className="mt-2 text-3xl font-black tracking-tight text-[#062b6f]">
+												{mode === "signin" ?
+													"Entrar na central"
+												:	"Criar conta ArenaSys"}
+											</h2>
+											<p className="mt-2 text-sm font-bold leading-6 text-blue-950/62">
+												{mode === "signin" ?
+													"Acesse sua agenda e reservas."
+												:	"Configure sua central em poucos minutos."}
+											</p>
+										</div>
 
-						{/* Selo de Segurança */}
-						<div className="mt-2 sm:mt-3 flex items-center justify-center gap-1 text-[9px] sm:text-[10px] text-gray-300 opacity-60">
-							<Lock className="w-3 h-3" />
-							<span>Criptografia de ponta a ponta (SSL)</span>
+										<div className="mb-5 grid grid-cols-2 rounded-full border border-blue-100 bg-blue-50 p-1">
+											<button
+												type="button"
+												onClick={() => {
+													setMode("signin");
+													setError(null);
+													setSuccessMessage(null);
+												}}
+												className={`rounded-full px-4 py-2 text-sm font-black transition ${
+													mode === "signin" ?
+														"bg-[#0b71ee] text-white shadow-sm"
+													:	"text-blue-950/55 hover:text-[#062b6f]"
+												}`}>
+												Entrar
+											</button>
+											<button
+												type="button"
+												onClick={() => {
+													setMode("signup");
+													setError(null);
+													setSuccessMessage(null);
+												}}
+												className={`rounded-full px-4 py-2 text-sm font-black transition ${
+													mode === "signup" ?
+														"bg-[#0b71ee] text-white shadow-sm"
+													:	"text-blue-950/55 hover:text-[#062b6f]"
+												}`}>
+												Criar conta
+											</button>
+										</div>
+
+										<form onSubmit={handleSubmit} className="space-y-4">
+											{mode === "signup" && (
+												<div className="space-y-2">
+													<Label className={authLabelClass}>Nome da arena</Label>
+													<div className="relative">
+														<Trophy className={authIconClass} />
+														<Input
+															value={arenaName}
+															onChange={(e) => setArenaName(e.target.value)}
+															autoComplete="organization"
+															className={authInputClass}
+															placeholder="Ex: ArenaSys Tatuí"
+														/>
+													</div>
+												</div>
+											)}
+
+											<div className="space-y-2">
+												<Label className={authLabelClass}>Email corporativo</Label>
+												<div className="relative">
+													<ShieldCheck className={authIconClass} />
+													<Input
+														type="email"
+														value={email}
+														onChange={(e) => setEmail(e.target.value)}
+														data-testid="login-email"
+														autoComplete="email"
+														className={authInputClass}
+														placeholder="gestor@arenasys.com"
+													/>
+												</div>
+											</div>
+
+											<div className="space-y-2">
+												<Label className={authLabelClass}>Senha de acesso</Label>
+												<div className="relative">
+													<Lock className={authIconClass} />
+													<Input
+														type="password"
+														value={password}
+														onChange={(e) => setPassword(e.target.value)}
+														data-testid="login-password"
+														autoComplete={
+															mode === "signin" ? "current-password" : (
+																"new-password"
+															)
+														}
+														className={authInputClass}
+														placeholder="••••••••"
+													/>
+												</div>
+											</div>
+
+											{mode === "signin" && (
+												<div className="flex justify-end">
+													<button
+														type="button"
+														onClick={(e) => {
+															e.preventDefault();
+															e.stopPropagation();
+															setMode("forgot-password");
+															setError(null);
+															setSuccessMessage(null);
+														}}
+														className="text-xs font-black uppercase tracking-[0.16em] text-[#0b71ee] transition hover:text-[#062b6f]">
+														Esqueceu a senha?
+													</button>
+												</div>
+											)}
+
+											{mode === "signin" && (
+												<button
+													type="button"
+													aria-pressed={rememberMe}
+													onClick={() => setRememberMe(!rememberMe)}
+													className="flex w-full items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/72 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50">
+													<span
+														className={`toggle-premium ${rememberMe ? "active" : ""}`}
+													/>
+													<span>
+														<span className="block text-sm font-black text-[#062b6f]">
+															Lembrar neste dispositivo
+														</span>
+														<span className="block text-xs font-bold text-blue-950/50">
+															Mantém o email preenchido no próximo acesso.
+														</span>
+													</span>
+												</button>
+											)}
+
+											{error && (
+												<div role="alert" className={authErrorClass}>
+													{error}
+												</div>
+											)}
+
+											<Button
+												type="submit"
+												disabled={isLoading}
+												data-testid="login-submit"
+												className={`${authPrimaryButtonClass} w-full`}>
+												{isLoading ?
+													"Conectando..."
+												:	<span className="flex items-center justify-center gap-2">
+														{mode === "signin" ?
+															"Entrar no sistema"
+														:	"Criar conta"}
+														<ArrowRight className="h-5 w-5" />
+													</span>
+												}
+											</Button>
+
+											{mode === "signup" && (
+												<p className="text-center text-xs font-bold text-blue-950/48">
+													7 dias grátis. Sem cartão.
+												</p>
+											)}
+										</form>
+									</>
+								}
+							</div>
+
+							<div className="mt-4 flex items-center justify-center gap-2 text-xs font-black [color:rgba(239,246,255,0.82)]">
+								<Lock className="h-3.5 w-3.5" />
+								<span>SSL, Supabase Auth e acesso privado da sua operação</span>
+							</div>
 						</div>
-					</div>
-				</div>
+					</section>
+				</main>
 			</div>
 		</div>
 	);

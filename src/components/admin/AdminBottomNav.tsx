@@ -17,27 +17,28 @@ const tabs = [
 
 export function AdminBottomNav({ activeTab, onTabChange }: AdminBottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-lg">
       <div className="container">
         <div className="flex items-center justify-around py-2">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all btn-press",
+                "flex flex-col items-center gap-1 rounded-md px-4 py-2 transition-colors btn-press",
                 activeTab === tab.id
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-50 text-[#0b71ee]"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               )}
             >
-              <tab.icon className="w-6 h-6" />
-              <span className="text-xs font-medium">{tab.label}</span>
+              <tab.icon className="h-5 w-5" />
+              <span className="text-xs font-semibold">{tab.label}</span>
             </button>
           ))}
         </div>
       </div>
-      <div className="h-safe-area-inset-bottom bg-card" />
+      <div className="h-safe-area-inset-bottom bg-white" />
     </nav>
   );
 }

@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
-import { CalendarOff, Plus, Trash2, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { AlertCircle, CalendarOff, Plus, Trash2 } from "lucide-react";
+import type { DateRange } from "react-day-picker";
+import { eachDayOfInterval, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Badge } from "@/components/ui/badge";
 import {
 	Dialog,
 	DialogContent,
@@ -12,15 +14,20 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useBookings } from "@/contexts/BookingsContext";
-import { format, eachDayOfInterval } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { useToast } from "@/hooks/use-toast";
-import { DateRange } from "react-day-picker";
-import { supabase } from "@/lib/supabaseClient";
+import { Label } from "@/components/ui/label";
+import {
+	AdminEmptyState,
+	AdminPage,
+	AdminPageHeader,
+	AdminPanel,
+	AdminPill,
+	AdminToolbar,
+} from "@/components/admin/AdminUI";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBookings } from "@/contexts/BookingsContext";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabaseClient";
 
 interface Folga {
 	id: string;
@@ -42,7 +49,7 @@ const isFolgaArray = (value: unknown): value is Folga[] =>
 			typeof item.startDate === "string" &&
 			typeof item.endDate === "string" &&
 			typeof item.reason === "string" &&
-			typeof item.createdAt === "string"
+			typeof item.createdAt === "string",
 	);
 
 export default function FolgasView() {
@@ -54,7 +61,6 @@ export default function FolgasView() {
 	const [reason, setReason] = useState("");
 	const [folgas, setFolgas] = useState<Folga[]>([]);
 
-	// Carregar folgas do banco ao iniciar
 	useEffect(() => {
 		if (!tenantId) return;
 
@@ -104,17 +110,14 @@ export default function FolgasView() {
 		}
 
 		const startDate = format(dateRange.from, "yyyy-MM-dd");
-		const endDate = dateRange.to
-			? format(dateRange.to, "yyyy-MM-dd")
-			: startDate;
+		const endDate =
+			dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : startDate;
 
-		// Get all dates in range
 		const dates = eachDayOfInterval({
 			start: new Date(startDate),
 			end: new Date(endDate),
 		});
 
-		// Block all slots in those dates
 		let blockedCount = 0;
 		dates.forEach((date) => {
 			const dateStr = format(date, "yyyy-MM-dd");
@@ -126,7 +129,6 @@ export default function FolgasView() {
 			});
 		});
 
-		// Save folga record
 		const newFolga: Folga = {
 			id: `folga-${Date.now()}`,
 			startDate,
@@ -138,22 +140,21 @@ export default function FolgasView() {
 		saveFolgas([...folgas, newFolga]);
 
 		toast({
-			title: "Folga criada!",
+			title: "Folga criada",
 			description: `${blockedCount} horários bloqueados de ${format(
 				new Date(startDate),
 				"dd/MM",
-				{ locale: ptBR }
+				{ locale: ptBR },
 			)} até ${format(new Date(endDate), "dd/MM", { locale: ptBR })}.`,
 		});
 
-		// Reset form
 		setDateRange(undefined);
 		setReason("");
 		setIsModalOpen(false);
 	};
 
 	const handleDeleteFolga = (folga: Folga) => {
-		saveFolgas(folgas.filter((f) => f.id !== folga.id));
+		saveFolgas(folgas.filter((item) => item.id !== folga.id));
 
 		toast({
 			title: "Folga removida",
@@ -168,142 +169,129 @@ export default function FolgasView() {
 		});
 		const endFormatted = format(new Date(end), "dd/MM/yyyy", { locale: ptBR });
 
-		if (start === end) {
-			return startFormatted;
-		}
+		if (start === end) return startFormatted;
 		return `${startFormatted} - ${endFormatted}`;
 	};
 
 	return (
-		<div className="space-y-4 md:space-y-6">
-			{/* Header - Mobile responsive */}
-			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-				<div>
-					<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-						Gerenciar Folgas
-					</h1>
-					<p className="text-sm text-gray-300 mt-0.5">
-						Bloqueie datas e motive quando fechar
-					</p>
+		<AdminPage>
+			<AdminPageHeader
+				eyebrow="Disponibilidade"
+				title="Folgas"
+				description="Bloqueie períodos em que a arena não receberá reservas."
+				meta={<AdminPill tone="slate">{folgas.length} período(s)</AdminPill>}
+				actions={
+					<Button
+						onClick={() => setIsModalOpen(true)}
+						className="h-10 gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+						<Plus className="h-4 w-4" />
+						Nova folga
+					</Button>
+				}
+			/>
+
+			<AdminToolbar className="border-amber-200 bg-amber-50">
+				<div className="flex items-start gap-3 px-1 text-sm text-amber-900">
+					<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+					<span>
+						Ao criar uma folga, os horários do período selecionado serão
+						bloqueados para novas reservas.
+					</span>
 				</div>
-				<Button
-					size="default"
-					className="gap-2 bg-primary text-white hover:bg-primary/90 w-full md:w-auto font-bold shadow-[0_0_20px_hsl(var(--primary)/0.5)] border-0 transition-all hover:scale-105"
-					onClick={() => setIsModalOpen(true)}>
-					<Plus className="h-4 w-4" />
-					Adicionar Folga
-				</Button>
-			</div>
+			</AdminToolbar>
 
-			{/* Info Card */}
-			<Card className="border-amber-500/20 bg-gradient-to-br from-amber-900/10 via-gray-900/40 to-gray-900/40 backdrop-blur-md">
-				<CardContent className="flex items-start gap-3 pt-6">
-					<AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
-					<div className="text-sm">
-						<p className="font-medium text-amber-400 mb-1">Como funciona</p>
-						<p className="text-gray-300">
-							Ao criar uma folga, TODOS os horários dos dias selecionados serão
-							bloqueados automaticamente. Os jogadores não poderão reservar
-							nesses períodos.
-						</p>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Folgas List */}
-			<div className="space-y-3 md:space-y-4">
-				<h2 className="text-base md:text-lg font-bold text-white">
-					Folgas Ativas
-				</h2>
-
-				{folgas.length === 0 ? (
-					<Card className="bg-gray-900/40 border-white/5 backdrop-blur-md">
-						<CardContent className="text-center py-12">
-							<CalendarOff className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-							<p className="text-gray-300">Nenhuma folga cadastrada</p>
-							<p className="text-sm text-gray-300 mt-1">
-								Adicione períodos de fechamento quando necessário
-							</p>
-						</CardContent>
-					</Card>
-				) : (
-					<div className="grid gap-4 md:grid-cols-2">
-						{folgas.map((folga) => (
-							<Card
-								key={folga.id}
-								className="bg-gradient-to-br from-gray-900/50 to-gray-900/30 border-white/5 backdrop-blur-md hover:border-white/10 transition-all">
-								<CardHeader>
-									<div className="flex items-start justify-between">
-										<div>
-											<CardTitle className="text-lg flex items-center gap-2 text-white">
-												<CalendarOff className="h-5 w-5 text-gray-300" />
-												{formatDateRange(folga.startDate, folga.endDate)}
-											</CardTitle>
-											<p className="text-sm text-gray-300 mt-1">
-												{folga.reason}
-											</p>
-										</div>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="text-gray-300 hover:text-rose-400 hover:bg-rose-500/10"
-											onClick={() => handleDeleteFolga(folga)}>
-											<Trash2 className="h-4 w-4" />
-										</Button>
+			{folgas.length === 0 ?
+				<AdminPanel>
+					<AdminEmptyState
+						icon={<CalendarOff className="h-6 w-6" />}
+						title="Nenhuma folga cadastrada"
+						description="Adicione períodos de fechamento quando houver manutenção, feriado ou pausa operacional."
+						action={
+							<Button
+								onClick={() => setIsModalOpen(true)}
+								className="gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+								<Plus className="h-4 w-4" />
+								Adicionar folga
+							</Button>
+						}
+					/>
+				</AdminPanel>
+			:	<div className="grid gap-3 md:grid-cols-2">
+					{folgas.map((folga) => (
+						<AdminPanel key={folga.id} className="p-4">
+							<div className="flex items-start justify-between gap-4">
+								<div className="flex min-w-0 items-start gap-3">
+									<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+										<CalendarOff className="h-5 w-5" />
 									</div>
-								</CardHeader>
-								<CardContent>
-									<Badge
-										variant="outline"
-										className="text-xs border-white/10 text-gray-300">
-										Criada em{" "}
-										{format(new Date(folga.createdAt), "dd/MM/yyyy HH:mm", {
-											locale: ptBR,
-										})}
-									</Badge>
-								</CardContent>
-							</Card>
-						))}
-					</div>
-				)}
-			</div>
+									<div className="min-w-0">
+										<h3 className="text-base font-semibold text-slate-950">
+											{formatDateRange(folga.startDate, folga.endDate)}
+										</h3>
+										<p className="mt-1 text-sm text-slate-500">
+											{folga.reason}
+										</p>
+									</div>
+								</div>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-9 w-9 shrink-0 rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600"
+									onClick={() => handleDeleteFolga(folga)}
+									aria-label="Remover folga">
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							</div>
+							<div className="mt-4 border-t border-slate-200 pt-3">
+								<Badge
+									variant="outline"
+									className="border-slate-200 bg-slate-50 text-xs text-slate-600">
+									Criada em{" "}
+									{format(new Date(folga.createdAt), "dd/MM/yyyy HH:mm", {
+										locale: ptBR,
+									})}
+								</Badge>
+							</div>
+						</AdminPanel>
+					))}
+				</div>
+			}
 
-			{/* New Folga Modal */}
 			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-				<DialogContent className="sm:max-w-[600px] rounded-2xl border-white/10 bg-surface-2">
+				<DialogContent className="rounded-lg border border-slate-200 bg-white text-slate-900 sm:max-w-[460px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							<CalendarOff className="h-5 w-5 text-primary" />
-							Adicionar Folga
+							<CalendarOff className="h-5 w-5 text-[#0b71ee]" />
+							Nova folga
 						</DialogTitle>
-						<DialogDescription>
-							Selecione o período e informe o motivo do fechamento
+						<DialogDescription className="text-slate-500">
+							Selecione o período e informe o motivo do fechamento.
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="space-y-4 py-4">
+					<div className="space-y-4 py-2">
 						<div className="space-y-2">
 							<Label>Período</Label>
-							<div className="flex justify-center">
+							<div className="flex justify-center overflow-x-auto rounded-md border border-slate-200 p-2">
 								<Calendar
 									mode="range"
 									selected={dateRange}
 									onSelect={setDateRange}
-									numberOfMonths={2}
-									className="rounded-md border"
+									numberOfMonths={1}
+									className="rounded-md"
 									disabled={(date) =>
 										date < new Date(new Date().setHours(0, 0, 0, 0))
 									}
 								/>
 							</div>
 							{dateRange?.from && (
-								<p className="text-sm text-muted-foreground text-center">
-									{dateRange.to
-										? `${format(dateRange.from, "dd/MM/yyyy")} até ${format(
-												dateRange.to,
-												"dd/MM/yyyy"
-										  )}`
-										: format(dateRange.from, "dd/MM/yyyy")}
+								<p className="text-center text-sm text-slate-500">
+									{dateRange.to ?
+										`${format(dateRange.from, "dd/MM/yyyy")} até ${format(
+											dateRange.to,
+											"dd/MM/yyyy",
+										)}`
+									:	format(dateRange.from, "dd/MM/yyyy")}
 								</p>
 							)}
 						</div>
@@ -312,24 +300,30 @@ export default function FolgasView() {
 							<Label htmlFor="reason">Motivo</Label>
 							<Input
 								id="reason"
-								placeholder="Ex: Férias, Feriado, Manutenção..."
+								placeholder="Ex: Férias, feriado, manutenção..."
 								value={reason}
-								onChange={(e) => setReason(e.target.value)}
+								onChange={(event) => setReason(event.target.value)}
+								className="rounded-md border-slate-200"
 							/>
 						</div>
 					</div>
 
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setIsModalOpen(false)}>
+						<Button
+							variant="outline"
+							onClick={() => setIsModalOpen(false)}
+							className="rounded-md border-slate-200 text-slate-600 hover:bg-slate-50">
 							Cancelar
 						</Button>
-						<Button onClick={handleCreateFolga} className="gap-2">
+						<Button
+							onClick={handleCreateFolga}
+							className="gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
 							<Plus className="h-4 w-4" />
-							Criar Folga
+							Criar folga
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</AdminPage>
 	);
 }

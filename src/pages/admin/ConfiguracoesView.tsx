@@ -54,6 +54,7 @@ import {
 	fetchAddressByCep,
 	isValidCep,
 } from "@/lib/cep";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 // --- Componentes Auxiliares ---
 const StatusBadge = ({
@@ -66,8 +67,8 @@ const StatusBadge = ({
 	<span
 		className={`px-2 py-1 rounded-full text-xs font-bold ${
 			status === "success" ?
-				"bg-green-500/20 text-green-400"
-			:	"bg-yellow-500/20 text-yellow-400"
+				"bg-blue-50 text-[#0b71ee]"
+			:	"bg-amber-50 text-amber-700"
 		}`}>
 		{children}
 	</span>
@@ -85,7 +86,7 @@ function TabTrigger({
 	return (
 		<TabsTrigger
 			value={value}
-			className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 data-[state=active]:bg-emerald-500/20 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-emerald-500/30 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2">
+			className="w-full flex items-center gap-2 px-4 py-2.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors duration-200 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:border data-[state=active]:border-slate-200 data-[state=active]:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
 			<Icon className="h-4 w-4 shrink-0" />
 			<span className="hidden md:inline">{label}</span>
 		</TabsTrigger>
@@ -102,12 +103,12 @@ function PremiumCard({
 	children: React.ReactNode;
 }) {
 	return (
-		<Card className="bg-surface-2/90 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl hover:border-white/10 transition-colors duration-300">
+		<Card className="bg-white border border-slate-200 rounded-lg shadow-sm hover:border-slate-300 transition-colors duration-300">
 			<CardHeader className="pb-4">
-				<CardTitle className="text-lg font-semibold text-white tracking-tight">
+				<CardTitle className="text-lg font-semibold text-slate-900 tracking-tight">
 					{title}
 				</CardTitle>
-				<CardDescription className="text-sm text-gray-300">
+				<CardDescription className="text-sm text-slate-500">
 					{description}
 				</CardDescription>
 			</CardHeader>
@@ -118,13 +119,13 @@ function PremiumCard({
 
 function LoadingSkeleton() {
 	return (
-		<div className="min-h-screen bg-gray-950 p-6 space-y-8">
+		<div className="min-h-screen bg-slate-50 p-6 space-y-8">
 			<div className="max-w-5xl mx-auto space-y-8">
-				<Skeleton className="h-12 w-48 bg-gray-800" />
-				<Skeleton className="h-12 w-full bg-gray-800" />
+				<Skeleton className="h-12 w-48 bg-slate-200" />
+				<Skeleton className="h-12 w-full bg-slate-200" />
 				<div className="grid grid-cols-3 gap-6">
-					<Skeleton className="col-span-2 h-96 bg-gray-800" />
-					<Skeleton className="col-span-1 h-96 bg-gray-800" />
+					<Skeleton className="col-span-2 h-96 bg-slate-200" />
+					<Skeleton className="col-span-1 h-96 bg-slate-200" />
 				</div>
 			</div>
 		</div>
@@ -351,7 +352,6 @@ export default function ConfiguracoesView() {
 			toast({
 				title: "Perfil salvo",
 				description: "Atualizado com sucesso.",
-				className: "bg-green-600 text-white border-none",
 			});
 		} catch (err) {
 			toast({
@@ -512,39 +512,35 @@ export default function ConfiguracoesView() {
 	if (loading) return <LoadingSkeleton />;
 
 	return (
-		<div className="min-h-screen bg-surface-0 text-gray-50 pb-20">
-			<div className="max-w-5xl mx-auto p-6 space-y-8">
-				{/* HEADER */}
-				<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-					<div>
-						<h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-							Configurações
-						</h1>
-						<p className="text-sm text-gray-300 mt-0.5">
-							Arena, perfil, cobrança e integrações
-						</p>
-					</div>
-					<Button
-						onClick={saveSettings}
-						disabled={saving}
-						className="bg-white text-gray-950 hover:bg-gray-200 font-medium px-6 transition-all shadow-lg rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-0 h-11">
-						{saving ?
-							<>
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
-							</>
-						:	<>
-								<Save className="mr-2 h-4 w-4" /> Salvar Alterações
-							</>
-						}
-					</Button>
-				</div>
+		<AdminPage className="pb-20">
+			<div className="space-y-6">
+				<AdminPageHeader
+					eyebrow="Sistema"
+					title="Configurações"
+					description="Arena, perfil, cobrança, horários e assinatura."
+					actions={
+						<Button
+							onClick={saveSettings}
+							disabled={saving}
+							className="h-10 rounded-md bg-[#0b71ee] px-5 font-semibold text-white shadow-sm hover:bg-[#0861cd] focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
+							{saving ?
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando
+								</>
+							:	<>
+									<Save className="mr-2 h-4 w-4" /> Salvar alterações
+								</>
+							}
+						</Button>
+					}
+				/>
 
 				{/* TABS */}
 				<Tabs
 					value={activeTab}
 					onValueChange={setActiveTab}
-					className="space-y-8">
-					<TabsList className="w-full h-auto bg-white/5 p-1.5 rounded-2xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 border border-white/5">
+					className="space-y-6">
+					<TabsList className="w-full h-auto bg-white p-1.5 rounded-lg grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 border border-slate-200 shadow-sm">
 						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
 						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
 						<TabTrigger value="quadras" icon={Trophy} label="Quadras" />
@@ -574,7 +570,7 @@ export default function ConfiguracoesView() {
 											<Input
 												value={profileName}
 												onChange={(e) => setProfileName(e.target.value)}
-												className="bg-white/5 border-white/10 text-white h-11 rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2"
+												className="bg-white border-slate-200 text-slate-900 h-11 rounded-md focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
 											/>
 										</div>
 										<div className="space-y-2">
@@ -582,7 +578,7 @@ export default function ConfiguracoesView() {
 											<Input
 												value={profileJobTitle}
 												onChange={(e) => setProfileJobTitle(e.target.value)}
-												className="bg-white/5 border-white/10 text-white h-11 rounded-xl focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2"
+												className="bg-white border-slate-200 text-slate-900 h-11 rounded-md focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
 											/>
 										</div>
 										<div className="space-y-2">
@@ -590,12 +586,12 @@ export default function ConfiguracoesView() {
 											<Input
 												value={user?.email || ""}
 												readOnly
-												className="bg-white/5 border-white/10 opacity-50 cursor-not-allowed text-white"
+												className="bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed text-slate-600"
 											/>
 										</div>
 										<Button
 											onClick={saveProfile}
-											className="w-full h-11 rounded-xl bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2 active:scale-[0.98]">
+											className="w-full h-11 rounded-md bg-[#0b71ee] text-white focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98]">
 											Salvar Perfil
 										</Button>
 									</div>
@@ -616,26 +612,26 @@ export default function ConfiguracoesView() {
 									<div className="space-y-4">
 										{/* CAMPO NOME - ÚNICO EDITÁVEL */}
 										<div className="space-y-2">
-											<Label className="text-gray-300">Nome Comercial</Label>
+											<Label className="text-slate-500">Nome Comercial</Label>
 											<Input
 												value={formData.tenant.business_name}
 												onChange={handleNameChange} // <--- GERA O LINK AUTOMÁTICO
-												className="bg-white/5 border-white/10 text-white font-medium text-lg"
+												className="bg-white border-slate-200 text-slate-900 font-medium text-lg"
 												placeholder="Ex: ArenaSys Champions"
 											/>
-											<p className="text-xs text-gray-300">
+											<p className="text-xs text-slate-500">
 												O link da agenda será gerado a partir deste nome.
 											</p>
 										</div>
 
 										{/* CAMPO URL - TRAVADO */}
 										<div className="space-y-2">
-											<Label className="text-gray-300 flex items-center gap-2">
+											<Label className="text-slate-500 flex items-center gap-2">
 												<Globe className="h-4 w-4 text-primary" /> Endereço da
 												Agenda (URL)
 											</Label>
 											<div className="flex items-center group opacity-80 cursor-not-allowed">
-												<span className="bg-white/5 border border-white/10 border-r-0 rounded-l-md px-3 h-10 flex items-center text-gray-300 text-sm">
+												<span className="bg-slate-50 border border-slate-200 border-r-0 rounded-l-md px-3 h-10 flex items-center text-slate-500 text-sm">
 													arenasys.app/agendar/
 												</span>
 												<div className="relative w-full">
@@ -643,23 +639,23 @@ export default function ConfiguracoesView() {
 														value={formData.tenant.subdomain}
 														readOnly
 														disabled
-														className="bg-white/5 border-white/10 text-gray-300 rounded-l-none pl-3 pr-8 italic cursor-not-allowed"
+														className="bg-slate-50 border-slate-200 text-slate-500 rounded-l-none pl-3 pr-8 italic cursor-not-allowed"
 													/>
-													<Lock className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+													<Lock className="absolute right-3 top-2.5 h-4 w-4 text-slate-400" />
 												</div>
 											</div>
 										</div>
 
 										<div className="space-y-2">
-											<Label className="text-gray-300">Descrição</Label>
+											<Label className="text-slate-500">Descrição</Label>
 											<Textarea
 												value={formData.tenant.description}
 												onChange={(e) =>
 													updateTenant("description", e.target.value)
 												}
-												className="bg-white/5 border-white/10 text-white min-h-[100px]"
+												className="bg-white border-slate-200 text-slate-900 min-h-[100px]"
 											/>
-											<p className="text-xs text-gray-300">
+											<p className="text-xs text-slate-500">
 												Bio curta da arena exibida no calendário público.
 											</p>
 										</div>
@@ -681,7 +677,7 @@ export default function ConfiguracoesView() {
 												inputMode="numeric"
 												maxLength={15}
 												placeholder="(11) 99999-9999"
-												className="bg-white/5 border-white/10 text-white font-medium"
+												className="bg-white border-slate-200 text-slate-900 font-medium"
 											/>
 										</div>
 										<div className="space-y-2">
@@ -689,7 +685,7 @@ export default function ConfiguracoesView() {
 											<Input
 												value={formData.tenant.email}
 												onChange={(e) => updateTenant("email", e.target.value)}
-												className="bg-white/5 border-white/10 text-white"
+												className="bg-white border-slate-200 text-slate-900"
 											/>
 										</div>
 										<div className="md:col-span-2">
@@ -697,7 +693,7 @@ export default function ConfiguracoesView() {
 												value={formData.tenant.cpf_cnpj || ""}
 												onChange={(value) => updateTenant("cpf_cnpj", value)}
 											/>
-											<p className="text-xs text-gray-300 mt-2">
+											<p className="text-xs text-slate-500 mt-2">
 												Obrigatório para processar pagamentos via Asaas.
 											</p>
 										</div>
@@ -725,7 +721,7 @@ export default function ConfiguracoesView() {
 													}}
 													placeholder="12345-678"
 													maxLength={9}
-													className="bg-white/5 border-white/10 text-white font-medium"
+													className="bg-white border-slate-200 text-slate-900 font-medium"
 													disabled={searchingCep}
 												/>
 												<Button
@@ -752,7 +748,7 @@ export default function ConfiguracoesView() {
 														updateTenant("street", e.target.value)
 													}
 													placeholder="Av. Paulista"
-													className="bg-white/5 border-white/10 text-white"
+													className="bg-white border-slate-200 text-slate-900"
 												/>
 											</div>
 											<div className="space-y-2">
@@ -763,7 +759,7 @@ export default function ConfiguracoesView() {
 														updateTenant("number", e.target.value)
 													}
 													placeholder="1000"
-													className="bg-white/5 border-white/10 text-white"
+													className="bg-white border-slate-200 text-slate-900"
 												/>
 											</div>
 										</div>
@@ -777,7 +773,7 @@ export default function ConfiguracoesView() {
 													updateTenant("complement", e.target.value)
 												}
 												placeholder="Sala 10, Bloco A, etc"
-												className="bg-white/5 border-white/10 text-white"
+												className="bg-white border-slate-200 text-slate-900"
 											/>
 										</div>
 
@@ -791,7 +787,7 @@ export default function ConfiguracoesView() {
 														updateTenant("neighborhood", e.target.value)
 													}
 													placeholder="Centro"
-													className="bg-white/5 border-white/10 text-white"
+													className="bg-white border-slate-200 text-slate-900"
 												/>
 											</div>
 											<div className="space-y-2">
@@ -800,7 +796,7 @@ export default function ConfiguracoesView() {
 													value={formData.tenant.city}
 													onChange={(e) => updateTenant("city", e.target.value)}
 													placeholder="São Paulo"
-													className="bg-white/5 border-white/10 text-white"
+													className="bg-white border-slate-200 text-slate-900"
 												/>
 											</div>
 											<div className="space-y-2">
@@ -812,16 +808,16 @@ export default function ConfiguracoesView() {
 													}
 													placeholder="SP"
 													maxLength={2}
-													className="bg-white/5 border-white/10 text-white uppercase"
+													className="bg-white border-slate-200 text-slate-900 uppercase"
 												/>
 											</div>
 										</div>
 
 										{/* Preview do endereço */}
 										{(formData.tenant.street || formData.tenant.city) && (
-											<div className="p-3 bg-white/5 border border-white/10 rounded-lg">
-												<p className="text-xs text-gray-300 mb-1">Preview:</p>
-												<p className="text-sm text-white font-medium">
+											<div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+												<p className="text-xs text-slate-500 mb-1">Preview:</p>
+												<p className="text-sm text-slate-700 font-medium">
 													{formData.tenant.street &&
 														`${formData.tenant.street}`}
 													{formData.tenant.number &&
@@ -841,18 +837,18 @@ export default function ConfiguracoesView() {
 
 							{/* CARD LINK PÚBLICO */}
 							<div className="md:col-span-1">
-								<Card className="bg-gradient-to-br from-primary/10 to-black/40 backdrop-blur-md border border-primary/20 shadow-2xl h-full">
+								<Card className="h-full rounded-lg border border-slate-200 bg-white shadow-sm">
 									<CardHeader>
-										<CardTitle className="text-primary text-lg flex items-center gap-2">
+										<CardTitle className="text-[#0b71ee] text-lg flex items-center gap-2">
 											<ExternalLink className="h-5 w-5" /> Link de Agendamento
 										</CardTitle>
-										<CardDescription className="text-primary/70">
+										<CardDescription className="text-slate-500">
 											Envie este link para seus clientes.
 										</CardDescription>
 									</CardHeader>
 									<CardContent className="space-y-6">
-										<div className="p-4 bg-black/60 rounded-xl border border-primary/10 flex flex-col gap-2">
-											<span className="text-xs text-gray-300 uppercase font-bold tracking-wider">
+										<div className="p-4 bg-slate-50 rounded-md border border-slate-200 flex flex-col gap-2">
+											<span className="text-xs text-slate-500 uppercase font-bold tracking-wider">
 												URL Oficial
 											</span>
 											{formData.tenant.subdomain ?
@@ -860,7 +856,7 @@ export default function ConfiguracoesView() {
 													href={getPublicLink()}
 													target="_blank"
 													rel="noopener noreferrer"
-													className="text-sm font-mono text-white break-all cursor-pointer hover:text-primary transition-colors flex items-center gap-2 underline"
+													className="text-sm font-mono text-slate-700 break-all cursor-pointer hover:text-[#0b71ee] transition-colors flex items-center gap-2 underline"
 													onClick={(e) => {
 														// Se clicar no ícone, copia ao invés de abrir
 														if ((e.target as HTMLElement).closest("svg")) {
@@ -874,11 +870,11 @@ export default function ConfiguracoesView() {
 														{formData.tenant.subdomain}
 													</span>
 													{copied ?
-														<Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-													:	<Copy className="h-4 w-4 text-gray-300 flex-shrink-0" />
+														<Check className="h-4 w-4 text-[#0b71ee] flex-shrink-0" />
+													:	<Copy className="h-4 w-4 text-slate-400 flex-shrink-0" />
 													}
 												</a>
-											:	<div className="text-sm font-mono text-gray-400 flex items-center gap-2">
+											:	<div className="text-sm font-mono text-slate-400 flex items-center gap-2">
 													<span>Preencha o nome...</span>
 												</div>
 											}
@@ -887,14 +883,14 @@ export default function ConfiguracoesView() {
 											<Button
 												onClick={handleOpenLink}
 												disabled={!formData.tenant.subdomain}
-												className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
+												className="w-full rounded-md bg-[#0b71ee] text-white hover:bg-[#0861cd] font-semibold">
 												<ExternalLink className="mr-2 h-4 w-4" /> Abrir Agenda
 											</Button>
 											<Button
 												variant="outline"
 												onClick={handleCopyLink}
 												disabled={!formData.tenant.subdomain}
-												className="w-full border-white/10 text-gray-300 hover:bg-white/5">
+												className="w-full border-slate-200 text-slate-600 hover:bg-slate-50">
 												<Copy className="mr-2 h-4 w-4" /> Copiar Link
 											</Button>
 										</div>
@@ -920,13 +916,13 @@ export default function ConfiguracoesView() {
 						className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
 						<PremiumCard title="Quadras" description="Gerencie seus espaços.">
 							<div className="flex justify-between items-center mb-4">
-								<h3 className="text-lg font-medium text-white">
+								<h3 className="text-lg font-semibold text-slate-900">
 									Quadras Cadastradas
 								</h3>
 								<Button
 									onClick={addCourt}
 									variant="outline"
-									className="border-dashed border-white/20 text-gray-300 hover:bg-white/5 hover:text-white">
+									className="rounded-md border-dashed border-slate-300 text-slate-700 hover:bg-slate-50">
 									<Plus className="mr-2 h-4 w-4" /> Nova Quadra
 								</Button>
 							</div>
@@ -934,22 +930,22 @@ export default function ConfiguracoesView() {
 								{formData.courts.map((court, index) => (
 									<Card
 										key={index}
-										className="bg-black/20 border-white/5 backdrop-blur-sm group">
+										className="rounded-lg border-slate-200 bg-white shadow-sm group">
 										<CardHeader className="pb-3 flex flex-row items-center justify-between">
-											<div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 group-hover:text-white">
+											<div className="h-10 w-10 rounded-md bg-blue-50 flex items-center justify-center text-[#0b71ee] ring-1 ring-blue-100">
 												<Trophy className="h-5 w-5" />
 											</div>
 											<Button
 												variant="ghost"
 												size="icon"
 												onClick={() => removeCourt(index)}
-												className="h-8 w-8 text-gray-300 hover:text-red-400 hover:bg-red-400/10">
+												className="h-8 w-8 rounded-md text-slate-500 hover:text-red-500 hover:bg-red-50">
 												<Trash2 className="h-4 w-4" />
 											</Button>
 										</CardHeader>
 										<CardContent className="space-y-4">
 											<div className="space-y-2">
-												<Label className="text-xs uppercase text-gray-300">
+												<Label className="text-xs uppercase text-slate-500">
 													Nome
 												</Label>
 												<Input
@@ -958,12 +954,12 @@ export default function ConfiguracoesView() {
 														updateCourt(index, "name", e.target.value)
 													}
 													placeholder="Ex: Quadra 1, Campo Society, etc"
-													className="bg-white/5 border-white/10 text-white"
+													className="rounded-md bg-white border-slate-200 text-slate-900"
 												/>
 											</div>
 											<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 												<div className="space-y-2 flex flex-col">
-													<Label className="text-xs uppercase text-gray-300">
+													<Label className="text-xs uppercase text-slate-500">
 														Preço 1h (R$)
 													</Label>
 													<Input
@@ -977,11 +973,11 @@ export default function ConfiguracoesView() {
 															)
 														}
 														placeholder="Ex: 100, 150, 200"
-														className="bg-white/5 border-white/10 text-white"
+														className="rounded-md bg-white border-slate-200 text-slate-900"
 													/>
 												</div>
 												<div className="space-y-2 flex flex-col">
-													<Label className="text-xs uppercase text-gray-300">
+													<Label className="text-xs uppercase text-slate-500">
 														Meia hora adicional (R$)
 													</Label>
 													<Input
@@ -1000,9 +996,9 @@ export default function ConfiguracoesView() {
 															);
 														}}
 														placeholder="Ex: 50, 75, 100"
-														className="bg-white/5 border-white/10 text-white"
+														className="rounded-md bg-white border-slate-200 text-slate-900"
 													/>
-													<p className="text-xs text-gray-300 mt-1">
+													<p className="text-xs text-slate-500 mt-1">
 														Total 1h30: R${" "}
 														{(
 															(court.base_price || 0) +
@@ -1026,12 +1022,12 @@ export default function ConfiguracoesView() {
 								title="Sinal de Reserva"
 								description="Exija pagamento parcial.">
 								<div className="space-y-6">
-									<div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+									<div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
 										<div className="space-y-0.5">
-											<Label className="text-base text-gray-200">
+											<Label className="text-base text-slate-900">
 												Exigir Sinal
 											</Label>
-											<p className="text-xs text-gray-300">
+											<p className="text-xs text-slate-500">
 												Obrigatório para reservar.
 											</p>
 										</div>
@@ -1040,18 +1036,18 @@ export default function ConfiguracoesView() {
 											onCheckedChange={(v) =>
 												updateBookingSettings("require_deposit", v)
 											}
-											className="data-[state=checked]:bg-green-500"
+											className="data-[state=checked]:bg-[#0b71ee]"
 										/>
 									</div>
 									{bookingSettings.require_deposit && (
-										<div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 space-y-4 animate-in slide-in-from-top-2">
+										<div className="p-4 rounded-lg bg-blue-50 border border-blue-100 space-y-4 animate-in slide-in-from-top-2">
 											<div className="grid grid-cols-2 gap-4">
 												<div className="space-y-2">
-													<Label className="text-xs uppercase text-gray-300">
+													<Label className="text-xs uppercase text-slate-500">
 														Tipo
 													</Label>
 													<select
-														className="w-full bg-gray-950 border border-white/10 rounded-md h-10 px-3 text-white text-sm"
+														className="w-full bg-white border border-slate-200 rounded-md h-10 px-3 text-slate-900 text-sm"
 														value={bookingSettings.deposit_type}
 														onChange={(e) =>
 															updateBookingSettings(
@@ -1064,12 +1060,12 @@ export default function ConfiguracoesView() {
 													</select>
 												</div>
 												<div className="space-y-2">
-													<Label className="text-xs uppercase text-gray-300">
+													<Label className="text-xs uppercase text-slate-500">
 														Valor
 													</Label>
 													<Input
 														type="number"
-														className="bg-gray-950 border-white/10 text-white"
+														className="rounded-md bg-white border-slate-200 text-slate-900"
 														value={bookingSettings.deposit_value}
 														onChange={(e) =>
 															updateBookingSettings(
@@ -1088,12 +1084,12 @@ export default function ConfiguracoesView() {
 								title="Desconto à Vista"
 								description="Incentive pagamento total.">
 								<div className="space-y-6">
-									<div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+									<div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
 										<div className="space-y-0.5">
-											<Label className="text-base text-gray-200">
+											<Label className="text-base text-slate-900">
 												Ativar Desconto
 											</Label>
-											<p className="text-xs text-gray-300">
+											<p className="text-xs text-slate-500">
 												Para pagamento 100% online.
 											</p>
 										</div>
@@ -1106,10 +1102,10 @@ export default function ConfiguracoesView() {
 										/>
 									</div>
 									{bookingSettings.enable_full_payment_discount && (
-										<div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-4 animate-in slide-in-from-top-2">
+										<div className="p-4 rounded-lg bg-blue-50 border border-blue-100 space-y-4 animate-in slide-in-from-top-2">
 											<div className="space-y-2">
 												<div className="flex justify-between">
-													<Label className="text-xs uppercase text-gray-300">
+													<Label className="text-xs uppercase text-slate-500">
 														Desconto
 													</Label>
 													<span className="text-primary font-bold">
@@ -1145,9 +1141,9 @@ export default function ConfiguracoesView() {
 							description="IA para ajustar preços.">
 							<div className="relative opacity-50 pointer-events-none">
 								{/* Overlay com cadeado */}
-								<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-900/50 rounded-xl z-10">
-									<Lock className="h-8 w-8 text-gray-300" />
-									<p className="text-gray-300 font-medium">
+								<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/80 rounded-lg z-10">
+									<Lock className="h-8 w-8 text-slate-500" />
+									<p className="text-slate-700 font-medium">
 										Em Desenvolvimento
 									</p>
 								</div>
@@ -1155,10 +1151,10 @@ export default function ConfiguracoesView() {
 								{/* Conteúdo original (desabilitado visualmente) */}
 								<div className="flex items-center justify-between">
 									<div className="space-y-1">
-										<Label className="text-white text-base">
+										<Label className="text-slate-900 text-base">
 											Ativar Promoção Automática
 										</Label>
-										<p className="text-gray-300 text-sm">
+										<p className="text-slate-500 text-sm">
 											Descontos em horários ociosos.
 										</p>
 									</div>
@@ -1168,9 +1164,9 @@ export default function ConfiguracoesView() {
 										className="data-[state=checked]:bg-primary"
 									/>
 								</div>
-								<div className="mt-6 space-y-4 p-4 bg-gray-950/30 rounded-xl border border-white/5">
+								<div className="mt-6 space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
 									<div className="flex justify-between">
-										<Label className="text-gray-200">Porcentagem</Label>
+										<Label className="text-slate-700">Porcentagem</Label>
 										<span className="text-primary font-bold">0% OFF</span>
 									</div>
 									<Slider value={[0]} max={50} step={5} disabled />
@@ -1195,6 +1191,6 @@ export default function ConfiguracoesView() {
 					</TabsContent>
 				</Tabs>
 			</div>
-		</div>
+		</AdminPage>
 	);
 }
