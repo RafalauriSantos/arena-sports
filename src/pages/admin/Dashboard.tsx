@@ -262,6 +262,7 @@ const SidebarFixed = ({
 		userProfile,
 	);
 	const progressPercent = Math.round((completed / Math.max(total, 1)) * 100);
+	const pendingSetupItems = Math.max(0, total - completed);
 	const trialEndsAt =
 		subscription?.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
 	const trialDaysLeft =
@@ -277,6 +278,11 @@ const SidebarFixed = ({
 		: subscription?.status === "active" ?
 			"Plano ativo"
 		:	"Status do plano em atualização";
+	const setupSummary =
+		isComplete ? "Tudo alinhado"
+		: pendingSetupItems === 1 ? "1 item pendente"
+		: `${pendingSetupItems} itens pendentes`;
+	const SetupIcon = isComplete ? CheckCircle2 : Sparkles;
 
 	return (
 		<>
@@ -349,28 +355,35 @@ const SidebarFixed = ({
 						title={isComplete ? "Arena Configurada!" : "Configure sua Arena"}>
 						{collapsed ? (
 							<>
-								<CheckCircle2 className="h-5 w-5 text-[color:var(--az-navy)]" />
+								<SetupIcon className="h-5 w-5 text-[color:var(--az-navy)]" />
 								<span className="absolute -right-1 -top-1 rounded-full border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] px-1.5 py-0.5 text-[10px] font-medium text-[color:var(--az-ink)]">
 									{progressPercent}%
 								</span>
 							</>
 						) : (
 							<div>
-								<div className="mb-1.5 flex items-baseline justify-between gap-3">
-									<span className="text-[11.5px] font-medium text-[color:var(--az-ink)]">
+								<div className="mb-2 flex items-center gap-2">
+									<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]">
+										<SetupIcon className="h-3.5 w-3.5" />
+									</span>
+									<span className="min-w-0 flex-1 text-[11.5px] font-medium leading-tight text-[color:var(--az-ink)]">
 										Configuração da arena
 									</span>
-									<span className="text-[11px] tabular-nums text-[color:var(--az-ink-soft)]">
+									<span className="rounded-full border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] px-2 py-0.5 text-[10.5px] font-medium tabular-nums text-[color:var(--az-ink)]">
 										{progressPercent}%
 									</span>
 								</div>
-								<div className="mb-1.5 h-1 overflow-hidden rounded-[2px] bg-[color:var(--az-line)]">
+								<div className="mb-2 h-1 overflow-hidden rounded-[2px] bg-[color:var(--az-line)]">
 									<div
 										className="h-full rounded-[2px] bg-[color:var(--az-navy)]"
 										style={{ width: `${progressPercent}%` }}
 									/>
 								</div>
-								<p className="text-[10.5px] leading-tight text-[color:var(--az-ink-soft)]">
+								<p className="text-[10.5px] leading-snug text-[color:var(--az-ink-soft)]">
+									<span className="font-medium text-[color:var(--az-ink)]">
+										{setupSummary}
+									</span>
+									<span className="mx-1 text-[color:var(--az-line)]">·</span>
 									{statusLine}
 								</p>
 							</div>

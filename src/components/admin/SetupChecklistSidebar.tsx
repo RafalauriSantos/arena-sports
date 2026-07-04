@@ -28,6 +28,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import {
+	buildSetupChecklist,
+	type SetupChecklistItem,
+	type SetupChecklistItemId,
+} from "@/lib/setupProgress";
 
 // Componente de Confete (animação de celebração)
 function Confetti() {
@@ -73,16 +78,6 @@ function Confetti() {
 	);
 }
 
-interface ChecklistItem {
-	id: string;
-	label: string;
-	description: string;
-	icon: typeof Trophy;
-	completed: boolean;
-	priority: "high" | "medium";
-	navTo: string; // Qual aba abrir
-}
-
 interface SetupChecklistSidebarProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -94,6 +89,15 @@ interface SetupChecklistSidebarProps {
 	} | null;
 }
 
+const CHECKLIST_ICONS: Record<SetupChecklistItemId, typeof Trophy> = {
+	profile: User,
+	business: Phone,
+	address: MapPin,
+	courts: Trophy,
+	pricing: BadgeDollarSign,
+	cpf: CreditCard,
+};
+
 export function SetupChecklistSidebar({
 	isOpen,
 	onClose,
@@ -101,7 +105,7 @@ export function SetupChecklistSidebar({
 	tenantId,
 	userProfile,
 }: SetupChecklistSidebarProps) {
-	const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+	const [checklist, setChecklist] = useState<SetupChecklistItem[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [wasCompleteRef, setWasCompleteRef] = useState(false);
@@ -119,83 +123,20 @@ export function SetupChecklistSidebar({
 					.eq("active", true),
 				supabase
 					.from("tenants")
-					.select("business_name, phone, address, cpf_cnpj")
+					.select(
+						"business_name, phone, address, cpf_cnpj, cep, street, number, neighborhood, city, state",
+					)
 					.eq("id", tenantId)
 					.single(),
 			]);
 
-			const courts = courtsRes.data || [];
-			const hasCourts = courts.length > 0;
-			const allCourtsPriced = courts.length > 0 && courts.every((c) => c.base_price > 0);
-
-			// Validações do perfil
-			const hasProfileName = !!userProfile?.full_name?.trim();
-			const hasAvatar = !!userProfile?.avatar_url;
-
-			// Validações do tenant
-			const hasBusinessName = !!tenantData.data?.business_name?.trim();
-			const hasPhone =
-				!!tenantData.data?.phone && tenantData.data.phone.replace(/\D/g, "").length >= 10;
-			const hasAddress = !!tenantData.data?.address?.trim();
-			const cpfCnpjClean = tenantData.data?.cpf_cnpj?.replace(/\D/g, "") || "";
-			const hasCpfCnpj = cpfCnpjClean.length === 11 || cpfCnpjClean.length === 14;
-
-			setChecklist([
-				{
-					id: "profile",
-					label: "Complete seu perfil",
-					description: "Nome e foto",
-					icon: User,
-					completed: hasProfileName && hasAvatar,
-					priority: "high",
-					navTo: "config",
-				},
-				{
-					id: "business",
-					label: "Dados da arena",
-					description: "Nome comercial e telefone",
-					icon: Phone,
-					completed: hasBusinessName && hasPhone,
-					priority: "high",
-					navTo: "config",
-				},
-				{
-					id: "address",
-					label: "Endereço completo",
-					description: "Para clientes localizarem",
-					icon: MapPin,
-					completed: hasAddress,
-					priority: "high",
-					navTo: "config",
-				},
-				{
-					id: "courts",
-					label: "Cadastre suas quadras",
-					description: "Pelo menos 1 quadra",
-					icon: Trophy,
-					completed: hasCourts,
-					priority: "high",
-					navTo: "config",
-				},
-				{
-					id: "pricing",
-					label: "Configure os preços",
-					description: "Valores para cada quadra",
-					icon: BadgeDollarSign,
-					completed: allCourtsPriced,
-					priority: "high",
-					navTo: "config",
-				},
-				{
-					id: "cpf",
-					label: "CPF/CNPJ",
-					description: "Para você receber pagamentos",
-					icon: CreditCard,
-					completed: hasCpfCnpj,
-					priority: "medium",
-					navTo: "config",
-				},
-			]);
+			setChecklist(
+				buildSetupChecklist({
+					userProfile,
+					tenant: tenantData.data,
+					courts: courtsRes.data || [],
+				}).items,
+			);
 		} catch (error) {
 			console.error("Erro ao carregar checklist:", error);
 		} finally {
@@ -213,8 +154,9 @@ export function SetupChecklistSidebar({
 
 	const completed = checklist.filter((i) => i.completed).length;
 	const total = checklist.length;
-	const progress = (completed / total) * 100;
-	const isComplete = progress === 100;
+	const hasChecklist = total > 0;
+	const progress = hasChecklist ? (completed / total) * 100 : 0;
+	const isComplete = hasChecklist && progress === 100;
 	const highPriorityIncomplete = checklist.filter(
 		(i) => i.priority === "high" && !i.completed
 	);
@@ -232,7 +174,7 @@ export function SetupChecklistSidebar({
 		}
 	}, [isComplete, wasCompleteRef, onClose]);
 
-	const handleItemClick = (item: ChecklistItem) => {
+	const handleItemClick = (item: SetupChecklistItem) => {
 		onNavigate(item.navTo);
 		onClose();
 	};
@@ -243,55 +185,58 @@ export function SetupChecklistSidebar({
 			{showConfetti && <Confetti />}
 
 			<Dialog open={isOpen} onOpenChange={onClose}>
-				<DialogContent className="max-w-md bg-[#0a0c10] border-white/10 text-white">
-			<DialogHeader>
-				<DialogTitle className="flex items-center gap-2 text-xl">
-					{isComplete ? (
-						<CheckCircle2 className="w-5 h-5 text-green-500" />
-					) : (
-						<Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
-					)}
-					<span className={isComplete ? "text-green-400" : "text-emerald-400"}>
-						{isComplete ? "Arena Configurada!" : "Configure sua Arena"}
-					</span>
-				</DialogTitle>
-				<DialogDescription className="text-gray-300">
-					{isComplete
-						? "Tudo pronto para receber reservas! 🎉"
-						: `${completed} de ${total} itens concluídos`}
-				</DialogDescription>
-			</DialogHeader>
+				<DialogContent className="max-w-md border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink)] shadow-[0_24px_80px_rgba(22,50,79,0.16)]">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2 text-lg">
+							<span className="flex h-8 w-8 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]">
+								{isComplete ?
+									<CheckCircle2 className="h-4 w-4" />
+								:	<Sparkles className="h-4 w-4" />}
+							</span>
+							<span>
+								{isComplete ? "Arena configurada" : "Configuração da arena"}
+							</span>
+						</DialogTitle>
+						<DialogDescription className="text-[13px] text-[color:var(--az-ink-soft)]">
+							{!hasChecklist ?
+								"Carregando checklist..."
+							: isComplete ?
+								"Tudo alinhado para receber reservas."
+							:	`${completed} de ${total} itens concluídos`}
+						</DialogDescription>
+					</DialogHeader>
 
-				{loading ? (
+				{loading || !hasChecklist ? (
 					<div className="flex items-center justify-center py-8">
-						<div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+						<div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--az-navy-soft)] border-t-[color:var(--az-navy)]" />
 					</div>
 				) : (
 					<div className="space-y-4">
 						{/* Progress Bar */}
 						<div className="space-y-2">
 							<div className="flex justify-between text-sm">
-								<span className="text-gray-300 font-medium">Progresso</span>
-								<span className="font-bold text-white">{Math.round(progress)}%</span>
+								<span className="font-medium text-[color:var(--az-ink-soft)]">
+									Progresso
+								</span>
+								<span className="font-semibold text-[color:var(--az-ink)]">
+									{Math.round(progress)}%
+								</span>
 							</div>
 						<Progress
 							value={progress}
-							className={cn(
-								"h-2",
-								isComplete ? "bg-green-900/30" : "bg-emerald-900/30"
-							)}
+							className="h-2 bg-[color:var(--az-line)] [&>div]:bg-[color:var(--az-navy)]"
 						/>
 						</div>
 
 						{/* Alerta de Prioridade Alta */}
 					{highPriorityIncomplete.length > 0 && (
-						<div className="flex items-start gap-3 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-							<AlertCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+						<div className="flex items-start gap-3 rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] p-3">
+							<AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[color:var(--az-navy)]" />
 							<div className="flex-1">
-								<p className="text-sm font-semibold text-emerald-200">
+								<p className="text-sm font-semibold text-[color:var(--az-ink)]">
 									{highPriorityIncomplete.length} item(ns) essencial(is) pendente(s)
 								</p>
-								<p className="text-xs text-emerald-300 mt-1">
+								<p className="mt-1 text-xs text-[color:var(--az-ink-soft)]">
 									Complete para compartilhar o link de agendamento.
 								</p>
 							</div>
@@ -301,31 +246,31 @@ export function SetupChecklistSidebar({
 						{/* Lista de Items */}
 						<div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
 							{checklist.map((item) => {
-								const Icon = item.icon;
+								const Icon = CHECKLIST_ICONS[item.id];
 								return (
 									<button
 										key={item.id}
 										onClick={() => handleItemClick(item)}
 										disabled={item.completed}
 										className={cn(
-											"w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left group",
+											"group flex w-full items-center gap-3 rounded-[var(--az-radius-control)] border-[0.5px] p-3 text-left transition-all",
 											item.completed
-												? "bg-green-500/10 border-green-500/30 cursor-default"
-												: "bg-white/5 border-white/10 hover:border-emerald-400 hover:bg-white/10 cursor-pointer"
+												? "cursor-default border-[color:var(--az-line)] bg-[color:var(--az-paper)]"
+												: "cursor-pointer border-[color:var(--az-line)] bg-[color:var(--az-surface)] hover:bg-[color:var(--az-paper)]"
 										)}
 									>
 										{item.completed ? (
-											<CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+											<CheckCircle2 className="h-5 w-5 flex-shrink-0 text-[color:var(--az-turf)]" />
 										) : (
-											<Circle className="w-5 h-5 text-gray-300 flex-shrink-0 group-hover:text-emerald-400" />
+											<Circle className="h-5 w-5 flex-shrink-0 text-[color:var(--az-ink-soft)] group-hover:text-[color:var(--az-navy)]" />
 										)}
 
 										<Icon
 											className={cn(
-												"w-4 h-4 flex-shrink-0",
+												"h-4 w-4 flex-shrink-0",
 												item.completed
-													? "text-green-400"
-													: "text-gray-300 group-hover:text-emerald-400"
+													? "text-[color:var(--az-turf)]"
+													: "text-[color:var(--az-ink-soft)] group-hover:text-[color:var(--az-navy)]"
 											)}
 										/>
 
@@ -334,17 +279,19 @@ export function SetupChecklistSidebar({
 												className={cn(
 													"font-medium text-sm",
 													item.completed
-														? "text-green-200 line-through"
-														: "text-white"
+														? "text-[color:var(--az-ink)]"
+														: "text-[color:var(--az-ink)]"
 												)}
 											>
 												{item.label}
 											</p>
-											<p className="text-xs text-gray-300">{item.description}</p>
+											<p className="text-xs text-[color:var(--az-ink-soft)]">
+												{item.description}
+											</p>
 										</div>
 
 										{!item.completed && (
-											<ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-emerald-400 group-hover:translate-x-1 transition-transform" />
+											<ChevronRight className="h-4 w-4 text-[color:var(--az-ink-soft)] transition-transform group-hover:translate-x-1 group-hover:text-[color:var(--az-navy)]" />
 										)}
 									</button>
 								);
@@ -353,12 +300,14 @@ export function SetupChecklistSidebar({
 
 						{/* Footer */}
 						{isComplete ? (
-							<div className="text-center py-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-								<div className="mx-auto w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
-									<CheckCircle2 className="w-8 h-8 text-green-400" />
+							<div className="rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-paper)] py-4 text-center">
+								<div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--az-navy-soft)]">
+									<CheckCircle2 className="h-7 w-7 text-[color:var(--az-navy)]" />
 								</div>
-								<p className="font-bold text-green-400">Tudo Pronto!</p>
-								<p className="text-sm text-gray-300 mt-1">
+								<p className="font-semibold text-[color:var(--az-ink)]">
+									Tudo alinhado
+								</p>
+								<p className="mt-1 text-sm text-[color:var(--az-ink-soft)]">
 									Sua arena está 100% configurada.
 								</p>
 							</div>
@@ -368,7 +317,7 @@ export function SetupChecklistSidebar({
 									onNavigate("config");
 									onClose();
 								}}
-								className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+								className="w-full bg-[color:var(--az-navy)] text-white hover:bg-[color:var(--az-navy)]/90"
 							>
 								<Sparkles className="w-4 h-4 mr-2" />
 								Ir para Configurações
@@ -410,36 +359,19 @@ export function useSetupProgress(tenantId: string, userProfile: UserProfile | nu
 						.eq("active", true),
 					supabase
 						.from("tenants")
-						.select("business_name, phone, address, cpf_cnpj")
+						.select(
+							"business_name, phone, address, cpf_cnpj, cep, street, number, neighborhood, city, state",
+						)
 						.eq("id", tenantId)
 						.single(),
 				]);
 
-				const courts = courtsRes.data || [];
-				const hasCourts = courts.length > 0;
-				const allCourtsPriced = courts.length > 0 && courts.every((c) => c.base_price > 0);
-
-				const hasProfileName = !!userProfile?.full_name?.trim();
-				const hasAvatar = !!userProfile?.avatar_url;
-				const hasBusinessName = !!tenantData.data?.business_name?.trim();
-				const hasPhone =
-					!!tenantData.data?.phone &&
-					tenantData.data.phone.replace(/\D/g, "").length >= 10;
-				const hasAddress = !!tenantData.data?.address?.trim();
-				const cpfCnpjClean = tenantData.data?.cpf_cnpj?.replace(/\D/g, "") || "";
-				const hasCpfCnpj = cpfCnpjClean.length === 11 || cpfCnpjClean.length === 14;
-
-				const checks = [
-					hasProfileName && hasAvatar,
-					hasBusinessName && hasPhone,
-					hasAddress,
-					hasCourts,
-					allCourtsPriced,
-					hasCpfCnpj,
-				];
-
-				const completed = checks.filter(Boolean).length;
-				setProgress({ completed, total: 6 });
+				const setup = buildSetupChecklist({
+					userProfile,
+					tenant: tenantData.data,
+					courts: courtsRes.data || [],
+				});
+				setProgress({ completed: setup.completed, total: setup.total });
 			} catch (error) {
 				console.error("Erro ao calcular progresso:", error);
 			} finally {
