@@ -27,7 +27,7 @@ test.describe("Admin dashboard", () => {
 		await expect(page.getByRole("button", { name: "Reservas" })).toBeVisible();
 
 		await page.getByRole("button", { name: "Reservas" }).click();
-		await expect(page.getByText("Agenda de Jogos")).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Agenda" })).toBeVisible();
 
 		await page.getByRole("button", { name: "Semana" }).click();
 		await expect(page.getByRole("button", { name: "Semana" })).toBeVisible();

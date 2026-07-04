@@ -31,7 +31,7 @@ const isEmailConfirmationError = (message: string) =>
   /confirm|confirmation|email not confirmed/i.test(message)
 
 const isSignupRestricted = (message: string) =>
-  /sign.?up.*(disabled|not allowed|invite)|email.*invalid/i.test(message)
+  /sign.?up.*(disabled|not allowed|invite)|email.*invalid|rate limit/i.test(message)
 
 const testEmailDomain = process.env.TEST_EMAIL_DOMAIN || 'example.com'
 
@@ -74,7 +74,7 @@ async function testAuthentication() {
     if (signupError) {
       if (isSignupRestricted(signupError.message)) {
         console.log(
-          '⚠️ Signup bloqueado por política do projeto. Defina TEST_EMAIL_DOMAIN ou habilite signups.'
+          '⚠️ Signup indisponível por política/rate limit do projeto. Defina TEST_EMAIL_DOMAIN, aguarde o rate limit ou habilite signups.'
         )
         return true
       }
@@ -129,7 +129,7 @@ async function testTenantIsolation() {
     if (user1SignupError) {
       if (isSignupRestricted(user1SignupError.message)) {
         console.log(
-          '⚠️ Signup bloqueado por política do projeto. Defina TEST_EMAIL_DOMAIN ou habilite signups.'
+          '⚠️ Signup indisponível por política/rate limit do projeto. Defina TEST_EMAIL_DOMAIN, aguarde o rate limit ou habilite signups.'
         )
         return true
       }
@@ -177,7 +177,7 @@ async function testTenantIsolation() {
     if (user2SignupError) {
       if (isSignupRestricted(user2SignupError.message)) {
         console.log(
-          '⚠️ Signup bloqueado por política do projeto. Defina TEST_EMAIL_DOMAIN ou habilite signups.'
+          '⚠️ Signup indisponível por política/rate limit do projeto. Defina TEST_EMAIL_DOMAIN, aguarde o rate limit ou habilite signups.'
         )
         return true
       }

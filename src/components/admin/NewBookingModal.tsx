@@ -364,18 +364,24 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 	};
 
 	const inputClass =
-		"h-12 rounded-xl bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-300 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors";
-	const labelClass = "text-sm text-gray-300 font-medium";
+		"h-12 rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-paper)] text-[color:var(--az-ink)] placeholder:text-[color:var(--az-ink-soft)] focus:border-[color:var(--az-navy)] focus:ring-2 focus:ring-[color:var(--az-navy-soft)] transition-colors";
+	const labelClass = "text-sm text-[color:var(--az-ink-soft)] font-medium";
+	const selectContentClass =
+		"border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink)] shadow-[0_18px_50px_rgba(0,0,0,0.16)]";
+	const selectItemClass =
+		"text-[color:var(--az-ink)] focus:bg-[color:var(--az-navy-soft)] focus:text-[color:var(--az-ink)]";
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] flex flex-col p-0 overflow-hidden bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl">
+			<DialogContent className="flex max-h-[90vh] w-[95vw] flex-col overflow-hidden rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] p-0 text-[color:var(--az-ink)] shadow-[0_24px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:max-w-[500px]">
 				<DialogHeader className="px-6 pt-8 pb-4">
-					<DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl font-semibold text-white tracking-tight">
-						<Plus className="h-5 w-5 text-primary" />
+					<DialogTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[color:var(--az-ink)] sm:text-2xl">
+						<span className="flex h-8 w-8 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]">
+							<Plus className="h-4 w-4" />
+						</span>
 						Novo Agendamento
 					</DialogTitle>
-					<DialogDescription className="text-sm text-gray-300 mt-1">
+					<DialogDescription className="mt-1 text-sm text-[color:var(--az-ink-soft)]">
 						Insira os dados para reservar um horário manualmente.
 					</DialogDescription>
 				</DialogHeader>
@@ -409,21 +415,21 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								<SelectTrigger
 									className={
 										inputClass +
-										" border-gray-700/50 data-[placeholder]:text-gray-300"
+										" data-[placeholder]:text-[color:var(--az-ink-soft)]"
 									}>
 									<SelectValue placeholder="Selecione..." />
 								</SelectTrigger>
-								<SelectContent className="bg-gray-900 border-gray-700">
+								<SelectContent className={selectContentClass}>
 									{courts.map((court) => (
 										<SelectItem
 											key={court.id}
 											value={court.id}
-											className="text-white focus:bg-white/10 focus:text-white">
+											className={selectItemClass}>
 											{court.name} (R$ {court.base_price})
 										</SelectItem>
 									))}
 									{courts.length === 0 && (
-										<div className="p-2 text-xs text-gray-300">
+										<div className="p-2 text-xs text-[color:var(--az-ink-soft)]">
 											Nenhuma quadra encontrada
 										</div>
 									)}
@@ -446,16 +452,16 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								<SelectTrigger
 									className={
 										inputClass +
-										" border-gray-700/50 data-[placeholder]:text-gray-300"
+										" data-[placeholder]:text-[color:var(--az-ink-soft)]"
 									}>
 									<SelectValue placeholder="Escolha a hora..." />
 								</SelectTrigger>
-								<SelectContent className="max-h-[200px] bg-gray-900 border-gray-700">
+								<SelectContent className={selectContentClass + " max-h-[200px]"}>
 									{HOURS.map((time) => (
 										<SelectItem
 											key={time}
 											value={time}
-											className="text-white focus:bg-white/10 focus:text-white">
+											className={selectItemClass}>
 											{time}
 										</SelectItem>
 									))}
@@ -473,18 +479,18 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										duration: Number(value) as 60 | 90,
 									})
 								}>
-								<SelectTrigger className={inputClass + " border-gray-700/50"}>
+								<SelectTrigger className={inputClass}>
 									<SelectValue />
 								</SelectTrigger>
-								<SelectContent className="bg-gray-900 border-gray-700">
+								<SelectContent className={selectContentClass}>
 									<SelectItem
 										value="60"
-										className="text-white focus:bg-white/10 focus:text-white">
+										className={selectItemClass}>
 										1 hora
 									</SelectItem>
 									<SelectItem
 										value="90"
-										className="text-white focus:bg-white/10 focus:text-white">
+										className={selectItemClass}>
 										1h30
 									</SelectItem>
 								</SelectContent>
@@ -493,9 +499,9 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 					</div>
 
 					{formData.fieldId && formData.duration && (
-						<div className="text-sm text-gray-300 bg-white/5 border border-white/10 p-3 rounded-xl">
-							<span className="text-gray-300">Preço: </span>
-							<span className="font-medium text-white">
+						<div className="rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-paper)] p-3 text-sm text-[color:var(--az-ink-soft)]">
+							<span>Preço: </span>
+							<span className="font-medium text-[color:var(--az-ink)]">
 								R${" "}
 								{(() => {
 									const selectedCourt = courts.find(
@@ -510,7 +516,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									return finalPrice.toFixed(2);
 								})()}
 							</span>
-							<span className="text-gray-300">
+							<span>
 								{" "}
 								({formData.duration === 90 ? "1h30" : "1h"})
 							</span>
@@ -562,23 +568,23 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								onValueChange={(value: "paid" | "pending" | "deposit") =>
 									setFormData({ ...formData, paymentStatus: value })
 								}>
-								<SelectTrigger className={inputClass + " border-gray-700/50"}>
+								<SelectTrigger className={inputClass}>
 									<SelectValue />
 								</SelectTrigger>
-								<SelectContent className="bg-gray-900 border-gray-700">
+								<SelectContent className={selectContentClass}>
 									<SelectItem
 										value="pending"
-										className="text-white focus:bg-white/10 focus:text-white">
+										className={selectItemClass}>
 										Pagar no Local
 									</SelectItem>
 									<SelectItem
 										value="deposit"
-										className="text-white focus:bg-white/10 focus:text-white">
+										className={selectItemClass}>
 										Sinal (%)
 									</SelectItem>
 									<SelectItem
 										value="paid"
-										className="text-white focus:bg-white/10 focus:text-white">
+										className={selectItemClass}>
 										Pago
 									</SelectItem>
 								</SelectContent>
@@ -605,22 +611,24 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								}
 								className={inputClass}
 							/>
-							<p className="text-xs text-gray-300">Ex: 30 para sinal de 30%.</p>
+							<p className="text-xs text-[color:var(--az-ink-soft)]">
+								Ex: 30 para sinal de 30%.
+							</p>
 						</div>
 					)}
 				</div>
 
-				<DialogFooter className="flex items-center justify-end gap-3 flex-shrink-0 border-t border-white/5 px-6 py-4">
+				<DialogFooter className="flex flex-shrink-0 items-center justify-end gap-3 border-t-[0.5px] border-[color:var(--az-line)] px-6 py-4">
 					<Button
 						variant="outline"
 						onClick={() => onOpenChange(false)}
 						disabled={loading}
-						className="rounded-xl border-gray-600 text-gray-300 hover:bg-white/5 hover:text-white h-11">
+						className="h-11 rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-transparent text-[color:var(--az-ink-soft)] hover:bg-[color:var(--az-paper)] hover:text-[color:var(--az-ink)]">
 						Cancelar
 					</Button>
 					<Button
 						onClick={handleSubmit}
-						className="gap-2 rounded-xl h-11 bg-primary text-white hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 disabled:opacity-50"
+						className="h-11 gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] text-[hsl(var(--primary-foreground))] hover:bg-[color:var(--az-navy)]/90 focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-surface)] disabled:opacity-50"
 						disabled={loading}>
 						{loading ?
 							<Loader2 className="h-4 w-4 animate-spin" />

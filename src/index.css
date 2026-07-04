@@ -242,32 +242,56 @@
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 98%;
-    --card-elevated: 0 0% 10%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 142 70% 50%;
-    --primary-foreground: 144 80% 10%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 120 100% 50%;
-    --accent-foreground: 0 0% 4%;
+    --az-paper: #0f151b;
+    --az-surface: #151d25;
+    --az-ink: #f4f1ea;
+    --az-ink-soft: #a8aaa3;
+    --az-navy: #4f7599;
+    --az-navy-soft: rgba(79, 117, 153, 0.18);
+    --az-clay: #c7824d;
+    --az-turf: #6fa67a;
+    --az-line: #29333d;
+    --az-border: 0.5px solid var(--az-line);
+
+    --background: 208 29% 8%;
+    --foreground: 48 22% 94%;
+    --card: 210 27% 11%;
+    --card-foreground: 48 22% 94%;
+    --card-elevated: 209 25% 14%;
+    --popover: 210 27% 11%;
+    --popover-foreground: 48 22% 94%;
+    --primary: 208 32% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 22% 16%;
+    --secondary-foreground: 48 22% 94%;
+    --muted: 210 18% 18%;
+    --muted-foreground: 60 3% 66%;
+    --accent: 208 27% 18%;
+    --accent-foreground: 48 22% 94%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --warning: 38 100% 50%;
-    --warning-foreground: 0 0% 4%;
-    --success: 120 100% 50%;
-    --success-foreground: 0 0% 4%;
-    --gold: 45 100% 50%;
-    --gold-foreground: 0 0% 4%;
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 120 100% 50%;
+    --warning: 33 74% 55%;
+    --warning-foreground: 32 32% 10%;
+    --success: 136 25% 54%;
+    --success-foreground: 0 0% 100%;
+    --gold: 42 66% 58%;
+    --gold-foreground: 32 32% 10%;
+    --border: 210 18% 20%;
+    --input: 210 18% 20%;
+    --ring: 208 32% 45%;
+    --surface-0: #0f151b;
+    --surface-1: #151d25;
+    --surface-2: #1a242d;
+    --surface-3: rgba(244, 241, 234, 0.08);
+    --surface-4: rgba(244, 241, 234, 0.13);
+    --sidebar-background: 210 27% 11%;
+    --sidebar-foreground: 48 22% 94%;
+    --sidebar-primary: 208 32% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 208 27% 18%;
+    --sidebar-accent-foreground: 48 22% 94%;
+    --sidebar-border: 210 18% 20%;
+    --sidebar-ring: 208 32% 45%;
   }
 
   .light {
@@ -732,13 +756,103 @@
   box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12) !important;
 }
 
+.dashboard-dark {
+  color-scheme: dark;
+  background: var(--az-paper) !important;
+}
+
+.dashboard-dark aside {
+  background-color: var(--az-surface) !important;
+  border-color: var(--az-line) !important;
+}
+
+.dashboard-dark .bg-white,
+.dashboard-dark .bg-slate-50,
+.dashboard-dark .bg-gray-50,
+.dashboard-dark .bg-\[\#fbfdff\],
+.dashboard-dark [class*="bg-white/"],
+.dashboard-dark [class*="bg-slate-50"] {
+  background-color: var(--az-surface) !important;
+}
+
+.dashboard-dark .bg-slate-100,
+.dashboard-dark .bg-gray-100,
+.dashboard-dark .bg-\[\#eef4fb\],
+.dashboard-dark .bg-\[\#f3f7fc\] {
+  background-color: var(--az-navy-soft) !important;
+}
+
+.dashboard-dark .border-slate-100,
+.dashboard-dark .border-slate-200,
+.dashboard-dark .border-slate-300,
+.dashboard-dark .border-gray-100,
+.dashboard-dark .border-gray-200,
+.dashboard-dark .border-gray-300,
+.dashboard-dark .border-white\/5,
+.dashboard-dark .border-white\/10,
+.dashboard-dark .border-white\/15,
+.dashboard-dark .border-white\/20,
+.dashboard-dark .border-input {
+  border-color: var(--az-line) !important;
+}
+
+.dashboard-dark .text-slate-950,
+.dashboard-dark .text-slate-900,
+.dashboard-dark .text-slate-800,
+.dashboard-dark .text-gray-950,
+.dashboard-dark .text-gray-900,
+.dashboard-dark .text-gray-800,
+.dashboard-dark .text-\[\#062b6f\] {
+  color: var(--az-ink) !important;
+}
+
+.dashboard-dark .text-slate-700,
+.dashboard-dark .text-slate-600,
+.dashboard-dark .text-slate-500,
+.dashboard-dark .text-slate-400,
+.dashboard-dark .text-gray-700,
+.dashboard-dark .text-gray-600,
+.dashboard-dark .text-gray-500,
+.dashboard-dark .text-gray-400,
+.dashboard-dark .text-gray-300 {
+  color: var(--az-ink-soft) !important;
+}
+
+.dashboard-dark .text-blue-200,
+.dashboard-dark .text-blue-300,
+.dashboard-dark .text-blue-400,
+.dashboard-dark .text-blue-500,
+.dashboard-dark .text-blue-600,
+.dashboard-dark .text-primary {
+  color: var(--az-navy) !important;
+}
+
+.dashboard-dark .bg-primary,
+.dashboard-dark .bg-blue-500,
+.dashboard-dark .bg-blue-600,
+.dashboard-dark .bg-\[\#0b71ee\] {
+  background-color: var(--az-navy) !important;
+}
+
+.dashboard-dark .hover\:bg-primary\/90:hover,
+.dashboard-dark .hover\:bg-blue-600:hover,
+.dashboard-dark .hover\:bg-blue-700:hover {
+  background-color: var(--az-navy) !important;
+}
+
+.dashboard-dark .focus\:border-primary\/50:focus,
+.dashboard-dark .focus-visible\:ring-primary:focus-visible {
+  border-color: var(--az-navy) !important;
+  --tw-ring-color: var(--az-navy) !important;
+}
+
 /* Dashboard: focus visível consistente (a11y) */
 [data-dashboard] input:focus-visible,
 [data-dashboard] button:focus-visible,
 [data-dashboard] [role="button"]:focus-visible,
 [data-dashboard] a:focus-visible {
-  --tw-ring-color: rgb(37 99 235 / 0.5);
-  --tw-ring-offset-color: var(--surface-2);
+  --tw-ring-color: var(--az-navy);
+  --tw-ring-offset-color: var(--az-paper);
 }
 
 @layer base {

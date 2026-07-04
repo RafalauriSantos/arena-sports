@@ -2100,7 +2100,7 @@ export default function DashboardHome() {
 				"min-h-screen font-sans selection:bg-[color:var(--az-navy-soft)] selection:text-[color:var(--az-navy)] relative overflow-hidden transition-colors duration-300",
 				isLightTheme ?
 					"dashboard-light bg-[color:var(--az-paper)] text-[color:var(--az-ink)]"
-				:	"bg-[#0b1118] text-white",
+				:	"dashboard-dark bg-[color:var(--az-paper)] text-[color:var(--az-ink)]",
 			)}>
 			<SidebarFixed
 				mobileOpen={mobileOpen}
