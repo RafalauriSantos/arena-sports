@@ -10,10 +10,7 @@ import {
 	CreditCard,
 	DollarSign,
 	Download,
-	Minus,
-	TrendingDown,
 	TrendingUp,
-	Users,
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -187,30 +184,6 @@ export default function FinanceiroView({
 		}).format(value);
 	};
 
-	const renderGrowthIndicator = (growth: number) => {
-		if (growth > 0) {
-			return (
-				<span className="inline-flex items-center gap-1 text-xs font-semibold text-[#0b71ee]">
-					<TrendingUp className="h-3 w-3" />+{growth.toFixed(1)}%
-				</span>
-			);
-		}
-		if (growth < 0) {
-			return (
-				<span className="inline-flex items-center gap-1 text-xs font-semibold text-red-500">
-					<TrendingDown className="h-3 w-3" />
-					{growth.toFixed(1)}%
-				</span>
-			);
-		}
-		return (
-			<span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500">
-				<Minus className="h-3 w-3" />
-				0%
-			</span>
-		);
-	};
-
 	const handleExport = () => {
 		const csvContent = [
 			["Data", "Horario", "Jogador", "Valor"],
@@ -283,69 +256,44 @@ export default function FinanceiroView({
 			</AdminToolbar>
 
 			{loading ?
-				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-					<Skeleton className="h-[138px] rounded-lg bg-slate-200 sm:col-span-2" />
-					<Skeleton className="h-[138px] rounded-lg bg-slate-200" />
-					<Skeleton className="h-[138px] rounded-lg bg-slate-200" />
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+					{[1, 2, 3, 4, 5].map((item) => (
+						<Skeleton
+							key={item}
+							className="h-[92px] rounded-[var(--az-radius-card)] bg-[color:var(--az-line)]"
+						/>
+					))}
 				</div>
-			:	<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-					<AdminPanel className="p-5 sm:col-span-2">
-						<div className="flex items-start justify-between gap-4">
-							<div className="min-w-0">
-								<p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
-									Receita do mês
-								</p>
-								<p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-									{formatCurrency(metrics.totalRevenue)}
-								</p>
-								<div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-									{renderGrowthIndicator(metrics.revenueGrowth)}
-									<span>vs mês anterior</span>
-								</div>
-							</div>
-							<div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
-								<DollarSign className="h-5 w-5" />
-							</div>
-						</div>
-						<div className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-200 pt-4 text-sm">
-							<div>
-								<p className="text-xs text-slate-500">Recebido</p>
-								<p className="mt-1 font-semibold text-[#0b71ee]">
-									{formatCurrency(metrics.paidRevenue)}
-								</p>
-							</div>
-							<div>
-								<p className="text-xs text-slate-500">A receber</p>
-								<p className="mt-1 font-semibold text-amber-600">
-									{formatCurrency(metrics.pendingRevenue)}
-								</p>
-							</div>
-						</div>
-					</AdminPanel>
+			:	<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+					<AdminMetric
+						label="Receita do mês"
+						value={formatCurrency(metrics.totalRevenue)}
+						tone="muted"
+						icon={<DollarSign className="h-4 w-4" />}
+					/>
+					<AdminMetric
+						label="Recebido"
+						value={formatCurrency(metrics.paidRevenue)}
+						tone="turf"
+						icon={<CheckCircle2 className="h-4 w-4" />}
+					/>
+					<AdminMetric
+						label="A receber"
+						value={formatCurrency(metrics.pendingRevenue)}
+						tone="clay"
+						icon={<Clock className="h-4 w-4" />}
+					/>
 					<AdminMetric
 						label="Reservas"
 						value={metrics.totalBookings}
-						tone="blue"
+						tone="muted"
 						icon={<Calendar className="h-4 w-4" />}
 					/>
 					<AdminMetric
 						label="Ocupação"
 						value={`${metrics.occupancyRate.toFixed(0)}%`}
-						tone="slate"
+						tone="muted"
 						icon={<BarChart3 className="h-4 w-4" />}
-					/>
-					<AdminMetric
-						label="Jogadores únicos"
-						value={metrics.uniquePlayers}
-						tone="slate"
-						icon={<Users className="h-4 w-4" />}
-						className="xl:col-start-3"
-					/>
-					<AdminMetric
-						label="Reservas pendentes"
-						value={metrics.pendingBookings.length}
-						tone="amber"
-						icon={<Clock className="h-4 w-4" />}
 					/>
 				</div>
 			}
@@ -386,28 +334,28 @@ export default function FinanceiroView({
 			)}
 
 			<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
-				<AdminPanel>
-					<div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+				<AdminPanel className={revenueEntries.length === 0 ? "min-h-[120px]" : ""}>
+					<div className="flex items-center justify-between border-b-[0.5px] border-[color:var(--az-line)] px-4 py-3">
 						<div className="flex items-center gap-3">
-							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
+							<div className="flex h-9 w-9 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]">
 								<TrendingUp className="h-4 w-4" />
 							</div>
 							<div>
-								<h2 className="text-sm font-semibold text-slate-950">
+								<h2 className="text-sm font-medium text-[color:var(--az-ink)]">
 									Receita diária
 								</h2>
-								<p className="text-xs text-slate-500">
+								<p className="text-xs text-[color:var(--az-ink-soft)]">
 									Dias com movimentação no período
 								</p>
 							</div>
 						</div>
 						{revenueEntries.length > 0 && (
-							<p className="hidden text-right text-sm font-semibold text-slate-950 sm:block">
+							<p className="hidden text-right text-sm font-medium text-[color:var(--az-ink)] sm:block">
 								{formatCurrency(metrics.totalRevenue)}
 							</p>
 						)}
 					</div>
-					<div className="p-4">
+					<div className={revenueEntries.length === 0 ? "p-3" : "p-4"}>
 						{loading ?
 							<div className="space-y-3">
 								<Skeleton className="h-8 w-full bg-slate-200" />
@@ -416,16 +364,17 @@ export default function FinanceiroView({
 							</div>
 						: revenueEntries.length === 0 ?
 							<AdminEmptyState
-								icon={<BarChart3 className="h-6 w-6" />}
+								icon={<BarChart3 className="h-5 w-5" />}
 								title="Sem receita no período"
 								description="As reservas confirmadas alimentarão esse gráfico automaticamente."
+								className="!min-h-[120px] h-[120px] py-2"
 								action={
 									onNavigateToAgenda ? (
 										<Button
 											variant="outline"
 											size="sm"
 											onClick={onNavigateToAgenda}
-											className="gap-2 rounded-md border-blue-200 text-[#0b71ee] hover:bg-blue-50">
+											className="gap-2 rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] text-[color:var(--az-navy)] hover:bg-[color:var(--az-navy-soft)]">
 											<Calendar className="h-4 w-4" />
 											Criar reserva
 										</Button>
@@ -451,8 +400,8 @@ export default function FinanceiroView({
 													<div
 														className={
 															isLast ?
-																"w-full max-w-9 rounded-t-md bg-[#0b71ee]"
-															:	"w-full max-w-9 rounded-t-md bg-blue-200 transition-colors group-hover:bg-[#0b71ee]"
+																"w-full max-w-9 rounded-t-md bg-[color:var(--az-navy)]"
+															:	"w-full max-w-9 rounded-t-md bg-[color:var(--az-navy-soft)] transition-colors group-hover:bg-[color:var(--az-navy)]"
 														}
 														style={{ height: `${Math.max(height, 8)}%` }}
 													/>
@@ -485,21 +434,21 @@ export default function FinanceiroView({
 					</div>
 				</AdminPanel>
 
-				<AdminPanel>
-					<div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+				<AdminPanel className={metrics.confirmedBookings.length === 0 ? "min-h-[120px]" : ""}>
+					<div className="flex items-center justify-between border-b-[0.5px] border-[color:var(--az-line)] px-4 py-3">
 						<div className="flex items-center gap-3">
-							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
+							<div className="flex h-9 w-9 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]">
 								<CreditCard className="h-4 w-4" />
 							</div>
 							<div>
-								<h2 className="text-sm font-semibold text-slate-950">
+								<h2 className="text-sm font-medium text-[color:var(--az-ink)]">
 									Movimentações
 								</h2>
-								<p className="text-xs text-slate-500">Últimas reservas</p>
+								<p className="text-xs text-[color:var(--az-ink-soft)]">Últimas reservas</p>
 							</div>
 						</div>
 						{metrics.confirmedBookings.length > 0 && (
-							<Badge className="border-0 bg-slate-100 text-slate-600">
+							<Badge className="border-0 bg-[color:var(--az-navy-soft)] text-[color:var(--az-ink-soft)]">
 								{metrics.confirmedBookings.length}
 							</Badge>
 						)}
@@ -513,9 +462,10 @@ export default function FinanceiroView({
 							</div>
 						: metrics.confirmedBookings.length === 0 ?
 							<AdminEmptyState
-								icon={<CreditCard className="h-6 w-6" />}
+								icon={<CreditCard className="h-5 w-5" />}
 								title="Nenhuma movimentação"
 								description="Reservas pagas e pendentes aparecerão aqui como extrato."
+								className="!min-h-[120px] h-[120px] py-2"
 							/>
 						:	<div className="divide-y divide-slate-200">
 								{metrics.confirmedBookings
@@ -535,8 +485,8 @@ export default function FinanceiroView({
 													<div
 														className={
 															isPaid ?
-																"flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee]"
-															:	"flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-50 text-amber-600"
+																"flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#E8F1EA] text-[color:var(--az-turf)]"
+															:	"flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#F5EAE0] text-[color:var(--az-clay)]"
 														}>
 														{isPaid ?
 															<CheckCircle2 className="h-5 w-5" />
@@ -551,8 +501,8 @@ export default function FinanceiroView({
 															<Badge
 																className={
 																	isPaid ?
-																		"border-0 bg-blue-50 text-[#0b71ee]"
-																	:	"border-0 bg-amber-50 text-amber-600"
+																		"border-0 bg-[#E8F1EA] text-[color:var(--az-turf)]"
+																	:	"border-0 bg-[#F5EAE0] text-[color:var(--az-clay)]"
 																}>
 																{isPaid ? "Pago" : "Pendente"}
 															</Badge>

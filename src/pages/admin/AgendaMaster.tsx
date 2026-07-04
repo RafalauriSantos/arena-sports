@@ -726,7 +726,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 				actions={
 					<Button
 						size="default"
-						className="h-10 gap-2 rounded-md border-0 bg-[#0b71ee] font-semibold text-white shadow-sm hover:bg-[#0861cd]"
+						className="h-10 gap-2 rounded-[var(--az-radius-control)] border-0 bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]"
 						onClick={() => setIsNewBookingOpen(true)}>
 						<Plus className="h-4 w-4" />
 						<span>Nova reserva</span>
@@ -751,14 +751,14 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						className={cn(
 							"h-9 shrink-0 rounded-md border px-3 text-sm font-semibold transition-colors",
 							isToday ?
-								"border-[#0b71ee] bg-[#0b71ee] text-white"
-							:	"border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+								"border-[color:var(--az-navy)] bg-[color:var(--az-navy)] text-white"
+							:	"border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink-soft)] hover:bg-[color:var(--az-navy-soft)] hover:text-[color:var(--az-ink)]",
 						)}>
 						Hoje
 					</button>
 					<div className="flex min-w-max items-center gap-1.5">
 						{viewMode === "mes" ?
-							<div className="h-9 min-w-[176px] rounded-md border border-slate-200 bg-white px-3 py-2 text-center text-sm font-semibold capitalize text-slate-600">
+							<div className="h-9 min-w-[176px] rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] px-3 py-2 text-center text-sm font-medium capitalize text-[color:var(--az-ink-soft)]">
 								{format(viewStartDate, "MMMM yyyy", { locale: ptBR })}
 							</div>
 						:	[0, 1, 2, 3, 4, 5, 6].map((offset) => {
@@ -773,13 +773,13 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										className={cn(
 											"relative flex h-[58px] w-12 shrink-0 flex-col items-center justify-center rounded-md border transition-colors",
 											isSelected ?
-												"border-[#0b71ee] bg-[#0b71ee] text-white"
+												"border-[color:var(--az-navy)] bg-[color:var(--az-navy)] text-white"
 											: dayIsToday ?
-												"border-blue-200 bg-blue-50 text-[#0b71ee]"
-											:	"border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+												"border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]"
+											:	"border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink-soft)] hover:bg-[color:var(--az-navy-soft)] hover:text-[color:var(--az-ink)]",
 										)}>
 										{dayIsToday && !isSelected && (
-											<span className="absolute top-1 h-1 w-1 rounded-full bg-[#0b71ee]" />
+											<span className="absolute top-1 h-1 w-1 rounded-full bg-[color:var(--az-navy)]" />
 										)}
 										<span className="text-[9px] font-semibold uppercase leading-none opacity-70">
 											{format(date, "EEE", { locale: ptBR })}
@@ -818,7 +818,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 								periodBookings.filter((b) => b.paymentStatus === "paid")
 									.length
 							}
-							tone="blue"
+							tone="turf"
 							icon={<CheckCircle className="h-4 w-4" />}
 						/>
 						<AdminMetric
@@ -830,13 +830,13 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										b.paymentStatus === "pending",
 								).length
 							}
-							tone="amber"
+							tone="clay"
 							icon={<Clock className="h-4 w-4" />}
 						/>
 						<AdminMetric
 							label="Total no período"
 							value={periodBookings.length}
-							tone="slate"
+							tone="muted"
 							icon={<Zap className="h-4 w-4" />}
 						/>
 					</div>
@@ -874,16 +874,17 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 												className={cn(
 													"min-h-[82px] rounded-md border p-2 text-left transition-colors",
 													inCurrentMonth ?
-														"bg-slate-50 border-slate-200 hover:bg-slate-100"
-													:	"bg-white border-slate-100 text-slate-400",
-													dayIsSelected && "border-[#0b71ee] bg-[#0b71ee]/10",
+														"bg-[color:var(--az-paper)] border-[color:var(--az-line)] hover:bg-[color:var(--az-navy-soft)]"
+													:	"bg-[color:var(--az-surface)] border-[color:var(--az-line)] text-[color:var(--az-ink-soft)]",
+													dayIsSelected &&
+														"border-[color:var(--az-navy)] bg-[color:var(--az-navy-soft)]",
 												)}>
 												<div className="flex items-center justify-between">
 													<span className="text-sm font-semibold">
 														{format(day, "dd")}
 													</span>
 													{dayBookings.length > 0 && (
-														<Badge className="bg-blue-50 text-[#0b71ee] border-blue-100 text-[10px] px-1.5 py-0.5">
+														<Badge className="border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] text-[10px] text-[color:var(--az-navy)] px-1.5 py-0.5">
 															{dayBookings.length}
 														</Badge>
 													)}
@@ -915,8 +916,8 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										key={dateKey}
 										className={cn(
 											"transition-colors",
-											dayIsToday && "border-blue-200",
-											dayIsSelected && "ring-1 ring-blue-200",
+											dayIsToday && "border-[color:var(--az-line)]",
+											dayIsSelected && "ring-1 ring-[color:var(--az-line)]",
 										)}>
 										<div className="space-y-3 p-3">
 											<div className="flex items-center justify-between">
@@ -950,10 +951,10 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 																	className={cn(
 																		"mt-1 w-1.5 h-1.5 rounded-full shrink-0",
 																		booking.paymentStatus === "paid" ?
-																			"bg-[#0b71ee]"
+																			"bg-[color:var(--az-turf)]"
 																		: booking.paymentStatus === "deposit" ?
-																			"bg-amber-500"
-																		:	"bg-gray-500",
+																			"bg-[color:var(--az-clay)]"
+																		:	"bg-[color:var(--az-ink-soft)]",
 																	)}
 																/>
 																<div className="min-w-0">
@@ -1009,7 +1010,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 											!isPast ? (
 											<Button
 												onClick={() => setIsNewBookingOpen(true)}
-												className="gap-2 rounded-md bg-[#0b71ee] font-medium text-white shadow-sm hover:bg-[#0861cd]">
+												className="gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
 												<Plus className="w-4 h-4" />
 												Criar reserva
 											</Button>
@@ -1045,10 +1046,10 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 															className={cn(
 																"w-1.5 h-12 rounded-full flex-shrink-0",
 																booking.paymentStatus === "paid" ?
-																	"bg-[#0b71ee]"
+																	"bg-[color:var(--az-turf)]"
 																: booking.paymentStatus === "deposit" ?
-																	"bg-amber-500"
-																:	"bg-gray-500",
+																	"bg-[color:var(--az-clay)]"
+																:	"bg-[color:var(--az-ink-soft)]",
 															)}
 														/>
 
@@ -1059,7 +1060,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 																	{booking.customerName}
 																</p>
 																{booking.startedAt && !booking.completedAt && (
-																	<Badge className="bg-blue-50 text-[#0b71ee] border-blue-100 text-[10px] px-1.5 py-0">
+																	<Badge className="border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] text-[10px] text-[color:var(--az-navy)] px-1.5 py-0">
 																		EM JOGO
 																	</Badge>
 																)}
@@ -1080,10 +1081,10 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 																className={cn(
 																	"text-xs font-medium border-0",
 																	booking.paymentStatus === "paid" ?
-																		"bg-blue-50 text-[#0b71ee]"
+																		"bg-[#E8F1EA] text-[color:var(--az-turf)]"
 																	: booking.paymentStatus === "deposit" ?
-																		"bg-amber-50 text-amber-600"
-																	:	"bg-slate-100 text-slate-500",
+																		"bg-[#F5EAE0] text-[color:var(--az-clay)]"
+																	:	"bg-[color:var(--az-navy-soft)] text-[color:var(--az-ink-soft)]",
 																)}>
 																{booking.paymentStatus === "paid" ?
 																	"Pago"
@@ -1098,7 +1099,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 													</button>
 												:	<button
 														onClick={() => setIsNewBookingOpen(true)}
-														className="group flex w-full items-center gap-4 rounded-md border border-dashed border-slate-200 p-3 text-left transition-colors hover:border-blue-300 hover:bg-blue-50">
+														className="group flex w-full items-center gap-4 rounded-md border border-dashed border-[color:var(--az-line)] p-3 text-left transition-colors hover:bg-[color:var(--az-navy-soft)]">
 														<div className="flex-shrink-0 w-16 md:w-20">
 															<p className="text-base font-medium text-slate-500 group-hover:text-slate-700">
 																{time}
@@ -1110,7 +1111,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 																Horário disponível
 															</p>
 														</div>
-														<Plus className="w-4 h-4 text-slate-400 group-hover:text-[#0b71ee] transition-colors opacity-0 group-hover:opacity-100" />
+														<Plus className="w-4 h-4 text-slate-400 group-hover:text-[color:var(--az-navy)] transition-colors opacity-0 group-hover:opacity-100" />
 													</button>
 												}
 											</div>
@@ -1148,7 +1149,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									{selectedBooking.phone && (
 										<button
 											onClick={handleWhatsApp}
-											className="rounded-md border border-blue-100 bg-blue-50 p-2.5 text-[#0b71ee] transition-colors hover:bg-blue-100"
+											className="rounded-md border border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] p-2.5 text-[color:var(--az-navy)] transition-colors hover:bg-[color:var(--az-navy-soft)]"
 											title="Enviar mensagem no WhatsApp">
 											<MessageCircle className="w-4 h-4" />
 										</button>
@@ -1157,10 +1158,10 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										className={cn(
 											"text-xs font-medium border-0",
 											selectedBooking.paymentStatus === "paid" ?
-												"bg-blue-50 text-[#0b71ee]"
+												"bg-[#E8F1EA] text-[color:var(--az-turf)]"
 											: selectedBooking.paymentStatus === "deposit" ?
-												"bg-amber-50 text-amber-600"
-											:	"bg-slate-100 text-slate-500",
+												"bg-[#F5EAE0] text-[color:var(--az-clay)]"
+											:	"bg-[color:var(--az-navy-soft)] text-[color:var(--az-ink-soft)]",
 										)}>
 										{selectedBooking.paymentStatus === "paid" ?
 											"Pago"
@@ -1175,8 +1176,8 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 						<div className="px-6 py-5 overflow-y-auto flex-1 space-y-6">
 							{/* Cliente */}
 							<div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-								<div className="flex h-11 w-11 items-center justify-center rounded-md bg-blue-50">
-									<Users className="w-5 h-5 text-[#0b71ee]" />
+								<div className="flex h-11 w-11 items-center justify-center rounded-md bg-[color:var(--az-navy-soft)]">
+									<Users className="w-5 h-5 text-[color:var(--az-navy)]" />
 								</div>
 								<div className="flex-1 min-w-0">
 									<p className="text-xs text-slate-500 uppercase tracking-wider mb-0.5">
@@ -1208,7 +1209,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 											const formatted = formatPhoneInput(e.target.value);
 											setEditedPhone(formatted);
 										}}
-										className="h-10 flex-1 rounded-md border-slate-200 bg-white text-sm text-slate-900 transition-colors focus:border-[#0b71ee] focus:bg-white"
+										className="h-10 flex-1 rounded-md border-slate-200 bg-white text-sm text-slate-900 transition-colors focus:border-[color:var(--az-navy)] focus:bg-white"
 									/>
 									<Button
 										variant="outline"
@@ -1241,14 +1242,14 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 									className={cn(
 										"rounded-lg border p-3 text-center",
 										selectedBooking.remainingAmount > 0 ?
-											"bg-amber-50 border-amber-200"
+											"bg-[#F5EAE0] border-[color:var(--az-line)]"
 										:	"bg-white border-slate-200",
 									)}>
 									<p
 										className={cn(
 											"text-xs mb-1",
 											selectedBooking.remainingAmount > 0 ?
-												"text-amber-600"
+												"text-[color:var(--az-clay)]"
 											:	"text-slate-500",
 										)}>
 										Pendente
@@ -1257,7 +1258,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										className={cn(
 											"text-lg font-semibold",
 											selectedBooking.remainingAmount > 0 ?
-												"text-amber-600"
+												"text-[color:var(--az-clay)]"
 											:	"text-slate-500",
 										)}>
 										R$ {selectedBooking.remainingAmount.toFixed(0)}
@@ -1288,7 +1289,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 										</>
 									:	<Button
 											size="lg"
-											className="h-11 w-full rounded-md bg-[#0b71ee] font-medium text-white shadow-sm hover:bg-[#0861cd]"
+											className="h-11 w-full rounded-md bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]"
 											onClick={handleStartGame}>
 											<Play className="w-4 h-4 mr-2" />
 											Iniciar Jogo
@@ -1333,7 +1334,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 							{selectedBooking.paymentStatus !== "paid" &&
 								selectedBooking.remainingAmount > 0 && (
 									<Button
-										className="h-11 w-full rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]"
+										className="h-11 w-full rounded-md bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]"
 										onClick={handleConfirmPayment}>
 										<CreditCard className="w-4 h-4 mr-2" />
 										Confirmar Pagamento

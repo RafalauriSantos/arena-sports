@@ -67,8 +67,8 @@ const StatusBadge = ({
 	<span
 		className={`px-2 py-1 rounded-full text-xs font-bold ${
 			status === "success" ?
-				"bg-blue-50 text-[#0b71ee]"
-			:	"bg-amber-50 text-amber-700"
+				"bg-[#E8F1EA] text-[color:var(--az-turf)]"
+			:	"bg-[#F5EAE0] text-[color:var(--az-clay)]"
 		}`}>
 		{children}
 	</span>
@@ -78,15 +78,17 @@ function TabTrigger({
 	value,
 	icon: Icon,
 	label,
+	secondary = false,
 }: {
 	value: string;
 	icon: LucideIcon;
 	label: string;
+	secondary?: boolean;
 }) {
 	return (
 		<TabsTrigger
 			value={value}
-			className="w-full flex items-center gap-2 px-4 py-2.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors duration-200 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:border data-[state=active]:border-slate-200 data-[state=active]:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
+			className={`w-full flex items-center justify-center gap-2 border-b-[0.5px] border-transparent px-3 py-2 text-[13px] font-medium text-[color:var(--az-ink)] transition-colors duration-200 hover:text-[color:var(--az-navy)] data-[state=active]:border-[color:var(--az-navy)] data-[state=active]:text-[color:var(--az-navy)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] ${secondary ? "opacity-70" : ""}`}>
 			<Icon className="h-4 w-4 shrink-0" />
 			<span className="hidden md:inline">{label}</span>
 		</TabsTrigger>
@@ -103,12 +105,12 @@ function PremiumCard({
 	children: React.ReactNode;
 }) {
 	return (
-		<Card className="bg-white border border-slate-200 rounded-lg shadow-sm hover:border-slate-300 transition-colors duration-300">
+		<Card className="rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] shadow-none transition-colors duration-300">
 			<CardHeader className="pb-4">
-				<CardTitle className="text-lg font-semibold text-slate-900 tracking-tight">
+				<CardTitle className="text-[15px] font-medium tracking-normal text-[color:var(--az-ink)]">
 					{title}
 				</CardTitle>
-				<CardDescription className="text-sm text-slate-500">
+				<CardDescription className="text-[13px] text-[color:var(--az-ink-soft)]">
 					{description}
 				</CardDescription>
 			</CardHeader>
@@ -119,7 +121,7 @@ function PremiumCard({
 
 function LoadingSkeleton() {
 	return (
-		<div className="min-h-screen bg-slate-50 p-6 space-y-8">
+		<div className="min-h-screen bg-[color:var(--az-paper)] p-6 space-y-8">
 			<div className="max-w-5xl mx-auto space-y-8">
 				<Skeleton className="h-12 w-48 bg-slate-200" />
 				<Skeleton className="h-12 w-full bg-slate-200" />
@@ -522,7 +524,7 @@ export default function ConfiguracoesView() {
 						<Button
 							onClick={saveSettings}
 							disabled={saving}
-							className="h-10 rounded-md bg-[#0b71ee] px-5 font-semibold text-white shadow-sm hover:bg-[#0861cd] focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
+							className="h-10 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] px-5 font-medium text-white hover:bg-[color:var(--az-navy)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-paper)]">
 							{saving ?
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando
@@ -540,17 +542,18 @@ export default function ConfiguracoesView() {
 					value={activeTab}
 					onValueChange={setActiveTab}
 					className="space-y-6">
-					<TabsList className="w-full h-auto bg-white p-1.5 rounded-lg grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 border border-slate-200 shadow-sm">
-						<TabTrigger value="perfil" icon={User} label="Meu Perfil" />
+					<TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-none border-b-[0.5px] border-[color:var(--az-line)] bg-transparent p-0 md:grid-cols-4 lg:grid-cols-7">
 						<TabTrigger value="arena-sys" icon={Store} label="Identidade" />
+						<TabTrigger value="perfil" icon={User} label="Perfil" />
 						<TabTrigger value="quadras" icon={Trophy} label="Quadras" />
 						<TabTrigger value="horarios" icon={Clock} label="Horários" />
-						<TabTrigger value="cobranca" icon={Wallet} label="Cobrança" />
-						<TabTrigger value="marketing" icon={Sparkles} label="Marketing" />
+						<TabTrigger value="cobranca" icon={Wallet} label="Cobrança" secondary />
+						<TabTrigger value="marketing" icon={Sparkles} label="Marketing" secondary />
 						<TabTrigger
 							value="billing"
 							icon={BadgeDollarSign}
 							label="Assinatura"
+							secondary
 						/>
 					</TabsList>
 
@@ -591,7 +594,7 @@ export default function ConfiguracoesView() {
 										</div>
 										<Button
 											onClick={saveProfile}
-											className="w-full h-11 rounded-md bg-[#0b71ee] text-white focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98]">
+												className="w-full h-11 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] text-white focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98]">
 											Salvar Perfil
 										</Button>
 									</div>
@@ -632,7 +635,7 @@ export default function ConfiguracoesView() {
 											</Label>
 											<div className="flex items-center group opacity-80 cursor-not-allowed">
 												<span className="bg-slate-50 border border-slate-200 border-r-0 rounded-l-md px-3 h-10 flex items-center text-slate-500 text-sm">
-													arenasys.app/agendar/
+													arenasys.com.br/agendar/
 												</span>
 												<div className="relative w-full">
 													<Input
@@ -837,18 +840,18 @@ export default function ConfiguracoesView() {
 
 							{/* CARD LINK PÚBLICO */}
 							<div className="md:col-span-1">
-								<Card className="h-full rounded-lg border border-slate-200 bg-white shadow-sm">
+								<Card className="h-full rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] shadow-none">
 									<CardHeader>
-										<CardTitle className="text-[#0b71ee] text-lg flex items-center gap-2">
+										<CardTitle className="flex items-center gap-2 text-[15px] font-medium text-[color:var(--az-ink)]">
 											<ExternalLink className="h-5 w-5" /> Link de Agendamento
 										</CardTitle>
-										<CardDescription className="text-slate-500">
+										<CardDescription className="text-[13px] text-[color:var(--az-ink-soft)]">
 											Envie este link para seus clientes.
 										</CardDescription>
 									</CardHeader>
 									<CardContent className="space-y-6">
-										<div className="p-4 bg-slate-50 rounded-md border border-slate-200 flex flex-col gap-2">
-											<span className="text-xs text-slate-500 uppercase font-bold tracking-wider">
+										<div className="flex flex-col gap-2 rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] p-4">
+											<span className="text-xs font-medium text-[color:var(--az-ink-soft)]">
 												URL Oficial
 											</span>
 											{formData.tenant.subdomain ?
@@ -856,7 +859,7 @@ export default function ConfiguracoesView() {
 													href={getPublicLink()}
 													target="_blank"
 													rel="noopener noreferrer"
-													className="text-sm font-mono text-slate-700 break-all cursor-pointer hover:text-[#0b71ee] transition-colors flex items-center gap-2 underline"
+													className="flex cursor-pointer items-center gap-2 break-all font-mono text-sm text-[color:var(--az-ink)] underline transition-colors hover:text-[color:var(--az-navy)]"
 													onClick={(e) => {
 														// Se clicar no ícone, copia ao invés de abrir
 														if ((e.target as HTMLElement).closest("svg")) {
@@ -870,7 +873,7 @@ export default function ConfiguracoesView() {
 														{formData.tenant.subdomain}
 													</span>
 													{copied ?
-														<Check className="h-4 w-4 text-[#0b71ee] flex-shrink-0" />
+														<Check className="h-4 w-4 flex-shrink-0 text-[color:var(--az-turf)]" />
 													:	<Copy className="h-4 w-4 text-slate-400 flex-shrink-0" />
 													}
 												</a>
@@ -883,14 +886,14 @@ export default function ConfiguracoesView() {
 											<Button
 												onClick={handleOpenLink}
 												disabled={!formData.tenant.subdomain}
-												className="w-full rounded-md bg-[#0b71ee] text-white hover:bg-[#0861cd] font-semibold">
+												className="w-full rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
 												<ExternalLink className="mr-2 h-4 w-4" /> Abrir Agenda
 											</Button>
 											<Button
 												variant="outline"
 												onClick={handleCopyLink}
 												disabled={!formData.tenant.subdomain}
-												className="w-full border-slate-200 text-slate-600 hover:bg-slate-50">
+												className="w-full rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-transparent text-[color:var(--az-ink)] hover:bg-[color:var(--az-surface)]">
 												<Copy className="mr-2 h-4 w-4" /> Copiar Link
 											</Button>
 										</div>
@@ -1036,7 +1039,7 @@ export default function ConfiguracoesView() {
 											onCheckedChange={(v) =>
 												updateBookingSettings("require_deposit", v)
 											}
-											className="data-[state=checked]:bg-[#0b71ee]"
+											className="data-[state=checked]:bg-[color:var(--az-navy)]"
 										/>
 									</div>
 									{bookingSettings.require_deposit && (

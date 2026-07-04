@@ -183,16 +183,16 @@ export default function FolgasView() {
 				actions={
 					<Button
 						onClick={() => setIsModalOpen(true)}
-						className="h-10 gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+						className="h-10 gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
 						<Plus className="h-4 w-4" />
 						Nova folga
 					</Button>
 				}
 			/>
 
-			<AdminToolbar className="border-amber-200 bg-amber-50">
-				<div className="flex items-start gap-3 px-1 text-sm text-amber-900">
-					<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+			<AdminToolbar className="border-[color:var(--az-line)] bg-[color:var(--az-paper)]">
+				<div className="flex items-start gap-3 px-1 text-sm text-[color:var(--az-ink-soft)]">
+					<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--az-clay)]" />
 					<span>
 						Ao criar uma folga, os horários do período selecionado serão
 						bloqueados para novas reservas.
@@ -209,7 +209,7 @@ export default function FolgasView() {
 						action={
 							<Button
 								onClick={() => setIsModalOpen(true)}
-								className="gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+								className="gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
 								<Plus className="h-4 w-4" />
 								Adicionar folga
 							</Button>
@@ -261,7 +261,7 @@ export default function FolgasView() {
 				<DialogContent className="rounded-lg border border-slate-200 bg-white text-slate-900 sm:max-w-[460px]">
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
-							<CalendarOff className="h-5 w-5 text-[#0b71ee]" />
+							<CalendarOff className="h-5 w-5 text-[color:var(--az-navy)]" />
 							Nova folga
 						</DialogTitle>
 						<DialogDescription className="text-slate-500">
@@ -317,7 +317,7 @@ export default function FolgasView() {
 						</Button>
 						<Button
 							onClick={handleCreateFolga}
-							className="gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+							className="gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
 							<Plus className="h-4 w-4" />
 							Criar folga
 						</Button>

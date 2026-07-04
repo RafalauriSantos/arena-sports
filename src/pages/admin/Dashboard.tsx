@@ -11,6 +11,7 @@ import {
 	BarChart,
 	Settings,
 	Trophy,
+	Repeat,
 	Clock,
 	Activity,
 	Menu,
@@ -26,6 +27,7 @@ import {
 	Headphones,
 	Moon,
 	Sun,
+	Plus,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -38,6 +40,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useBookings } from "@/contexts/BookingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -49,8 +52,6 @@ import {
 	SetupChecklistSidebar,
 	useSetupProgress,
 } from "@/components/admin/SetupChecklistSidebar";
-import { TrialBanner } from "@/components/admin/TrialBanner";
-import { TrialCountdown } from "@/components/admin/TrialCountdown";
 import { SupportModal } from "@/components/admin/SupportModal";
 import {
 	Tooltip,
@@ -63,11 +64,12 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AdminMetric } from "@/components/admin/AdminUI";
 
 const DashboardSkeleton = () => (
 	<div className="w-full flex bg-[#eef4fb]">
 		{/* Sidebar Skeleton */}
-		<div className="hidden md:flex w-72 flex-col gap-4 p-4 border-r border-slate-200 bg-white shrink-0">
+		<div className="hidden md:flex w-[236px] flex-col gap-4 p-4 border-r border-slate-200 bg-white shrink-0">
 			<div className="h-20 w-full bg-slate-100 animate-pulse rounded-lg" />
 			<div className="space-y-3 pt-6">
 				{[1, 2, 3, 4, 5].map((i) => (
@@ -105,26 +107,37 @@ const ThemeToggleButton = ({ collapsed = false }: { collapsed?: boolean }) => {
 	const isLight = mounted && resolvedTheme === "light";
 	const Icon = isLight ? Moon : Sun;
 	const label = isLight ? "Usar tema escuro" : "Usar tema claro";
+	const nextTheme = isLight ? "dark" : "light";
 
 	return (
 		<Tooltip delayDuration={300}>
 			<TooltipTrigger asChild>
-				<button
-					type="button"
-					aria-label={label}
-					title={label}
-					onClick={() => setTheme(isLight ? "dark" : "light")}
+				<div
 					className={cn(
-						"flex items-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors duration-200 hover:bg-slate-50 hover:text-slate-950 outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-						collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-3",
+						"relative flex items-center rounded-[var(--az-radius-control)] text-[color:var(--az-ink-soft)]",
+						collapsed ? "h-10 w-10 justify-center border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)]" : "w-full gap-2.5 px-3 py-[9px]",
 					)}>
-					<Icon className="h-5 w-5 shrink-0" />
+					<Icon className="h-[17px] w-[17px] shrink-0" />
 					{!collapsed && (
-						<span className="text-sm">
-							{isLight ? "Tema escuro" : "Tema claro"}
-						</span>
+						<>
+							<span className="min-w-0 flex-1 text-[13px]">Tema escuro</span>
+							<Switch
+								checked={!isLight}
+								onCheckedChange={() => setTheme(nextTheme)}
+								aria-label={label}
+								className="h-[17px] w-[30px] border-0 bg-[color:var(--az-line)] data-[state=checked]:bg-[color:var(--az-navy)] [&>span]:h-[13px] [&>span]:w-[13px] [&>span]:bg-white [&>span]:shadow-[0_0_0_0.5px_var(--az-line)] [&>span]:data-[state=checked]:translate-x-[13px]"
+							/>
+						</>
 					)}
-				</button>
+					{collapsed && (
+						<button
+							type="button"
+							aria-label={label}
+							onClick={() => setTheme(nextTheme)}
+							className="absolute inset-0 rounded-[var(--az-radius-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)]"
+						/>
+					)}
+				</div>
 			</TooltipTrigger>
 			<TooltipContent side={collapsed ? "right" : "top"}>
 				{label}
@@ -224,7 +237,7 @@ const SIDEBAR_MENU_ITEMS = [
 	{ id: "dashboard", icon: Home, label: "Visão Geral" },
 	{ id: "agenda", icon: Calendar, label: "Reservas" },
 	{ id: "financeiro", icon: BarChart, label: "Financeiro" },
-	{ id: "mensalistas", icon: Trophy, label: "Mensalistas" },
+	{ id: "mensalistas", icon: Repeat, label: "Mensalistas" },
 	{ id: "folgas", icon: Clock, label: "Gerenciar Folgas" },
 ] as const;
 
@@ -239,6 +252,7 @@ const SidebarFixed = ({
 }: SidebarFixedProps) => {
 	const { userProfile, signOut } = useAuth();
 	const { toast } = useToast();
+	const { subscription, isTrial } = useSubscriptionAccess();
 	const [checklistOpen, setChecklistOpen] = useState(false);
 	const [supportModalOpen, setSupportModalOpen] = useState(false);
 
@@ -247,39 +261,55 @@ const SidebarFixed = ({
 		tenantId,
 		userProfile,
 	);
+	const progressPercent = Math.round((completed / Math.max(total, 1)) * 100);
+	const trialEndsAt =
+		subscription?.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
+	const trialDaysLeft =
+		trialEndsAt && !Number.isNaN(trialEndsAt.getTime()) ?
+			Math.max(
+				0,
+				Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+			)
+		:	null;
+	const statusLine =
+		isTrial ?
+			`Trial · ${trialDaysLeft ?? 0} dias restantes`
+		: subscription?.status === "active" ?
+			"Plano ativo"
+		:	"Status do plano em atualização";
 
 	return (
 		<>
 			<aside
 				className={cn(
-					"fixed top-0 left-0 z-50 flex h-full flex-col border-r border-slate-200 bg-white shadow-[8px_0_32px_-28px_rgba(15,23,42,0.55)] transition-all duration-300 ease-out",
-					mobileOpen ? "translate-x-0 w-72" : (
+					"fixed left-0 top-0 z-50 flex h-full flex-col border-r-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] transition-all duration-300 ease-out",
+					mobileOpen ? "translate-x-0 w-[236px]" : (
 						"-translate-x-full md:translate-x-0"
 					),
-					collapsed ? "md:w-20" : "md:w-72",
+					collapsed ? "md:w-20" : "md:w-[236px]",
 				)}>
 				<div
 					className={cn(
-						"flex h-20 items-center border-b border-slate-200 bg-white",
-						collapsed ? "justify-center px-0" : "justify-between px-6",
+						"flex items-center bg-[color:var(--az-surface)]",
+						collapsed ? "h-16 justify-center px-0" : "justify-between px-[10px] pb-0 pt-4",
 					)}>
 					{!collapsed && (
-						<div className="flex items-center gap-3">
-							<div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-xs font-black text-[#0b71ee] shadow-sm">
+						<div className="flex items-center gap-2.5 px-1.5 pb-3.5 pt-1">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-archivo text-[13px] font-semibold text-white">
 								AS
 							</div>
 							<div>
-								<h1 className="text-base font-bold text-slate-950 leading-none tracking-tight">
+								<h1 className="font-archivo text-sm font-semibold leading-tight tracking-normal text-[color:var(--az-ink)]">
 									ArenaSys
 								</h1>
-								<p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">
+								<p className="text-[10.5px] leading-tight tracking-normal text-[color:var(--az-ink-soft)]">
 									Gestão da arena
 								</p>
 							</div>
 						</div>
 					)}
 					{collapsed && (
-						<div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-xs font-black text-[#0b71ee] shadow-sm">
+						<div className="flex h-8 w-8 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-archivo text-[13px] font-semibold text-white">
 							AS
 						</div>
 					)}
@@ -288,26 +318,22 @@ const SidebarFixed = ({
 						type="button"
 						onClick={() => setCollapsed(!collapsed)}
 						aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-						className="hidden h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-950 md:flex"
+						className="hidden h-7 w-7 items-center justify-center rounded-[var(--az-radius-control)] text-[color:var(--az-ink-soft)] transition-colors hover:bg-[color:var(--az-navy-soft)] hover:text-[color:var(--az-ink)] md:flex"
 						title={collapsed ? "Expandir" : "Recolher"}>
 						{collapsed ?
-							<ChevronRight className="h-5 w-5" />
-						:	<ChevronLeft className="h-5 w-5" />}
+							<ChevronRight className="h-4 w-4" />
+						:	<ChevronLeft className="h-4 w-4" />}
 					</button>
 					<button
 						type="button"
 						onClick={() => setMobileOpen(false)}
 						aria-label="Fechar menu"
-						className="flex h-9 w-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-50 md:hidden">
+						className="flex h-9 w-9 items-center justify-center rounded-[var(--az-radius-control)] text-[color:var(--az-ink-soft)] hover:bg-[color:var(--az-navy-soft)] md:hidden">
 						<X className="h-5 w-5" />
 					</button>
 				</div>
 
-				<div className="flex-1 overflow-y-auto px-3 py-5 space-y-2 custom-scrollbar">
-					{/* Trial Countdown */}
-					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
-
-					{/* Botão do Checklist - Sempre visível */}
+				<div className="flex-1 overflow-y-auto px-[10px] py-0 custom-scrollbar">
 					<button
 						type="button"
 						onClick={() => setChecklistOpen(true)}
@@ -317,66 +343,42 @@ const SidebarFixed = ({
 							:	"Abrir checklist de configuração da arena"
 						}
 						className={cn(
-							"relative mb-4 flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors duration-200",
-							collapsed ? "justify-center px-0" : "",
-							isComplete ?
-								"border-blue-100 bg-blue-50 text-[#0b71ee] hover:bg-blue-100/70"
-							:	"border-yellow-200 bg-yellow-50 text-yellow-900 hover:bg-yellow-100/70",
+							"relative mx-0.5 mb-[6px] w-[calc(100%-4px)] rounded-[10px] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-paper)] text-left transition-colors duration-200 hover:bg-[color:var(--az-paper)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+							collapsed ? "flex h-14 items-center justify-center p-0" : "px-3 py-[11px]",
 						)}
 						title={isComplete ? "Arena Configurada!" : "Configure sua Arena"}>
-						<div className="flex items-center gap-3">
-							{isComplete ?
-								<Trophy className="h-5 w-5" />
-							: completed === 0 ?
-								<Sparkles className="h-5 w-5" />
-							:	<CheckCircle2 className="h-5 w-5" />}
-							{!collapsed && (
-								<div className="flex flex-col items-start">
-									<span className="text-sm font-bold">
-										{isComplete ?
-											"Arena pronta"
-										: completed === 0 ?
-											"Configurar arena"
-										:	`Ajustes da arena`}
+						{collapsed ? (
+							<>
+								<CheckCircle2 className="h-5 w-5 text-[color:var(--az-navy)]" />
+								<span className="absolute -right-1 -top-1 rounded-full border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] px-1.5 py-0.5 text-[10px] font-medium text-[color:var(--az-ink)]">
+									{progressPercent}%
+								</span>
+							</>
+						) : (
+							<div>
+								<div className="mb-1.5 flex items-baseline justify-between gap-3">
+									<span className="text-[11.5px] font-medium text-[color:var(--az-ink)]">
+										Configuração da arena
 									</span>
-									<span className="text-xs opacity-80">
-										{isComplete ?
-											"Configuração completa"
-										:	`${completed}/${total} concluídos`}
+									<span className="text-[11px] tabular-nums text-[color:var(--az-ink-soft)]">
+										{progressPercent}%
 									</span>
 								</div>
-							)}
-						</div>
-
-						{!collapsed && (
-							<div className="ml-auto flex items-center gap-2">
-								<div
-									className={cn(
-										"rounded-full px-2 py-1 text-xs font-bold",
-										isComplete ? "bg-white text-[#0b71ee]" : "bg-white text-yellow-900",
-									)}>
-									{Math.round((completed / total) * 100)}%
+								<div className="mb-1.5 h-1 overflow-hidden rounded-[2px] bg-[color:var(--az-line)]">
+									<div
+										className="h-full rounded-[2px] bg-[color:var(--az-navy)]"
+										style={{ width: `${progressPercent}%` }}
+									/>
 								</div>
-							</div>
-						)}
-
-						{/* Badge para modo collapsed */}
-						{collapsed && !isComplete && (
-							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0b71ee] text-white text-xs flex items-center justify-center font-bold border-2 border-white">
-								{total - completed}
-							</div>
-						)}
-
-						{/* Badge de troféu quando completo no collapsed */}
-						{collapsed && isComplete && (
-							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0b71ee] text-white text-xs flex items-center justify-center font-bold border-2 border-white">
-								✓
+								<p className="text-[10.5px] leading-tight text-[color:var(--az-ink-soft)]">
+									{statusLine}
+								</p>
 							</div>
 						)}
 					</button>
 
 					{!collapsed && (
-						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+						<p className="px-3 pb-1.5 pt-4 text-[10px] font-medium uppercase tracking-[0.06em] text-[color:var(--az-ink-soft)] opacity-70">
 							Operação
 						</p>
 					)}
@@ -391,27 +393,21 @@ const SidebarFixed = ({
 								aria-label={item.label}
 								aria-current={activeView === item.id ? "page" : undefined}
 								className={cn(
-									"group relative flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+									"group relative flex w-full items-center gap-2.5 rounded-[var(--az-radius-control)] px-3 py-[9px] text-left text-[13px] transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
 									activeView === item.id ?
-										"border-[#0b71ee] bg-[#0b71ee] text-white font-semibold shadow-[0_12px_26px_-20px_rgba(11,113,238,0.85)]"
-									:	"border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950",
+										"bg-[color:var(--az-navy-soft)] font-medium text-[color:var(--az-navy)]"
+									:	"text-[color:var(--az-ink-soft)] hover:bg-[color:var(--az-paper)] hover:text-[color:var(--az-ink)]",
 									collapsed ? "justify-center" : "",
 								)}>
-								{activeView === item.id && !collapsed && (
-									<span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#ffd33d]" />
-								)}
 								<item.icon
 									className={cn(
-										"h-5 w-5 shrink-0 transition-all duration-200",
+										"h-[17px] w-[17px] shrink-0 transition-all duration-200",
 										activeView === item.id ?
-											"text-white"
-										:	"text-slate-400 group-hover:text-slate-700",
+											"text-[color:var(--az-navy)]"
+										:	"text-[color:var(--az-ink-soft)] group-hover:text-[color:var(--az-ink)]",
 									)}
 								/>
-								{!collapsed && <span className="text-sm">{item.label}</span>}
-								{!collapsed && activeView === item.id && (
-									<div className="ml-auto h-1.5 w-1.5 rounded-full bg-[#ffd33d]" />
-								)}
+								{!collapsed && <span>{item.label}</span>}
 							</button>
 						);
 						return collapsed ?
@@ -419,23 +415,18 @@ const SidebarFixed = ({
 									<TooltipTrigger asChild>{btn}</TooltipTrigger>
 									<TooltipContent
 										side="right"
-										className="border-slate-200 bg-white text-slate-950 shadow-lg">
+										className="border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink)]">
 										{item.label}
 									</TooltipContent>
 								</Tooltip>
 							:	<div key={item.id}>{btn}</div>;
 					})}
 
-					{/* Divisor sutil: Operação vs Sistema */}
-					<div className="my-2 border-t border-slate-200" aria-hidden />
 					{!collapsed && (
-						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+						<p className="px-3 pb-1.5 pt-4 text-[10px] font-medium uppercase tracking-[0.06em] text-[color:var(--az-ink-soft)] opacity-70">
 							Sistema
 						</p>
 					)}
-				</div>
-
-				<div className="border-t border-slate-200 bg-slate-50 p-3">
 					{collapsed ?
 						<Tooltip delayDuration={300}>
 							<TooltipTrigger asChild>
@@ -446,17 +437,18 @@ const SidebarFixed = ({
 										setMobileOpen(false);
 									}}
 									aria-label="Configurações"
+									aria-current={activeView === "config" ? "page" : undefined}
 									className={cn(
-										"mb-2 flex w-full items-center justify-center rounded-lg border border-transparent px-3 py-3 text-slate-500 transition-colors duration-200 outline-none hover:bg-white hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50",
+										"flex w-full items-center justify-center rounded-[var(--az-radius-control)] px-3 py-[9px] text-[color:var(--az-ink-soft)] transition-colors duration-200 outline-none hover:bg-[color:var(--az-paper)] hover:text-[color:var(--az-ink)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-paper)]",
 										activeView === "config" &&
-											"border-[#0b71ee] bg-[#0b71ee] text-white shadow-[0_12px_26px_-20px_rgba(11,113,238,0.85)]",
+											"bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]",
 									)}>
-									<Settings className="h-5 w-5 shrink-0" />
+									<Settings className="h-[17px] w-[17px] shrink-0" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent
 								side="right"
-								className="border-slate-200 bg-white text-slate-950 shadow-lg">
+								className="border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink)]">
 								Configurações
 							</TooltipContent>
 						</Tooltip>
@@ -467,13 +459,14 @@ const SidebarFixed = ({
 								setMobileOpen(false);
 							}}
 							aria-label="Configurações"
+							aria-current={activeView === "config" ? "page" : undefined}
 							className={cn(
-								"mb-2 flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-3 text-slate-600 transition-colors duration-200 outline-none hover:border-slate-200 hover:bg-white hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50",
+								"flex w-full items-center gap-2.5 rounded-[var(--az-radius-control)] px-3 py-[9px] text-[13px] text-[color:var(--az-ink-soft)] transition-colors duration-200 outline-none hover:bg-[color:var(--az-paper)] hover:text-[color:var(--az-ink)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-paper)]",
 								activeView === "config" &&
-									"border-[#0b71ee] bg-[#0b71ee] text-white font-semibold shadow-[0_12px_26px_-20px_rgba(11,113,238,0.85)]",
+									"bg-[color:var(--az-navy-soft)] font-medium text-[color:var(--az-navy)]",
 							)}>
-							<Settings className="h-5 w-5 shrink-0" />
-							<span className="text-sm">Configurações</span>
+							<Settings className="h-[17px] w-[17px] shrink-0" />
+							<span>Configurações</span>
 						</button>
 					}
 
@@ -488,13 +481,13 @@ const SidebarFixed = ({
 										setMobileOpen(false);
 									}}
 									aria-label="Suporte"
-									className="mb-2 flex w-full items-center justify-center rounded-lg border border-transparent px-3 py-3 text-slate-500 transition-colors duration-200 outline-none hover:bg-white hover:text-[#0b71ee] focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
-									<Headphones className="h-5 w-5 shrink-0" />
+									className="flex w-full items-center justify-center rounded-[var(--az-radius-control)] px-3 py-[9px] text-[color:var(--az-ink-soft)] transition-colors duration-200 outline-none hover:bg-[color:var(--az-paper)] hover:text-[color:var(--az-ink)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-paper)]">
+									<Headphones className="h-[17px] w-[17px] shrink-0" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent
 								side="right"
-								className="border-slate-200 bg-white text-slate-950 shadow-lg">
+								className="border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink)]">
 								Suporte
 							</TooltipContent>
 						</Tooltip>
@@ -505,15 +498,19 @@ const SidebarFixed = ({
 								setMobileOpen(false);
 							}}
 							aria-label="Suporte"
-							className="mb-2 flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-3 text-slate-600 transition-colors duration-200 outline-none hover:border-slate-200 hover:bg-white hover:text-[#0b71ee] focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
-							<Headphones className="h-5 w-5 shrink-0" />
-							<span className="text-sm">Suporte</span>
+							className="flex w-full items-center gap-2.5 rounded-[var(--az-radius-control)] px-3 py-[9px] text-[13px] text-[color:var(--az-ink-soft)] transition-colors duration-200 outline-none hover:bg-[color:var(--az-paper)] hover:text-[color:var(--az-ink)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-paper)]">
+							<Headphones className="h-[17px] w-[17px] shrink-0" />
+							<span>Suporte</span>
 						</button>
 					}
+				</div>
 
-					<div className="mb-2">
+				<div className="bg-[color:var(--az-surface)] px-[10px] pb-4">
+					<div className="mb-[6px]">
 						<ThemeToggleButton collapsed={collapsed} />
 					</div>
+
+					<div className="mx-0.5 mt-1 border-t-[0.5px] border-[color:var(--az-line)] pt-2.5" />
 
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -521,32 +518,28 @@ const SidebarFixed = ({
 								type="button"
 								aria-label="Abrir menu do usuário"
 								className={cn(
-									"mt-2 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white p-2 transition-colors duration-200 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 active:scale-[0.98]",
+									"flex w-full items-center gap-2.5 rounded-[var(--az-radius-control)] px-2.5 py-1.5 transition-colors duration-200 outline-none hover:bg-[color:var(--az-paper)] focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--az-paper)] active:scale-[0.98]",
 									collapsed ?
 										"justify-center border-none bg-transparent p-0"
 									:	"",
 								)}>
-								<div className="h-9 w-9 rounded-md bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
-									{userProfile?.avatar_url ?
-										<img
-											src={userProfile.avatar_url}
-											alt="User"
-											className="h-full w-full object-cover"
-										/>
-									:	<User className="text-slate-500 h-4 w-4" />}
+								<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[color:var(--az-navy)]">
+									<span className="text-[12px] font-medium uppercase text-white">
+										{(userProfile?.full_name || "Admin").trim().slice(0, 1)}
+									</span>
 								</div>
 								{!collapsed && (
 									<div className="flex-1 overflow-hidden text-left">
-										<p className="text-sm font-semibold text-slate-950 truncate">
+										<p className="truncate text-[12.5px] font-medium leading-snug text-[color:var(--az-ink)]">
 											{userProfile?.full_name?.split(" ")[0] || "Admin"}
 										</p>
-										<p className="text-[10px] text-slate-500 uppercase font-bold truncate">
+										<p className="truncate text-[10.5px] leading-snug text-[color:var(--az-ink-soft)]">
 											Logado
 										</p>
 									</div>
 								)}
 								{!collapsed && (
-									<ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+									<ChevronRight className="h-4 w-4 shrink-0 text-[color:var(--az-ink-soft)]" />
 								)}
 							</button>
 						</DropdownMenuTrigger>
@@ -554,7 +547,7 @@ const SidebarFixed = ({
 							align={collapsed ? "center" : "end"}
 							side={collapsed ? "right" : "top"}
 							sideOffset={8}
-							className="min-w-[180px] rounded-lg border border-slate-200 bg-white p-1 shadow-xl shadow-slate-950/10">
+							className="min-w-[180px] rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] p-1">
 							<DropdownMenuItem
 								onClick={() => {
 									setActiveView("config");
@@ -602,8 +595,6 @@ const SidebarFixed = ({
 };
 
 // --- COMPONENTES VISUAIS (Dashboard) ---
-type PlanPill = { color: string; text: string };
-
 type DashboardBookingSummary = {
 	id: string;
 	time: string;
@@ -658,34 +649,20 @@ const getDashboardDateLabel = () =>
 
 const DashboardTopbar = ({
 	userName,
-	planLabel,
-	planPill,
 	onOpenAgenda,
 	onOpenFinanceiro,
 }: {
 	userName?: string;
-	planLabel: string;
-	planPill: PlanPill;
 	onOpenAgenda: () => void;
 	onOpenFinanceiro: () => void;
 }) => (
-	<section className="flex flex-col gap-4 border-b border-slate-200 pb-5 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between">
+	<section className="flex flex-col gap-4 border-b-[0.5px] border-[color:var(--az-line)] pb-5 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between">
 		<div>
-			<div className="mb-2 flex flex-wrap items-center gap-2">
-				<span className="inline-flex items-center gap-2 rounded-md border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-[#0b71ee] dark:border-blue-400/20 dark:bg-blue-500/10 dark:text-blue-200">
-					<span className="h-1.5 w-1.5 rounded-full bg-[#0b71ee]" />
-					Cockpit
-				</span>
-				<span className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
-					<span className={`h-1.5 w-1.5 rounded-full ${planPill.color}`} />
-					{planPill.text}: {planLabel}
-				</span>
-			</div>
-			<h2 className="text-2xl font-black tracking-tight text-[#062b6f] dark:text-white sm:text-3xl">
+			<h2 className="font-['Archivo'] text-[21px] font-semibold leading-7 tracking-normal text-[color:var(--az-ink)] dark:text-white">
 				{getGreeting()}
 				{userName ? `, ${userName.split(" ")[0]}` : ""}.
 			</h2>
-			<p className="mt-1 text-sm font-semibold capitalize text-slate-500 dark:text-slate-400">
+			<p className="mt-1 text-[13px] capitalize text-[color:var(--az-ink-soft)] dark:text-slate-400">
 				{getDashboardDateLabel()} · operação da arena em tempo real
 			</p>
 		</div>
@@ -694,7 +671,7 @@ const DashboardTopbar = ({
 			<Button
 				type="button"
 				onClick={onOpenAgenda}
-				className="rounded-md bg-[#0b71ee] px-4 font-black text-white hover:bg-[#0861cd]">
+				className="rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] px-4 font-medium text-white hover:bg-[color:var(--az-navy)]">
 				<Calendar className="mr-2 h-4 w-4" />
 				Nova reserva
 			</Button>
@@ -702,7 +679,7 @@ const DashboardTopbar = ({
 				type="button"
 				variant="outline"
 				onClick={onOpenFinanceiro}
-				className="rounded-md border-slate-200 bg-white px-4 font-bold text-[#062b6f] hover:bg-slate-50 dark:border-white/15 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]">
+				className="rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] px-4 font-medium text-[color:var(--az-ink)] hover:bg-[color:var(--az-navy-soft)] dark:border-white/15 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]">
 				<BarChart className="mr-2 h-4 w-4" />
 				Financeiro
 			</Button>
@@ -848,11 +825,13 @@ const TodayTimeline = ({
 	onOpenAgenda: () => void;
 }) => {
 	const slotClass = (status: CourtTimelineSlot["status"]) =>
-		status === "paid" ? "border-blue-200 bg-blue-50 text-[#062b6f]"
+		status === "paid" ?
+			"border-[color:var(--az-line)] bg-[color:var(--az-turf)] text-white"
 		: status === "pending" ?
-			"border-yellow-200 bg-yellow-50 text-yellow-900"
-		: status === "blocked" ? "border-slate-200 bg-slate-100 text-slate-400"
-		: "border-slate-200 bg-white text-slate-500";
+			"border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-clay)]"
+		: status === "blocked" ?
+			"border-[color:var(--az-line)] bg-[color:var(--az-paper)] text-[color:var(--az-ink-soft)]"
+		: "border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-turf)] hover:bg-[color:var(--az-navy-soft)] hover:text-[color:var(--az-navy)]";
 	const statusLabel = (slot: CourtTimelineSlot) =>
 		slot.status === "available" ? "Livre"
 		: slot.status === "blocked" ? "Bloq."
@@ -867,13 +846,13 @@ const TodayTimeline = ({
 	);
 
 	return (
-		<Card className="rounded-lg border-blue-100 bg-white shadow-[0_20px_60px_-42px_rgba(11,113,238,0.45)] dark:border-white/10 dark:bg-[#101823]/95">
+		<Card className="rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] shadow-none">
 			<CardHeader className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<CardTitle className="text-xl font-black tracking-tight text-[#062b6f] dark:text-white">
-						Agenda de hoje
+					<CardTitle className="font-['Archivo'] text-[20px] font-semibold tracking-normal text-[color:var(--az-ink)]">
+						Grade de hoje
 					</CardTitle>
-					<p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
+					<p className="mt-1 text-[13px] text-[color:var(--az-ink-soft)]">
 						Quadras, horários e ocupação em uma única leitura.
 					</p>
 				</div>
@@ -881,28 +860,28 @@ const TodayTimeline = ({
 					type="button"
 					variant="outline"
 					onClick={onOpenAgenda}
-					className="rounded-md border-slate-200 bg-white text-xs font-black text-[#062b6f] hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white">
+					className="h-9 rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-transparent text-xs font-medium text-[color:var(--az-ink)] hover:bg-[color:var(--az-navy-soft)]">
 					Ver agenda
 				</Button>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				{rows.length === 0 ?
-					<div className="rounded-lg border border-dashed border-slate-200 p-6 text-center dark:border-white/10">
-						<p className="text-sm font-black text-[#062b6f] dark:text-white">
+					<div className="rounded-[var(--az-radius-card)] border-[0.5px] border-dashed border-[color:var(--az-line)] p-6 text-center">
+						<p className="text-[15px] font-medium text-[color:var(--az-ink)]">
 							Nenhuma quadra configurada ainda.
 						</p>
-						<p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+						<p className="mt-1 text-[13px] text-[color:var(--az-ink-soft)]">
 							Configure as quadras para preencher a linha do tempo.
 						</p>
 					</div>
 				:	<>
 						{!hasBookedSlot && (
-							<div className="flex flex-col gap-3 rounded-lg border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-400/20 dark:bg-blue-500/10 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex flex-col gap-3 rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
 								<div>
-									<p className="text-sm font-black text-[#062b6f] dark:text-white">
-										Dia livre para organizar a grade
+									<p className="text-[15px] font-medium text-[color:var(--az-ink)]">
+										Dia ainda sem reservas
 									</p>
-									<p className="mt-1 text-xs font-semibold leading-5 text-slate-600 dark:text-slate-300">
+									<p className="mt-1 text-[13px] leading-5 text-[color:var(--az-ink-soft)]">
 										{availableCount} janelas aparecem livres neste recorte. Comece
 										pelo melhor horário e mantenha a leitura limpa.
 									</p>
@@ -910,7 +889,7 @@ const TodayTimeline = ({
 								<Button
 									type="button"
 									onClick={onOpenAgenda}
-									className="h-9 rounded-md bg-[#0b71ee] px-3 text-xs font-black text-white hover:bg-[#0861cd]">
+									className="h-9 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] px-3 text-xs font-medium text-white hover:bg-[color:var(--az-navy)]">
 									Criar reserva
 								</Button>
 							</div>
@@ -920,38 +899,41 @@ const TodayTimeline = ({
 							{rows.map((row) => (
 								<div
 									key={row.courtId}
-									className="grid gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/[0.03] md:grid-cols-[140px_minmax(0,1fr)]">
+									className="grid gap-3 rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] p-3 md:grid-cols-[140px_minmax(0,1fr)]">
 									<div className="flex items-center justify-between gap-3 md:block">
-										<p className="truncate text-sm font-black text-[#062b6f] dark:text-white">
+										<p className="truncate text-[14px] font-medium text-[color:var(--az-ink)]">
 											{row.courtName}
 										</p>
 										<div className="mt-1 flex items-center gap-2">
-											<div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+											<div className="h-1.5 w-16 overflow-hidden rounded-full bg-[color:var(--az-line)]">
 												<div
-													className="h-full rounded-full bg-[#0b71ee]"
+													className="h-full rounded-full bg-[color:var(--az-turf)]"
 													style={{ width: `${Math.min(100, row.occupancy)}%` }}
 												/>
 											</div>
-											<p className="text-xs font-bold tabular-nums text-slate-500 dark:text-slate-400">
+											<p className="text-xs font-medium tabular-nums text-[color:var(--az-ink-soft)]">
 												{row.occupancy}%
 											</p>
 										</div>
 									</div>
 									<div className="grid grid-cols-[repeat(6,minmax(84px,1fr))] gap-2 overflow-x-auto pb-1">
 										{row.slots.map((slot) => (
-											<div
+											<button
+												type="button"
+												onClick={slot.status === "available" ? onOpenAgenda : undefined}
 												key={`${row.courtId}-${slot.time}`}
 												className={cn(
-													"min-h-[64px] rounded-md border px-2.5 py-2",
+													"min-h-[64px] rounded-[var(--az-radius-control)] border-[0.5px] px-2.5 py-2 text-left transition-colors",
 													slotClass(slot.status),
 												)}>
-												<p className="text-xs font-black tabular-nums">
+												<p className="text-xs font-medium tabular-nums">
 													{slot.time}
 												</p>
-												<p className="mt-1 truncate text-[11px] font-bold opacity-80">
-													{statusLabel(slot)}
+												<p className="mt-1 flex items-center gap-1 truncate text-[11px] font-medium opacity-90">
+													{slot.status === "available" && <Plus className="h-3 w-3" />}
+													<span>{statusLabel(slot)}</span>
 												</p>
-											</div>
+											</button>
 										))}
 									</div>
 								</div>
@@ -1172,23 +1154,6 @@ export default function DashboardHome() {
 			setActiveView(viewParam);
 		}
 	}, [searchParams]);
-
-	const planLabel = useMemo(() => {
-		return (subscription?.plan_name || "").trim() || "Plano";
-	}, [subscription?.plan_name]);
-
-	const planPill = useMemo(() => {
-		if (subscription?.status === "active") {
-			return { color: "bg-[#0b71ee]", text: "Plano ativo" };
-		}
-		if (subscription?.status === "past_due") {
-			return { color: "bg-[#ffd33d]", text: "Pagamento pendente" };
-		}
-		if (subscription?.status === "trial") {
-			return { color: "bg-[#ffd33d]", text: "Trial" };
-		}
-		return { color: "bg-slate-400", text: "Plano" };
-	}, [subscription?.status]);
 
 	// Apenas um plano agora, sempre "pro" - não precisa de useEffect
 
@@ -2119,22 +2084,11 @@ export default function DashboardHome() {
 	return (
 		<div
 			className={cn(
-				"min-h-screen font-sans selection:bg-blue-200/70 relative overflow-hidden transition-colors duration-300",
+				"min-h-screen font-sans selection:bg-[color:var(--az-navy-soft)] selection:text-[color:var(--az-navy)] relative overflow-hidden transition-colors duration-300",
 				isLightTheme ?
-					"dashboard-light bg-[#eef4fb] text-slate-950"
+					"dashboard-light bg-[color:var(--az-paper)] text-[color:var(--az-ink)]"
 				:	"bg-[#0b1118] text-white",
 			)}>
-			{/* Background discreto: produto precisa de leitura, nao de efeito visual dominante */}
-			<div className="fixed inset-0 z-0 pointer-events-none">
-				<div
-					className="absolute inset-0 opacity-[0.018]"
-					style={{
-						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
-					}}
-				/>
-				<div className="absolute top-0 right-0 w-[420px] h-[420px] bg-blue-500/[0.035] rounded-full blur-[120px]" />
-			</div>
-
 			<SidebarFixed
 				mobileOpen={mobileOpen}
 				setMobileOpen={setMobileOpen}
@@ -2148,15 +2102,15 @@ export default function DashboardHome() {
 			<div
 				className={cn(
 					"relative z-10 flex flex-col transition-all duration-300 ease-out",
-					collapsed ? "md:pl-20" : "md:pl-72",
+					collapsed ? "md:pl-20" : "md:pl-[236px]",
 				)}>
 				{/* Header Mobile */}
-				<div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-lg border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+				<div className="sticky top-0 z-30 flex items-center justify-between border-b-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] px-4 py-3 md:hidden">
 					<div className="flex items-center gap-2">
-						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
+						<div className="flex h-8 w-8 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] text-white">
 							<Activity className="h-4 w-4" />
 						</div>
-						<span className="font-bold text-lg tracking-tight text-slate-950">
+						<span className="text-lg font-semibold tracking-normal text-[color:var(--az-ink)]">
 							ArenaSys
 						</span>
 					</div>
@@ -2166,15 +2120,12 @@ export default function DashboardHome() {
 							variant="ghost"
 							size="icon"
 							aria-label="Abrir menu"
-							className="text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+							className="text-[color:var(--az-ink-soft)] hover:bg-[color:var(--az-navy-soft)] hover:text-[color:var(--az-ink)]"
 							onClick={() => setMobileOpen(true)}>
 							<Menu className="w-6 h-6" />
 						</Button>
 					</div>
 				</div>
-
-				{/* Trial Banner */}
-				<TrialBanner tenantId={tenantId || ""} />
 
 				<main
 					data-dashboard
@@ -2183,130 +2134,28 @@ export default function DashboardHome() {
 						<div className="space-y-5">
 							<DashboardTopbar
 								userName={userProfile?.full_name}
-								planLabel={planLabel}
-								planPill={planPill}
 								onOpenAgenda={() => setActiveView("agenda")}
 								onOpenFinanceiro={() => setActiveView("financeiro")}
 							/>
 
-							<DailyStatusStrip
-								nextBooking={stats.nextBooking}
-								occupiedNow={stats.occupiedNow}
-								availableNow={stats.availableNow}
-								totalCourts={stats.totalCourts}
-								occupancyAvg={stats.occupancyAvg}
-								gamesToday={stats.gamesToday}
-								revenueMonth={stats.revenueMonth}
-								pendingRevenue={stats.pendingRevenue}
-								pendingBookingsCount={stats.pendingBookings.length}
-								primeOpenSlot={stats.primeOpenSlot}
+							<TodayTimeline
+								rows={stats.timelineRows}
 								onOpenAgenda={() => setActiveView("agenda")}
-								onOpenFinanceiro={() => setActiveView("financeiro")}
 							/>
 
-							<div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-								<TodayTimeline
-									rows={stats.timelineRows}
-									onOpenAgenda={() => setActiveView("agenda")}
+							<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+								<AdminMetric
+									label="Caixa do dia"
+									value={formatCurrency(stats.revenueToday)}
+									tone="turf"
+									icon={<BarChart className="h-4 w-4" />}
 								/>
-								<div className="space-y-5">
-									<OperationalAlertsPanel alerts={operationalAlerts} />
-									<Card className="rounded-lg border-slate-200 bg-white shadow-[0_12px_36px_-32px_rgba(2,6,23,0.55)] dark:border-white/10 dark:bg-[#101823]/95">
-										<CardHeader className="pb-3">
-											<CardTitle className="text-base font-black text-[#062b6f] dark:text-white">
-												Caixa de hoje
-											</CardTitle>
-											<p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-												Recebido e pendente sem abrir o financeiro.
-											</p>
-										</CardHeader>
-										<CardContent className="space-y-3">
-											<div className="grid grid-cols-2 gap-3">
-												<div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-white/[0.03]">
-													<p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-														Recebido
-													</p>
-													<p className="mt-1 text-xl font-black tabular-nums text-[#062b6f] dark:text-white">
-														{formatCurrency(stats.revenueToday)}
-													</p>
-												</div>
-												<div className="rounded-lg border border-yellow-200 bg-yellow-50/70 p-3 dark:border-yellow-400/20 dark:bg-yellow-400/10">
-													<p className="text-[10px] font-black uppercase tracking-[0.16em] text-yellow-800 dark:text-yellow-200">
-														Em aberto
-													</p>
-													<p className="mt-1 text-xl font-black tabular-nums text-yellow-900 dark:text-yellow-50">
-														{formatCurrency(stats.pendingRevenue)}
-													</p>
-												</div>
-											</div>
-											<Button
-												type="button"
-												variant="outline"
-												onClick={() => setActiveView("financeiro")}
-												className="w-full rounded-md border-slate-200 bg-white font-black text-[#062b6f] hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white">
-												Abrir financeiro
-											</Button>
-										</CardContent>
-									</Card>
-								</div>
-							</div>
-
-							<div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-								<WeeklyPerformanceCard
-									chartData={stats.chartData}
-									chartHasNoData={stats.chartHasNoData}
-									onOpenAgenda={() => setActiveView("agenda")}
-									onOpenFinanceiro={() => setActiveView("financeiro")}
+								<AdminMetric
+									label="Receita do mês"
+									value={formatCurrency(stats.revenueMonth)}
+									tone="muted"
+									icon={<Activity className="h-4 w-4" />}
 								/>
-								<Card className="rounded-lg border-slate-200 bg-white shadow-[0_12px_36px_-32px_rgba(2,6,23,0.55)] dark:border-white/10 dark:bg-[#101823]/95">
-									<CardHeader className="pb-3">
-										<CardTitle className="text-base font-black text-[#062b6f] dark:text-white">
-											Mês em curso
-										</CardTitle>
-										<p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-											Acumulado simples para contexto, sem disputar com a agenda.
-										</p>
-									</CardHeader>
-									<CardContent className="space-y-3">
-										<div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/[0.03]">
-											<p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-												Receita do mês
-											</p>
-											<p className="mt-1 text-2xl font-black text-[#062b6f] dark:text-white">
-												{formatCurrency(stats.revenueMonth)}
-											</p>
-										</div>
-										<div className="grid grid-cols-2 gap-3">
-											<div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/[0.03]">
-												<p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-													Hoje
-												</p>
-												<p className="mt-1 text-lg font-black text-[#062b6f] dark:text-white">
-													{stats.gamesToday}
-												</p>
-											</div>
-											<div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-white/[0.03]">
-												<p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-													Tendência
-												</p>
-												<p className="mt-1 text-lg font-black text-[#062b6f] dark:text-white">
-													{stats.trendToday || "Sem base"}
-												</p>
-											</div>
-										</div>
-										<p className="text-xs font-semibold leading-5 text-slate-500 dark:text-slate-400">
-											Use este bloco apenas como referência. A decisão do turno
-											continua na agenda e nas prioridades.
-										</p>
-										<Button
-											type="button"
-											variant="outline"
-											onClick={() => setActiveView("financeiro")}
-											className="w-full rounded-md border-slate-200 bg-white font-black text-[#062b6f] hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white">
-											Ver relatório
-										</Button>
-									</CardContent>
-								</Card>
 							</div>
 						</div>
 					)}

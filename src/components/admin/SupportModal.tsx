@@ -52,24 +52,24 @@ export function SupportModal({ open, onOpenChange }: SupportModalProps) {
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-md bg-white border-gray-200 shadow-xl">
+			<DialogContent className="sm:max-w-md bg-[color:var(--az-surface)] border-[color:var(--az-line)] shadow-xl">
 				<DialogHeader>
-					<DialogTitle className="text-center text-gray-900 text-xl font-semibold">
+					<DialogTitle className="text-center text-[color:var(--az-ink)] text-xl font-semibold">
 						Falar com Suporte
 					</DialogTitle>
 				</DialogHeader>
 
 				<div className="flex flex-col items-center py-6 space-y-4">
 					{/* Ícone de Suporte */}
-					<div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-2 shadow-lg">
+					<div className="w-20 h-20 rounded-full bg-[color:var(--az-navy)] flex items-center justify-center mb-2 shadow-lg">
 						<Headphones className="h-10 w-10 text-white" />
 					</div>
 
 					<div className="text-center space-y-2">
-						<h3 className="text-lg font-semibold text-gray-900">
+						<h3 className="text-lg font-semibold text-[color:var(--az-ink)]">
 							Equipe de Suporte
 						</h3>
-						<p className="text-sm text-gray-400">
+						<p className="text-sm text-[color:var(--az-ink-soft)]">
 							Estamos aqui para ajudar você com qualquer dúvida ou problema.
 						</p>
 					</div>
@@ -82,7 +82,7 @@ export function SupportModal({ open, onOpenChange }: SupportModalProps) {
 							Falar no WhatsApp
 						</Button>
 
-						<p className="text-xs text-gray-300 text-center">
+						<p className="text-xs text-[color:var(--az-ink-soft)] text-center">
 							Resposta rápida via WhatsApp. Geralmente respondemos em até 1 hora.
 						</p>
 					</div>

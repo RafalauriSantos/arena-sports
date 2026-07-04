@@ -379,35 +379,39 @@ export default function MensalistasView() {
 					</>
 				}
 				actions={
-					<Button
-						onClick={() => handleOpenModal()}
-						className="h-10 gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
-						<Plus className="h-4 w-4" />
-						Novo mensalista
-					</Button>
+					recurringSlots.length > 0 ? (
+						<Button
+							onClick={() => handleOpenModal()}
+							className="h-9 gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
+							<Plus className="h-4 w-4" />
+							Novo mensalista
+						</Button>
+					) : null
 				}
 			/>
 
-			<AdminToolbar>
-				<div className="flex items-center gap-3 px-1 text-sm text-slate-600">
-					<Crown className="h-4 w-4 text-[#0b71ee]" />
-					<span>
-						Use esta tela para manter reservas recorrentes previsíveis, sem
-						misturar com pedidos avulsos da Agenda.
-					</span>
-				</div>
-			</AdminToolbar>
+			{recurringSlots.length > 0 && (
+				<AdminToolbar>
+					<div className="flex items-center gap-3 px-1 text-[13px] text-[color:var(--az-ink-soft)]">
+						<Crown className="h-4 w-4 text-[color:var(--az-ink-soft)]" />
+						<span>
+							Use esta tela para manter reservas recorrentes previsíveis, sem
+							misturar com pedidos avulsos da Agenda.
+						</span>
+					</div>
+				</AdminToolbar>
+			)}
 
 			{recurringSlots.length === 0 ?
 				<AdminPanel>
 					<AdminEmptyState
-						icon={<Crown className="h-6 w-6" />}
+						icon={<Crown className="h-5 w-5" />}
 						title="Nenhum mensalista cadastrado"
-						description="Cadastre horários fixos para clientes recorrentes aparecerem na operação semanal."
+						description="Cadastre horários fixos para clientes recorrentes aparecerem na operação semanal, sem misturar com pedidos avulsos da Agenda."
 						action={
 							<Button
 								onClick={() => handleOpenModal()}
-								className="gap-2 rounded-md bg-[#0b71ee] font-semibold text-white hover:bg-[#0861cd]">
+								className="h-9 gap-2 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy)] font-medium text-white hover:bg-[color:var(--az-navy)]">
 								<Plus className="h-4 w-4" />
 								Cadastrar mensalista
 							</Button>

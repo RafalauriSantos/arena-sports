@@ -8,7 +8,11 @@ type AdminPageProps = {
 
 export function AdminPage({ children, className }: AdminPageProps) {
 	return (
-		<div className={cn("space-y-5 text-slate-950 md:space-y-6", className)}>
+		<div
+			className={cn(
+				"space-y-5 text-[color:var(--az-ink)] md:space-y-6",
+				className,
+			)}>
 			{children}
 		</div>
 	);
@@ -34,21 +38,21 @@ export function AdminPageHeader({
 	return (
 		<header
 			className={cn(
-				"flex flex-col gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-end md:justify-between",
+				"flex flex-col gap-4 border-b-[0.5px] border-[color:var(--az-line)] pb-5 md:flex-row md:items-end md:justify-between",
 				className,
 			)}>
 			<div className="min-w-0 space-y-2">
 				{eyebrow && (
-					<p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0b71ee]">
+					<p className="text-[11px] font-medium uppercase tracking-normal text-[color:var(--az-ink-soft)]">
 						{eyebrow}
 					</p>
 				)}
 				<div className="space-y-1">
-					<h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-[2rem]">
+					<h1 className="font-['Archivo'] text-[21px] font-semibold leading-7 tracking-normal text-[color:var(--az-ink)]">
 						{title}
 					</h1>
 					{description && (
-						<div className="max-w-2xl text-sm leading-6 text-slate-500">
+						<div className="max-w-2xl text-[13px] leading-5 text-[color:var(--az-ink-soft)]">
 							{description}
 						</div>
 					)}
@@ -69,7 +73,7 @@ export function AdminToolbar({ children, className }: AdminToolbarProps) {
 	return (
 		<div
 			className={cn(
-				"flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-2 shadow-sm md:flex-row md:items-center md:justify-between",
+				"flex flex-col gap-3 rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] p-2 md:flex-row md:items-center md:justify-between",
 				className,
 			)}>
 			{children}
@@ -98,7 +102,7 @@ export function AdminSegmentedControl<T extends string>({
 	return (
 		<div
 			className={cn(
-				"grid w-full grid-cols-3 gap-1 rounded-md bg-slate-100 p-1 sm:w-auto",
+				"grid w-full grid-cols-3 gap-1 rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] p-1 sm:w-auto",
 				className,
 			)}>
 			{options.map((option) => (
@@ -109,8 +113,8 @@ export function AdminSegmentedControl<T extends string>({
 					className={cn(
 						"h-8 rounded px-3 text-sm font-semibold transition-colors",
 						value === option.value ?
-							"bg-white text-[#062b6f] shadow-sm ring-1 ring-slate-200"
-						:	"text-slate-500 hover:text-slate-900",
+							"bg-[color:var(--az-surface)] text-[color:var(--az-navy)] ring-[0.5px] ring-[color:var(--az-line)]"
+						:	"text-[color:var(--az-ink-soft)] hover:text-[color:var(--az-ink)]",
 					)}>
 					{option.label}
 				</button>
@@ -123,15 +127,19 @@ type AdminMetricProps = {
 	label: string;
 	value: ReactNode;
 	icon?: ReactNode;
-	tone?: "blue" | "amber" | "slate" | "red";
+	tone?: "navy" | "clay" | "turf" | "muted" | "blue" | "amber" | "slate" | "red";
 	className?: string;
 };
 
 const metricTone = {
-	blue: "bg-blue-50 text-[#0b71ee] ring-blue-100",
-	amber: "bg-amber-50 text-amber-700 ring-amber-100",
-	slate: "bg-slate-100 text-slate-700 ring-slate-200",
-	red: "bg-red-50 text-red-600 ring-red-100",
+	navy: "bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)] ring-[color:var(--az-line)]",
+	clay: "bg-[color:var(--az-surface)] text-[color:var(--az-clay)] ring-[color:var(--az-line)]",
+	turf: "bg-[color:var(--az-surface)] text-[color:var(--az-turf)] ring-[color:var(--az-line)]",
+	muted: "bg-[color:var(--az-surface)] text-[color:var(--az-ink-soft)] ring-[color:var(--az-line)]",
+	blue: "bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)] ring-[color:var(--az-line)]",
+	amber: "bg-[color:var(--az-surface)] text-[color:var(--az-clay)] ring-[color:var(--az-line)]",
+	slate: "bg-[color:var(--az-surface)] text-[color:var(--az-ink-soft)] ring-[color:var(--az-line)]",
+	red: "bg-[color:var(--az-surface)] text-[color:var(--az-clay)] ring-[color:var(--az-line)]",
 };
 
 export function AdminMetric({
@@ -144,23 +152,23 @@ export function AdminMetric({
 	return (
 		<div
 			className={cn(
-				"flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm",
+				"flex min-h-[92px] min-w-0 items-center gap-3 rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] p-4",
 				className,
 			)}>
 			{icon && (
 				<div
 					className={cn(
-						"flex h-9 w-9 shrink-0 items-center justify-center rounded-md ring-1",
+						"flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--az-radius-control)] ring-[0.5px]",
 						metricTone[tone],
 					)}>
 					{icon}
 				</div>
 			)}
 			<div className="min-w-0">
-				<p className="truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+				<p className="truncate text-[12px] font-medium leading-4 text-[color:var(--az-ink-soft)]">
 					{label}
 				</p>
-				<div className="mt-0.5 truncate text-xl font-semibold tabular-nums text-slate-950">
+				<div className="mt-1 truncate text-[21px] font-medium leading-7 tabular-nums text-[color:var(--az-ink)]">
 					{value}
 				</div>
 			</div>
@@ -177,7 +185,7 @@ export function AdminPanel({ children, className }: AdminPanelProps) {
 	return (
 		<section
 			className={cn(
-				"overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm",
+				"overflow-hidden rounded-[var(--az-radius-card)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)]",
 				className,
 			)}>
 			{children}
@@ -203,17 +211,19 @@ export function AdminEmptyState({
 	return (
 		<div
 			className={cn(
-				"flex flex-col items-center justify-center px-4 py-14 text-center",
+				"flex min-h-[190px] flex-col items-center justify-center px-4 py-8 text-center",
 				className,
 			)}>
 			{icon && (
-				<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
+				<div className="mb-4 flex h-11 w-11 items-center justify-center rounded-[var(--az-radius-control)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]">
 					{icon}
 				</div>
 			)}
-			<h3 className="text-base font-semibold text-slate-950">{title}</h3>
+			<h3 className="text-[15px] font-medium text-[color:var(--az-ink)]">
+				{title}
+			</h3>
 			{description && (
-				<p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+				<p className="mt-2 max-w-md text-[13px] leading-5 text-[color:var(--az-ink-soft)]">
 					{description}
 				</p>
 			)}
@@ -229,10 +239,10 @@ type AdminPillProps = {
 };
 
 const pillTone = {
-	blue: "border-blue-100 bg-blue-50 text-[#0b71ee]",
-	amber: "border-amber-100 bg-amber-50 text-amber-700",
-	slate: "border-slate-200 bg-slate-100 text-slate-600",
-	red: "border-red-100 bg-red-50 text-red-600",
+	blue: "border-[color:var(--az-line)] bg-[color:var(--az-navy-soft)] text-[color:var(--az-navy)]",
+	amber: "border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-clay)]",
+	slate: "border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink-soft)]",
+	red: "border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-clay)]",
 };
 
 export function AdminPill({ children, tone = "slate", className }: AdminPillProps) {
@@ -267,10 +277,13 @@ export function AdminIconButton({
 			aria-label={ariaLabel}
 			onClick={onClick}
 			className={cn(
-				"inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200",
+				"inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--az-radius-control)] border-[0.5px] border-[color:var(--az-line)] bg-[color:var(--az-surface)] text-[color:var(--az-ink-soft)] transition-colors hover:bg-[color:var(--az-navy-soft)] hover:text-[color:var(--az-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--az-navy)]",
 				className,
 			)}>
 			{children}
 		</button>
 	);
 }
+
+export const MetricCard = AdminMetric;
+export const EmptyState = AdminEmptyState;
