@@ -21,11 +21,11 @@ export function TrialCountdown({ tenantId, collapsed }: TrialCountdownProps) {
 			<div className="mb-2 flex items-center justify-center p-2">
 				<div className="relative">
 					{isCritical ?
-						<AlertTriangle className="h-5 w-5 text-red-400" />
+						<AlertTriangle className="h-5 w-5 text-red-500" />
 					:	<Clock
 							className={cn(
 								"h-5 w-5",
-								isUrgent ? "text-yellow-300" : "text-blue-300",
+								isUrgent ? "text-yellow-700" : "text-[#0b71ee]",
 							)}
 						/>
 					}
@@ -47,39 +47,39 @@ export function TrialCountdown({ tenantId, collapsed }: TrialCountdownProps) {
 		<div
 			className={cn(
 				"mb-3 rounded-lg border px-3 py-3",
-				isCritical ? "border-red-400/30 bg-red-500/10"
-				: isUrgent ? "border-yellow-300/30 bg-yellow-400/10"
-				: "border-blue-400/25 bg-blue-500/10",
+				isCritical ? "border-red-200 bg-red-50"
+				: isUrgent ? "border-yellow-200 bg-yellow-50"
+				: "border-blue-100 bg-blue-50",
 			)}>
 			<div className="mb-2 flex items-center justify-between gap-2">
 				<div className="flex min-w-0 items-center gap-2">
 					{isCritical ?
-						<AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+						<AlertTriangle className="h-4 w-4 shrink-0 text-red-500" />
 					:	<Clock
 							className={cn(
 								"h-4 w-4 shrink-0",
-								isUrgent ? "text-yellow-300" : "text-blue-300",
+								isUrgent ? "text-yellow-700" : "text-[#0b71ee]",
 							)}
 						/>
 					}
-					<span className="truncate text-xs font-semibold text-slate-200">
+					<span className="truncate text-xs font-semibold text-slate-700">
 						{isCritical ? "Último dia" : "Trial ativo"}
 					</span>
 				</div>
 				<span
 					className={cn(
 						"text-xs font-bold",
-						isCritical ? "text-red-300"
-						: isUrgent ? "text-yellow-200"
-						: "text-blue-200",
+						isCritical ? "text-red-600"
+						: isUrgent ? "text-yellow-800"
+						: "text-[#0b71ee]",
 					)}>
 					{isCritical ? `${trial.hoursRemaining}h` : `${trial.daysRemaining}d`}
 				</span>
 			</div>
 
-			<Progress value={trial.progress} className="mb-2 h-1.5 bg-white/10" />
+			<Progress value={trial.progress} className="mb-2 h-1.5 bg-white" />
 
-			<div className="flex items-center justify-between text-[11px] text-slate-400">
+			<div className="flex items-center justify-between text-[11px] text-slate-500">
 				<span>7 dias</span>
 				<span>{trial.progress}% usado</span>
 			</div>
@@ -88,7 +88,7 @@ export function TrialCountdown({ tenantId, collapsed }: TrialCountdownProps) {
 				<p
 					className={cn(
 						"mt-2 text-xs font-semibold",
-						isCritical ? "text-red-300" : "text-yellow-200",
+						isCritical ? "text-red-600" : "text-yellow-800",
 					)}>
 					{isCritical ? "Assine hoje" : "Tempo acabando"}
 				</p>

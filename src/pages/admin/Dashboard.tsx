@@ -68,30 +68,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const DashboardSkeleton = () => (
-	<div className="w-full flex bg-surface-0">
+	<div className="w-full flex bg-[#eef4fb]">
 		{/* Sidebar Skeleton */}
-		<div className="hidden md:flex w-72 flex-col gap-4 p-4 border-r border-white/10 shrink-0">
-			<div className="h-20 w-full bg-white/5 animate-pulse rounded-xl" />
+		<div className="hidden md:flex w-72 flex-col gap-4 p-4 border-r border-slate-200 bg-white shrink-0">
+			<div className="h-20 w-full bg-slate-100 animate-pulse rounded-lg" />
 			<div className="space-y-3 pt-6">
 				{[1, 2, 3, 4, 5].map((i) => (
 					<div
 						key={i}
-						className="h-12 w-full bg-white/5 animate-pulse rounded-xl"
+						className="h-12 w-full bg-slate-100 animate-pulse rounded-lg"
 					/>
 				))}
 			</div>
 		</div>
 		{/* Content Skeleton */}
 		<div className="flex-1 p-4 md:p-8 space-y-6 overflow-hidden">
-			<div className="h-32 w-full bg-white/5 animate-pulse rounded-2xl" />
+			<div className="h-32 w-full bg-slate-100 animate-pulse rounded-lg" />
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				{[1, 2, 3, 4].map((i) => (
-					<div key={i} className="h-32 bg-white/5 animate-pulse rounded-2xl" />
+					<div key={i} className="h-32 bg-slate-100 animate-pulse rounded-lg" />
 				))}
 			</div>
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<div className="lg:col-span-2 h-96 bg-white/5 animate-pulse rounded-2xl" />
-				<div className="h-96 bg-white/5 animate-pulse rounded-2xl" />
+				<div className="lg:col-span-2 h-96 bg-slate-100 animate-pulse rounded-lg" />
+				<div className="h-96 bg-slate-100 animate-pulse rounded-lg" />
 			</div>
 		</div>
 	</div>
@@ -118,7 +118,7 @@ const ThemeToggleButton = ({ collapsed = false }: { collapsed?: boolean }) => {
 					title={label}
 					onClick={() => setTheme(isLight ? "dark" : "light")}
 					className={cn(
-						"flex items-center rounded-lg border border-white/10 bg-white/[0.04] text-slate-300 transition-all duration-200 hover:bg-white/[0.07] hover:text-white hover:border-white/15 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+						"flex items-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors duration-200 hover:bg-slate-50 hover:text-slate-950 outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
 						collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-3",
 					)}>
 					<Icon className="h-5 w-5 shrink-0" />
@@ -207,7 +207,7 @@ const getCurrentWeekDays = () => {
 	return days;
 };
 
-// --- COMPONENTE: SIDEBAR PROFISSIONAL (A "Alma" do Layout) ---
+// --- COMPONENTE: SIDEBAR ---
 type SidebarFixedProps = {
 	mobileOpen: boolean;
 	setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -217,6 +217,14 @@ type SidebarFixedProps = {
 	setActiveView: React.Dispatch<React.SetStateAction<string>>;
 	tenantId: string;
 };
+
+const SIDEBAR_MENU_ITEMS = [
+	{ id: "dashboard", icon: Home, label: "Visão Geral" },
+	{ id: "agenda", icon: Calendar, label: "Reservas" },
+	{ id: "financeiro", icon: BarChart, label: "Financeiro" },
+	{ id: "mensalistas", icon: Trophy, label: "Mensalistas" },
+	{ id: "folgas", icon: Clock, label: "Gerenciar Folgas" },
+] as const;
 
 const SidebarFixed = ({
 	mobileOpen,
@@ -232,14 +240,6 @@ const SidebarFixed = ({
 	const [checklistOpen, setChecklistOpen] = useState(false);
 	const [supportModalOpen, setSupportModalOpen] = useState(false);
 
-	const menuItems = [
-		{ id: "dashboard", icon: Home, label: "Visão Geral" },
-		{ id: "agenda", icon: Calendar, label: "Reservas" },
-		{ id: "financeiro", icon: BarChart, label: "Financeiro" },
-		{ id: "mensalistas", icon: Trophy, label: "Mensalistas" },
-		{ id: "folgas", icon: Clock, label: "Gerenciar Folgas" },
-	];
-
 	// Hook para progresso do checklist
 	const { completed, total, isComplete } = useSetupProgress(
 		tenantId,
@@ -250,7 +250,7 @@ const SidebarFixed = ({
 		<>
 			<aside
 				className={cn(
-					"fixed top-0 left-0 z-50 h-full bg-[#070b12] border-r border-white/10 transition-all duration-300 ease-out shadow-xl flex flex-col",
+					"fixed top-0 left-0 z-50 flex h-full flex-col border-r border-slate-200 bg-white shadow-[8px_0_32px_-28px_rgba(15,23,42,0.55)] transition-all duration-300 ease-out",
 					mobileOpen ? "translate-x-0 w-72" : (
 						"-translate-x-full md:translate-x-0"
 					),
@@ -258,64 +258,71 @@ const SidebarFixed = ({
 				)}>
 				<div
 					className={cn(
-						"flex items-center h-20 border-b border-white/10",
+						"flex h-20 items-center border-b border-slate-200 bg-white",
 						collapsed ? "justify-center px-0" : "justify-between px-6",
 					)}>
 					{!collapsed && (
 						<div className="flex items-center gap-3">
-							<div className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-200 bg-white text-xs font-black text-[#0b71ee] shadow-sm">
+							<div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-xs font-black text-[#0b71ee] shadow-sm">
 								AS
 							</div>
 							<div>
-								<h1 className="text-base font-bold text-white leading-none tracking-tight">
+								<h1 className="text-base font-bold text-slate-950 leading-none tracking-tight">
 									ArenaSys
 								</h1>
-								<p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">
-									Operação
+								<p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">
+									Gestão da arena
 								</p>
 							</div>
 						</div>
 					)}
 					{collapsed && (
-						<div className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-200 bg-white text-xs font-black text-[#0b71ee] shadow-sm">
+						<div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-xs font-black text-[#0b71ee] shadow-sm">
 							AS
 						</div>
 					)}
 
 					<button
+						type="button"
 						onClick={() => setCollapsed(!collapsed)}
-						className="hidden md:flex text-gray-300 hover:text-white transition-colors p-1"
+						aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+						className="hidden h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-950 md:flex"
 						title={collapsed ? "Expandir" : "Recolher"}>
 						{collapsed ?
 							<ChevronRight className="h-5 w-5" />
 						:	<ChevronLeft className="h-5 w-5" />}
 					</button>
 					<button
+						type="button"
 						onClick={() => setMobileOpen(false)}
-						className="md:hidden text-gray-300">
-						<X className="h-6 w-6" />
+						aria-label="Fechar menu"
+						className="flex h-9 w-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-50 md:hidden">
+						<X className="h-5 w-5" />
 					</button>
 				</div>
 
-				<div className="flex-1 overflow-y-auto py-6 px-3 space-y-2 custom-scrollbar">
+				<div className="flex-1 overflow-y-auto px-3 py-5 space-y-2 custom-scrollbar">
 					{/* Trial Countdown */}
 					<TrialCountdown tenantId={tenantId} collapsed={collapsed} />
 
 					{/* Botão do Checklist - Sempre visível */}
 					<button
+						type="button"
 						onClick={() => setChecklistOpen(true)}
+						aria-label={
+							isComplete ?
+								"Arena configurada"
+							:	"Abrir checklist de configuração da arena"
+						}
 						className={cn(
-							"w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 border mb-3 group relative overflow-hidden",
+							"relative mb-4 flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors duration-200",
 							collapsed ? "justify-center px-0" : "",
 							isComplete ?
-								"bg-blue-500/12 text-blue-200 border-blue-400/30 hover:bg-blue-500/16"
-							:	"bg-yellow-400/12 text-yellow-100 border-yellow-300/30 hover:bg-yellow-400/16",
+								"border-blue-100 bg-blue-50 text-[#0b71ee] hover:bg-blue-100/70"
+							:	"border-yellow-200 bg-yellow-50 text-yellow-900 hover:bg-yellow-100/70",
 						)}
 						title={isComplete ? "Arena Configurada!" : "Configure sua Arena"}>
-						{/* Glow effect */}
-						<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-						<div className="flex items-center gap-3 relative z-10">
+						<div className="flex items-center gap-3">
 							{isComplete ?
 								<Trophy className="h-5 w-5" />
 							: completed === 0 ?
@@ -330,7 +337,7 @@ const SidebarFixed = ({
 											"Configurar arena"
 										:	`Ajustes da arena`}
 									</span>
-									<span className="text-xs opacity-75">
+									<span className="text-xs opacity-80">
 										{isComplete ?
 											"Configuração completa"
 										:	`${completed}/${total} concluídos`}
@@ -340,63 +347,68 @@ const SidebarFixed = ({
 						</div>
 
 						{!collapsed && (
-							<div className="relative z-10 flex items-center gap-2">
+							<div className="ml-auto flex items-center gap-2">
 								<div
 									className={cn(
-										"text-xs font-bold px-2 py-1 rounded-full",
-										isComplete ? "bg-blue-500/20" : "bg-yellow-400/20",
+										"rounded-full px-2 py-1 text-xs font-bold",
+										isComplete ? "bg-white text-[#0b71ee]" : "bg-white text-yellow-900",
 									)}>
 									{Math.round((completed / total) * 100)}%
 								</div>
-								<ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
 							</div>
 						)}
 
 						{/* Badge para modo collapsed */}
 						{collapsed && !isComplete && (
-							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0b71ee] text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507]">
+							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0b71ee] text-white text-xs flex items-center justify-center font-bold border-2 border-white">
 								{total - completed}
 							</div>
 						)}
 
 						{/* Badge de troféu quando completo no collapsed */}
 						{collapsed && isComplete && (
-							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0b71ee] text-white text-xs flex items-center justify-center font-bold border-2 border-[#050507]">
+							<div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0b71ee] text-white text-xs flex items-center justify-center font-bold border-2 border-white">
 								✓
 							</div>
 						)}
 					</button>
 
 					{!collapsed && (
-						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
 							Operação
 						</p>
 					)}
-					{menuItems.map((item) => {
+					{SIDEBAR_MENU_ITEMS.map((item) => {
 						const btn = (
 							<button
+								type="button"
 								onClick={() => {
 									setActiveView(item.id);
 									setMobileOpen(false);
 								}}
+								aria-label={item.label}
+								aria-current={activeView === item.id ? "page" : undefined}
 								className={cn(
-									"w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+									"group relative flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
 									activeView === item.id ?
-										"bg-[#0b71ee] text-white font-semibold border border-[#0b71ee] shadow-sm"
-									:	"text-slate-300 hover:bg-white/[0.06] hover:text-white border border-transparent",
+										"border-blue-100 bg-blue-50 text-[#0b71ee] font-semibold"
+									:	"border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950",
 									collapsed ? "justify-center" : "",
 								)}>
+								{activeView === item.id && !collapsed && (
+									<span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#0b71ee]" />
+								)}
 								<item.icon
 									className={cn(
 										"h-5 w-5 shrink-0 transition-all duration-200",
 										activeView === item.id ?
-											"text-white"
-										:	"group-hover:text-white",
+											"text-[#0b71ee]"
+										:	"text-slate-400 group-hover:text-slate-700",
 									)}
 								/>
 								{!collapsed && <span className="text-sm">{item.label}</span>}
 								{!collapsed && activeView === item.id && (
-									<div className="ml-auto h-1.5 w-1.5 rounded-full bg-[#ffd33d] shadow-[0_0_8px_currentColor]" />
+									<div className="ml-auto h-1.5 w-1.5 rounded-full bg-[#ffd33d]" />
 								)}
 							</button>
 						);
@@ -405,7 +417,7 @@ const SidebarFixed = ({
 									<TooltipTrigger asChild>{btn}</TooltipTrigger>
 									<TooltipContent
 										side="right"
-										className="bg-surface-2 border-white/10 text-white">
+										className="border-slate-200 bg-white text-slate-950 shadow-lg">
 										{item.label}
 									</TooltipContent>
 								</Tooltip>
@@ -413,46 +425,50 @@ const SidebarFixed = ({
 					})}
 
 					{/* Divisor sutil: Operação vs Sistema */}
-					<div className="my-2 border-t border-white/10" aria-hidden />
+					<div className="my-2 border-t border-slate-200" aria-hidden />
 					{!collapsed && (
-						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+						<p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
 							Sistema
 						</p>
 					)}
 				</div>
 
-				<div className="p-3 border-t border-white/10 bg-[#05080d]">
+				<div className="border-t border-slate-200 bg-slate-50 p-3">
 					{collapsed ?
 						<Tooltip delayDuration={300}>
 							<TooltipTrigger asChild>
 								<button
+									type="button"
 									onClick={() => {
 										setActiveView("config");
 										setMobileOpen(false);
 									}}
+									aria-label="Configurações"
 									className={cn(
-										"w-full flex items-center justify-center px-3 py-3 rounded-lg transition-all duration-200 text-slate-300 hover:bg-white/[0.06] hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+										"mb-2 flex w-full items-center justify-center rounded-lg border border-transparent px-3 py-3 text-slate-500 transition-colors duration-200 outline-none hover:bg-white hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50",
 										activeView === "config" &&
-											"bg-white/5 text-white border-l-[#0b71ee]",
+											"border-blue-100 bg-blue-50 text-[#0b71ee]",
 									)}>
 									<Settings className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent
 								side="right"
-								className="bg-surface-2 border-white/10 text-white">
+								className="border-slate-200 bg-white text-slate-950 shadow-lg">
 								Configurações
 							</TooltipContent>
 						</Tooltip>
 					:	<button
+							type="button"
 							onClick={() => {
 								setActiveView("config");
 								setMobileOpen(false);
 							}}
+							aria-label="Configurações"
 							className={cn(
-								"w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-slate-300 hover:bg-white/[0.06] hover:text-white mb-2 border-l-2 border-transparent outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
+								"mb-2 flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-3 text-slate-600 transition-colors duration-200 outline-none hover:border-slate-200 hover:bg-white hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50",
 								activeView === "config" &&
-									"bg-white/5 text-white border-l-[#0b71ee]",
+									"border-blue-100 bg-blue-50 text-[#0b71ee] font-semibold",
 							)}>
 							<Settings className="h-5 w-5 shrink-0" />
 							<span className="text-sm">Configurações</span>
@@ -464,26 +480,30 @@ const SidebarFixed = ({
 						<Tooltip delayDuration={300}>
 							<TooltipTrigger asChild>
 								<button
+									type="button"
 									onClick={() => {
 										setSupportModalOpen(true);
 										setMobileOpen(false);
 									}}
-									className="w-full flex items-center justify-center px-3 py-3 rounded-lg transition-all duration-200 text-slate-300 hover:bg-blue-500/10 hover:text-blue-200 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
+									aria-label="Suporte"
+									className="mb-2 flex w-full items-center justify-center rounded-lg border border-transparent px-3 py-3 text-slate-500 transition-colors duration-200 outline-none hover:bg-white hover:text-[#0b71ee] focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
 									<Headphones className="h-5 w-5 shrink-0" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent
 								side="right"
-								className="bg-surface-2 border-white/10 text-white">
+								className="border-slate-200 bg-white text-slate-950 shadow-lg">
 								Suporte
 							</TooltipContent>
 						</Tooltip>
 					:	<button
+							type="button"
 							onClick={() => {
 								setSupportModalOpen(true);
 								setMobileOpen(false);
 							}}
-							className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-slate-300 hover:bg-blue-500/10 hover:text-blue-200 hover:border-blue-500/30 border border-transparent mb-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]">
+							aria-label="Suporte"
+							className="mb-2 flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-3 text-slate-600 transition-colors duration-200 outline-none hover:border-slate-200 hover:bg-white hover:text-[#0b71ee] focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50">
 							<Headphones className="h-5 w-5 shrink-0" />
 							<span className="text-sm">Suporte</span>
 						</button>
@@ -497,33 +517,34 @@ const SidebarFixed = ({
 						<DropdownMenuTrigger asChild>
 							<button
 								type="button"
+								aria-label="Abrir menu do usuário"
 								className={cn(
-									"w-full flex items-center gap-3 p-2 rounded-lg border border-white/10 bg-white/[0.04] mt-2 transition-all duration-200 hover:bg-white/[0.07] hover:border-white/15 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507] active:scale-[0.98]",
+									"mt-2 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white p-2 transition-colors duration-200 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 active:scale-[0.98]",
 									collapsed ?
 										"justify-center border-none bg-transparent p-0"
 									:	"",
 								)}>
-								<div className="h-9 w-9 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
+								<div className="h-9 w-9 rounded-md bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
 									{userProfile?.avatar_url ?
 										<img
 											src={userProfile.avatar_url}
 											alt="User"
 											className="h-full w-full object-cover"
 										/>
-									:	<User className="text-white h-4 w-4" />}
+									:	<User className="text-slate-500 h-4 w-4" />}
 								</div>
 								{!collapsed && (
 									<div className="flex-1 overflow-hidden text-left">
-										<p className="text-sm font-medium text-white truncate">
+										<p className="text-sm font-semibold text-slate-950 truncate">
 											{userProfile?.full_name?.split(" ")[0] || "Admin"}
 										</p>
-										<p className="text-[10px] text-gray-300 uppercase font-bold truncate">
+										<p className="text-[10px] text-slate-500 uppercase font-bold truncate">
 											Logado
 										</p>
 									</div>
 								)}
 								{!collapsed && (
-									<ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
+									<ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
 								)}
 							</button>
 						</DropdownMenuTrigger>
@@ -531,13 +552,13 @@ const SidebarFixed = ({
 							align={collapsed ? "center" : "end"}
 							side={collapsed ? "right" : "top"}
 							sideOffset={8}
-							className="min-w-[180px] rounded-xl border border-white/10 bg-surface-2 p-1 shadow-xl shadow-black/30">
+							className="min-w-[180px] rounded-lg border border-slate-200 bg-white p-1 shadow-xl shadow-slate-950/10">
 							<DropdownMenuItem
 								onClick={() => {
 									setActiveView("config");
 									setMobileOpen(false);
 								}}
-								className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-200 focus:bg-white/10 focus:text-white focus:outline-none cursor-pointer">
+								className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 focus:bg-slate-50 focus:text-slate-950 focus:outline-none cursor-pointer">
 								<User className="h-4 w-4" />
 								Perfil
 							</DropdownMenuItem>
@@ -548,7 +569,7 @@ const SidebarFixed = ({
 										window.location.href = "/login";
 									}
 								}}
-								className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-200 focus:bg-red-500/20 focus:text-red-400 focus:outline-none cursor-pointer">
+								className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700 focus:bg-red-50 focus:text-red-600 focus:outline-none cursor-pointer">
 								<LogOut className="h-4 w-4" />
 								Sair
 							</DropdownMenuItem>
@@ -1569,18 +1590,24 @@ export default function DashboardHome() {
 					collapsed ? "md:pl-20" : "md:pl-72",
 				)}>
 				{/* Header Mobile */}
-				<div className="md:hidden sticky top-0 z-30 bg-[#070b12]/95 backdrop-blur-lg border-b border-white/10 px-4 py-3 flex items-center justify-between">
+				<div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-lg border-b border-slate-200 px-4 py-3 flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<Activity className="h-5 w-5 text-[#0b71ee]" />
-						<span className="font-bold text-lg tracking-tight">ArenaSys</span>
+						<div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-[#0b71ee] ring-1 ring-blue-100">
+							<Activity className="h-4 w-4" />
+						</div>
+						<span className="font-bold text-lg tracking-tight text-slate-950">
+							ArenaSys
+						</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<ThemeToggleButton collapsed />
 						<Button
 							variant="ghost"
 							size="icon"
+							aria-label="Abrir menu"
+							className="text-slate-600 hover:bg-slate-50 hover:text-slate-950"
 							onClick={() => setMobileOpen(true)}>
-							<Menu className="w-6 h-6 text-white" />
+							<Menu className="w-6 h-6" />
 						</Button>
 					</div>
 				</div>
