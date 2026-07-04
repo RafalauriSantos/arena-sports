@@ -669,13 +669,13 @@ const DashboardTopbar = ({
 	onOpenAgenda: () => void;
 	onOpenFinanceiro: () => void;
 }) => (
-	<section className="flex flex-col gap-4 border-b-[0.5px] border-[color:var(--az-line)] pb-5 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between">
-		<div>
-			<h2 className="font-['Archivo'] text-[21px] font-semibold leading-7 tracking-normal text-[color:var(--az-ink)] dark:text-white">
+	<section className="flex flex-col gap-4 border-b-[0.5px] border-[color:var(--az-line)] pb-6 pt-1 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between">
+		<div className="min-w-0">
+			<h2 className="font-['Archivo'] text-[26px] font-semibold leading-[1.12] tracking-normal text-[color:var(--az-ink)] sm:text-[30px] dark:text-white">
 				{getGreeting()}
 				{userName ? `, ${userName.split(" ")[0]}` : ""}.
 			</h2>
-			<p className="mt-1 text-[13px] capitalize text-[color:var(--az-ink-soft)] dark:text-slate-400">
+			<p className="mt-2 text-[14px] leading-5 capitalize text-[color:var(--az-ink-soft)] sm:text-[15px] dark:text-slate-400">
 				{getDashboardDateLabel()} · operação da arena em tempo real
 			</p>
 		</div>
