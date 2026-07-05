@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabaseClient";
 import {
 	MapPin,
 	Clock,
-	Trophy,
 	Sparkles,
 	MessageCircle,
 	Calendar as CalendarIcon,
@@ -901,13 +900,13 @@ Qual a chave PIX?`;
 
 	if (errorMsg || !tenant) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 text-center">
+			<div className="flex min-h-screen items-center justify-center bg-[var(--az-paper)] p-6 text-center">
 				<div className="max-w-md space-y-4">
-					<Frown className="h-16 w-16 text-gray-300 mx-auto" />
-					<h1 className="text-xl font-bold text-gray-900">
+					<Frown className="mx-auto h-16 w-16 text-[var(--az-ink-soft)]" />
+					<h1 className="text-xl font-bold text-[var(--az-ink)]">
 						Arena não encontrada
 					</h1>
-					<p className="text-gray-300 text-sm">
+					<p className="text-sm text-[var(--az-ink-soft)]">
 						{errorMsg ||
 							"Verifique se o link está correto ou se a arena mudou de nome."}
 					</p>
@@ -956,7 +955,7 @@ Qual a chave PIX?`;
 
 	return (
 		<div
-			className={`min-h-screen bg-slate-50 font-sans ${
+			className={`min-h-screen bg-[var(--az-paper)] font-sans ${
 				selectedSlot && !reserveSuccess ? "pb-24" : "pb-6"
 			}`}>
 			{showConfetti && <Confetti />}
@@ -969,10 +968,10 @@ Qual a chave PIX?`;
 			)}
 
 			{/* Header Imersivo (Hero Section) - NOVO DESIGN MOBILE FIRST */}
-			<div className="relative h-64 md:h-80 overflow-hidden">
+			<div className="relative h-64 overflow-hidden border-b border-[var(--az-line)] md:h-80">
 				{/* Background com gradiente ou foto de capa (futuro) */}
-				<div className="absolute inset-0 bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-800" />
-				<div className="absolute inset-0 bg-black/25" />
+				<div className="absolute inset-0 bg-[var(--az-navy)]" />
+				<div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(22,50,79,0.96),rgba(47,107,69,0.86))]" />
 
 				{/* Conteúdo do Header */}
 				<div className="relative z-10 h-full flex flex-col justify-between p-6 text-white">
@@ -983,8 +982,8 @@ Qual a chave PIX?`;
 							<div
 								className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/15 ${
 									isOpen ?
-										"bg-emerald-500/90 text-white"
-									:	"bg-slate-600/90 text-white"
+										"bg-white/20 text-white"
+									:	"bg-black/20 text-white"
 								}`}>
 								<div
 									className={`w-2 h-2 rounded-full ${isOpen ? "bg-white animate-pulse" : "bg-white"}`}
@@ -1044,7 +1043,7 @@ Qual a chave PIX?`;
 			</div>
 
 			{/* Seletor de Data Horizontal (Estilo Google Calendar) */}
-			<div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+			<div className="sticky top-0 z-20 border-b border-[var(--az-line)] bg-[var(--az-surface)]/95 shadow-sm backdrop-blur">
 				<div className="max-w-2xl mx-auto px-4 py-3">
 					<div
 						ref={carouselRef}
@@ -1069,24 +1068,24 @@ Qual a chave PIX?`;
 									onClick={() => setSelectedDate(date)}
 									className={`flex-shrink-0 snap-center flex flex-col items-center justify-center min-w-[64px] h-20 rounded-xl border transition-all duration-200 active:scale-[0.98] ${
 										isSelected ?
-											"bg-emerald-600 text-white border-emerald-600 shadow-sm"
-										:	"bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+											"border-[var(--az-navy)] bg-[var(--az-navy)] text-white shadow-sm"
+										:	"border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-ink)] hover:border-[var(--az-navy)] hover:bg-[var(--az-paper)]"
 									}`}>
 									<span
 										className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${
-											isSelected ? "text-white/90" : "text-slate-400"
+											isSelected ? "text-white/90" : "text-[var(--az-ink-soft)]"
 										}`}>
 										{dayName}
 									</span>
 									<span
 										className={`text-2xl font-bold ${
-											isSelected ? "text-white" : "text-slate-950"
+											isSelected ? "text-white" : "text-[var(--az-ink)]"
 										}`}>
 										{format(date, "dd")}
 									</span>
 									<span
 										className={`text-[10px] mt-0.5 ${
-											isSelected ? "text-white/80" : "text-slate-400"
+											isSelected ? "text-white/80" : "text-[var(--az-ink-soft)]"
 										}`}>
 										{format(date, "MMM", { locale: ptBR })}
 									</span>
@@ -1101,15 +1100,15 @@ Qual a chave PIX?`;
 			<div className="max-w-2xl mx-auto px-4 mt-5 sm:mt-6 space-y-5 sm:space-y-6 pb-6">
 				{/* Banner Promoção */}
 				{courtsWithSlots.some((c) => c.slots.some((s) => s.hasDiscount)) && (
-					<div className="bg-white border border-emerald-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
-						<div className="bg-emerald-600 p-2 rounded-lg">
-							<Sparkles className="w-5 h-5 text-white" />
+					<div className="flex items-center gap-3 rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] p-4 shadow-sm">
+						<div className="rounded-lg bg-[var(--az-navy-soft)] p-2 text-[var(--az-navy)]">
+							<Sparkles className="h-5 w-5" />
 						</div>
 						<div className="flex-1">
-							<p className="font-semibold text-emerald-900 text-sm">
+							<p className="text-sm font-semibold text-[var(--az-ink)]">
 								Reserve com 7+ dias de antecedência
 							</p>
-							<p className="text-xs text-emerald-700">
+							<p className="text-xs text-[var(--az-ink-soft)]">
 								E ganhe{" "}
 								<strong>{configs.full_payment_discount_percent}% OFF</strong> no
 								pagamento à vista!
@@ -1122,25 +1121,25 @@ Qual a chave PIX?`;
 				{courtsWithSlots.map((court) => (
 					<div
 						key={court.id}
-						className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+						className="overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] shadow-sm">
 						{/* Header da Quadra */}
-						<div className="px-4 sm:px-5 py-4 bg-slate-50 border-b border-slate-200">
+						<div className="border-b border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-4 sm:px-5">
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
-									<div className="bg-emerald-100 p-2.5 rounded-lg">
-										<Trophy className="w-5 h-5 text-emerald-600" />
+									<div className="rounded-lg bg-[var(--az-navy-soft)] p-2.5 text-[var(--az-navy)]">
+										<CalendarIcon className="h-5 w-5" />
 									</div>
 									<div>
-										<h3 className="font-bold text-slate-950 text-lg">
+										<h3 className="text-lg font-bold text-[var(--az-ink)]">
 											{court.name}
 										</h3>
-										<p className="text-xs text-slate-500">
+										<p className="text-xs text-[var(--az-ink-soft)]">
 											{court.slots.filter((s) => !s.isOccupied).length}{" "}
 											{court.slots.filter((s) => !s.isOccupied).length === 1 ?
 												"horário disponível"
 											:	"horários disponíveis"}
 											{court.slots.filter((s) => s.isOccupied).length > 0 && (
-												<span className="text-slate-500 ml-1">
+												<span className="ml-1 text-[var(--az-ink-soft)]">
 													• {court.slots.filter((s) => s.isOccupied).length}{" "}
 													reservado
 													{(
@@ -1159,7 +1158,7 @@ Qual a chave PIX?`;
 						{/* Grid de Horários */}
 						<div className="p-4">
 							{court.slots.length === 0 ?
-								<div className="text-center py-12 text-slate-400">
+								<div className="py-12 text-center text-[var(--az-ink-soft)]">
 									<Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
 									<p className="text-sm font-medium">
 										Sem horários livres para este dia
@@ -1185,17 +1184,17 @@ Qual a chave PIX?`;
 											return (
 												<div
 													key={slot.time}
-													className={`relative flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-lg border bg-slate-100 border-slate-200 opacity-85 cursor-not-allowed animate-reveal-up ${staggerClass}`}>
+													className={`relative flex min-h-[72px] cursor-not-allowed flex-col items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] px-2 py-3 opacity-85 animate-reveal-up ${staggerClass}`}>
 													{/* Ícone de cadeado */}
-													<Lock className="w-4 h-4 text-slate-500 mb-1" />
+													<Lock className="mb-1 h-4 w-4 text-[var(--az-ink-soft)]" />
 
 													{/* Horário */}
-													<span className="text-base font-bold text-slate-500 line-through">
+													<span className="text-base font-bold text-[var(--az-ink-soft)] line-through">
 														{slot.time}
 													</span>
 
 													{/* Label "Reservado" */}
-													<span className="text-[10px] text-slate-500 font-semibold mt-0.5">
+													<span className="mt-0.5 text-[10px] font-semibold text-[var(--az-ink-soft)]">
 														Reservado
 													</span>
 												</div>
@@ -1209,14 +1208,14 @@ Qual a chave PIX?`;
 													handleBooking(court.id, court.name, slot)
 												}
 												data-testid="slot-available"
-												className={`relative group flex flex-col items-center justify-center min-h-[72px] py-3 px-2 rounded-lg border transition-all duration-200 active:scale-[0.98] animate-reveal-up ${staggerClass} ${
+												className={`group relative flex min-h-[72px] flex-col items-center justify-center rounded-lg border px-2 py-3 transition-all duration-200 active:scale-[0.98] animate-reveal-up ${staggerClass} ${
 													isSelected ?
-														"bg-emerald-600 border-emerald-600 text-white shadow-sm"
-													:	"bg-white border-slate-200 text-slate-900 hover:border-emerald-300 hover:bg-emerald-50"
+														"border-[var(--az-navy)] bg-[var(--az-navy)] text-white shadow-sm"
+													:	"border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-ink)] hover:border-[var(--az-navy)] hover:bg-[var(--az-paper)]"
 												}`}>
 												{/* Badge Promo */}
 												{slot.hasDiscount && !isSelected && (
-													<span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10">
+													<span className="absolute -right-2 -top-2 z-10 rounded-full bg-[var(--az-clay)] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
 														-{configs.full_payment_discount_percent}%
 													</span>
 												)}
@@ -1224,7 +1223,7 @@ Qual a chave PIX?`;
 												{/* Horário */}
 												<span
 													className={`text-base font-bold mb-1 ${
-														isSelected ? "text-white" : "text-slate-950"
+														isSelected ? "text-white" : "text-[var(--az-ink)]"
 													}`}>
 													{slot.time}
 												</span>
@@ -1232,15 +1231,15 @@ Qual a chave PIX?`;
 												{/* Preço */}
 												<div className="flex flex-col items-center gap-0.5">
 													{slot.hasDiscount && !isSelected && (
-														<span className="text-[10px] text-gray-300 line-through">
+														<span className="text-[10px] text-[var(--az-ink-soft)] line-through">
 															R$ {slot.price}
 														</span>
 													)}
 													<span
 														className={`text-sm font-bold ${
 															isSelected ? "text-white"
-															: slot.hasDiscount ? "text-emerald-600"
-															: "text-gray-700"
+															: slot.hasDiscount ? "text-[var(--az-turf)]"
+															: "text-[var(--az-ink-soft)]"
 														}`}>
 														R$ {finalPrice}
 													</span>
@@ -1257,23 +1256,23 @@ Qual a chave PIX?`;
 
 			{/* Sticky Footer - Resumo da Reserva */}
 			{selectedSlot && !reserveSuccess && (
-				<div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-slate-200 shadow-xl">
+				<div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--az-line)] bg-[var(--az-surface)]/95 shadow-xl backdrop-blur">
 					<div className="max-w-2xl mx-auto px-4 py-4">
 						<div className="flex items-center justify-between gap-4">
 							{/* Resumo */}
 							<div className="flex-1 min-w-0">
-								<p className="text-sm font-semibold text-slate-950 truncate">
+								<p className="truncate text-sm font-semibold text-[var(--az-ink)]">
 									{selectedSlot.courtName}
 								</p>
 								<div className="flex items-center gap-2 mt-0.5">
-									<Clock className="w-4 h-4 text-slate-400 flex-shrink-0" />
-									<span className="text-sm text-slate-500">
+									<Clock className="h-4 w-4 flex-shrink-0 text-[var(--az-ink-soft)]" />
+									<span className="text-sm text-[var(--az-ink-soft)]">
 										{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 										{selectedSlot.slot.time}
 										{bookingDuration === 90 && " - 1h30"}
 									</span>
 								</div>
-								<p className="text-lg font-bold text-emerald-600 mt-1">
+								<p className="mt-1 text-lg font-bold text-[var(--az-turf)]">
 									R${" "}
 									{calculatePrice(
 										selectedSlot.slot.price,
@@ -1286,7 +1285,7 @@ Qual a chave PIX?`;
 							{/* Botão de Ação */}
 							<button
 								onClick={() => setShowBookingModal(true)}
-								className="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 sm:px-6 py-3 rounded-lg shadow-sm transition-all active:scale-[0.98] flex items-center gap-2">
+								className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-[var(--az-navy)] px-5 py-3 font-bold text-white shadow-sm transition-all hover:bg-[#10283f] active:scale-[0.98] sm:px-6">
 								<span>Reservar Agora</span>
 								<ChevronRightIcon className="w-5 h-5" />
 							</button>
@@ -1304,13 +1303,13 @@ Qual a chave PIX?`;
 							setShowBookingModal(false);
 						}
 					}}
-					className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
-					<div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl shadow-xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 max-h-[90vh] overflow-y-auto">
-						<div className="p-5 sm:p-6 text-center border-b border-slate-200 bg-slate-50">
-							<h3 className="text-lg sm:text-xl font-bold text-slate-950">
+					className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--az-ink)]/60 p-0 backdrop-blur-sm animate-in fade-in sm:items-center sm:p-4">
+					<div className="max-h-[90vh] w-full overflow-hidden overflow-y-auto rounded-t-2xl bg-[var(--az-surface)] shadow-xl animate-in slide-in-from-bottom sm:max-w-md sm:rounded-xl sm:zoom-in-95">
+						<div className="border-b border-[var(--az-line)] bg-[var(--az-paper)] p-5 text-center sm:p-6">
+							<h3 className="text-lg font-bold text-[var(--az-ink)] sm:text-xl">
 								Confirmar Reserva
 							</h3>
-							<p className="text-slate-500 text-sm mt-1.5">
+							<p className="mt-1.5 text-sm text-[var(--az-ink-soft)]">
 								{selectedSlot.courtName} •{" "}
 								{format(selectedDate, "dd/MM", { locale: ptBR })} •{" "}
 								{selectedSlot.slot.time}
@@ -1337,14 +1336,14 @@ Qual a chave PIX?`;
 										}}
 										type="button"
 										className="w-full py-2 px-4 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-xs font-medium transition-colors">
-										🔄 Recarregar página (limpar cache)
+										Recarregar página (limpar cache)
 									</button>
 								</div>
 							)}
 
 							{reserveSuccess && (
-								<div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-700 text-sm font-medium">
-									✅ {reserveSuccess}
+								<div className="rounded-xl border border-[var(--az-line)] bg-[var(--az-turf-soft)] px-4 py-3 text-sm font-medium text-[var(--az-turf)]">
+									{reserveSuccess}
 								</div>
 							)}
 
@@ -1352,7 +1351,7 @@ Qual a chave PIX?`;
 								<>
 									{/* Seleção de Duração */}
 									<div className="mb-4">
-										<label className="block text-sm font-medium text-slate-700 mb-2">
+										<label className="mb-2 block text-sm font-medium text-[var(--az-ink)]">
 											Duração do jogo
 										</label>
 										<div className="grid grid-cols-2 gap-2">
@@ -1363,8 +1362,8 @@ Qual a chave PIX?`;
 												aria-pressed={bookingDuration === 60}
 												className={`py-2.5 px-4 rounded-lg border font-medium transition-all ${
 													bookingDuration === 60 ?
-														"border-emerald-600 bg-emerald-50 text-emerald-700"
-													:	"border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+														"border-[var(--az-navy)] bg-[var(--az-navy-soft)] text-[var(--az-navy)]"
+													:	"border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-ink)] hover:border-[var(--az-navy)]"
 												} disabled:opacity-50`}>
 												1 hora
 											</button>
@@ -1375,8 +1374,8 @@ Qual a chave PIX?`;
 												aria-pressed={bookingDuration === 90}
 												className={`py-2.5 px-4 rounded-lg border font-medium transition-all ${
 													bookingDuration === 90 ?
-														"border-emerald-600 bg-emerald-50 text-emerald-700"
-													:	"border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+														"border-[var(--az-navy)] bg-[var(--az-navy-soft)] text-[var(--az-navy)]"
+													:	"border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-ink)] hover:border-[var(--az-navy)]"
 												} disabled:opacity-50`}>
 												1h30
 											</button>
@@ -1388,7 +1387,7 @@ Qual a chave PIX?`;
 										<div>
 											<label
 												htmlFor="booking-player-name"
-												className="block text-sm font-medium text-slate-700 mb-1">
+												className="mb-1 block text-sm font-medium text-[var(--az-ink)]">
 												Seu nome
 											</label>
 											<input
@@ -1398,7 +1397,7 @@ Qual a chave PIX?`;
 												value={playerName}
 												onChange={(e) => setPlayerName(e.target.value)}
 												placeholder="Ex: João"
-												className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 text-slate-950 font-medium placeholder:text-slate-400"
+												className="w-full rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-4 py-2.5 font-medium text-[var(--az-ink)] placeholder:text-[var(--az-ink-soft)] focus:border-[var(--az-navy)] focus:ring-2 focus:ring-[var(--az-navy)]/20"
 												disabled={isReserving}
 												maxLength={50}
 											/>
@@ -1406,7 +1405,7 @@ Qual a chave PIX?`;
 										<div>
 											<label
 												htmlFor="booking-player-phone"
-												className="block text-sm font-medium text-slate-700 mb-1">
+												className="mb-1 block text-sm font-medium text-[var(--az-ink)]">
 												Seu telefone (WhatsApp)
 											</label>
 											<input
@@ -1419,7 +1418,7 @@ Qual a chave PIX?`;
 													setPlayerPhone(formatted);
 												}}
 												placeholder="(11) 99988-7766"
-												className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 text-slate-950 font-medium placeholder:text-slate-400"
+												className="w-full rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-4 py-2.5 font-medium text-[var(--az-ink)] placeholder:text-[var(--az-ink-soft)] focus:border-[var(--az-navy)] focus:ring-2 focus:ring-[var(--az-navy)]/20"
 												disabled={isReserving}
 												maxLength={15}
 											/>
@@ -1430,7 +1429,7 @@ Qual a chave PIX?`;
 									<button
 										onClick={handleDirectBooking}
 										disabled={isReserving}
-										className="w-full bg-slate-950 text-white py-3 sm:py-4 rounded-lg font-bold text-base sm:text-lg hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+										className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--az-navy)] py-3 text-base font-bold text-white transition-all hover:bg-[#10283f] disabled:cursor-not-allowed disabled:opacity-50 sm:py-4 sm:text-lg">
 										{isReserving ?
 											<>
 												<Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -1439,7 +1438,7 @@ Qual a chave PIX?`;
 												</span>
 											</>
 										:	<>
-												<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+												<CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" />
 												<span className="text-sm sm:text-base">
 													Reservar e Pagar no Balcão
 												</span>
@@ -1447,7 +1446,7 @@ Qual a chave PIX?`;
 										}
 									</button>
 
-									<p className="text-xs text-slate-500 text-center">
+									<p className="text-center text-xs text-[var(--az-ink-soft)]">
 										Você paga quando chegar • R${" "}
 										{calculatePrice(
 											selectedSlot.slot.price,
@@ -1462,10 +1461,10 @@ Qual a chave PIX?`;
 									{/* Divider */}
 									<div className="relative my-4">
 										<div className="absolute inset-0 flex items-center">
-											<div className="w-full border-t border-slate-200"></div>
+											<div className="w-full border-t border-[var(--az-line)]"></div>
 										</div>
 										<div className="relative flex justify-center text-xs uppercase">
-											<span className="bg-white px-2 text-slate-400 font-medium">
+											<span className="bg-[var(--az-surface)] px-2 font-medium text-[var(--az-ink-soft)]">
 												ou pagar via PIX
 											</span>
 										</div>
@@ -1475,16 +1474,16 @@ Qual a chave PIX?`;
 									{configs.require_deposit && (
 										<button
 											onClick={() => sendWhatsapp("deposit")}
-											className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all group">
+											className="group flex w-full items-center justify-between rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] p-4 transition-all hover:border-[var(--az-navy)] hover:bg-[var(--az-paper)]">
 											<div className="text-left">
-												<p className="font-bold text-gray-900 group-hover:text-green-700">
-													💳 Pagar Sinal (PIX)
+												<p className="font-bold text-[var(--az-ink)] group-hover:text-[var(--az-navy)]">
+													Pagar sinal (PIX)
 												</p>
-												<p className="text-xs text-gray-300">
+												<p className="text-xs text-[var(--az-ink-soft)]">
 													Garante + enviar comprovante
 												</p>
 											</div>
-											<span className="font-bold text-green-600 text-lg">
+											<span className="text-lg font-bold text-[var(--az-turf)]">
 												R${" "}
 												{(configs.deposit_type === "fixed" ?
 													configs.deposit_value
@@ -1503,20 +1502,20 @@ Qual a chave PIX?`;
 									{configs.enable_full_payment_discount && (
 										<button
 											onClick={() => sendWhatsapp("full")}
-											className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all relative overflow-hidden group">
-											<div className="absolute top-0 right-0 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
+											className="group relative flex w-full items-center justify-between overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-paper)] p-4 transition-all hover:border-[var(--az-clay)]">
+											<div className="absolute right-0 top-0 rounded-bl-lg bg-[var(--az-clay)] px-2 py-0.5 text-[10px] font-bold text-white">
 												{configs.full_payment_discount_percent}% OFF
 											</div>
 											<div className="text-left">
-												<p className="font-bold text-gray-900 group-hover:text-primary">
-													💎 Pagar Tudo (PIX)
+												<p className="font-bold text-[var(--az-ink)] group-hover:text-[var(--az-clay)]">
+													Pagar tudo (PIX)
 												</p>
-												<p className="text-xs text-gray-300">
+												<p className="text-xs text-[var(--az-ink-soft)]">
 													Desconto + enviar comprovante
 												</p>
 											</div>
 											<div className="text-right">
-												<p className="text-xs text-gray-300 line-through">
+												<p className="text-xs text-[var(--az-ink-soft)] line-through">
 													R${" "}
 													{calculatePrice(
 														selectedSlot.slot.price,
@@ -1524,7 +1523,7 @@ Qual a chave PIX?`;
 														bookingDuration,
 													).toFixed(2)}
 												</p>
-												<span className="font-bold text-primary text-lg">
+												<span className="text-lg font-bold text-[var(--az-turf)]">
 													R${" "}
 													{(
 														calculatePrice(
@@ -1544,16 +1543,16 @@ Qual a chave PIX?`;
 										!configs.enable_full_payment_discount && (
 											<button
 												onClick={() => sendWhatsapp("standard")}
-												className="w-full bg-gray-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
+												className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--az-navy)] py-4 text-lg font-bold text-white transition-all hover:bg-[#10283f]">
 												<MessageCircle className="w-5 h-5" />
-												📱 Pagar via PIX e Enviar Comprovante
+												Pagar via PIX e enviar comprovante
 											</button>
 										)}
 								</>
 							)}
 						</div>
 
-						<div className="p-4 bg-gray-50 text-center border-t border-gray-100">
+						<div className="border-t border-[var(--az-line)] bg-[var(--az-paper)] p-4 text-center">
 							<button
 								onClick={() => {
 									setReserveError(null);
@@ -1565,7 +1564,7 @@ Qual a chave PIX?`;
 										setPlayerPhone("");
 									}
 								}}
-								className="text-sm text-gray-300 hover:text-gray-800 font-medium px-4 py-2 rounded-lg hover:bg-gray-200/50 transition-colors">
+								className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--az-ink-soft)] transition-colors hover:bg-[var(--az-surface)] hover:text-[var(--az-ink)]">
 								{reserveSuccess ? "Fechar" : "Cancelar"}
 							</button>
 						</div>
@@ -1580,16 +1579,16 @@ Qual a chave PIX?`;
 // Skeleton Premium Mobile-First
 function PublicSkeleton() {
 	return (
-		<div className="bg-gray-50 pb-12 font-sans">
+		<div className="bg-[var(--az-paper)] pb-12 font-sans">
 			{/* Header Skeleton */}
-			<div className="relative h-64 md:h-80 bg-gray-200 animate-pulse">
-				<div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
+			<div className="relative h-64 animate-pulse bg-[var(--az-navy-soft)] md:h-80">
+				<div className="absolute inset-0 bg-[linear-gradient(135deg,var(--az-navy-soft),var(--az-paper))]" />
 				<div className="absolute bottom-0 left-0 w-full p-6 pb-20 md:pb-24">
 					<div className="max-w-4xl mx-auto space-y-4">
-						<Skeleton className="h-6 w-24 bg-white/20 rounded-full" />
-						<Skeleton className="h-10 w-3/4 bg-white/30 rounded-lg" />
+						<Skeleton className="h-6 w-24 rounded-full bg-white/40" />
+						<Skeleton className="h-10 w-3/4 rounded-lg bg-white/50" />
 						<div className="flex gap-2">
-							<Skeleton className="h-4 w-1/3 bg-white/20 rounded" />
+							<Skeleton className="h-4 w-1/3 rounded bg-white/40" />
 						</div>
 					</div>
 				</div>
@@ -1597,12 +1596,12 @@ function PublicSkeleton() {
 
 			<div className="max-w-4xl mx-auto px-4 -mt-16 md:-mt-20 relative z-20 space-y-6">
 				{/* Calendar Strip Skeleton */}
-				<div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-4 mb-6">
+				<div className="mb-6 rounded-2xl border border-[var(--az-line)] bg-[var(--az-surface)] p-4 shadow-xl">
 					<div className="flex gap-3 overflow-hidden">
 						{[...Array(6)].map((_, i) => (
 							<Skeleton
 								key={i}
-								className="flex-shrink-0 w-16 h-20 rounded-xl bg-gray-100"
+								className="h-20 w-16 flex-shrink-0 rounded-xl bg-[var(--az-paper)]"
 							/>
 						))}
 					</div>
@@ -1612,13 +1611,13 @@ function PublicSkeleton() {
 				{[...Array(3)].map((_, i) => (
 					<div
 						key={i}
-						className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-						<div className="p-4 border-b border-slate-100 flex justify-between items-center">
+						className="overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] shadow-sm">
+						<div className="flex items-center justify-between border-b border-[var(--az-line)] p-4">
 							<div className="flex items-center gap-3">
-								<Skeleton className="w-10 h-10 rounded-full bg-gray-100" />
+								<Skeleton className="h-10 w-10 rounded-full bg-[var(--az-paper)]" />
 								<div className="space-y-2">
-									<Skeleton className="h-5 w-32 bg-gray-100 rounded" />
-									<Skeleton className="h-3 w-20 bg-gray-50 rounded" />
+									<Skeleton className="h-5 w-32 rounded bg-[var(--az-paper)]" />
+									<Skeleton className="h-3 w-20 rounded bg-[var(--az-paper)]" />
 								</div>
 							</div>
 						</div>
@@ -1626,7 +1625,7 @@ function PublicSkeleton() {
 							{[...Array(6)].map((_, j) => (
 								<Skeleton
 									key={j}
-									className="h-[72px] rounded-lg bg-slate-50 border border-transparent"
+									className="h-[72px] rounded-lg border border-transparent bg-[var(--az-paper)]"
 								/>
 							))}
 						</div>

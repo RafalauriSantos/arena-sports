@@ -1,9 +1,3 @@
-/**
- * SubscriptionCard - Componente de Assinatura Minimalista
- * Design inspirado em Apple/Stripe/Nubank
- * Focado em clareza, conversão e segurança visual
- */
-
 import {
 	CreditCard,
 	Calendar,
@@ -11,6 +5,7 @@ import {
 	AlertCircle,
 	Clock,
 	Sparkles,
+	ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -43,7 +38,6 @@ export function SubscriptionCard({
 	const isPastDue = subscription.status === "past_due";
 	const isCanceled = subscription.status === "canceled";
 
-	// Calcular dias restantes do trial
 	const computeTrialDaysLeft = (): number | null => {
 		if (
 			!isTrial ||
@@ -60,9 +54,8 @@ export function SubscriptionCard({
 	};
 
 	const trialDaysLeft = computeTrialDaysLeft();
-	const trialTotalDays = 7; // Sempre 7 dias
+	const trialTotalDays = 7;
 
-	// Calcular progresso do trial (0-100)
 	const trialProgress = (() => {
 		if (
 			!isTrial ||
@@ -79,7 +72,6 @@ export function SubscriptionCard({
 		return Math.min(100, Math.max(0, (elapsed / total) * 100));
 	})();
 
-	// Formatar preço
 	const formatPrice = (cents: number | undefined): string => {
 		if (!cents) return "R$ 0,00";
 		const reais = cents / 100;
@@ -97,49 +89,49 @@ export function SubscriptionCard({
 		billingInterval === "month" ? MONTHLY_PRICE_CENTS : annualPrice;
 	const priceLabel = billingInterval === "month" ? "/mês" : "/ano";
 
-	// Status badge config
 	const getStatusConfig = () => {
 		if (isActive) {
 			return {
 				label: "Ativo",
-				color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+				color:
+					"bg-[var(--az-turf-soft)] text-[var(--az-turf)] border-[var(--az-line)]",
 				icon: CheckCircle2,
-				iconColor: "text-emerald-600",
+				iconColor: "text-[var(--az-turf)]",
 			};
 		}
 		if (isTrial) {
 			return {
-				label: "Em Período de Teste",
-				color: "bg-amber-50 text-amber-700 border-amber-200",
+				label: "Em teste",
+				color:
+					"bg-[var(--az-navy-soft)] text-[var(--az-navy)] border-[var(--az-line)]",
 				icon: Clock,
-				iconColor: "text-amber-600",
+				iconColor: "text-[var(--az-navy)]",
 			};
 		}
 		if (isPastDue) {
 			return {
-				label: "Pagamento Pendente",
-				color: "bg-red-50 text-red-700 border-red-200",
+				label: "Pagamento pendente",
+				color: "bg-rose-50 text-rose-700 border-rose-200",
 				icon: AlertCircle,
-				iconColor: "text-red-600",
+				iconColor: "text-rose-600",
 			};
 		}
 		return {
 			label: "Cancelado",
-			color: "bg-gray-50 text-gray-700 border-gray-200",
+			color:
+				"bg-[var(--az-paper)] text-[var(--az-ink-soft)] border-[var(--az-line)]",
 			icon: AlertCircle,
-			iconColor: "text-gray-400",
+			iconColor: "text-[var(--az-ink-soft)]",
 		};
 	};
 
 	const statusConfig = getStatusConfig();
 	const StatusIcon = statusConfig.icon;
 
-	// Próxima fatura
 	const getNextBillingDate = (): string | null => {
 		if (isTrial && subscription.trial_ends_at) {
 			return new Date(subscription.trial_ends_at).toLocaleDateString("pt-BR");
 		}
-		// Se ativo, calcular próxima cobrança (30 dias após última)
 		if (isActive) {
 			const now = new Date();
 			const nextMonth = new Date(now);
@@ -152,27 +144,27 @@ export function SubscriptionCard({
 	const nextBillingDate = getNextBillingDate();
 
 	return (
-		<div className="space-y-6">
-			{/* Bloco 1: Plano Atual */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-				{/* Header */}
-				<div className="flex items-start justify-between">
+		<div className="space-y-5">
+			<div className="az-card p-5 sm:p-6 space-y-6">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div className="space-y-1">
 						<div className="flex items-center gap-2">
-							<h3 className="text-2xl font-semibold text-gray-900">
+							<h3 className="text-xl sm:text-2xl font-semibold text-[var(--az-ink)]">
 								{subscription.plan_name || "ArenaSys"}
 							</h3>
 							{isFounder && (
-								<span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full">
+								<span className="rounded-full border border-[var(--az-line)] bg-[var(--az-paper)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--az-clay)]">
 									Founder
 								</span>
 							)}
 						</div>
-						<p className="text-sm text-gray-300">Plano atual</p>
+						<p className="text-sm text-[var(--az-ink-soft)]">
+							Assinatura e cobrança da arena
+						</p>
 					</div>
 					<div
 						className={cn(
-							"flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium",
+							"flex w-fit items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium",
 							statusConfig.color,
 						)}>
 						<StatusIcon className={cn("h-3.5 w-3.5", statusConfig.iconColor)} />
@@ -180,65 +172,105 @@ export function SubscriptionCard({
 					</div>
 				</div>
 
-				{/* Preço */}
-				<div className="space-y-2">
-					{billingInterval === "year" && annualFounderOfferAvailable ?
-						<div className="space-y-1">
-							<div className="flex items-baseline gap-2">
-								<span className="text-4xl font-bold text-gray-900">
-									{formatPrice(selectedPrice)}
-								</span>
-								<span className="text-lg text-gray-300">{priceLabel}</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<span className="text-lg text-gray-300 line-through">
-									{formatPrice(FULL_ANNUAL_PRICE_CENTS)}
-								</span>
-								<span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full">
-									Founder 20
-								</span>
-							</div>
-							<p className="text-sm text-amber-600 font-medium flex items-center gap-1">
-								✨ Oferta anual limitada para os primeiros clientes
-							</p>
+				<div className="rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] p-4 sm:p-5">
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+						<div className="space-y-2">
+							{billingInterval === "year" && annualFounderOfferAvailable ?
+								<div className="space-y-1">
+									<div className="flex flex-wrap items-baseline gap-2">
+										<span className="text-3xl font-semibold text-[var(--az-ink)] sm:text-4xl">
+											{formatPrice(selectedPrice)}
+										</span>
+										<span className="text-base text-[var(--az-ink-soft)]">
+											{priceLabel}
+										</span>
+									</div>
+									<div className="flex flex-wrap items-center gap-2">
+										<span className="text-sm text-[var(--az-ink-soft)] line-through">
+											{formatPrice(FULL_ANNUAL_PRICE_CENTS)}
+										</span>
+										<span className="rounded-full border border-[var(--az-line)] bg-[var(--az-surface)] px-2 py-0.5 text-[11px] font-semibold text-[var(--az-clay)]">
+											Founder 20
+										</span>
+									</div>
+									<p className="flex items-center gap-1 text-sm font-medium text-[var(--az-clay)]">
+										<Sparkles className="h-3.5 w-3.5" />
+										Oferta anual limitada para os primeiros clientes
+									</p>
+								</div>
+							:	<div className="flex flex-wrap items-baseline gap-2">
+									<span className="text-3xl font-semibold text-[var(--az-ink)] sm:text-4xl">
+										{formatPrice(selectedPrice)}
+									</span>
+									<span className="text-base text-[var(--az-ink-soft)]">
+										{priceLabel}
+									</span>
+								</div>
+							}
+							{billingInterval === "year" && (
+								<p className="text-sm text-[var(--az-ink-soft)]">
+									Equivale a {formatPrice(Math.round(selectedPrice / 12))}/mês
+								</p>
+							)}
 						</div>
-					:	<div className="flex items-baseline gap-2">
-							<span className="text-4xl font-bold text-gray-900">
-								{formatPrice(selectedPrice)}
-							</span>
-							<span className="text-lg text-gray-300">{priceLabel}</span>
-						</div>
-					}
-					{billingInterval === "year" && (
-						<p className="text-sm text-gray-300">
-							Equivale a {formatPrice(Math.round(selectedPrice / 12))}/mês
-						</p>
-					)}
+
+						{(isTrial || isCanceled) && (
+							<div className="grid grid-cols-2 gap-2 sm:min-w-[240px]">
+								<button
+									type="button"
+									onClick={() => onBillingIntervalChange("month")}
+									className={cn(
+										"rounded-lg border px-3 py-3 text-left text-sm font-medium transition-all",
+										billingInterval === "month" ?
+											"border-[var(--az-navy)] bg-[var(--az-navy)] text-white"
+										:	"border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-ink)] hover:border-[var(--az-navy)]",
+									)}>
+									Mensal
+									<span className="block text-xs opacity-75">
+										{formatPrice(MONTHLY_PRICE_CENTS)}/mês
+									</span>
+								</button>
+								<button
+									type="button"
+									onClick={() => onBillingIntervalChange("year")}
+									className={cn(
+										"relative rounded-lg border px-3 py-3 text-left text-sm font-medium transition-all",
+										billingInterval === "year" ?
+											"border-[var(--az-navy)] bg-[var(--az-navy)] text-white"
+										:	"border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-ink)] hover:border-[var(--az-navy)]",
+									)}>
+									Anual
+									<span className="block text-xs opacity-75">
+										{formatPrice(annualPrice)}/ano
+									</span>
+									{annualFounderOfferAvailable && (
+										<span className="absolute -right-1.5 -top-1.5 rounded-full bg-[var(--az-clay)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+											Founder
+										</span>
+									)}
+								</button>
+							</div>
+						)}
+					</div>
 				</div>
 
-				{/* Barra de Trial */}
 				{isTrial && trialDaysLeft !== null && (
 					<div className="space-y-2">
 						<div className="flex items-center justify-between text-sm">
-							<span className="text-gray-400 font-medium">
-								Restam {trialDaysLeft} dia{trialDaysLeft !== 1 ? "s" : ""} de{" "}
-								{trialTotalDays}
+							<span className="font-medium text-[var(--az-ink-soft)]">
+								Trial: {trialDaysLeft} dia{trialDaysLeft !== 1 ? "s" : ""} de{" "}
+								{trialTotalDays} restantes
 							</span>
-							<span className="text-gray-300">
+							<span className="text-[var(--az-ink-soft)]">
 								{Math.round(trialProgress)}% usado
 							</span>
 						</div>
 						<Progress
 							value={trialProgress}
-							className={cn(
-								"h-2",
-								trialDaysLeft <= 2 ? "bg-red-100 [&>div]:bg-red-500"
-								: trialDaysLeft <= 4 ? "bg-amber-100 [&>div]:bg-amber-500"
-								: "bg-emerald-100 [&>div]:bg-emerald-500",
-							)}
+							className="h-1.5 bg-[var(--az-line)] [&>div]:bg-[var(--az-navy)]"
 						/>
 						{trialDaysLeft <= 2 && (
-							<p className="text-xs text-red-600 font-medium flex items-center gap-1">
+							<p className="flex items-center gap-1 text-xs font-medium text-rose-700">
 								<AlertCircle className="h-3 w-3" />
 								Trial expira em breve. Assine agora para continuar usando.
 							</p>
@@ -246,12 +278,11 @@ export function SubscriptionCard({
 					</div>
 				)}
 
-				{/* Botão de Ação */}
 				{isTrial ?
 					<Button
 						onClick={onStartCheckout}
 						disabled={isStartingCheckout}
-						className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 font-semibold text-base shadow-sm">
+						className="h-12 w-full bg-[var(--az-navy)] text-base font-semibold text-white shadow-sm hover:bg-[#10283f]">
 						{isStartingCheckout ?
 							<>
 								<Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -259,143 +290,64 @@ export function SubscriptionCard({
 							</>
 						:	<>
 								<Sparkles className="mr-2 h-4 w-4" />
-								Assinar Agora e Garantir Preço
+								Assinar agora
 							</>
 						}
 					</Button>
 				: isActive ?
 					<Button
 						variant="outline"
-						className="w-full h-12 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">
+						className="h-12 w-full border-[var(--az-line)] text-[var(--az-ink)] hover:bg-[var(--az-paper)]">
 						<CreditCard className="mr-2 h-4 w-4" />
-						Gerenciar Assinatura
+						Gerenciar assinatura
 					</Button>
 				:	<Button
 						onClick={onStartCheckout}
 						disabled={isStartingCheckout}
-						className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 font-semibold text-base shadow-sm">
+						className="h-12 w-full bg-[var(--az-navy)] text-base font-semibold text-white shadow-sm hover:bg-[#10283f]">
 						{isStartingCheckout ?
 							<>
 								<Clock className="mr-2 h-4 w-4 animate-spin" />
 								Redirecionando...
 							</>
-						:	"Reativar Assinatura"}
+						:	"Reativar assinatura"}
 					</Button>
 				}
 
-				{/* Seletor de Intervalo (apenas se trial ou canceled) */}
-				{(isTrial || isCanceled) && (
-					<div className="pt-4 border-t border-gray-200">
-						<p className="text-sm font-medium text-gray-700 mb-3">
-							Escolha o período:
-						</p>
-						<div className="grid grid-cols-2 gap-3">
-							<button
-								type="button"
-								onClick={() => onBillingIntervalChange("month")}
-								className={cn(
-									"px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all relative",
-									billingInterval === "month" ?
-										"border-gray-900 bg-gray-900 text-white"
-									:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300",
-								)}>
-								Mensal
-								<div className="text-xs mt-0.5 opacity-75">
-									{formatPrice(MONTHLY_PRICE_CENTS)}/mês
-								</div>
-								<span className="block text-[10px] mt-1 opacity-70">
-									sem fidelidade
-								</span>
-							</button>
-							<button
-								type="button"
-								onClick={() => onBillingIntervalChange("year")}
-								className={cn(
-									"px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all relative",
-									billingInterval === "year" ?
-										"border-gray-900 bg-gray-900 text-white"
-									:	"border-gray-200 bg-white text-gray-700 hover:border-gray-300",
-								)}>
-								Anual
-								<div className="text-xs mt-0.5 opacity-75">
-									{formatPrice(annualPrice)}/ano
-								</div>
-								{annualFounderOfferAvailable && (
-									<span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white rounded-full">
-										Founder
-									</span>
-								)}
-							</button>
-						</div>
-						<p className="text-xs text-gray-300 mt-3 text-center">
-							Mensal sem fidelidade. No anual, escolha Pix, boleto ou cartão no Asaas.
-						</p>
-					</div>
-				)}
-			</div>
-
-			{/* Bloco 2: Informações de Cobrança */}
-			<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-				<h4 className="text-lg font-semibold text-gray-900">
-					Informações de Cobrança
-				</h4>
-
-				{/* Próxima Fatura */}
-				{nextBillingDate && (
-					<div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-						<div className="flex items-center gap-3">
-							<div className="p-2 bg-white rounded-lg shadow-sm">
-								<Calendar className="h-4 w-4 text-gray-400" />
+				<div className="grid gap-3 border-t border-[var(--az-line)] pt-5 sm:grid-cols-2">
+					{nextBillingDate && (
+						<div className="flex items-center gap-3 rounded-lg bg-[var(--az-paper)] p-3">
+							<div className="rounded-lg bg-[var(--az-surface)] p-2 text-[var(--az-navy)]">
+								<Calendar className="h-4 w-4" />
 							</div>
 							<div>
-								<p className="text-sm text-gray-300">Próxima fatura</p>
-								<p className="text-base font-semibold text-gray-900">
+								<p className="text-xs text-[var(--az-ink-soft)]">Próxima fatura</p>
+								<p className="text-sm font-semibold text-[var(--az-ink)]">
 									{isTrial ? "Inicia em" : "Renova em"} {nextBillingDate}
 								</p>
 							</div>
 						</div>
-					</div>
-				)}
+					)}
 
-				{/* Método de Pagamento */}
-				<div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-					<div className="flex items-center gap-3">
-						<div className="p-2 bg-white rounded-lg shadow-sm">
-							<CreditCard className="h-4 w-4 text-gray-400" />
+					<div className="flex items-center gap-3 rounded-lg bg-[var(--az-paper)] p-3">
+						<div className="rounded-lg bg-[var(--az-surface)] p-2 text-[var(--az-navy)]">
+							<CreditCard className="h-4 w-4" />
 						</div>
 						<div>
-							<p className="text-sm text-gray-300">Método de pagamento</p>
-							<p className="text-base font-semibold text-gray-900">Via Asaas</p>
+							<p className="text-xs text-[var(--az-ink-soft)]">Pagamento</p>
+							<p className="text-sm font-semibold text-[var(--az-ink)]">
+								Pix, boleto ou cartão via Asaas
+							</p>
 						</div>
 					</div>
 				</div>
 
-				{/* Histórico Recente */}
-				<div className="space-y-3">
-					<p className="text-sm font-medium text-gray-700">Histórico Recente</p>
-					{isTrial ?
-						<div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-							<p className="text-sm text-amber-800">
-								✨ Sua primeira fatura será gerada ao fim do período de teste.
-							</p>
-						</div>
-					:	<div className="space-y-2">
-							{/* Placeholder para faturas futuras */}
-							<div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-								<p className="text-sm text-gray-300 text-center">
-									Nenhuma fatura registrada ainda
-								</p>
-							</div>
-						</div>
-					}
-				</div>
-
-				{/* Segurança */}
-				<div className="pt-4 border-t border-gray-200">
-					<p className="text-xs text-gray-300 text-center">
-						🔒 Pagamento seguro processado pelo Asaas. Você pode cancelar a
+				<div className="flex items-start gap-2 rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-3 py-3 text-xs text-[var(--az-ink-soft)]">
+					<ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--az-turf)]" />
+					<span>
+						Pagamento seguro processado pelo Asaas. Você pode cancelar a
 						qualquer momento.
-					</p>
+					</span>
 				</div>
 			</div>
 		</div>
