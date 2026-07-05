@@ -544,49 +544,42 @@ Deno.serve(async (req) => {
 			// Não falhar se não conseguir salvar - o webhook pode atualizar depois
 		}
 
-		// 7. Criar Payment (Cobrança) para gerar URL de Checkout
-		// IMPORTANTE: No Asaas, você precisa criar um Payment para obter a invoiceUrl (URL do checkout)
-		console.log("Criando cobrança/payment para gerar URL de checkout...");
+		// 7. Buscar a cobrança gerada pela assinatura.
+		// O Asaas já cria a primeira cobrança ao criar a subscription. Criar outro
+		// payment aqui gera cobrança duplicada e pode retornar uma URL sem vínculo
+		// com a assinatura, impedindo o webhook de ativar o tenant corretamente.
+		console.log("Buscando cobrança gerada pela assinatura...");
 
-		// Criar payment vinculado à subscription com data de vencimento imediata (hoje ou amanhã)
-		const dueDate = new Date(Date.now() + 86400000).toISOString().split("T")[0]; // Amanhã
+		const paymentsRes = await fetch(
+			`${ASAAS_URL}/payments?subscription=${encodeURIComponent(subscriptionId)}&limit=10`,
+			{
+				headers: {
+					access_token: ASAAS_API_KEY!,
+				},
+			}
+		);
 
-		// Criar Payment SEM callback primeiro (prioridade: funcionar sempre)
-		const paymentBody: Record<string, any> = {
-			customer: asaasCustomerId,
-			billingType: "UNDEFINED", // Permite PIX, boleto ou cartão
-			value: value,
-			dueDate: dueDate,
-			description: `Assinatura Arena System - ${offerLabel}`,
-			subscription: subscriptionId, // Vincular à subscription criada
-		};
-
-		// Criar payment primeiro (sem callback para garantir que funciona)
-		let paymentRes = await fetch(`${ASAAS_URL}/payments`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				access_token: ASAAS_API_KEY!,
-			},
-			body: JSON.stringify(paymentBody),
-		});
-
-		let paymentData = await paymentRes.json();
-
-		// Se falhar, lançar erro (sem tentar callback)
-		if (paymentData.errors) {
-			console.error("Erro ao criar payment:", paymentData.errors);
+		const paymentsData = await paymentsRes.json();
+		if (paymentsData.errors) {
+			console.error("Erro ao buscar cobrança da assinatura:", paymentsData.errors);
 			throw new Error(
-				`Erro ao criar cobrança: ${paymentData.errors[0]?.description ||
-				paymentData.errors[0]?.message ||
+				`Erro ao buscar cobrança: ${paymentsData.errors[0]?.description ||
+				paymentsData.errors[0]?.message ||
 				"Erro desconhecido"
 				}`
 			);
 		}
 
-		// ✅ Payment criado com sucesso! Agora tentar adicionar callback (prioridade baixa)
-		// Nota: O Asaas não permite atualizar callback depois, então tentamos criar com callback
-		// apenas como fallback. Mas como isso pode falhar, priorizamos criar sem callback.
+		const payments = Array.isArray(paymentsData.data) ? paymentsData.data : [];
+		const paymentData =
+			payments.find((payment: any) => payment.status === "PENDING") ||
+			payments[0];
+
+		if (!paymentData?.id) {
+			throw new Error(
+				"Assinatura criada, mas nenhuma cobrança vinculada foi encontrada. Entre em contato com o suporte."
+			);
+		}
 
 		// Tentar obter URL para callback (opcional - última prioridade)
 		let frontendUrl = "";
@@ -611,9 +604,6 @@ Deno.serve(async (req) => {
 			}
 		}
 
-		// Se tiver URL e quiser tentar callback, poderia tentar atualizar o payment
-		// Mas o Asaas não permite atualizar payment após criação, então deixamos sem callback
-		// O webhook e redirecionamento manual funcionam perfeitamente
 		if (!frontendUrl) {
 			console.log("ℹ️ Callback não configurado. Webhook atualizará status automaticamente.");
 			console.log("   Para redirecionamento automático, configure FRONTEND_URL e cadastre domínio no Asaas.");
@@ -656,8 +646,9 @@ Deno.serve(async (req) => {
 		}
 
 		// Log para debug
-		console.log("Payment criado:", {
+		console.log("Payment vinculado encontrado:", {
 			id: paymentData.id,
+			subscription: paymentData.subscription,
 			invoiceUrl: paymentData.invoiceUrl,
 			invoiceNumber: paymentData.invoiceNumber,
 			status: paymentData.status,
@@ -674,6 +665,7 @@ Deno.serve(async (req) => {
 			JSON.stringify({
 				url: checkoutUrl,
 				subscriptionId: subscriptionId,
+				paymentId: paymentData.id,
 			}),
 			{ headers: { ...corsHeaders, "Content-Type": "application/json" } }
 		);

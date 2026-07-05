@@ -44,6 +44,8 @@ function getErrorMessage(error: unknown): string {
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const asaasApiKey = process.env.ASAAS_API_KEY
+const asaasApiUrl = (process.env.ASAAS_API_URL || 'https://sandbox.asaas.com/api/v3').replace(/\/+$/, '')
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY são obrigatórios')
@@ -282,6 +284,46 @@ async function testCheckoutComplete(): Promise<TestResult[]> {
         message: `Subscription ID: ${checkoutData.subscriptionId}`
       })
       console.log(`   ✅ Subscription ID retornado: ${checkoutData.subscriptionId}`)
+    }
+
+    if (!checkoutData.paymentId) {
+      testResults.push({
+        name: 'Checkout - Payment vinculado',
+        passed: false,
+        severity: 'high',
+        message: 'Payment ID não foi retornado pelo checkout'
+      })
+      console.log('   ❌ Payment ID não foi retornado pelo checkout')
+    } else if (!asaasApiKey) {
+      testResults.push({
+        name: 'Checkout - Payment vinculado',
+        passed: false,
+        severity: 'high',
+        message: 'ASAAS_API_KEY ausente; não foi possível verificar vínculo no sandbox'
+      })
+      console.log('   ⚠️  ASAAS_API_KEY ausente; vínculo do payment não foi verificado')
+    } else {
+      const paymentResponse = await fetch(`${asaasApiUrl}/payments/${checkoutData.paymentId}`, {
+        headers: { access_token: asaasApiKey }
+      })
+      const paymentData = await paymentResponse.json()
+      const paymentLinkedToSubscription =
+        paymentResponse.ok && paymentData.subscription === checkoutData.subscriptionId
+
+      testResults.push({
+        name: 'Checkout - Payment vinculado',
+        passed: paymentLinkedToSubscription,
+        severity: 'critical',
+        message: paymentLinkedToSubscription
+          ? `Payment ${checkoutData.paymentId} vinculado à assinatura`
+          : `Payment ${checkoutData.paymentId} sem vínculo esperado com ${checkoutData.subscriptionId}`
+      })
+
+      if (paymentLinkedToSubscription) {
+        console.log('   ✅ Payment retornado está vinculado à assinatura')
+      } else {
+        console.log('   ❌ Payment retornado não está vinculado à assinatura')
+      }
     }
 
     // Verificar se tenant_subscription foi criado/atualizado
