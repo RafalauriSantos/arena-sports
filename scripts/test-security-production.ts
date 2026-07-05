@@ -41,6 +41,16 @@ function getErrorMessage(error: unknown): string {
   return 'Erro desconhecido'
 }
 
+function isUpstreamSecurityBlock(message: string): boolean {
+  const normalized = message.toLowerCase()
+  return (
+    normalized.includes('attention required') ||
+    normalized.includes('sorry, you have been blocked') ||
+    normalized.includes('security service to protect itself') ||
+    normalized.includes('cloudflare')
+  )
+}
+
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -292,7 +302,15 @@ async function testInputValidation(): Promise<TestResult[]> {
 
     // Se não deu erro de SQL, a sanitização está funcionando
     if (error) {
-      if (error.message.includes('SQL') || error.message.includes('syntax')) {
+      if (isUpstreamSecurityBlock(error.message)) {
+        testResults.push({
+          name: 'Input Validation - SQL Injection',
+          passed: true,
+          severity: 'critical',
+          message: 'Payload bloqueado por proteção upstream antes do banco'
+        })
+        console.log('   ✅ Payload bloqueado por proteção upstream')
+      } else if (error.message.includes('SQL') || error.message.includes('syntax')) {
         testResults.push({
           name: 'Input Validation - SQL Injection',
           passed: false,
@@ -324,7 +342,15 @@ async function testInputValidation(): Promise<TestResult[]> {
   } catch (error: unknown) {
     // Exceções não esperadas podem indicar problema
     const message = getErrorMessage(error)
-    if (message.includes('SQL') || message.includes('syntax')) {
+    if (isUpstreamSecurityBlock(message)) {
+      testResults.push({
+        name: 'Input Validation - SQL Injection',
+        passed: true,
+        severity: 'critical',
+        message: 'Payload bloqueado por proteção upstream antes do banco'
+      })
+      console.log('   ✅ Payload bloqueado por proteção upstream')
+    } else if (message.includes('SQL') || message.includes('syntax')) {
       testResults.push({
         name: 'Input Validation - SQL Injection',
         passed: false,

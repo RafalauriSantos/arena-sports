@@ -127,10 +127,14 @@ const updateProfile = async (userId: string, updates: Partial<UserProfile>) => {
 	// Garantir que o perfil existe (se não existir, será criado)
 	await ensureProfileRowById(userId);
 
+	const safeUpdates = { ...updates };
+	delete safeUpdates.id;
+	delete safeUpdates.tenant_id;
+
 	// Atualizar o perfil usando .update() (assume que já existe)
 	const { data, error } = await supabase
 		.from("profiles")
-		.update(updates)
+		.update(safeUpdates)
 		.eq("id", userId)
 		.select("id, tenant_id, full_name, email, avatar_url, job_title")
 		.maybeSingle();
@@ -140,7 +144,7 @@ const updateProfile = async (userId: string, updates: Partial<UserProfile>) => {
 		const message = getStringProp(error, "message") ?? "";
 		if (/not found|does not exist|no rows/i.test(message)) {
 			// Fallback: usar upsert se o registro não foi encontrado
-			const payload = { id: userId, ...updates };
+			const payload = { id: userId, ...safeUpdates };
 			const { data: upsertData, error: upsertError } = await supabase
 				.from("profiles")
 				.upsert(payload, { onConflict: "id" })

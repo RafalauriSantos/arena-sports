@@ -229,13 +229,11 @@ export default function BookingPublic() {
 				setTenant(tenantRow);
 				setTenantId(tenantRow.id);
 
-				// Busca Quadras Ativas
+				// Busca quadras ativas pelo modelo publico filtrado por subdominio.
 				const { data: cData, error: cError } = await supabase
-					.from("courts")
-					.select("id, name, base_price, half_hour_price")
-					.eq("tenant_id", tenantRow.id)
-					.eq("active", true)
-					.order("base_price");
+					.rpc("fn_public_get_courts_by_subdomain", {
+						p_subdomain: cleanSubdomain,
+					});
 
 				if (cError) {
 					console.error("Erro ao buscar quadras:", cError);
@@ -658,31 +656,6 @@ export default function BookingPublic() {
 							" já está reservado. Para jogar 1h30, esse horário precisa estar livre.",
 					);
 				}
-			}
-
-			// ✅ VALIDAÇÃO ADICIONAL: Verifica conflito direto no banco usando intervalo (race condition)
-			// Verifica se há alguma reserva que sobrepõe o intervalo [startTimestamp, endTimestamp)
-			const { data: conflictCheck } = await supabase
-				.from("bookings")
-				.select("id, start_time, end_time")
-				.eq("tenant_id", tenantId)
-				.eq("court_id", selectedSlot.courtId)
-				.in("status", [
-					"pending",
-					"paid",
-					"pending_payment",
-					"confirmed",
-					"in_progress",
-				])
-				.is("cancelled_at", null)
-				.lt("start_time", endTimestamp) // Reserva começa antes do nosso fim
-				.gt("end_time", startTimestamp) // Reserva termina depois do nosso início
-				.maybeSingle();
-
-			if (conflictCheck) {
-				throw new Error(
-					"Este horário já está reservado ou conflita com outra reserva. Por favor, escolha outro.",
-				);
 			}
 
 			// Calcula preço baseado na duração

@@ -23,6 +23,7 @@
 		"check:supabase": "tsx scripts/check-supabase-connection.ts",
 		"test:conexoes": "tsx scripts/test-conexoes.ts",
 		"test:tenant-isolation": "tsx scripts/test-tenant-isolation-complete.ts",
+		"test:rls": "tsx scripts/test-rls-tenant-isolation.ts",
 		"test:security": "tsx scripts/test-security-production.ts",
 		"test:billing": "tsx scripts/testAsaasWebhookCore.ts && tsx scripts/test-billing-e2e.ts",
 		"test:user-journey": "tsx scripts/test-user-journey-complete.ts",
