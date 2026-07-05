@@ -408,6 +408,7 @@ async function runAllTests() {
     console.log('🎉 Todos os testes passaram! Sistema pronto para produção.')
   } else {
     console.log('⚠️ Alguns testes falharam. Revisar antes da produção.')
+    process.exitCode = 1
   }
 
   console.log('\n💡 PRÓXIMOS PASSOS:')
