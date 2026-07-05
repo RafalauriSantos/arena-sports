@@ -3,10 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
 	Building2,
+	CalendarDays,
+	CreditCard,
 	Lock,
 	ShieldCheck,
 	CheckCircle2,
 	Mail,
+	Users,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -645,32 +648,126 @@ const Login = () => {
 					</button>
 				</header>
 
-				<main className="mx-auto grid w-full max-w-4xl flex-1 grid-cols-1 items-start gap-8 px-5 pb-8 pt-3 sm:px-8 lg:min-h-[660px] lg:grid-cols-[minmax(220px,0.52fr)_minmax(390px,440px)] lg:items-center lg:gap-12 lg:pb-14">
-					<section className="auth-goomer hidden max-w-[20rem] space-y-4 animate-in fade-in slide-in-from-left-6 duration-700 lg:flex lg:min-h-[600px] lg:flex-col lg:justify-center">
-						<div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--az-navy)] text-base font-semibold text-white shadow-sm">
-							AS
+				<main className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 items-start gap-9 px-5 pb-8 pt-3 sm:px-8 lg:min-h-[680px] lg:grid-cols-[minmax(440px,0.95fr)_minmax(390px,460px)] lg:items-center lg:gap-14 lg:pb-14">
+					<section className="auth-goomer hidden animate-in fade-in slide-in-from-left-6 duration-700 lg:flex lg:min-h-[620px] lg:flex-col lg:justify-center">
+						<div className="max-w-[34rem]">
+							<div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--az-line)] bg-[var(--az-surface)]/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--az-navy)] shadow-sm">
+								<span className="h-2 w-2 rounded-full bg-[var(--az-turf)]" />
+								Operação protegida
+							</div>
+
+							<h1 className="auth-hero-title text-5xl font-semibold leading-[0.98] text-[var(--az-ink)]">
+								Entre no cockpit da sua arena.
+							</h1>
+
+							<p className="mt-5 max-w-md text-base font-medium leading-7 text-[var(--az-ink-soft)]">
+								Reservas, clientes e pagamentos aparecem em uma central privada,
+								pronta para a rotina da equipe.
+							</p>
+
+							<div className="mt-8 grid max-w-lg grid-cols-3 gap-3">
+								{[
+									{ label: "Reservas hoje", value: "18" },
+									{ label: "Ocupação", value: "72%" },
+									{ label: "Pendências", value: "3" },
+								].map((item) => (
+									<div
+										key={item.label}
+										className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)]/78 p-4 shadow-sm backdrop-blur">
+										<p className="text-2xl font-semibold text-[var(--az-navy)]">
+											{item.value}
+										</p>
+										<p className="mt-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--az-ink-soft)]">
+											{item.label}
+										</p>
+									</div>
+								))}
+							</div>
+
+							<div className="mt-5 max-w-lg overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] shadow-[0_28px_80px_-56px_rgba(22,24,26,0.65)]">
+								<div className="flex items-center justify-between border-b border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-3">
+									<div>
+										<p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--az-ink-soft)]">
+											Visão rápida
+										</p>
+										<p className="text-sm font-semibold text-[var(--az-ink)]">
+											Sábado, 04 jul
+										</p>
+									</div>
+									<span className="rounded-full bg-[var(--az-navy-soft)] px-3 py-1 text-xs font-semibold text-[var(--az-navy)]">
+										ao vivo
+									</span>
+								</div>
+
+								<div className="grid gap-3 p-4">
+									{[
+										{
+											icon: CalendarDays,
+											label: "Próxima reserva",
+											value: "19:00 · Quadra 2",
+										},
+										{
+											icon: Users,
+											label: "Cliente",
+											value: "Mensalista confirmado",
+										},
+										{
+											icon: CreditCard,
+											label: "Pagamento",
+											value: "Sinal pendente",
+										},
+									].map((item) => (
+										<div
+											key={item.label}
+											className="flex items-center gap-3 rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] px-3 py-3">
+											<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--az-navy)] text-white">
+												<item.icon className="h-4 w-4" />
+											</div>
+											<div className="min-w-0">
+												<p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--az-ink-soft)]">
+													{item.label}
+												</p>
+												<p className="truncate text-sm font-semibold text-[var(--az-ink)]">
+													{item.value}
+												</p>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
 						</div>
-
-						<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--az-ink-soft)]">
-							ArenaSys
-						</p>
-
-						<h1 className="auth-hero-title text-4xl font-semibold leading-[1.04] text-[var(--az-ink)]">
-							Acesso seguro à sua central.
-						</h1>
-
-						<p className="text-sm font-medium leading-6 text-[var(--az-ink-soft)]">
-							Agenda, reservas e clientes em ambiente privado.
-						</p>
 					</section>
 
-					<section className="flex w-full justify-center animate-in fade-in slide-in-from-right-6 duration-700 delay-150 lg:min-h-[600px] lg:items-center">
-						<div className="relative mx-auto w-full max-w-[440px]">
+					<section className="flex w-full justify-center animate-in fade-in slide-in-from-right-6 duration-700 delay-150 lg:min-h-[620px] lg:items-center">
+						<div className="relative mx-auto w-full max-w-[460px]">
 							<div className="auth-card-glow absolute inset-0 rounded-xl" />
 
-							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] p-5 shadow-[0_24px_70px_-52px_rgba(22,24,26,0.55)] backdrop-blur-2xl sm:min-h-[620px] sm:p-7">
+							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-lg border border-[var(--az-line)] bg-[linear-gradient(180deg,var(--az-surface),#fbfaf6)] p-5 shadow-[0_30px_90px_-55px_rgba(22,24,26,0.68)] backdrop-blur-2xl sm:min-h-[620px] sm:p-7">
 								<div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[var(--az-navy)]" />
+								<div className="pointer-events-none absolute right-8 top-0 h-40 w-40 -translate-y-16 rounded-full bg-[var(--az-navy-soft)] blur-3xl" />
+								<div className="pointer-events-none absolute bottom-0 left-8 h-32 w-32 translate-y-14 rounded-full bg-[var(--az-clay)]/10 blur-3xl" />
 
+								<div className="relative mb-6 flex items-center justify-between rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)]/82 px-3 py-3 shadow-sm">
+									<div className="flex items-center gap-3">
+										<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--az-navy)] text-white">
+											<ShieldCheck className="h-4 w-4" />
+										</div>
+										<div>
+											<p className="text-sm font-semibold text-[var(--az-ink)]">
+												Área privada
+											</p>
+											<p className="text-xs text-[var(--az-ink-soft)]">
+												Supabase Auth + sessão protegida
+											</p>
+										</div>
+									</div>
+									<div className="hidden items-center gap-1.5 rounded-full bg-[var(--az-turf-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--az-turf)] sm:flex">
+										<span className="h-1.5 w-1.5 rounded-full bg-[var(--az-turf)]" />
+										Seguro
+									</div>
+								</div>
+
+								<div className="relative">
 								{mode === "email-confirmation" ?
 									<div className="space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
 										<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-navy-soft)] text-[var(--az-navy)] shadow-inner">
@@ -1059,6 +1156,7 @@ const Login = () => {
 										</form>
 									</>
 								}
+								</div>
 							</div>
 
 							<div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-[var(--az-ink-soft)]">
