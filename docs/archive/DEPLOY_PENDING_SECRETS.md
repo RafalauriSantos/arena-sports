@@ -47,8 +47,8 @@ Essa pendencia bloqueia deploy automatico pelo GitHub Actions, mas nao bloqueia 
 
 Enquanto os secrets nao forem configurados:
 
-- `bun run build` local continua funcionando.
-- `bun run test:qa` local continua funcionando.
+- `npm run build` local continua funcionando.
+- `npm run test:qa` local continua funcionando.
 - Novos commits podem continuar sendo feitos.
 - O GitHub Actions vai continuar falhando no deploy quando rodar em `main`.
 

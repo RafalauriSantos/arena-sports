@@ -1,7 +1,7 @@
 {
 	"version": 2,
 	"framework": "vite",
-	"buildCommand": "vite build && bun scripts/inject-seo-html.mjs",
+	"buildCommand": "vite build && node scripts/inject-seo-html.mjs",
 	"outputDirectory": "dist",
 	"rewrites": [{ "source": "/(.*)", "destination": "/" }],
 	"headers": [

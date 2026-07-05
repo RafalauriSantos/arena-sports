@@ -7,8 +7,8 @@
  * Requer: psql instalado e connection string do Supabase
  * 
  * Uso:
- *   bun run scripts/run-sql-direct.ts <arquivo.sql>
- *   bun run scripts/run-sql-direct.ts --query "SELECT * FROM bookings LIMIT 5"
+ *   npx tsx scripts/run-sql-direct.ts <arquivo.sql>
+ *   npx tsx scripts/run-sql-direct.ts --query "SELECT * FROM bookings LIMIT 5"
  */
 
 import { execSync, spawn } from 'child_process';
@@ -139,8 +139,8 @@ async function main() {
 		sql = readFileSync(filePath, 'utf-8');
 	} else {
 		log('❌ Uso:', 'red');
-		log('   bun run scripts/run-sql-direct.ts <arquivo.sql>', 'yellow');
-		log('   bun run scripts/run-sql-direct.ts --query "SELECT * FROM bookings LIMIT 5"', 'yellow');
+		log('   npx tsx scripts/run-sql-direct.ts <arquivo.sql>', 'yellow');
+		log('   npx tsx scripts/run-sql-direct.ts --query "SELECT * FROM bookings LIMIT 5"', 'yellow');
 		log('\n💡 Para executar diretamente, configure SUPABASE_DB_PASSWORD no .env.local', 'blue');
 		process.exit(1);
 	}

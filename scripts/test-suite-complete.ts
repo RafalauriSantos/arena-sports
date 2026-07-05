@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🧪 TEST SUITE COMPLETA - Arena Sports

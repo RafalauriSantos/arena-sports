@@ -2,7 +2,7 @@
  * Script para aplicar migrations pendentes via CLI
  * 
  * Uso:
- *   bun run scripts/apply-migrations.ts
+ *   npx tsx scripts/apply-migrations.ts
  */
 
 import { execSync } from 'child_process';
@@ -33,12 +33,12 @@ async function main() {
   console.log('\n🔗 Verificando conexão com Supabase...\n');
   
   try {
-    exec('bunx supabase status', true);
+    exec('npx supabase status', true);
     console.log('✅ Conectado ao Supabase!');
   } catch {
     console.error('❌ Projeto não está linkado ao Supabase');
     console.log('\n💡 Execute primeiro:');
-    console.log('   bun run scripts/setup-supabase-cli.ts\n');
+    console.log('   npx tsx scripts/setup-supabase-cli.ts\n');
     process.exit(1);
   }
 
@@ -64,7 +64,7 @@ async function main() {
   console.log('\n🔍 Verificando migrations já aplicadas...\n');
   
   try {
-    const applied = exec('bunx supabase migration list', true);
+    const applied = exec('npx supabase migration list', true);
     console.log('Status das migrations:');
     console.log(applied);
   } catch {
@@ -75,7 +75,7 @@ async function main() {
   console.log('\n📤 Aplicando migrations ao banco remoto...\n');
   
   try {
-    exec('bunx supabase db push');
+    exec('npx supabase db push');
     console.log('\n✅ Migrations aplicadas com sucesso!');
   } catch (error) {
     console.error('\n❌ Falha ao aplicar migrations');
@@ -96,7 +96,7 @@ async function main() {
   console.log('\n📊 Status final:\n');
   
   try {
-    exec('bunx supabase db remote status');
+    exec('npx supabase db remote status');
   } catch {
     console.log('⚠️  Não foi possível verificar status');
   }

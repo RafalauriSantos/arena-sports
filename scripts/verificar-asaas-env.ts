@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🔍 Script para Verificar Configuração do Asaas
@@ -118,5 +117,5 @@ console.log('\n2. Configure a URL correta:')
 console.log('   - Sandbox: ASAAS_API_URL=https://sandbox.asaas.com/api/v3')
 console.log('   - Produção: ASAAS_API_URL=https://api.asaas.com/v3')
 console.log('\n3. Configure no Supabase:')
-console.log('   bunx supabase secrets set ASAAS_API_URL=<url_correta>')
-console.log('   bunx supabase secrets set ASAAS_API_KEY=<sua_chave>')
+console.log('   npx supabase secrets set ASAAS_API_URL=<url_correta>')
+console.log('   npx supabase secrets set ASAAS_API_KEY=<sua_chave>')

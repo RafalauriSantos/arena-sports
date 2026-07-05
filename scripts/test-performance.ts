@@ -52,7 +52,7 @@ function formatBytes(bytes: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-async function analyzeBundle() {
+async function analyzebundle() {
     console.log('\n📊 ANÁLISE DE PERFORMANCE DO BUILD\n');
     console.log('='.repeat(60));
 
@@ -75,7 +75,7 @@ async function analyzeBundle() {
         // Ordena JS por tamanho
         jsFiles.sort((a, b) => b.size - a.size);
 
-        console.log('\n📦 RESUMO DO BUNDLE:\n');
+        console.log('\n📦 RESUMO DO npmDLE:\n');
         console.log(`  Total JavaScript: ${formatBytes(totalJs)}`);
         console.log(`  Total CSS:        ${formatBytes(totalCss)}`);
         console.log(`  Total Geral:      ${formatBytes(totalAll)}`);
@@ -118,7 +118,7 @@ async function analyzeBundle() {
         }
 
         if (totalJs > 1.5 * 1024 * 1024) {
-            console.log('  ⚠️  Bundle JS total acima de 1.5MB');
+            console.log('  ⚠️  bundle JS total acima de 1.5MB');
             console.log('     Considere dynamic imports para páginas menos usadas');
         }
 
@@ -186,4 +186,4 @@ async function analyzeBundle() {
 }
 
 // Executa análise
-analyzeBundle();
+analyzebundle();

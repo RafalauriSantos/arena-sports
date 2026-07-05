@@ -5,8 +5,8 @@
  * Apenas consultas SELECT para verificar dados
  * 
  * Uso:
- *   bun run scripts/execute-query-safe.ts --file scripts/query-timezone-check.sql
- *   bun run scripts/execute-query-safe.ts --query "SELECT COUNT(*) FROM bookings;"
+ *   npx tsx scripts/execute-query-safe.ts --file scripts/query-timezone-check.sql
+ *   npx tsx scripts/execute-query-safe.ts --query "SELECT COUNT(*) FROM bookings;"
  */
 
 import { execSync } from 'child_process';
@@ -25,7 +25,7 @@ function question(query: string): Promise<string> {
 	});
 }
 
-function log(message: string, color: 'green' | 'yellow' | 'blue' | 'red' | 'reset' = 'reset') {
+function log(message: string, color: 'green' | 'yellow' | 'blue' | 'red' | 'bright' | 'reset' = 'reset') {
 	const colors = {
 		reset: '\x1b[0m',
 		bright: '\x1b[1m',
@@ -58,7 +58,7 @@ async function getConnectionString(): Promise<string | null> {
 		log('🔍 Tentando obter connection string via Supabase CLI...', 'blue');
 		
 		// Verifica se está linkado
-		const status = exec('bunx supabase status --linked', true);
+		const status = exec('npx supabase status --linked', true);
 		if (!status) {
 			log('⚠️  Projeto não está linkado', 'yellow');
 			return null;
@@ -100,8 +100,8 @@ async function main() {
 		log('📝 Query fornecida via argumento', 'green');
 	} else {
 		log('❌ Uso:', 'red');
-		log('  bun run scripts/execute-query-safe.ts --file scripts/query-timezone-check.sql', 'yellow');
-		log('  bun run scripts/execute-query-safe.ts --query "SELECT COUNT(*) FROM bookings;"', 'yellow');
+		log('  npx tsx scripts/execute-query-safe.ts --file scripts/query-timezone-check.sql', 'yellow');
+		log('  npx tsx scripts/execute-query-safe.ts --query "SELECT COUNT(*) FROM bookings;"', 'yellow');
 		process.exit(1);
 	}
 

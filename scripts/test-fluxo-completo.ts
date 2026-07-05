@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🧪 TESTE DE FLUXO COMPLETO - Cadastro → Onboarding → Billing

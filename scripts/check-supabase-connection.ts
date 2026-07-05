@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🔍 DIAGNÓSTICO RÁPIDO - Comunicação com Supabase
@@ -381,8 +380,8 @@ async function runDiagnostics() {
   }
 
   console.log('\n💡 Para testes mais completos, execute:')
-  console.log('   bun run test')
-  console.log('   bun run check:deploy')
+  console.log('   npm run test')
+  console.log('   npm run check:deploy')
 }
 
 // Executar se chamado diretamente

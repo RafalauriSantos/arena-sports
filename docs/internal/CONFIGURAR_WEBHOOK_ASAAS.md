@@ -42,13 +42,13 @@ O token (`ASAAS_WEBHOOK_SECRET`) deve estar configurado no Supabase. Verifique:
 
 ```bash
 # Ver se está configurado (via Supabase CLI)
-bunx supabase secrets list
+npx supabase secrets list
 ```
 
 **Se não estiver configurado:**
 ```bash
 # Configure o secret (escolha um token seguro)
-bunx supabase secrets set ASAAS_WEBHOOK_SECRET=seu-token-secreto-aqui
+npx supabase secrets set ASAAS_WEBHOOK_SECRET=seu-token-secreto-aqui
 ```
 
 **⚠️ Importante:** Use um token seguro e único (ex: `crypto.randomUUID()` ou gere um hash).
@@ -100,7 +100,7 @@ bunx supabase secrets set ASAAS_WEBHOOK_SECRET=seu-token-secreto-aqui
 
 ```bash
 # Ver logs da função webhook (últimas 100 linhas)
-bunx supabase functions logs asaas-webhook --limit 100
+npx supabase functions logs asaas-webhook --limit 100
 ```
 
 **O que procurar nos logs:**
@@ -154,7 +154,7 @@ LIMIT 10;
 **Solução:**
 1. Verifique `ASAAS_WEBHOOK_SECRET` no Supabase:
    ```bash
-   bunx supabase secrets list
+   npx supabase secrets list
    ```
 2. Verifique se o token no painel do Asaas é **exatamente** o mesmo
 3. O header deve ser `asaas-access-token` (conforme código da função)

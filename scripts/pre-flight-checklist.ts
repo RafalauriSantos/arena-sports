@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🚀 PRE-FLIGHT CHECKLIST - Arena Sports
@@ -171,7 +170,7 @@ async function checkBuild() {
   const distPath = join(process.cwd(), 'dist')
 
   if (!existsSync(distPath)) {
-    console.log('❌ Pasta dist não encontrada - execute "bun run build" primeiro')
+    console.log('❌ Pasta dist não encontrada - execute "npm run build" primeiro')
     return false
   }
 

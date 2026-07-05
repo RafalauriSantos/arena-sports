@@ -109,7 +109,7 @@ scripts/              Scripts operacionais de teste, banco, deploy e auditoria
 
 Requisitos:
 
-- Bun 1.3+
+- Node.js 24+ e npm 11+
 - Node.js compativel com Vite
 - Projeto Supabase configurado
 - Variaveis de ambiente locais em `.env.local`
@@ -117,12 +117,12 @@ Requisitos:
 Comandos principais:
 
 ```bash
-bun install
-bun run dev
-bun run lint
-bun run build
-bun run test
-bun run test:e2e:smoke
+npm install
+npm run dev
+npm run lint
+npm run build
+npm run test
+npm run test:e2e:smoke
 ```
 
 ## Variaveis de Ambiente
@@ -149,10 +149,10 @@ Os checks mais usados no dia a dia sao:
 
 | Comando | O que valida |
 | --- | --- |
-| `bun run test` | Suite critica com Supabase, auth, isolamento, billing e performance. |
-| `bun run test:e2e:smoke` | Fluxos de smoke no navegador para admin e reserva publica. |
-| `bun run lint` | Padroes de codigo e problemas estaticos. |
-| `bun run build` | Build de producao com Vite e geracao PWA. |
+| `npm run test` | Suite critica com Supabase, auth, isolamento, billing e performance. |
+| `npm run test:e2e:smoke` | Fluxos de smoke no navegador para admin e reserva publica. |
+| `npm run lint` | Padroes de codigo e problemas estaticos. |
+| `npm run build` | Build de producao com Vite e geracao PWA. |
 
 O teste de signup pode ser marcado como indisponivel quando o Supabase bloquear criacao de usuarios por politica do projeto ou rate limit. Nesse caso o script exibe aviso explicito em vez de esconder o motivo.
 

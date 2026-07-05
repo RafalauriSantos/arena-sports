@@ -29,6 +29,7 @@ build-output.txt
 performance-report.json
 playwright-report/
 test-results/
+output/
 
 # Editor directories and files
 .vscode/*
@@ -47,10 +48,8 @@ test-results/
 .env.*
 !.env.example
 
-# Bun (Aqui está a novidade)
-# O bun.lockb É BINÁRIO e DEVE ser comitado (não ignore ele)
-# Mas cache do bun deve ser ignorado:
-.bun/
+# npm
+.npm/
 
 # Vercel
 .vercel
@@ -76,6 +75,7 @@ supabase/.temp/
 # Agent / Cursor skills (local reference)
 .agent/
 .agents/
+.codex/
 .cursor/
 .claude/
 skills/

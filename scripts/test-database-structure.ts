@@ -4,7 +4,7 @@
  * Verifica se todas as migrations foram aplicadas corretamente
  * 
  * Uso:
- *   bun run scripts/test-database-structure.ts
+ *   npx tsx scripts/test-database-structure.ts
  */
 
 import { createClient } from '@supabase/supabase-js';

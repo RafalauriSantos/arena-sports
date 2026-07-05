@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🔍 PERFORMANCE AUDIT - Arena Sports

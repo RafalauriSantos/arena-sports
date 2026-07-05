@@ -67,7 +67,7 @@ async function applySecurityMigration() {
 
         console.log('\n🔒 CORREÇÃO DE SEGURANÇA CONCLUÍDA!\n');
         console.log('Próximo passo: Execute o teste com:');
-        console.log('  bun run scripts/test-security-views-fix.ts');
+        console.log('  npx tsx scripts/test-security-views-fix.ts');
 
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);

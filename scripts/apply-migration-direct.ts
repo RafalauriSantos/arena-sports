@@ -93,7 +93,7 @@ async function main() {
     if (errors === 0) {
         console.log('\n✅ MIGRATION APLICADA COM SUCESSO!\n');
         console.log('🧪 Próximo passo: Execute o teste');
-        console.log('   bun run scripts/test-security-views-fix.ts');
+        console.log('   npx tsx scripts/test-security-views-fix.ts');
     } else {
         console.log('\n⚠️  Migration parcialmente aplicada. Verifique os erros acima.');
     }

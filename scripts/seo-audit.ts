@@ -1,6 +1,6 @@
 /**
  * Script de Auditoria SEO - Verifica otimizações do site
- * Execute: bun run scripts/seo-audit.ts
+ * Execute: npx tsx scripts/seo-audit.ts
  */
 
 import { readFileSync, existsSync } from 'fs';
@@ -115,7 +115,7 @@ if (score === maxScore) {
 
 console.log('📋 PRÓXIMOS PASSOS:');
 console.log('1. Enviar sitemap no Google Search Console');
-console.log('2. Testar performance: bun run lighthouse');
+console.log('2. Testar performance: npm run lighthouse');
 console.log('3. Verificar indexação: site:arenasys.com.br no Google');
 console.log('4. Monitorar Core Web Vitals');
 console.log('5. Criar mais conteúdo para o blog (2x por semana)');

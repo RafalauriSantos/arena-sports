@@ -7,7 +7,7 @@
  * através do endpoint RPC (mais seguro que SQL direto)
  * 
  * Uso:
- *   bun run scripts/run-queries-cli.ts
+ *   npx tsx scripts/run-queries-cli.ts
  */
 
 import { createClient } from '@supabase/supabase-js';

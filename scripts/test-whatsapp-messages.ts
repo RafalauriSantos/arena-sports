@@ -4,7 +4,7 @@
  * Verifica se as mensagens estão formatadas corretamente (sem emojis problemáticos)
  * 
  * Uso:
- *   bun run scripts/test-whatsapp-messages.ts
+ *   npx tsx scripts/test-whatsapp-messages.ts
  */
 
 import { readFileSync } from 'fs';

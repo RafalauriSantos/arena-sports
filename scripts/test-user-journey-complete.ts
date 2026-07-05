@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 👤 TESTE COMPLETO - Jornada do Usuário

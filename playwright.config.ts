@@ -47,7 +47,7 @@ export default defineConfig({
 	projects: browserProjects,
 	webServer: shouldStartServer
 		? {
-				command: "bun run dev",
+				command: "npm run dev",
 				url: baseURL,
 				reuseExistingServer: !isCI,
 				timeout: 120_000,

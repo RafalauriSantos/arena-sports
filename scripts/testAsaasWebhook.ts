@@ -114,7 +114,7 @@ async function main() {
 
     if (!webhookToken) {
         console.log(
-            "\nDica: passe o token para testar de verdade: TEST_ASAAS_WEBHOOK_TOKEN=... bun scripts/testAsaasWebhook.ts"
+            "\nDica: passe o token para testar de verdade: TEST_ASAAS_WEBHOOK_TOKEN=... npx tsx scripts/testAsaasWebhook.ts"
         );
     }
 }

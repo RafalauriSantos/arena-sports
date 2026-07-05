@@ -16,8 +16,7 @@ Este diretório existe para **versionar o banco** (schema, funções, triggers, 
 Você pode usar:
 
 - `supabase` (binário instalado), ou
-- `npx supabase` (Node), ou
-- `bunx supabase` (Bun)
+- `npx supabase` (npm)
 
 ### 2) Inicializar e linkar (uma vez por repo)
 

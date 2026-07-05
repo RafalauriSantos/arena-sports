@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🧪 TESTE COMPLETO - Isolamento Multi-Tenant

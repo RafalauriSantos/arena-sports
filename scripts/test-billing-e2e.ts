@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 💳 TESTE END-TO-END - Billing Completo

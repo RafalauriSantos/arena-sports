@@ -157,8 +157,8 @@ Antes de editar:
 
 Depois de editar:
 
-- Rodar `bun run build`.
-- Rodar `bun run test:qa`.
+- Rodar `npm run build`.
+- Rodar `npm run test:qa`.
 - Verificar desktop.
 - Verificar mobile.
 - Conferir overflow horizontal.
@@ -170,8 +170,8 @@ Depois de editar:
 Comandos:
 
 ```powershell
-bun run build
-bun run test:qa
+npm run build
+npm run test:qa
 ```
 
 Inspecao visual:

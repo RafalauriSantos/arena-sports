@@ -2,7 +2,7 @@
  * Script para configurar Supabase CLI e aplicar migrations
  * 
  * Uso:
- *   bun run scripts/setup-supabase-cli.ts
+ *   npx tsx scripts/setup-supabase-cli.ts
  */
 
 import { execSync } from 'child_process';
@@ -45,14 +45,14 @@ async function main() {
   
   let cliInstalled = false;
   try {
-    const version = exec('bunx supabase --version', true);
+    const version = exec('npx supabase --version', true);
     console.log(`✅ Supabase CLI instalado: ${version.trim()}`);
     cliInstalled = true;
   } catch {
     console.log('⚠️  Supabase CLI não encontrado');
-    console.log('📥 Instalando Supabase CLI via bunx...\n');
+    console.log('📥 Instalando Supabase CLI via npx...\n');
     try {
-      exec('bun add -d supabase');
+      exec('npm install -D supabase');
       console.log('✅ Supabase CLI instalado com sucesso!');
       cliInstalled = true;
     } catch {
@@ -67,7 +67,7 @@ async function main() {
   
   let isLinked = false;
   try {
-    exec('bunx supabase status', true);
+    exec('npx supabase status', true);
     console.log('✅ Projeto já está linkado ao Supabase!');
     isLinked = true;
   } catch {
@@ -86,13 +86,13 @@ async function main() {
     console.log('\n🔗 Linkando projeto...\n');
     
     try {
-      exec(`bunx supabase link --project-ref ${projectRef} --password ${dbPassword}`);
+      exec(`npx supabase link --project-ref ${projectRef} --password ${dbPassword}`);
       console.log('✅ Projeto linkado com sucesso!');
       isLinked = true;
     } catch (error) {
       console.error('❌ Falha ao linkar projeto');
       console.log('\n💡 Tente manualmente:');
-      console.log(`   bunx supabase link --project-ref ${projectRef}`);
+      console.log(`   npx supabase link --project-ref ${projectRef}`);
       process.exit(1);
     }
   }
@@ -101,7 +101,7 @@ async function main() {
   console.log('\n📤 Aplicando migrations pendentes...\n');
   
   try {
-    exec('bunx supabase db push');
+    exec('npx supabase db push');
     console.log('\n✅ Todas as migrations foram aplicadas com sucesso!');
   } catch (error) {
     console.error('\n❌ Erro ao aplicar migrations');
@@ -114,7 +114,7 @@ async function main() {
   // 5. Verificar status
   console.log('\n📊 Status do banco de dados:\n');
   try {
-    exec('bunx supabase db remote status');
+    exec('npx supabase db remote status');
   } catch {
     console.log('⚠️  Não foi possível verificar status');
   }
@@ -122,10 +122,10 @@ async function main() {
   console.log('\n═'.repeat(60));
   console.log('\n🎉 CONFIGURAÇÃO CONCLUÍDA!\n');
   console.log('📌 Próximos comandos úteis:');
-  console.log('   bunx supabase db push        # Aplicar novas migrations');
-  console.log('   bunx supabase db pull        # Baixar schema do banco');
-  console.log('   bunx supabase db reset       # Reset local (cuidado!)');
-  console.log('   bunx supabase status         # Ver status do link\n');
+  console.log('   npx supabase db push        # Aplicar novas migrations');
+  console.log('   npx supabase db pull        # Baixar schema do banco');
+  console.log('   npx supabase db reset       # Reset local (cuidado!)');
+  console.log('   npx supabase status         # Ver status do link\n');
 
   rl.close();
 }

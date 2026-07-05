@@ -4,7 +4,7 @@
  * Executa todos os testes automatizados possíveis
  * 
  * Uso:
- *   bun run scripts/test-all-automated.ts
+ *   npx tsx scripts/test-all-automated.ts
  */
 
 import { execSync } from 'child_process';
@@ -46,7 +46,7 @@ async function main() {
 		log('   Executando...\n', 'yellow');
 		
 		try {
-			execSync(`bun run ${test.script}`, { 
+			execSync(`npx tsx ${test.script}`, {
 				stdio: 'inherit',
 				cwd: process.cwd()
 			});

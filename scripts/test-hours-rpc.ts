@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 /**
  * Script de Teste: RPC de Atualização de Horários
  * Testa a função fn_update_tenant_hours do banco

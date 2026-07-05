@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 /**
  * 🔐 Script para Configurar Secrets do Supabase
  * 
@@ -7,25 +5,10 @@
  * usando os valores do arquivo .env.local
  */
 
+import { spawnSync } from 'child_process'
 import { config } from 'dotenv'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
-
-// Bun is available at runtime when executed with 'bun run'
-declare const Bun: {
-  spawn(
-    command: string[],
-    options?: {
-      stdout?: 'pipe' | 'inherit' | 'ignore';
-      stderr?: 'pipe' | 'inherit' | 'ignore';
-    }
-  ): {
-    exited: Promise<number>;
-    exitCode: number | null;
-    stdout: ReadableStream;
-    stderr: ReadableStream;
-  };
-}
 
 // Carregar variáveis de ambiente (prioriza .env.local, depois .env)
 const envFile = existsSync(resolve(process.cwd(), '.env.local'))
@@ -36,6 +19,8 @@ const envFile = existsSync(resolve(process.cwd(), '.env.local'))
 if (envFile) {
   config({ path: envFile })
 }
+
+const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx'
 
 const secrets = {
   ASAAS_API_KEY: process.env.ASAAS_API_KEY,
@@ -70,15 +55,14 @@ for (const [key, value] of Object.entries(secrets)) {
   if (value) {
     try {
       console.log(`   Configurando ${key}...`)
-      const proc = Bun.spawn(['bunx', 'supabase', 'secrets', 'set', `${key}=${value}`], {
-        stdout: 'pipe',
-        stderr: 'pipe'
+      const proc = spawnSync(npxCommand, ['supabase', 'secrets', 'set', `${key}=${value}`], {
+        encoding: 'utf8',
+        stdio: 'pipe'
       })
-      await proc.exited
-      if (proc.exitCode === 0) {
+      if (proc.status === 0) {
         console.log(`   ✅ ${key} configurado`)
       } else {
-        const stderr = await new Response(proc.stderr).text()
+        const stderr = proc.stderr
         throw new Error(stderr)
       }
     } catch (error: unknown) {

@@ -5,7 +5,7 @@
  * Apenas consultas SELECT para verificar dados
  * 
  * Uso:
- *   bun run scripts/test-queries-safe.ts
+ *   npx tsx scripts/test-queries-safe.ts
  */
 
 import { execSync } from 'child_process';
@@ -223,7 +223,7 @@ LIMIT 7;
 			if (tableMatch) {
 				const tableName = tableMatch[1];
 				log(`💡 Query simples detectada (tabela: ${tableName})`, 'blue');
-				log('   Para executar via CLI, use: bun run scripts/run-queries-cli.ts', 'yellow');
+				log('   Para executar via CLI, use: npx tsx scripts/run-queries-cli.ts', 'yellow');
 			}
 		}
 		

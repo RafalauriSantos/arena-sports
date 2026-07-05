@@ -47,7 +47,7 @@ supabase db push
 Após aplicar a migration, execute:
 
 ```bash
-bun run scripts/test-security-views-fix.ts
+npx tsx scripts/test-security-views-fix.ts
 ```
 
 O teste verificará:

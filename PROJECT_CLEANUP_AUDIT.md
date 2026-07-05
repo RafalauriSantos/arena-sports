@@ -28,7 +28,7 @@ Essas pastas sao artefatos gerados localmente e nao devem ser parte do codigo-fo
 
 Observacao:
 
-- `node_modules/` tambem pode ser removida quando quiser recuperar espaco, mas e normal em projeto Node/Bun e sera recriada com `bun install`.
+- `node_modules/` tambem pode ser removida quando quiser recuperar espaco, mas e normal em projeto Node/npm e sera recriada com `npm install`.
 - `.vercel/` e local do Vercel e ja esta ignorada. Pode ser mantida porque guarda o link do projeto local.
 
 ## Duplicidade Aparente de Agentes e Skills
@@ -247,8 +247,8 @@ Criar `scripts/archive/` e mover scripts nao referenciados, um grupo por vez.
 Remover candidatos pequenos em commits separados e rodar:
 
 ```bash
-bun run build
-bun run test:qa
+npm run build
+npm run test:qa
 ```
 
 ### Fase 6: Supabase Baseline

@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🧪 TESTE COMPLETO - Conexões Supabase e Asaas

@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 
 /**
  * 🛡️ TESTE DE SEGURANÇA - Produção

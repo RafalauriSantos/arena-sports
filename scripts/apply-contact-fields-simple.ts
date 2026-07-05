@@ -131,7 +131,7 @@ ALTER TABLE public.tenants ADD CONSTRAINT check_email_format CHECK (
   console.log("4️⃣  Clique em 'Run' para executar\n");
   
   console.log("5️⃣  Execute este script novamente para verificar:");
-  console.log("    bun run scripts/apply-contact-fields-simple.ts\n");
+  console.log("    npx tsx scripts/apply-contact-fields-simple.ts\n");
   
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 }

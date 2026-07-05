@@ -2,7 +2,7 @@
  * Script para aplicar a migration de half_hour_price diretamente
  * 
  * Uso:
- *   bun run scripts/apply-half-hour-price-migration.ts
+ *   npx tsx scripts/apply-half-hour-price-migration.ts
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -110,9 +110,9 @@ async function main() {
 	console.log('─'.repeat(60));
 
 	log('\n📋 Opção 2: Via CLI do Supabase', 'cyan');
-	log('   bunx supabase db push', 'cyan');
+	log('   npx supabase db push', 'cyan');
 	log('   ou', 'cyan');
-	log('   bun run scripts/apply-migrations.ts\n', 'cyan');
+	log('   npx tsx scripts/apply-migrations.ts\n', 'cyan');
 
 	log('📋 Opção 3: Via psql (se configurado)', 'cyan');
 	log('   psql "postgresql://postgres.[project]:[password]@[project].supabase.co:5432/postgres?sslmode=require"', 'cyan');

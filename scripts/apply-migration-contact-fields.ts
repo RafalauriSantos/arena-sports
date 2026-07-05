@@ -1,6 +1,6 @@
 /**
  * Script para aplicar migration: adicionar campos de contato à tabela tenants
- * Executa: bun run scripts/apply-migration-contact-fields.ts
+ * Executa: npx tsx scripts/apply-migration-contact-fields.ts
  */
 
 import { createClient } from "@supabase/supabase-js";

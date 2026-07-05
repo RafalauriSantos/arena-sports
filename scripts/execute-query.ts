@@ -4,8 +4,8 @@
  * ⚠️ ATENÇÃO: APENAS SELECT - Nenhum comando destrutivo
  * 
  * Uso:
- *   bun run scripts/execute-query.ts <arquivo.sql>
- *   bun run scripts/execute-query.ts --query "SELECT * FROM bookings LIMIT 5"
+ *   npx tsx scripts/execute-query.ts <arquivo.sql>
+ *   npx tsx scripts/execute-query.ts --query "SELECT * FROM bookings LIMIT 5"
  */
 
 import { execSync } from 'child_process';
@@ -50,7 +50,7 @@ async function getConnectionString(): Promise<string | null> {
 		
 		// Verifica se está linkado
 		try {
-			exec('bunx supabase status --linked', true);
+			exec('npx supabase status --linked', true);
 		} catch {
 			log('⚠️  Projeto não está linkado', 'yellow');
 			return null;
@@ -136,8 +136,8 @@ async function main() {
 		log(`📄 Lendo arquivo: ${args[0]}`, 'blue');
 	} else {
 		log('❌ Uso:', 'red');
-		log('   bun run scripts/execute-query.ts <arquivo.sql>', 'yellow');
-		log('   bun run scripts/execute-query.ts --query "SELECT * FROM bookings LIMIT 5"', 'yellow');
+		log('   npx tsx scripts/execute-query.ts <arquivo.sql>', 'yellow');
+		log('   npx tsx scripts/execute-query.ts --query "SELECT * FROM bookings LIMIT 5"', 'yellow');
 		process.exit(1);
 	}
 

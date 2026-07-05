@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { buildSetupChecklist } from "../../src/lib/setupProgress";
 
 describe("buildSetupChecklist", () => {
@@ -27,11 +28,12 @@ describe("buildSetupChecklist", () => {
 			],
 		});
 
-		expect(checklist.items.find((item) => item.id === "address")?.completed).toBe(
+		assert.equal(
+			checklist.items.find((item) => item.id === "address")?.completed,
 			true,
 		);
-		expect(checklist.completed).toBe(6);
-		expect(checklist.total).toBe(6);
-		expect(checklist.isComplete).toBe(true);
+		assert.equal(checklist.completed, 6);
+		assert.equal(checklist.total, 6);
+		assert.equal(checklist.isComplete, true);
 	});
 });
