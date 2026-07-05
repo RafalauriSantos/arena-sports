@@ -12,14 +12,13 @@ const ASAAS_URL =
 	Deno.env.get("ASAAS_BASE_URL") ||
 	"https://sandbox.asaas.com/api/v3";
 
-// Preços base (sem desconto)
-const BASE_PRICE = {
-	month: 97, // R$ 97/mês
-	year: 970, // R$ 970/ano (2 meses grátis = 17% off)
+// Oferta comercial atual
+const OFFER_PRICE = {
+	month: 69.9, // R$ 69,90/mês sem fidelidade
+	year: 597, // R$ 597/ano preço cheio futuro
+	founderYear: 397, // R$ 397/ano para Founder 20
 } as const;
 
-// Desconto de 30% para Founders 20
-const FOUNDERS_DISCOUNT = 0.3; // 30%
 const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 Deno.serve(async (req) => {
@@ -107,6 +106,7 @@ Deno.serve(async (req) => {
 			.from("tenant_subscriptions")
 			.select("id")
 			.eq("is_founder", true)
+			.eq("billing_interval", "year")
 			.in("status", ["active", "trial", "past_due"]);
 
 		if (foundersError) {
@@ -115,22 +115,22 @@ Deno.serve(async (req) => {
 		}
 
 		const currentFoundersCount = foundersData?.length || 0;
-		const isFounder = currentFoundersCount < FOUNDERS_CAP;
+		const isFounder =
+			normalizedInterval === "year" && currentFoundersCount < FOUNDERS_CAP;
 		const foundersRemaining = Math.max(0, FOUNDERS_CAP - currentFoundersCount);
 
-		// Calcular preço com desconto se for founder
-		const basePrice = BASE_PRICE[normalizedInterval];
-		const finalPrice = isFounder
-			? Math.round(basePrice * (1 - FOUNDERS_DISCOUNT) * 100) / 100 // Aplicar 30% desconto
-			: basePrice;
+		const finalPrice =
+			normalizedInterval === "month" ? OFFER_PRICE.month
+			: isFounder ? OFFER_PRICE.founderYear
+			: OFFER_PRICE.year;
 
 		// Preço mensal equivalente (para salvar no banco)
 		const monthlyPriceEquivalent = normalizedInterval === "year"
 			? finalPrice / 12 // Se anual, dividir por 12
 			: finalPrice; // Se mensal, usar direto
 
-		console.log(`📊 Founders: ${currentFoundersCount}/${FOUNDERS_CAP}, Vagas restantes: ${foundersRemaining}`);
-		console.log(`💰 Preço base: R$ ${basePrice}, Preço final: R$ ${finalPrice} ${isFounder ? "(Founder - 30% OFF)" : ""}`);
+		console.log(`📊 Founders anuais: ${currentFoundersCount}/${FOUNDERS_CAP}, Vagas restantes: ${foundersRemaining}`);
+		console.log(`💰 Oferta: ${normalizedInterval}, Preço final: R$ ${finalPrice} ${isFounder ? "(Founder 20 anual)" : ""}`);
 
 		// 2. Buscar dados do Tenant
 		const { data: tenant, error: tenantError } = await supabaseClient
@@ -476,6 +476,11 @@ Deno.serve(async (req) => {
 			}
 		}
 
+		const offerLabel =
+			normalizedInterval === "month" ? "Mensal sem fidelidade"
+			: isFounder ? "Anual Founder 20"
+			: "Anual";
+
 		// 6. Criar a Assinatura (Subscription)
 		console.log("Criando assinatura...");
 
@@ -497,7 +502,7 @@ Deno.serve(async (req) => {
 					.toISOString()
 					.split("T")[0], // Cobrar amanhã
 				cycle: cycle === "YEARLY" ? "YEARLY" : "MONTHLY",
-				description: `Assinatura Arena System - ${normalizedInterval === "year" ? "Anual" : "Mensal"}${isFounder ? " (Founder 20 - 30% OFF)" : ""}`,
+				description: `Assinatura Arena System - ${offerLabel}`,
 			}),
 		});
 
@@ -520,7 +525,7 @@ Deno.serve(async (req) => {
 					asaas_subscription_id: subscriptionId,
 					asaas_customer_id: asaasCustomerId,
 					plan_code: "arena", // Plano único ArenaSys
-					plan_name: `ArenaSys${isFounder ? " (Founder 20)" : ""}`,
+					plan_name: `ArenaSys${isFounder ? " (Founder anual)" : ""}`,
 					status: "trial", // Status inicial - será atualizado pelo webhook quando pagar
 					billing_interval: normalizedInterval,
 					monthly_price: Math.round(monthlyPriceEquivalent * 100), // Preço mensal equivalente em centavos
@@ -552,7 +557,7 @@ Deno.serve(async (req) => {
 			billingType: "UNDEFINED", // Permite PIX, boleto ou cartão
 			value: value,
 			dueDate: dueDate,
-			description: `Assinatura Arena System - ${normalizedInterval === "year" ? "Anual" : "Mensal"}${isFounder ? " (Founder 20 - 30% OFF)" : ""}`,
+			description: `Assinatura Arena System - ${offerLabel}`,
 			subscription: subscriptionId, // Vincular à subscription criada
 		};
 

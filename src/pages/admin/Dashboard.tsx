@@ -1860,11 +1860,10 @@ export default function DashboardHome() {
 				plan: "pro",
 				label: "Arena System",
 				tagline: "Tudo que você precisa para gerenciar sua arena",
-				badge: "Único Plano",
-				monthly: "R$ 97/mês",
-				annual: "R$ 1.164/ano (12x de R$ 97)",
-				foundersMonthly: "R$ 67,90/mês",
-				foundersAnnual: "R$ 814,80/ano (12x de R$ 67,90)",
+				badge: "Oferta Founder",
+				monthly: "R$ 69,90/mês",
+				annual: "R$ 397/ano",
+				fullAnnual: "Depois R$ 597/ano",
 				highlights: [
 					"Agenda inteligente e link público de reservas",
 					"Pagamento no local ou via WhatsApp",
@@ -1877,13 +1876,13 @@ export default function DashboardHome() {
 			{
 				number: "01",
 				title: "Escolha o plano",
-				description: "Selecione Pro ou Start e decida se quer mensal ou anual.",
+				description: "Escolha mensal sem fidelidade ou anual Founder limitado.",
 			},
 			{
 				number: "02",
 				title: "Checkout oficial Asaas",
 				description:
-					"Escolha Cartão de Crédito no checkout para parcelar em até 12x sem juros. Outras formas de pagamento também disponíveis.",
+					"Pague por Pix, boleto ou cartão. O mensal não compromete o limite anual do cartão.",
 			},
 			{
 				number: "03",
@@ -2000,6 +1999,11 @@ export default function DashboardHome() {
 														<p className="text-lg font-bold">
 															{priceOption.price}
 														</p>
+														{priceOption.label === "Anual" && (
+															<p className="text-[10px] text-amber-200">
+																{plan.fullAnnual}
+															</p>
+														)}
 													</div>
 												))}
 											</div>
@@ -2023,8 +2027,8 @@ export default function DashboardHome() {
 								</p>
 								<p className="text-xs text-gray-300">
 									{billingInterval === "year" ?
-										"R$ 1.164/ano (12x de R$ 97)"
-									:	"R$ 97/mês"}
+										"R$ 397/ano Founder"
+									:	"R$ 69,90/mês sem fidelidade"}
 								</p>
 							</div>
 						</div>
@@ -2065,8 +2069,8 @@ export default function DashboardHome() {
 							:	"Assinar com Asaas"}
 						</Button>
 						<p className="text-[11px] text-gray-300">
-							Recomendamos o Pro para usar tudo liberado. Pagamento seguro pelo
-							Asaas com transparência total.
+							Oferta Founder limitada para implantação. Pagamento seguro pelo
+							Asaas com Pix, boleto ou cartão.
 						</p>
 						<div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3 text-sm text-gray-200">
 							<p className="text-[11px] uppercase tracking-[0.3em] text-gray-300">

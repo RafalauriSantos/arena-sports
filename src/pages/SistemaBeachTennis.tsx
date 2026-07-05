@@ -139,9 +139,9 @@ export function SistemaBeachTennis() {
 
 					<h2 className="text-3xl font-bold mt-12 mb-4">Quanto custa?</h2>
 					<p className="text-gray-300 mb-4">
-						<strong className="text-emerald-400">R$ 97/mês</strong> para
-						agendamento ilimitado. Compare: você paga mais caro em luz de uma
-						quadra por mês do que no sistema completo.
+						<strong className="text-emerald-400">R$ 69,90/mês</strong> para
+						agendamento ilimitado, sem fidelidade. Compare: você paga mais caro
+						em luz de uma quadra por mês do que no sistema completo.
 					</p>
 
 					<h2 className="text-3xl font-bold mt-12 mb-4">Case real</h2>

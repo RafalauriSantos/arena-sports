@@ -32,14 +32,13 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios");
 }
 
-// Preços base (sem desconto)
-const BASE_PRICE = {
-    month: 97, // R$ 97/mês
-    year: 1164, // R$ 1.164/ano (12x de R$ 97)
+// Oferta comercial atual
+const OFFER_PRICE = {
+    month: 69.9,
+    year: 597,
+    founderYear: 397,
 } as const;
 
-// Desconto de 30% para Founders 20
-const FOUNDERS_DISCOUNT = 0.3; // 30%
 const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 async function asaasRequest(

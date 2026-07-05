@@ -104,9 +104,9 @@ export function SoftwareQuadrasFutebol() {
 
 					<h2 className="text-3xl font-bold mt-12 mb-4">Quanto custa?</h2>
 					<p className="text-gray-300 mb-4">
-						A partir de <strong className="text-emerald-400">R$ 97/mês</strong>.
-						Muito mais barato que contratar alguém para atender telefone e
-						anotar reservas. E você pode testar grátis por 7 dias.
+						A partir de <strong className="text-emerald-400">R$ 69,90/mês</strong>,
+						sem fidelidade. Muito mais barato que contratar alguém para atender
+						telefone e anotar reservas. E você pode testar grátis por 7 dias.
 					</p>
 
 					<div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-6 my-8">

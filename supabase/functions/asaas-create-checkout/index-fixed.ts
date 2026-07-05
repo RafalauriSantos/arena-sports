@@ -24,8 +24,8 @@ const PLANS = {
     pro: {
         name: "Arena Pro",
         prices: {
-            month: 249,
-            year: 1164,
+            month: 69.9,
+            year: 597,
         },
     },
 } as const;

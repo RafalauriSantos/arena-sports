@@ -164,11 +164,12 @@ export function GestaoQuadraSociety() {
 
 					<h2 className="text-3xl font-bold mt-12 mb-4">Investimento</h2>
 					<p className="text-gray-300 mb-4">
-						<strong className="text-emerald-400 text-2xl">R$ 97/mês</strong>
+						<strong className="text-emerald-400 text-2xl">R$ 69,90/mês</strong>
 					</p>
 					<p className="text-gray-300 mb-6">
-						Menos que 1 aluguel de quadra por mês. E você economiza muito mais
-						em tempo, inadimplência e clientes perdidos.
+						Mensal sem fidelidade, menos que 1 aluguel de quadra por mês. E
+						você economiza muito mais em tempo, inadimplência e clientes
+						perdidos.
 					</p>
 
 					<div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-6 my-8">

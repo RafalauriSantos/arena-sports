@@ -26,6 +26,10 @@ interface SubscriptionCardProps {
 	isFounder?: boolean;
 }
 
+const MONTHLY_PRICE_CENTS = 6990;
+const FULL_ANNUAL_PRICE_CENTS = 59700;
+const FOUNDER_ANNUAL_PRICE_CENTS = 39700;
+
 export function SubscriptionCard({
 	subscription,
 	billingInterval,
@@ -85,20 +89,12 @@ export function SubscriptionCard({
 		}).format(reais);
 	};
 
-	// Calcular preço com desconto de founder
-	const getDisplayPrice = () => {
-		const basePrice = subscription.monthly_price || 9700; // R$ 97 em centavos
-		if (isFounder) {
-			const discounted = Math.round(basePrice * 0.7); // 30% off
-			return discounted;
-		}
-		return basePrice;
-	};
-
-	const displayPrice = getDisplayPrice();
-	// Anual tem desconto de 2 meses grátis (paga 10 meses, não 12)
-	const monthlyPrice =
-		billingInterval === "month" ? displayPrice : Math.round(displayPrice * 10);
+	const annualFounderOfferAvailable = isFounder || isTrial || isCanceled;
+	const annualPrice =
+		annualFounderOfferAvailable ? FOUNDER_ANNUAL_PRICE_CENTS
+		:	FULL_ANNUAL_PRICE_CENTS;
+	const selectedPrice =
+		billingInterval === "month" ? MONTHLY_PRICE_CENTS : annualPrice;
 	const priceLabel = billingInterval === "month" ? "/mês" : "/ano";
 
 	// Status badge config
@@ -186,42 +182,36 @@ export function SubscriptionCard({
 
 				{/* Preço */}
 				<div className="space-y-2">
-					{isFounder ?
+					{billingInterval === "year" && annualFounderOfferAvailable ?
 						<div className="space-y-1">
-							{/* Preço com desconto */}
 							<div className="flex items-baseline gap-2">
 								<span className="text-4xl font-bold text-gray-900">
-									{formatPrice(monthlyPrice)}
+									{formatPrice(selectedPrice)}
 								</span>
 								<span className="text-lg text-gray-300">{priceLabel}</span>
 							</div>
-							{/* Preço original riscado */}
 							<div className="flex items-center gap-2">
 								<span className="text-lg text-gray-300 line-through">
-									{formatPrice(
-										billingInterval === "month" ?
-											subscription.monthly_price || 9700
-										:	Math.round((subscription.monthly_price || 9700) * 10),
-									)}
+									{formatPrice(FULL_ANNUAL_PRICE_CENTS)}
 								</span>
 								<span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full">
-									-30% OFF
+									Founder 20
 								</span>
 							</div>
 							<p className="text-sm text-amber-600 font-medium flex items-center gap-1">
-								✨ Desconto permanente de Founder aplicado
+								✨ Oferta anual limitada para os primeiros clientes
 							</p>
 						</div>
 					:	<div className="flex items-baseline gap-2">
 							<span className="text-4xl font-bold text-gray-900">
-								{formatPrice(monthlyPrice)}
+								{formatPrice(selectedPrice)}
 							</span>
 							<span className="text-lg text-gray-300">{priceLabel}</span>
 						</div>
 					}
 					{billingInterval === "year" && (
 						<p className="text-sm text-gray-300">
-							Equivale a {formatPrice(Math.round(monthlyPrice / 12))}/mês
+							Equivale a {formatPrice(Math.round(selectedPrice / 12))}/mês
 						</p>
 					)}
 				</div>
@@ -311,13 +301,11 @@ export function SubscriptionCard({
 								)}>
 								Mensal
 								<div className="text-xs mt-0.5 opacity-75">
-									{formatPrice(displayPrice)}/mês
+									{formatPrice(MONTHLY_PRICE_CENTS)}/mês
 								</div>
-								{isFounder && billingInterval === "month" && (
-									<span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white rounded-full">
-										-30%
-									</span>
-								)}
+								<span className="block text-[10px] mt-1 opacity-70">
+									sem fidelidade
+								</span>
 							</button>
 							<button
 								type="button"
@@ -330,17 +318,17 @@ export function SubscriptionCard({
 								)}>
 								Anual
 								<div className="text-xs mt-0.5 opacity-75">
-									{formatPrice(Math.round(displayPrice * 12))}/ano
+									{formatPrice(annualPrice)}/ano
 								</div>
-								{isFounder && billingInterval === "year" && (
+								{annualFounderOfferAvailable && (
 									<span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white rounded-full">
-										-30%
+										Founder
 									</span>
 								)}
 							</button>
 						</div>
 						<p className="text-xs text-gray-300 mt-3 text-center">
-							💳 Parcelamento em até 12x sem juros no cartão
+							Mensal sem fidelidade. No anual, escolha Pix, boleto ou cartão no Asaas.
 						</p>
 					</div>
 				)}
