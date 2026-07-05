@@ -27,6 +27,7 @@ type TestResult = {
   passed: boolean
   message?: string
   severity?: 'critical' | 'high' | 'medium'
+  skipped?: boolean
 }
 
 const results: TestResult[] = []
@@ -46,6 +47,10 @@ const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const asaasApiKey = process.env.ASAAS_API_KEY
 const asaasApiUrl = (process.env.ASAAS_API_URL || 'https://sandbox.asaas.com/api/v3').replace(/\/+$/, '')
+const webhookToken =
+  process.env.TEST_ASAAS_WEBHOOK_TOKEN ||
+  process.env.ASAAS_WEBHOOK_SECRET ||
+  process.env.ASAAS_WEBHOOK_TOKEN
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY são obrigatórios')
@@ -425,11 +430,46 @@ async function testWebhookSimulation(): Promise<TestResult[]> {
 
     console.log('   📤 Enviando webhook simulado...')
     const webhookUrl = `${supabaseUrl}/functions/v1/asaas-webhook`
+
+    if (!webhookToken) {
+      const unauthorizedResponse = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(webhookPayload)
+      })
+
+      testResults.push({
+        name: 'Webhook - Rejeita chamada sem token',
+        passed: unauthorizedResponse.status === 401,
+        severity: 'critical',
+        message: `Status recebido: ${unauthorizedResponse.status} (esperado: 401)`
+      })
+
+      if (unauthorizedResponse.status === 401) {
+        console.log('   ✅ Webhook rejeitou chamada sem token')
+      } else {
+        console.log(`   ❌ Webhook sem token retornou ${unauthorizedResponse.status}`)
+      }
+
+      testResults.push({
+        name: 'Webhook - Processamento autorizado',
+        passed: false,
+        skipped: true,
+        severity: 'high',
+        message: 'Defina TEST_ASAAS_WEBHOOK_TOKEN para executar o teste autorizado'
+      })
+      console.log('   ⚠️  Teste autorizado ignorado: TEST_ASAAS_WEBHOOK_TOKEN ausente')
+      return testResults
+    }
     
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'apikey': supabaseAnonKey,
+        'asaas-access-token': webhookToken,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(webhookPayload)
@@ -521,22 +561,28 @@ async function runAllTests() {
     console.log('\n\n' + '='.repeat(70))
     console.log('📊 RESUMO DOS TESTES DE BILLING\n')
 
-    const passed = results.filter(r => r.passed).length
-    const total = results.length
-    const critical = results.filter(r => r.severity === 'critical')
+    const skipped = results.filter(r => r.skipped).length
+    const runnable = results.filter(r => !r.skipped)
+    const passed = runnable.filter(r => r.passed).length
+    const total = runnable.length
+    const failed = runnable.filter(r => !r.passed)
+    const critical = runnable.filter(r => r.severity === 'critical')
     const criticalPassed = critical.filter(r => r.passed).length
 
     results.forEach(result => {
-      const icon = result.passed ? '✅' : '❌'
+      const icon = result.skipped ? '⏭️' : result.passed ? '✅' : '❌'
       const severity = result.severity ? `[${result.severity.toUpperCase()}]` : ''
       console.log(`   ${icon} ${severity} ${result.name}${result.message ? `: ${result.message}` : ''}`)
     })
 
     console.log(`\n${'='.repeat(70)}`)
     console.log(`📈 TOTAL: ${passed}/${total} testes passaram`)
+    if (skipped > 0) {
+      console.log(`⏭️  IGNORADOS POR AMBIENTE: ${skipped}`)
+    }
     console.log(`🔴 CRÍTICOS: ${criticalPassed}/${critical.length} passaram\n`)
 
-    if (passed === total && criticalPassed === critical.length) {
+    if (failed.length === 0 && criticalPassed === critical.length) {
       console.log('🎉 TODOS OS TESTES DE BILLING PASSARAM!')
       console.log('✅ Fluxo de billing está funcionando corretamente.\n')
       await cleanup()
