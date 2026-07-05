@@ -67,17 +67,19 @@ Use o MCP do Asaas para listar clientes, limite 5.
 
 Se a API key estiver correta, a chamada deve retornar dados ou uma resposta valida da API. Se a chave estiver ausente ou invalida, o MCP deve retornar erro de autenticacao.
 
-## Capacidades Esperadas
+## Ferramentas MCP Disponiveis
 
-O MCP oficial e gerado a partir da especificacao OpenAPI do Asaas. As ferramentas exatas aparecem no Codex apos reiniciar e carregar o servidor, mas a documentacao oficial indica suporte a:
+Validacao direta do endpoint MCP retornou as seguintes ferramentas:
 
-- listar endpoints da API;
-- obter schemas de requisicao e resposta;
-- gerar snippets de codigo para endpoints especificos;
-- pesquisar documentacao tecnica;
-- executar chamadas autenticadas na API.
+- `list-specs`: lista as especificacoes OpenAPI disponiveis.
+- `list-endpoints`: lista caminhos/endpoints e metodos HTTP da API.
+- `search-endpoints`: pesquisa endpoints por capacidade, parametro ou palavra-chave.
+- `get-endpoint`: retorna detalhes de um endpoint especifico, incluindo schemas, parametros, seguranca e servidores.
+- `execute-request`: executa uma chamada de API a partir de um objeto HAR. Esta ferramenta pode fazer escrita e exige autenticacao.
+- `search`: pesquisa a documentacao tecnica.
+- `fetch`: busca o conteudo detalhado de um documento retornado por `search`.
 
-Na pratica, isso deve cobrir os principais recursos da API do Asaas, incluindo:
+O MCP oficial e gerado a partir da especificacao OpenAPI do Asaas. Com as ferramentas acima, o assistente consegue descobrir e operar os principais recursos da API, incluindo:
 
 - clientes: listar, criar, consultar, atualizar e remover;
 - cobrancas/pagamentos: criar, listar, consultar, atualizar, remover, restaurar, reembolsar e obter linha digitavel/QR Code quando aplicavel;
@@ -87,4 +89,3 @@ Na pratica, isso deve cobrir os principais recursos da API do Asaas, incluindo:
 - Pix, parcelamentos, splits, transferencias, notas fiscais e subcontas, conforme permissao da conta e disponibilidade dos endpoints.
 
 Para operacoes de escrita, confirme sempre o ambiente da chave (sandbox ou producao) antes de executar. Prefira validar primeiro com chamadas de leitura.
-
