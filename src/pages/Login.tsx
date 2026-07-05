@@ -640,10 +640,10 @@ const Login = () => {
 					</button>
 				</header>
 
-				<main className="mx-auto grid w-full max-w-[1120px] flex-1 grid-cols-1 items-start gap-7 px-5 pb-8 pt-1 sm:px-8 lg:min-h-[640px] lg:grid-cols-[minmax(500px,540px)_minmax(420px,460px)] lg:items-center lg:justify-center lg:gap-8 lg:pb-8 lg:pt-0">
-					<section className="auth-goomer hidden animate-in fade-in slide-in-from-left-6 duration-700 lg:flex lg:min-h-[600px] lg:flex-col lg:justify-center">
-						<div className="flex min-h-[640px] w-full flex-col rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)] p-6 shadow-[0_30px_90px_-56px_rgba(0,0,0,0.68)]">
-							<div className="mb-5 flex items-center justify-between">
+				<main className="mx-auto flex w-full max-w-[1160px] flex-1 items-start px-5 pb-8 pt-1 sm:px-8 lg:min-h-[660px] lg:items-center lg:pb-10 lg:pt-0">
+					<div className="grid w-full overflow-hidden rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)] shadow-[0_34px_110px_-70px_rgba(0,0,0,0.72)] lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
+						<section className="auth-goomer hidden min-h-[640px] bg-[var(--az-paper)] p-8 lg:flex lg:flex-col">
+							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
 									<div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--az-navy)] text-sm font-semibold text-[var(--az-surface)]">
 										AS
@@ -653,63 +653,62 @@ const Login = () => {
 											ArenaSys
 										</p>
 										<p className="text-xs text-[var(--az-ink-soft)]">
-											Central da arena
+											Agenda, caixa e operação
 										</p>
 									</div>
 								</div>
-								<span
-									aria-label="Status ativo"
-									className="h-2.5 w-2.5 rounded-full bg-[var(--az-turf)] shadow-[0_0_0_6px_var(--az-turf-soft)]"
-								/>
+								<div
+									aria-label="Agenda ativa"
+									className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--az-turf-soft)]">
+									<span className="h-2 w-2 rounded-full bg-[var(--az-turf)]" />
+								</div>
 							</div>
 
-							<h1 className="auth-hero-title max-w-[430px] text-[38px] font-semibold leading-[1] text-[var(--az-ink)]">
-								Sua arena pronta para entrar em quadra.
-							</h1>
+							<div className="mt-10 max-w-[490px]">
+								<h1 className="auth-hero-title text-[48px] font-semibold leading-[0.98] text-[var(--az-ink)]">
+									A operação inteira antes do primeiro jogo.
+								</h1>
+								<p className="mt-5 max-w-[430px] text-[15px] font-medium leading-7 text-[var(--az-ink-soft)]">
+									Entre, confira o ritmo da agenda e continue a rotina da arena
+									em uma central privada e organizada.
+								</p>
+							</div>
 
-							<p className="mt-3 max-w-[420px] text-sm font-medium leading-6 text-[var(--az-ink-soft)]">
-								Uma visão limpa da operação para entrar, conferir a agenda e
-								seguir o dia sem ruído.
-							</p>
-
-							<div className="mt-5 grid grid-cols-3 gap-3">
+							<div className="mt-9 grid grid-cols-[1fr_1fr_1fr] gap-3">
 								{[
-									{ label: "Reservas hoje", value: "18", tone: "default" },
+									{ label: "Reservas", value: "18", tone: "default" },
 									{ label: "Ocupação", value: "72%", tone: "default" },
 									{ label: "Pendências", value: "3", tone: "pending" },
 								].map((item) => (
-									<div
-										key={item.label}
-										className="rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-paper)] p-3">
+									<div key={item.label} className="border-t-[0.5px] border-[var(--az-line)] pt-4">
 										<p
-											className={`text-[24px] font-semibold leading-none ${item.tone === "pending" ? "text-[var(--az-clay)]" : "text-[var(--az-ink)]"}`}>
+											className={`text-[32px] font-semibold leading-none ${item.tone === "pending" ? "text-[var(--az-clay)]" : "text-[var(--az-ink)]"}`}>
 											{item.value}
 										</p>
-										<p className="mt-2 text-[10px] font-medium uppercase tracking-[0.05em] text-[var(--az-ink-soft)]">
+										<p className="mt-2 text-xs font-medium text-[var(--az-ink-soft)]">
 											{item.label}
 										</p>
 									</div>
 								))}
 							</div>
 
-							<div className="mt-5 overflow-hidden rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)]">
-								<div className="flex items-center justify-between border-b-[0.5px] border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-3">
+							<div className="mt-auto overflow-hidden rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)]">
+								<div className="flex items-center justify-between border-b-[0.5px] border-[var(--az-line)] px-5 py-4">
 									<div>
-										<p className="text-base font-semibold text-[var(--az-ink)]">
+										<p className="text-[15px] font-semibold text-[var(--az-ink)]">
 											Hoje na arena
 										</p>
 										<p className="mt-1 text-xs text-[var(--az-ink-soft)]">
 											Sábado, 04 jul
 										</p>
 									</div>
-									<span
+									<div
 										aria-label="Agenda ativa"
-										className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--az-turf-soft)]">
+										className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--az-turf-soft)]">
 										<span className="h-1.5 w-1.5 rounded-full bg-[var(--az-turf)]" />
-									</span>
+									</div>
 								</div>
-
-								<div className="grid gap-2 p-3">
+								<div className="divide-y-[0.5px] divide-[var(--az-line)]">
 									{[
 										{
 											icon: CalendarDays,
@@ -730,19 +729,17 @@ const Login = () => {
 											tone: "pending",
 										},
 									].map((item) => (
-										<div
-											key={item.label}
-											className="flex items-center gap-3 rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-paper)] px-3 py-2.5">
+										<div key={item.label} className="flex items-center gap-4 px-5 py-4">
 											<div
-												className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.tone === "pending" ? "bg-[var(--az-clay-soft)] text-[var(--az-clay)]" : "bg-[var(--az-navy-soft)] text-[var(--az-navy)]"}`}>
-												<item.icon className="h-4 w-4" />
+												className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.tone === "pending" ? "bg-[var(--az-clay-soft)] text-[var(--az-clay)]" : "bg-[var(--az-navy-soft)] text-[var(--az-navy)]"}`}>
+												<item.icon className="h-[18px] w-[18px]" />
 											</div>
-											<div className="min-w-0">
-												<p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--az-ink-soft)]">
+											<div className="min-w-0 flex-1">
+												<p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--az-ink-soft)]">
 													{item.label}
 												</p>
 												<p
-													className={`truncate text-sm font-semibold ${item.tone === "pending" ? "text-[var(--az-clay)]" : "text-[var(--az-ink)]"}`}>
+													className={`mt-0.5 truncate text-[15px] font-semibold ${item.tone === "pending" ? "text-[var(--az-clay)]" : "text-[var(--az-ink)]"}`}>
 													{item.value}
 												</p>
 											</div>
@@ -750,12 +747,10 @@ const Login = () => {
 									))}
 								</div>
 							</div>
-						</div>
-					</section>
+						</section>
 
-					<section className="flex w-full justify-center animate-in fade-in slide-in-from-right-6 duration-700 delay-150 lg:min-h-[620px] lg:items-center">
-						<div className="relative mx-auto w-full max-w-[460px]">
-							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)] p-6 shadow-[0_30px_90px_-56px_rgba(0,0,0,0.68)] sm:min-h-[640px] sm:p-9">
+						<section className="flex min-h-[640px] w-full items-center justify-center p-5 sm:p-8 lg:border-l-[0.5px] lg:border-[var(--az-line)] lg:p-10">
+							<div className="auth-login-card w-full max-w-[430px]">
 								<div className="relative">
 								{mode === "email-confirmation" ?
 									<div className="space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
@@ -1131,8 +1126,8 @@ const Login = () => {
 									<span>Conexão criptografada · dados privados da sua arena</span>
 								</div>
 							</div>
-						</div>
-					</section>
+						</section>
+					</div>
 				</main>
 			</div>
 		</div>
