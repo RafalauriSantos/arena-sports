@@ -332,14 +332,14 @@ function RotatingHeroText() {
 	const { text } = useTypewriter(words, 80, 40, 1800, prefersReducedMotion);
 
 	return (
-		<h1 className="text-[2.75rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.0] text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
+		<h1 className="animate-in fade-in slide-in-from-bottom-8 text-[2.75rem] font-semibold leading-[1.0] tracking-tight text-white duration-1000 sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
 			Sua arena cheia.
 			<br />
-			<span className="text-emerald-400">
+			<span className="text-[var(--az-turf)]">
 				Sem{" "}
 				<span className="block sm:inline-block min-w-0 sm:min-w-[220px] md:min-w-[320px] lg:min-w-[400px] text-center sm:text-left">
 					{text}
-					<span className="inline-block w-[3px] md:w-[4px] h-[0.9em] bg-emerald-400 ml-1 animate-blink align-middle" />
+					<span className="ml-1 inline-block h-[0.9em] w-[3px] animate-blink align-middle bg-[var(--az-turf)] md:w-[4px]" />
 				</span>
 			</span>
 		</h1>
@@ -475,9 +475,9 @@ function CalendarAppScreen() {
 			aria-hidden="true">
 			{/* Header com Arena Info */}
 			<div className="relative px-4 pt-2 pb-3 border-b border-white/5">
-				<div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent" />
+				<div className="absolute inset-0 bg-gradient-to-b from-[var(--az-navy)]/20 to-transparent" />
 				<div className="relative flex items-center gap-3">
-					<div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/30">
 						<span className="text-lg">⚽</span>
 					</div>
 					<div className="flex-1">
@@ -487,8 +487,8 @@ function CalendarAppScreen() {
 							Arena Gol de Placa
 						</span>
 						<div className="flex items-center gap-1.5 mt-0.5">
-							<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-							<span className="text-emerald-400 text-[8px] font-medium">
+							<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--az-turf)]" />
+							<span className="text-[8px] font-medium text-[var(--az-turf)]">
 								Aberto agora
 							</span>
 							<span className="text-gray-300 text-[8px]">• 4.9 ⭐</span>
@@ -507,7 +507,7 @@ function CalendarAppScreen() {
 						key={q}
 						className={`px-3 py-1.5 rounded-full text-[8px] font-bold whitespace-nowrap transition-all ${
 							i === 0 ?
-								"bg-emerald-500 text-black shadow-lg shadow-emerald-500/30"
+								"bg-[var(--az-navy)] text-white shadow-lg shadow-[var(--az-navy)]/30"
 							:	"bg-white/5 text-gray-300 border border-white/10"
 						}`}>
 						{q}
@@ -541,16 +541,16 @@ function CalendarAppScreen() {
 						<div
 							key={i}
 							className={`flex-1 py-1.5 rounded-lg flex flex-col items-center transition-all ${
-								d.selected ? "bg-emerald-500 shadow-lg shadow-emerald-500/40"
+								d.selected ? "bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/40"
 								: d.available ? "bg-white/5 hover:bg-white/10"
 								: "bg-white/[0.02] opacity-40"
 							}`}>
 							<span
-								className={`text-[6px] font-medium ${d.selected ? "text-black/60" : "text-gray-300"}`}>
+								className={`text-[6px] font-medium ${d.selected ? "text-white/70" : "text-gray-300"}`}>
 								{d.day}
 							</span>
 							<span
-								className={`text-[11px] font-bold ${d.selected ? "text-black" : "text-white"}`}>
+								className={`text-[11px] font-bold ${d.selected ? "text-white" : "text-white"}`}>
 								{d.date}
 							</span>
 							{!d.available && (
@@ -591,7 +591,7 @@ function CalendarAppScreen() {
 							}
 							className={`p-2 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
 								slot.status === "selected" || selectedTime === slot.time ?
-									"bg-emerald-500/20 border-2 border-emerald-500 shadow-lg shadow-emerald-500/10"
+									"border-2 border-[var(--az-navy)] bg-[var(--az-navy)]/20 shadow-lg shadow-[var(--az-navy)]/10"
 								: slot.status === "occupied" ?
 									"bg-white/[0.02] border border-white/5 opacity-50"
 								:	"bg-white/5 border border-white/5 hover:border-white/20"
@@ -600,7 +600,7 @@ function CalendarAppScreen() {
 								<div
 									className={`w-7 h-7 rounded-lg flex items-center justify-center ${
 										slot.status === "selected" || selectedTime === slot.time ?
-											"bg-emerald-500 text-black"
+											"bg-[var(--az-navy)] text-white"
 										: slot.status === "occupied" ? "bg-red-500/20 text-red-400"
 										: "bg-white/10 text-white"
 									}`}>
@@ -628,7 +628,7 @@ function CalendarAppScreen() {
 								<span
 									className={`font-bold text-[10px] ${
 										slot.status === "selected" || selectedTime === slot.time ?
-											"text-emerald-400"
+											"text-[var(--az-turf)]"
 										:	"text-white"
 									}`}>
 									{slot.price}
@@ -641,7 +641,7 @@ function CalendarAppScreen() {
 
 			{/* Bottom CTA */}
 			<div className="p-3 border-t border-white/5 marketing-dark-deep-muted backdrop-blur">
-				<button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-bold text-[11px] flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 active:scale-[0.98] transition-transform">
+				<button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--az-navy)] py-2.5 text-[11px] font-bold text-white shadow-lg shadow-[var(--az-navy)]/30 transition-transform active:scale-[0.98]">
 					Confirmar Reserva • R$ 120
 					<span className="text-[10px]">→</span>
 				</button>
@@ -658,8 +658,8 @@ function DashboardAppScreen() {
 			aria-hidden="true">
 			{/* Sidebar Mini */}
 			<div className="w-12 md:w-14 marketing-dark-deep border-r border-white/5 flex flex-col items-center py-3 gap-3">
-				<div className="w-7 h-7 md:w-8 md:h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-					<Zap className="w-3 h-3 md:w-4 md:h-4 text-black" />
+				<div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/30 md:h-8 md:w-8">
+					<Zap className="h-3 w-3 text-white md:h-4 md:w-4" />
 				</div>
 				<div className="w-6 h-[1px] bg-white/10 my-1" />
 				{[
@@ -673,7 +673,7 @@ function DashboardAppScreen() {
 						key={i}
 						className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] transition-all cursor-pointer ${
 							item.active ?
-								"bg-emerald-500/20 shadow-lg shadow-emerald-500/10"
+								"bg-[var(--az-navy)]/20 shadow-lg shadow-[var(--az-navy)]/10"
 							:	"hover:bg-white/5"
 						}`}>
 						{item.icon}
@@ -691,7 +691,7 @@ function DashboardAppScreen() {
 							aria-hidden="true">
 							Dashboard
 						</span>
-						<span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-bold border border-emerald-500/30">
+						<span className="rounded-full border border-[var(--az-line)] bg-[var(--az-navy)]/20 px-2 py-0.5 text-[8px] font-bold text-[var(--az-turf)]">
 							Tempo real
 						</span>
 					</div>
@@ -702,7 +702,7 @@ function DashboardAppScreen() {
 							</div>
 							<div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
 						</div>
-						<div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[8px] font-bold text-black">
+						<div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--az-navy)] text-[8px] font-bold text-white">
 							RL
 						</div>
 					</div>
@@ -757,7 +757,7 @@ function DashboardAppScreen() {
 									{kpi.value}
 								</p>
 								<span
-									className={`text-[7px] md:text-[8px] font-bold ${kpi.up ? "text-emerald-400" : "text-red-400"}`}>
+									className={`text-[7px] font-bold md:text-[8px] ${kpi.up ? "text-[var(--az-turf)]" : "text-[var(--az-clay)]"}`}>
 									{kpi.change}
 								</span>
 							</div>
@@ -778,7 +778,7 @@ function DashboardAppScreen() {
 											key={p}
 											className={`px-2 py-0.5 rounded text-[7px] font-bold ${
 												i === 1 ?
-													"bg-emerald-500/20 text-emerald-400"
+													"bg-[var(--az-turf)]/20 text-[var(--az-turf)]"
 												:	"text-gray-300"
 											}`}>
 											{p}
@@ -794,7 +794,7 @@ function DashboardAppScreen() {
 										<div
 											className={`w-full rounded-t transition-all ${
 												i === 5 ?
-													"bg-gradient-to-t from-emerald-500 to-emerald-400 shadow-lg shadow-emerald-500/30"
+													"bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/30"
 												:	"bg-gradient-to-t from-white/10 to-white/20"
 											}`}
 											style={{ height: `${h}%` }}
@@ -839,7 +839,7 @@ function DashboardAppScreen() {
 										<div
 											className={`w-1 h-6 rounded-full ${
 												res.status === "confirmed" ?
-													"bg-emerald-500"
+													"bg-[var(--az-turf)]"
 												:	"bg-yellow-500"
 											}`}
 										/>
@@ -860,7 +860,7 @@ function DashboardAppScreen() {
 										<div
 											className={`px-1.5 py-0.5 rounded text-[6px] font-bold ${
 												res.status === "confirmed" ?
-													"bg-emerald-500/20 text-emerald-400"
+													"bg-[var(--az-turf)]/20 text-[var(--az-turf)]"
 												:	"bg-yellow-500/20 text-yellow-400"
 											}`}>
 											{res.status === "confirmed" ? "✓" : "⏳"}
@@ -910,8 +910,8 @@ function HeroProductPreview() {
 
 	return (
 		<div className="relative mx-auto w-full max-w-[620px] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-			<div className="absolute -inset-5 rounded-[2rem] bg-blue-500/10 blur-3xl" />
-			<div className="absolute -bottom-8 -right-4 hidden h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl sm:block" />
+			<div className="absolute -inset-5 rounded-xl bg-[var(--az-navy)]/10 blur-3xl" />
+			<div className="absolute -bottom-8 -right-4 hidden h-48 w-48 rounded-full bg-[var(--az-turf)]/10 blur-3xl sm:block" />
 
 			<div className="relative rounded-[1.65rem] border border-slate-200 bg-white p-3 shadow-[0_30px_100px_-45px_rgba(15,23,42,0.62)]">
 				<div className="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-950">
@@ -920,13 +920,13 @@ function HeroProductPreview() {
 							<div className="flex gap-1.5">
 								<span className="h-2.5 w-2.5 rounded-full bg-red-400" />
 								<span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-								<span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+								<span className="h-2.5 w-2.5 rounded-full bg-[var(--az-turf)]" />
 							</div>
 							<span className="ml-2 text-xs font-bold text-slate-400">
 								app.arenasys.com.br/dashboard
 							</span>
 						</div>
-						<span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-emerald-300">
+						<span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
 							Online agora
 						</span>
 					</div>
@@ -935,7 +935,7 @@ function HeroProductPreview() {
 						<div className="border-b border-white/10 bg-slate-950 p-4 lg:border-b-0 lg:border-r">
 							<div className="mb-5 flex items-center justify-between">
 								<div>
-									<p className="text-[11px] font-black uppercase tracking-[0.24em] text-blue-300">
+									<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
 										Visao da arena
 									</p>
 									<h3 className="mt-1 text-xl font-black text-white">
@@ -966,7 +966,7 @@ function HeroProductPreview() {
 										<p className="mt-2 text-xl font-black text-white">
 											{value}
 										</p>
-										<p className="mt-1 text-[11px] font-semibold text-blue-200">
+								<p className="mt-1 text-[11px] font-semibold text-white/62">
 											{hint}
 										</p>
 									</div>
@@ -978,15 +978,15 @@ function HeroProductPreview() {
 									<p className="text-xs font-black uppercase tracking-wide text-slate-300">
 										Fluxo de hoje
 									</p>
-									<span className="text-[11px] font-bold text-emerald-300">
+									<span className="text-[11px] font-bold text-[var(--az-turf)]">
 										tempo real
 									</span>
 								</div>
 								<div className="space-y-3">
 									{[
-										["Confirmadas", "12", "78%", "bg-emerald-400"],
+										["Confirmadas", "12", "78%", "bg-[var(--az-turf)]"],
 										["Aguardando sinal", "3", "42%", "bg-amber-300"],
-										["Horarios livres", "6", "58%", "bg-blue-300"],
+										["Horarios livres", "6", "58%", "bg-white/70"],
 									].map(([label, value, width, color]) => (
 										<div key={label}>
 											<div className="mb-1 flex items-center justify-between">
@@ -1012,7 +1012,7 @@ function HeroProductPreview() {
 						<div className="bg-slate-50 p-4">
 							<div className="mb-4 flex items-center justify-between">
 								<div>
-									<p className="text-[11px] font-black uppercase tracking-[0.22em] text-blue-600">
+									<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
 										Agenda publica + painel
 									</p>
 									<h3 className="mt-1 text-xl font-black text-slate-950">
@@ -1041,9 +1041,10 @@ function HeroProductPreview() {
 											className={cn(
 												"rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide",
 												slot.tone === "green" &&
-													"bg-emerald-50 text-emerald-700",
+													"bg-[var(--az-turf-soft)] text-[var(--az-turf)]",
 												slot.tone === "amber" && "bg-amber-50 text-amber-700",
-												slot.tone === "blue" && "bg-blue-50 text-blue-700",
+												slot.tone === "blue" &&
+													"bg-[var(--az-navy-soft)] text-[var(--az-navy)]",
 											)}>
 											{slot.status}
 										</span>
@@ -1053,14 +1054,14 @@ function HeroProductPreview() {
 
 							<div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.95fr]">
 								<div
-									className="rounded-2xl bg-blue-600 p-4 text-white shadow-lg shadow-blue-950/20">
-									<p className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-100">
+									className="rounded-2xl bg-[var(--az-navy)] p-4 text-white shadow-lg shadow-blue-950/20">
+									<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
 										Link proprio
 									</p>
 									<p className="mt-2 text-xl font-black leading-tight">
 										/agendar/arena-society
 									</p>
-									<p className="mt-3 text-sm font-medium leading-5 text-blue-50">
+									<p className="mt-3 text-sm font-medium leading-5 text-white/75">
 										Cliente escolhe horario sem esperar resposta manual.
 									</p>
 								</div>
@@ -1104,19 +1105,19 @@ function OutcomeStrip() {
 	];
 
 	return (
-		<section className="goomer-style relative bg-[#f8fbff] px-5 pb-8">
-			<div className="mx-auto -mt-8 grid max-w-6xl gap-4 rounded-[2.15rem] border border-blue-100 bg-white p-4 shadow-[0_28px_90px_-58px_rgba(15,23,42,0.65)] md:grid-cols-3 md:p-6">
+		<section className="relative bg-[var(--az-paper)] px-5 pb-8">
+			<div className="mx-auto -mt-8 grid max-w-6xl gap-4 rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] p-4 shadow-[0_28px_90px_-58px_rgba(22,24,26,0.38)] md:grid-cols-3 md:p-6">
 				{outcomes.map((item) => (
 					<div
 						key={item.label}
-						className="rounded-[1.75rem] border border-slate-100 bg-slate-50 px-5 py-6">
-						<p className="text-3xl font-black text-[#0b64d8]">
+						className="rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] px-5 py-6">
+						<p className="text-3xl font-semibold text-[var(--az-navy)]">
 							{item.value}
 						</p>
-						<p className="mt-1 text-sm font-black uppercase text-slate-950">
+						<p className="mt-1 text-sm font-semibold uppercase text-[var(--az-ink)]">
 							{item.label}
 						</p>
-						<p className="mt-3 text-sm leading-6 text-slate-600">
+						<p className="mt-3 text-sm leading-6 text-[var(--az-ink-soft)]">
 							{item.desc}
 						</p>
 					</div>
@@ -1167,24 +1168,24 @@ function ProductSuiteSection({
 	];
 
 	const toneClasses = {
-		blue: "bg-blue-50 text-blue-700 border-blue-100",
-		cyan: "bg-cyan-50 text-cyan-700 border-cyan-100",
-		indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
-		amber: "bg-amber-50 text-amber-700 border-amber-100",
+		blue: "bg-[var(--az-navy-soft)] text-[var(--az-navy)] border-[var(--az-line)]",
+		cyan: "bg-[var(--az-turf-soft)] text-[var(--az-turf)] border-[var(--az-line)]",
+		indigo: "bg-[var(--az-navy-soft)] text-[var(--az-navy)] border-[var(--az-line)]",
+		amber: "bg-[var(--az-paper)] text-[var(--az-clay)] border-[var(--az-line)]",
 	};
 
 	return (
-		<section id="solucoes" className="relative bg-white px-4 py-24 scroll-mt-24">
+		<section id="solucoes" className="relative scroll-mt-24 bg-[var(--az-surface)] px-4 py-24">
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
-						<p className="text-sm font-black uppercase tracking-[0.22em] text-blue-600">
+						<p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
 							Soluções para arenas
 						</p>
-						<h2 className="mt-3 max-w-2xl text-3xl font-black tracking-tight text-slate-950 md:text-5xl">
+						<h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-[var(--az-ink)] md:text-5xl">
 							Tudo que a operação precisa para vender horários com clareza.
 						</h2>
-						<p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+						<p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
 							Assim como um cardápio digital organiza pedidos, o ArenaSys
 							organiza a disponibilidade da sua arena: reservas, quadras,
 							clientes e pagamentos em uma experiência única.
@@ -1192,7 +1193,7 @@ function ProductSuiteSection({
 					</div>
 					<button
 						onClick={onPrimaryAction}
-						className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-6 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700 lg:justify-self-end">
+						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[var(--az-navy)] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#10283f] lg:justify-self-end">
 						Escolher solução ideal
 						<ArrowRight className="h-4 w-4" />
 					</button>
@@ -1202,7 +1203,7 @@ function ProductSuiteSection({
 					{products.map((product) => (
 						<article
 							key={product.title}
-							className="group flex min-h-[300px] flex-col rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-[0_20px_70px_-55px_rgba(15,23,42,0.65)] transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-950/10">
+							className="group flex min-h-[300px] flex-col rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-6 shadow-[0_20px_70px_-55px_rgba(22,24,26,0.45)] transition-all hover:-translate-y-1 hover:border-[var(--az-navy)] hover:shadow-xl hover:shadow-[var(--az-navy)]/10">
 							<div
 								className={cn(
 									"mb-5 flex h-12 w-12 items-center justify-center rounded-xl border",
@@ -1210,18 +1211,18 @@ function ProductSuiteSection({
 								)}>
 								<product.icon className="h-6 w-6" />
 							</div>
-							<h3 className="text-xl font-black text-slate-950">
+							<h3 className="text-xl font-semibold text-[var(--az-ink)]">
 								{product.title}
 							</h3>
-							<p className="mt-3 flex-1 text-sm leading-6 text-slate-600">
+							<p className="mt-3 flex-1 text-sm leading-6 text-[var(--az-ink-soft)]">
 								{product.desc}
 							</p>
-							<div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+							<div className="mt-5 rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--az-ink-soft)]">
 								{product.result}
 							</div>
 							<button
 								onClick={onPrimaryAction}
-								className="mt-6 inline-flex items-center gap-2 text-sm font-black text-blue-600 transition-colors group-hover:text-blue-700">
+								className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--az-navy)] transition-colors group-hover:text-[#10283f]">
 								{product.action}
 								<ArrowRight className="h-4 w-4" />
 							</button>
@@ -1277,7 +1278,7 @@ export default function LandingPage() {
 				role="main"
 				id="main-content"
 				data-seo-ready
-				className="landing-light relative min-h-dvh text-slate-950 font-sans selection:bg-blue-200 overflow-x-hidden scroll-smooth">
+				className="landing-light relative min-h-dvh overflow-x-hidden scroll-smooth font-sans text-[var(--az-ink)] selection:bg-[var(--az-navy-soft)]">
 				{/* ═══════════════════════════════════════════════════════════════════
 				    🌌 COSMIC BACKGROUND — De cair o queixo
 				    ═══════════════════════════════════════════════════════════════════ */}
@@ -1621,9 +1622,9 @@ export default function LandingPage() {
 							backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
 						}}
 					/>
-					<div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/8 rounded-full blur-[120px] animate-pulse-glow" />
+					<div className="absolute -top-[300px] left-1/2 h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-[var(--az-navy)]/10 blur-[120px] animate-pulse-glow" />
 					<div
-						className="absolute top-[60%] -right-[200px] w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[100px] animate-pulse-glow"
+						className="absolute -right-[200px] top-[60%] h-[500px] w-[500px] rounded-full bg-[var(--az-turf)]/10 blur-[100px] animate-pulse-glow"
 						style={{ animationDelay: "2s" }}
 					/>
 					<div
@@ -1635,7 +1636,7 @@ export default function LandingPage() {
 				{/* ═══════════════════════════════════════════════════════════════════
 				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
 				    ═══════════════════════════════════════════════════════════════════ */}
-				<header className="landing-hero-header goomer-style fixed left-0 right-0 top-0 z-50 flex justify-center px-5 py-5">
+				<header className="landing-hero-header fixed left-0 right-0 top-0 z-50 flex justify-center px-5 py-5">
 					<nav className="landing-hero-nav relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
 							<div
@@ -1643,7 +1644,7 @@ export default function LandingPage() {
 								onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
 								<div className="leading-none">
 									<span
-										className="goomer-logo block text-[2.05rem] leading-none text-white sm:text-[2.55rem]"
+										className="block text-[2.05rem] font-semibold leading-none text-white sm:text-[2.55rem]"
 										style={{
 											color: "#fff",
 											WebkitTextFillColor: "#fff",
@@ -1656,25 +1657,25 @@ export default function LandingPage() {
 							<div className="hidden items-center gap-2 md:flex">
 								<a
 									href="#solucoes"
-									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Soluções
 								</a>
 								<a
 									href="#como-funciona"
-									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Como funciona
 								</a>
 								<a
 									href="#comecar"
-									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Começar
 								</a>
 								<a
 									href="#faq"
-									className="nav-link rounded-full px-3 py-2 text-[0.93rem] font-black text-white transition-colors duration-300 hover:bg-white/12"
+									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									FAQ
 								</a>
@@ -1684,7 +1685,7 @@ export default function LandingPage() {
 								<button
 									onClick={() => navigate("/login")}
 									aria-label="Fazer login no ArenaSys"
-									className="rounded-full border border-white/50 bg-transparent px-7 py-3 text-[0.93rem] font-black text-white transition-all duration-300 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
+									className="rounded-lg border border-white/50 bg-transparent px-7 py-3 text-[0.93rem] font-semibold text-white transition-all duration-300 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
 									style={{
 										color: "#fff",
 										WebkitTextFillColor: "#fff",
@@ -1693,7 +1694,7 @@ export default function LandingPage() {
 								</button>
 								<button
 									onClick={() => navigate("/login?mode=signup")}
-									className="relative h-12 overflow-hidden rounded-full bg-[#ffd33d] px-7 text-[0.93rem] font-black text-[#062b6f] shadow-lg shadow-blue-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffe06a] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-100"
+									className="relative h-12 overflow-hidden rounded-lg bg-[var(--az-surface)] px-7 text-[0.93rem] font-semibold text-[var(--az-navy)] shadow-lg shadow-blue-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
 									aria-label="Criar agenda online no ArenaSys">
 									<span className="relative z-10 flex items-center gap-2">
 										Criar agenda
@@ -1703,7 +1704,7 @@ export default function LandingPage() {
 							</div>
 
 							<button
-								className="relative rounded-full border border-white/45 bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 md:hidden"
+								className="relative rounded-lg border border-white/45 bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 md:hidden"
 								aria-label="Abrir menu de navegação"
 								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 								style={{ color: "#fff" }}>
@@ -1718,40 +1719,40 @@ export default function LandingPage() {
 
 						{/* Mobile menu */}
 						{mobileMenuOpen && (
-							<div className="absolute left-0 right-0 top-full z-[100] mx-2 mt-3 overflow-hidden rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden">
-								<div className="relative rounded-3xl border border-blue-100 bg-white p-5 shadow-2xl shadow-blue-950/20">
+							<div className="absolute left-0 right-0 top-full z-[100] mx-2 mt-3 overflow-hidden rounded-xl animate-in fade-in slide-in-from-top-4 duration-300 md:hidden">
+								<div className="relative rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] p-5 shadow-2xl shadow-blue-950/20">
 									<a
 										href="#solucoes"
 										onClick={() => setMobileMenuOpen(false)}
-										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
+										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
 										Soluções
 									</a>
 									<a
 										href="#como-funciona"
 										onClick={() => setMobileMenuOpen(false)}
-										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
+										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
 										Como funciona
 									</a>
 									<a
 										href="#comecar"
 										onClick={() => setMobileMenuOpen(false)}
-										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
+										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
 										Começar
 									</a>
 									<a
 										href="#faq"
 										onClick={() => setMobileMenuOpen(false)}
-										className="block rounded-2xl p-4 text-lg font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700">
+										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
 										FAQ
 									</a>
-									<div className="my-3 h-px bg-blue-100" />
+									<div className="my-3 h-px bg-[var(--az-line)]" />
 									<button
 										aria-label="Fazer login no ArenaSys"
 										onClick={() => {
 											setMobileMenuOpen(false);
 											navigate("/login");
 										}}
-										className="w-full rounded-2xl p-4 text-left text-base font-bold text-slate-700 transition-colors hover:bg-blue-50">
+										className="w-full rounded-lg p-4 text-left text-base font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)]">
 										Entrar
 									</button>
 									<button
@@ -1760,7 +1761,7 @@ export default function LandingPage() {
 											setMobileMenuOpen(false);
 											navigate("/login?mode=signup");
 										}}
-										className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 text-lg font-black text-white shadow-lg shadow-blue-600/25">
+										className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-[var(--az-navy)] text-lg font-semibold text-white shadow-sm">
 										Criar agenda
 										<ArrowRight className="h-4 w-4" />
 									</button>
@@ -1771,8 +1772,9 @@ export default function LandingPage() {
 				</header>
 
 				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
-				<section className="goomer-style relative isolate overflow-hidden bg-[#0b71ee] px-5 pb-28 pt-36 text-white sm:pt-40 lg:pb-28 lg:pt-44">
-					<div className="absolute inset-0 bg-[#0b71ee]" />
+				<section className="relative isolate overflow-hidden bg-[var(--az-navy)] px-5 pb-28 pt-36 text-white sm:pt-40 lg:pb-28 lg:pt-44">
+					<div className="absolute inset-0 bg-[var(--az-navy)]" />
+					<div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(22,50,79,0.98),rgba(47,107,69,0.86))]" />
 					<div className="absolute left-[6%] top-32 hidden h-24 w-24 rounded-[2rem] border border-white/18 bg-white/10 rotate-12 lg:block" />
 					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/18 bg-white/10 lg:block" />
 
@@ -1789,7 +1791,7 @@ export default function LandingPage() {
 
 							<div className="space-y-5">
 								<h1
-									className="goomer-hero-title text-[3.05rem] leading-[0.96] text-white sm:text-6xl lg:text-[5.15rem]"
+									className="text-[3.05rem] font-semibold leading-[0.96] text-white sm:text-6xl lg:text-[5.15rem]"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									A solução completa para vender horários.
 								</h1>
@@ -1805,7 +1807,7 @@ export default function LandingPage() {
 							<div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row">
 								<button
 									onClick={startSignup}
-									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-[#ffd33d] px-8 text-base font-black text-[#062b6f] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#ffe06a] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-100"
+									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-lg bg-[var(--az-surface)] px-8 text-base font-semibold text-[var(--az-navy)] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
 									aria-label="Testar grátis agora - começar teste de 7 dias">
 									Criar minha agenda online
 									<ArrowRight className="h-5 w-5" />
@@ -1816,7 +1818,7 @@ export default function LandingPage() {
 											.getElementById("como-funciona")
 											?.scrollIntoView({ behavior: "smooth" })
 									}
-									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-white/45 bg-white/12 px-8 text-base font-black text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 sm:w-auto sm:min-w-[210px]"
+									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-white/45 bg-white/12 px-8 text-base font-semibold text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 sm:w-auto sm:min-w-[210px]"
 									aria-label="Ver como funciona o ArenaSys"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
 									Ver como funciona
@@ -1848,17 +1850,17 @@ export default function LandingPage() {
 				<OutcomeStrip />
 
 				{/* --- SEÇÃO PROBLEMA: diagnostico da operacao --- */}
-				<section className="relative bg-[#f8fbff] px-4 py-20">
+				<section className="relative bg-[var(--az-paper)] px-4 py-20">
 					<div className="mx-auto max-w-6xl">
 						<ScrollReveal className="mx-auto mb-14 max-w-3xl text-center">
-							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-red-400/80">
+							<p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-clay)]">
 								O custo invisivel da agenda manual
 							</p>
-							<h2 className="text-3xl font-black text-slate-950 md:text-4xl lg:text-5xl">
+							<h2 className="text-3xl font-semibold text-[var(--az-ink)] md:text-4xl lg:text-5xl">
 								Enquanto a reserva depende de conversa, sua operação depende de
 								memória.
 							</h2>
-							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
 								O WhatsApp continua útil para relacionamento. O problema começa
 								quando ele vira agenda, caixa, histórico e controle ao mesmo
 								tempo.
@@ -1887,19 +1889,19 @@ export default function LandingPage() {
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.label} delay={i * 100}>
-									<TiltCard className="group h-full rounded-3xl border border-slate-200 bg-white p-7 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.55)] transition-colors duration-300 hover:border-red-300">
+									<TiltCard className="group h-full rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-7 shadow-[0_24px_70px_-48px_rgba(22,24,26,0.38)] transition-colors duration-300 hover:border-[var(--az-clay)]">
 										<div className="mb-6 flex items-center justify-between gap-4">
-											<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/10">
-												<item.icon className="h-7 w-7 text-red-300" />
+											<div className="flex h-14 w-14 items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)]">
+												<item.icon className="h-7 w-7 text-[var(--az-clay)]" />
 											</div>
-											<span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-500">
+											<span className="rounded-full border border-[var(--az-line)] bg-[var(--az-paper)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--az-clay)]">
 												{item.impact}
 											</span>
 										</div>
-										<h3 className="mb-3 text-xl font-bold text-slate-950">
+										<h3 className="mb-3 text-xl font-semibold text-[var(--az-ink)]">
 											{item.label}
 										</h3>
-										<p className="text-base leading-relaxed text-slate-600">
+										<p className="text-base leading-relaxed text-[var(--az-ink-soft)]">
 											{item.pain}
 										</p>
 									</TiltCard>
@@ -1908,7 +1910,7 @@ export default function LandingPage() {
 						</div>
 
 						<ScrollReveal delay={250}>
-							<div className="mt-8 rounded-3xl border border-blue-100 bg-blue-600 p-6 text-center shadow-[0_24px_70px_-48px_rgba(15,23,42,0.55)]">
+							<div className="mt-8 rounded-lg border border-[var(--az-line)] bg-[var(--az-navy)] p-6 text-center shadow-[0_24px_70px_-48px_rgba(22,24,26,0.42)]">
 								<p className="text-lg font-semibold leading-8 text-white">
 									A solução não é abandonar o WhatsApp. É tirar a agenda de
 									dentro dele.
@@ -1921,16 +1923,16 @@ export default function LandingPage() {
 				<ProductSuiteSection onPrimaryAction={startSignup} />
 
 				{/* --- COMO FUNCIONA: 3 passos com reveal --- */}
-				<section id="como-funciona" className="relative py-28 px-4">
+				<section id="como-funciona" className="relative bg-[var(--az-paper)] px-4 py-28">
 					<div className="max-w-5xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
-							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-emerald-300/80">
+							<p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
 								Da primeira quadra ao primeiro link
 							</p>
-							<h2 className="text-3xl md:text-5xl font-black text-white mb-4">
+							<h2 className="mb-4 text-3xl font-semibold text-[var(--az-ink)] md:text-5xl">
 								Começa simples. Continua organizado.
 							</h2>
-							<p className="mx-auto max-w-2xl text-lg leading-8 text-gray-300">
+							<p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
 								A ideia não é trocar toda a operação de uma vez. É colocar o
 								fluxo principal de reservas em um lugar que a equipe consiga
 								confiar.
@@ -1956,14 +1958,14 @@ export default function LandingPage() {
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.step} delay={i * 150}>
-									<TiltCard className="h-full rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur-sm transition-colors duration-300 hover:border-emerald-500/30">
-										<div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-emerald-500/30 bg-emerald-500/20 text-3xl font-black text-emerald-300">
+									<TiltCard className="h-full rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-8 text-center shadow-[0_20px_70px_-55px_rgba(22,24,26,0.42)] transition-colors duration-300 hover:border-[var(--az-navy)]">
+										<div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-navy-soft)] text-3xl font-semibold text-[var(--az-navy)]">
 											{item.step}
 										</div>
-										<h3 className="mb-3 text-xl font-bold text-white">
+										<h3 className="mb-3 text-xl font-semibold text-[var(--az-ink)]">
 											{item.title}
 										</h3>
-										<p className="text-base leading-7 text-gray-300">
+										<p className="text-base leading-7 text-[var(--az-ink-soft)]">
 											{item.desc}
 										</p>
 									</TiltCard>
@@ -1976,22 +1978,22 @@ export default function LandingPage() {
 				{/* --- PRÓXIMO PASSO: descoberta antes de preço --- */}
 				<section
 					id="comecar"
-					className="landing-dark-section relative scroll-mt-24 overflow-hidden border-y border-white/5 bg-[#030817] px-4 py-28 sm:py-32">
-					<div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/30 to-transparent" />
-					<div className="absolute left-[8%] top-12 h-56 w-56 rounded-full bg-blue-500/10 blur-[110px]" />
-					<div className="absolute bottom-10 right-[12%] h-64 w-64 rounded-full bg-emerald-400/10 blur-[130px]" />
+					className="landing-dark-section relative scroll-mt-24 overflow-hidden border-y border-white/10 bg-[var(--az-navy)] px-4 py-28 sm:py-32">
+					<div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+					<div className="absolute left-[8%] top-12 h-56 w-56 rounded-full bg-white/10 blur-[110px]" />
+					<div className="absolute bottom-10 right-[12%] h-64 w-64 rounded-full bg-[var(--az-turf)]/20 blur-[130px]" />
 
 					<div className="relative z-10 mx-auto max-w-6xl">
 						<ScrollReveal className="mb-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
 							<div>
-								<p className="mb-3 text-sm font-bold uppercase tracking-widest text-blue-300/90">
+								<p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/72">
 									Próximo passo
 								</p>
-								<h2 className="max-w-3xl text-3xl font-black leading-tight text-white md:text-5xl lg:text-6xl">
+								<h2 className="max-w-3xl text-3xl font-semibold leading-tight text-white md:text-5xl lg:text-6xl">
 									Comece pela agenda piloto. Decida o resto com clareza.
 								</h2>
 							</div>
-							<p className="max-w-2xl text-lg leading-8 text-gray-300 lg:justify-self-end">
+							<p className="max-w-2xl text-lg leading-8 text-white/72 lg:justify-self-end">
 								A primeira conversa precisa mostrar valor real: uma agenda
 								publicada, quadras configuradas e um caminho simples para o
 								cliente reservar sem depender de troca de mensagens.
@@ -2019,14 +2021,14 @@ export default function LandingPage() {
 								].map((item) => (
 									<div
 										key={item.label}
-										className="group h-full rounded-3xl border border-white/10 bg-white/[0.045] p-6 transition-colors duration-300 hover:border-blue-300/35">
-										<p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-300">
+										className="group h-full rounded-lg border border-white/12 bg-white/[0.06] p-6 transition-colors duration-300 hover:border-white/35">
+										<p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/66">
 											{item.label}
 										</p>
-										<p className="mt-4 text-2xl font-black text-white">
+										<p className="mt-4 text-2xl font-semibold text-white">
 											{item.title}
 										</p>
-										<p className="mt-3 text-sm leading-6 text-gray-300">
+										<p className="mt-3 text-sm leading-6 text-white/70">
 											{item.desc}
 										</p>
 									</div>
@@ -2036,34 +2038,34 @@ export default function LandingPage() {
 
 						<ScrollReveal delay={200}>
 							<div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
-								<div className="relative overflow-hidden rounded-3xl bg-white p-8 text-slate-950 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.9)] md:p-10">
-									<div className="absolute right-0 top-0 h-40 w-40 translate-x-8 -translate-y-8 rounded-full bg-blue-100 blur-2xl" />
+								<div className="relative overflow-hidden rounded-lg bg-[var(--az-surface)] p-8 text-[var(--az-ink)] shadow-[0_30px_90px_-55px_rgba(15,23,42,0.9)] md:p-10">
+									<div className="absolute right-0 top-0 h-40 w-40 translate-x-8 -translate-y-8 rounded-full bg-[var(--az-navy-soft)] blur-2xl" />
 									<div className="relative">
-										<p className="mb-5 text-sm font-black uppercase tracking-[0.2em] text-blue-700">
+										<p className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
 											Agenda piloto
 										</p>
-										<h3 className="max-w-xl text-3xl font-black leading-tight md:text-4xl">
+										<h3 className="max-w-xl text-3xl font-semibold leading-tight md:text-4xl">
 											Publique uma experiência pequena, real e fácil de avaliar.
 										</h3>
-										<p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+										<p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
 											O dono da arena não precisa comprar uma promessa. Ele precisa
 											ver uma quadra funcionando no link, a equipe acompanhando no
 											painel e o cliente entendendo como reservar.
 										</p>
 										<div className="mt-8 grid gap-4 sm:grid-cols-2">
-											<div className="border-l-4 border-blue-500 pl-4">
-												<p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+											<div className="border-l-4 border-[var(--az-navy)] pl-4">
+												<p className="text-sm font-semibold uppercase tracking-wide text-[var(--az-ink-soft)]">
 													Entrada leve
 												</p>
-												<p className="mt-1 text-base font-black text-slate-950">
+												<p className="mt-1 text-base font-semibold text-[var(--az-ink)]">
 													7 dias grátis, sem cartão
 												</p>
 											</div>
-											<div className="border-l-4 border-emerald-400 pl-4">
-												<p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+											<div className="border-l-4 border-[var(--az-turf)] pl-4">
+												<p className="text-sm font-semibold uppercase tracking-wide text-[var(--az-ink-soft)]">
 													Acompanhamento
 												</p>
-												<p className="mt-1 text-base font-black text-slate-950">
+												<p className="mt-1 text-base font-semibold text-[var(--az-ink)]">
 													Primeira agenda assistida
 												</p>
 											</div>
@@ -2071,8 +2073,8 @@ export default function LandingPage() {
 									</div>
 								</div>
 
-								<div className="rounded-3xl border border-white/10 bg-white/[0.045] p-7 backdrop-blur-sm md:p-8">
-									<p className="mb-6 text-sm font-black uppercase tracking-[0.2em] text-blue-300">
+								<div className="rounded-lg border border-white/12 bg-white/[0.06] p-7 backdrop-blur-sm md:p-8">
+									<p className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
 										O que entra no piloto
 									</p>
 									<ul className="space-y-4">
@@ -2086,8 +2088,8 @@ export default function LandingPage() {
 											<li
 												key={item}
 												className="flex items-start gap-3 text-base font-semibold leading-6 text-white">
-												<div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
-													<Check className="h-4 w-4 text-blue-200" />
+												<div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/12">
+													<Check className="h-4 w-4 text-white" />
 												</div>
 												<span>{item}</span>
 											</li>
@@ -2096,7 +2098,7 @@ export default function LandingPage() {
 
 									<button
 										onClick={() => navigate("/login?mode=signup")}
-										className="btn-shine relative mt-8 h-16 w-full overflow-hidden rounded-2xl bg-[#ffd33d] text-lg font-black text-[#062b6f] transition-all duration-300 hover:bg-[#ffe06a] hover:shadow-[0_0_40px_rgba(250,204,21,0.22)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-200/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
+										className="btn-shine relative mt-8 h-16 w-full overflow-hidden rounded-lg bg-[var(--az-surface)] text-lg font-semibold text-[var(--az-navy)] transition-all duration-300 hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-navy)]"
 										aria-label="Criar minha agenda online - teste grátis de 7 dias">
 										Criar minha agenda online
 									</button>
@@ -2109,13 +2111,13 @@ export default function LandingPage() {
 				{/* --- FAQ --- */}
 				<section
 					id="faq"
-					className="relative scroll-mt-24 py-28 px-4 border-t border-white/5">
+					className="relative scroll-mt-24 border-t border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-28">
 					<div className="max-w-3xl mx-auto">
 						<ScrollReveal className="text-center mb-16">
-							<p className="mb-3 text-sm font-bold uppercase tracking-widest text-emerald-300/80">
+							<p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
 								Antes de testar
 							</p>
-							<h2 className="text-3xl md:text-5xl font-black text-white">
+							<h2 className="text-3xl font-semibold text-[var(--az-ink)] md:text-5xl">
 								Respostas diretas para decidir sem enrolação.
 							</h2>
 						</ScrollReveal>
@@ -2123,11 +2125,11 @@ export default function LandingPage() {
 						<div className="space-y-4">
 							{faqList.map((item, i) => (
 								<ScrollReveal key={i} delay={i * 75}>
-									<div className="p-6 bg-white/[0.03] backdrop-blur-sm border border-white/10 rounded-2xl hover:border-white/20 transition-colors duration-300">
-										<h3 className="text-white font-bold text-lg mb-2">
+									<div className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-6 transition-colors duration-300 hover:border-[var(--az-navy)]">
+										<h3 className="mb-2 text-lg font-semibold text-[var(--az-ink)]">
 											{item.question}
 										</h3>
-										<p className="text-gray-300">{item.answer}</p>
+										<p className="text-[var(--az-ink-soft)]">{item.answer}</p>
 									</div>
 								</ScrollReveal>
 							))}
@@ -2136,28 +2138,28 @@ export default function LandingPage() {
 				</section>
 
 				{/* --- CTA FINAL: Apple-style grand finale --- */}
-				<section className="relative py-32 px-4 overflow-hidden">
+				<section className="relative overflow-hidden bg-[var(--az-surface)] px-4 py-32">
 					{/* Background drama */}
 					<div className="absolute inset-0">
-						<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] animate-pulse-glow" />
+						<div className="absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--az-navy-soft)] blur-[150px] animate-pulse-glow" />
 					</div>
 
 					<ScrollReveal>
 						<div className="max-w-3xl mx-auto text-center relative z-10">
-							<h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 leading-tight">
+							<h2 className="mb-8 text-4xl font-semibold leading-tight text-[var(--az-ink)] md:text-5xl lg:text-6xl">
 								Comece pela próxima reserva.
 								<br />
-								<span className="text-emerald-400">
+								<span className="text-[var(--az-turf)]">
 									Organize o resto a partir dela.
 								</span>
 							</h2>
-							<p className="text-gray-300 text-xl mb-10 max-w-xl mx-auto">
+							<p className="mx-auto mb-10 max-w-xl text-xl text-[var(--az-ink-soft)]">
 								Teste por 7 dias sem cartão, coloque seu link no ar e veja se o
 								fluxo encaixa na rotina da sua arena.
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
-								className="relative overflow-hidden h-16 px-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg shadow-[0_0_60px_-10px_rgba(16,185,129,0.6)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_80px_-10px_rgba(16,185,129,0.8)] active:scale-95 animate-border-glow btn-shine inline-flex items-center gap-3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020205]"
+								className="btn-shine relative inline-flex h-16 items-center gap-3 overflow-hidden rounded-lg bg-[var(--az-navy)] px-14 text-lg font-semibold text-white shadow-sm transition-all duration-300 hover:scale-[1.01] hover:bg-[#10283f] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
 								aria-label="Começar teste grátis do ArenaSys">
 								Começar teste grátis <ArrowRight className="w-5 h-5" />
 							</button>

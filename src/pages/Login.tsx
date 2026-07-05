@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
+	Building2,
 	Lock,
-	Trophy,
 	ShieldCheck,
 	CheckCircle2,
 	Mail,
@@ -56,17 +56,18 @@ function extractRetrySeconds(message: string): number {
 	return value;
 }
 
-const authLabelClass = "text-[11px] font-black uppercase tracking-[0.22em] text-blue-950/58";
+const authLabelClass =
+	"text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--az-ink-soft)]";
 const authInputClass =
-	"h-12 rounded-2xl border-blue-100 bg-white pl-11 text-blue-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_12px_24px_rgba(6,43,111,0.06)] placeholder:text-blue-950/35 focus-visible:ring-4 focus-visible:ring-[#ffd33d]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+	"h-12 rounded-lg border-[var(--az-line)] bg-[var(--az-surface)] pl-11 text-[var(--az-ink)] shadow-sm placeholder:text-[var(--az-ink-soft)] focus-visible:border-[var(--az-navy)] focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/15 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]";
 const authIconClass =
-	"absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#0b71ee] pointer-events-none";
+	"absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--az-navy)] pointer-events-none";
 const authPrimaryButtonClass =
-	"h-14 rounded-full bg-[#ffd33d] text-[#062b6f] font-black shadow-[0_18px_38px_-20px_rgba(2,6,23,0.95)] hover:bg-[#ffe06a] active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-yellow-100 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+	"h-12 rounded-lg bg-[var(--az-navy)] text-white font-semibold shadow-sm hover:bg-[#10283f] active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]";
 const authNoticeClass =
-	"rounded-2xl border border-blue-100 bg-blue-50 p-3 text-sm font-bold text-blue-900 shadow-sm";
+	"rounded-lg border border-[var(--az-line)] bg-[var(--az-turf-soft)] p-3 text-sm font-semibold text-[var(--az-turf)] shadow-sm";
 const authErrorClass =
-	"rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700 shadow-sm";
+	"rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700 shadow-sm";
 
 const Login = () => {
 	const passwordRecoveryRef = useRef(false);
@@ -608,7 +609,7 @@ const Login = () => {
 	};
 
 	return (
-		<div className="login-light auth-landing-auth min-h-screen w-full overflow-hidden bg-[#0b71ee] text-white selection:bg-yellow-200 selection:text-blue-950">
+		<div className="login-light auth-landing-auth min-h-screen w-full overflow-hidden bg-[var(--az-paper)] text-[var(--az-ink)] selection:bg-[var(--az-navy-soft)] selection:text-[var(--az-navy)]">
 			<div className="fixed inset-0 z-0 overflow-hidden">
 				<div className="auth-field-photo absolute inset-0" />
 				<div className="auth-gradient absolute inset-0" />
@@ -625,12 +626,12 @@ const Login = () => {
 					<button
 						type="button"
 						onClick={() => navigate("/")}
-						className="group inline-flex items-center gap-3 rounded-xl py-1.5 text-left transition hover:-translate-y-0.5">
-						<span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-[#0b71ee] shadow-[0_18px_36px_-24px_rgba(2,6,23,0.75)]">
+						className="group inline-flex items-center gap-3 rounded-lg py-1.5 text-left transition hover:-translate-y-0.5">
+						<span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--az-navy)] text-sm font-semibold text-white shadow-sm">
 							AS
 						</span>
 						<span className="leading-none">
-							<span className="block text-base font-black tracking-tight text-white">
+							<span className="block text-base font-semibold tracking-tight text-[var(--az-ink)]">
 								ArenaSys
 							</span>
 						</span>
@@ -639,51 +640,51 @@ const Login = () => {
 					<button
 						type="button"
 						onClick={() => navigate("/")}
-						className="rounded-full border border-white/45 bg-white/10 px-5 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white backdrop-blur-sm transition hover:bg-white/18 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35">
+						className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--az-ink)] shadow-sm transition hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/15">
 						Voltar ao site
 					</button>
 				</header>
 
 				<main className="mx-auto grid w-full max-w-4xl flex-1 grid-cols-1 items-start gap-8 px-5 pb-8 pt-3 sm:px-8 lg:min-h-[660px] lg:grid-cols-[minmax(220px,0.52fr)_minmax(390px,440px)] lg:items-center lg:gap-12 lg:pb-14">
 					<section className="auth-goomer hidden max-w-[20rem] space-y-4 animate-in fade-in slide-in-from-left-6 duration-700 lg:flex lg:min-h-[600px] lg:flex-col lg:justify-center">
-						<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-base font-black text-[#0b71ee] shadow-[0_20px_42px_-30px_rgba(2,6,23,0.78)]">
+						<div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--az-navy)] text-base font-semibold text-white shadow-sm">
 							AS
 						</div>
 
-						<p className="text-[11px] font-black uppercase tracking-[0.28em] text-blue-100">
+						<p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--az-ink-soft)]">
 							ArenaSys
 						</p>
 
-						<h1 className="auth-hero-title text-4xl font-black leading-[1.02] text-white">
+						<h1 className="auth-hero-title text-4xl font-semibold leading-[1.04] text-[var(--az-ink)]">
 							Acesso seguro à sua central.
 						</h1>
 
-						<p className="text-sm font-bold leading-6 [color:rgba(239,246,255,0.82)]">
+						<p className="text-sm font-medium leading-6 text-[var(--az-ink-soft)]">
 							Agenda, reservas e clientes em ambiente privado.
 						</p>
 					</section>
 
 					<section className="flex w-full justify-center animate-in fade-in slide-in-from-right-6 duration-700 delay-150 lg:min-h-[600px] lg:items-center">
 						<div className="relative mx-auto w-full max-w-[440px]">
-							<div className="auth-card-glow absolute -inset-4 rounded-[2rem]" />
+							<div className="auth-card-glow absolute inset-0 rounded-xl" />
 
-							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-[2rem] border border-white/80 bg-white p-5 shadow-[0_34px_90px_-46px_rgba(2,6,23,0.9)] backdrop-blur-2xl sm:min-h-[620px] sm:p-7">
-								<div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-[#ffd33d]" />
+							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] p-5 shadow-[0_24px_70px_-52px_rgba(22,24,26,0.55)] backdrop-blur-2xl sm:min-h-[620px] sm:p-7">
+								<div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[var(--az-navy)]" />
 
 								{mode === "email-confirmation" ?
 									<div className="space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
-										<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-200 bg-[#ffd33d] text-[#062b6f] shadow-inner">
+										<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-navy-soft)] text-[var(--az-navy)] shadow-inner">
 											<Mail className="h-8 w-8" />
 										</div>
 
 										<div>
-											<h2 className="text-2xl font-black tracking-tight text-[#062b6f]">
+											<h2 className="text-2xl font-semibold tracking-tight text-[var(--az-ink)]">
 												Confirme seu email
 											</h2>
 											<p className="mt-2 text-sm leading-6 text-slate-600">
 												Enviamos o link para:
 											</p>
-											<p className="mt-1 break-all text-sm font-black text-[#0b71ee]">
+											<p className="mt-1 break-all text-sm font-semibold text-[var(--az-navy)]">
 												{signupEmail || email}
 											</p>
 										</div>
@@ -694,15 +695,15 @@ const Login = () => {
 
 										{error && <div className={authErrorClass}>{error}</div>}
 
-										<div className="space-y-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-left">
+										<div className="space-y-3 rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] p-4 text-left">
 											{[
 												"Abra sua caixa de entrada e clique no link de confirmação.",
 												"Se não encontrar, confira spam ou lixo eletrônico.",
 												"Depois de confirmar, volte para fazer login na central.",
 											].map((item) => (
 												<div key={item} className="flex items-start gap-3">
-													<CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#0b71ee]" />
-													<p className="text-sm leading-6 text-slate-600">{item}</p>
+													<CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[var(--az-turf)]" />
+													<p className="text-sm leading-6 text-[var(--az-ink-soft)]">{item}</p>
 												</div>
 											))}
 										</div>
@@ -741,7 +742,7 @@ const Login = () => {
 												}}
 												disabled={isLoading}
 												variant="outline"
-												className="h-12 rounded-full border-blue-200 bg-white text-[#0b71ee] hover:bg-blue-50">
+												className="h-12 rounded-lg border-[var(--az-line)] bg-[var(--az-surface)] text-[var(--az-navy)] hover:bg-[var(--az-paper)]">
 												{isLoading ? "Enviando..." : "Reenviar email"}
 											</Button>
 											<Button
@@ -761,20 +762,20 @@ const Login = () => {
 											type="button"
 											aria-label="Ir para página de login"
 											onClick={() => setMode("signin")}
-											className="text-sm font-bold text-slate-500 transition hover:text-blue-700">
+											className="text-sm font-semibold text-[var(--az-ink-soft)] transition hover:text-[var(--az-navy)]">
 											Já confirmei, voltar ao login
 										</button>
 									</div>
 								: mode === "forgot-password" ?
 									<div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
 										<div className="text-center">
-											<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-200 bg-[#ffd33d] text-[#062b6f] shadow-inner">
+											<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-navy-soft)] text-[var(--az-navy)] shadow-inner">
 												<Lock className="h-8 w-8" />
 											</div>
-											<h2 className="mt-5 text-2xl font-black tracking-tight text-[#062b6f]">
+											<h2 className="mt-5 text-2xl font-semibold tracking-tight text-[var(--az-ink)]">
 												Redefinir senha
 											</h2>
-											<p className="mt-2 text-sm leading-6 text-slate-600">
+											<p className="mt-2 text-sm leading-6 text-[var(--az-ink-soft)]">
 												Informe o email da sua conta e enviaremos um link seguro
 												para criar uma nova senha.
 											</p>
@@ -814,7 +815,7 @@ const Login = () => {
 												:	"Enviar link"}
 											</Button>
 											{recoveryCooldownSeconds > 0 && (
-												<p className="text-center text-xs text-slate-500">
+													<p className="text-center text-xs text-[var(--az-ink-soft)]">
 													Para evitar bloqueio do provedor de email, tente
 													novamente em {recoveryCooldownSeconds}s.
 												</p>
@@ -827,20 +828,20 @@ const Login = () => {
 												setError(null);
 												setSuccessMessage(null);
 											}}
-											className="w-full text-sm font-black text-[#0b71ee] transition hover:text-[#062b6f]">
+											className="w-full text-sm font-semibold text-[var(--az-navy)] transition hover:text-[#10283f]">
 											Voltar ao login
 										</button>
 									</div>
 								: mode === "update-password" ?
 									<div className="space-y-5 animate-in fade-in slide-in-from-bottom-4">
 										<div className="text-center">
-											<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-yellow-200 bg-[#ffd33d] text-[#062b6f] shadow-inner">
+											<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-lg border border-[var(--az-line)] bg-[var(--az-navy-soft)] text-[var(--az-navy)] shadow-inner">
 												<Lock className="h-8 w-8" />
 											</div>
-											<h2 className="mt-5 text-2xl font-black tracking-tight text-[#062b6f]">
+											<h2 className="mt-5 text-2xl font-semibold tracking-tight text-[var(--az-ink)]">
 												Nova senha
 											</h2>
-											<p className="mt-2 text-sm leading-6 text-slate-600">
+											<p className="mt-2 text-sm leading-6 text-[var(--az-ink-soft)]">
 												Escolha uma senha forte para proteger a central da arena.
 											</p>
 										</div>
@@ -892,22 +893,22 @@ const Login = () => {
 									</div>
 								:	<>
 										<div className="mb-6">
-											<p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#0b71ee]">
+											<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
 												{mode === "signin" ? "Acesso do gestor" : "Novo acesso"}
 											</p>
-											<h2 className="mt-2 text-3xl font-black tracking-tight text-[#062b6f]">
+											<h2 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--az-ink)]">
 												{mode === "signin" ?
 													"Entrar na central"
 												:	"Criar conta ArenaSys"}
 											</h2>
-											<p className="mt-2 text-sm font-bold leading-6 text-blue-950/62">
+											<p className="mt-2 text-sm font-medium leading-6 text-[var(--az-ink-soft)]">
 												{mode === "signin" ?
 													"Acesse sua agenda e reservas."
 												:	"Configure sua central em poucos minutos."}
 											</p>
 										</div>
 
-										<div className="mb-5 grid grid-cols-2 rounded-full border border-blue-100 bg-blue-50 p-1">
+										<div className="mb-5 grid grid-cols-2 rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] p-1">
 											<button
 												type="button"
 												onClick={() => {
@@ -915,10 +916,10 @@ const Login = () => {
 													setError(null);
 													setSuccessMessage(null);
 												}}
-												className={`rounded-full px-4 py-2 text-sm font-black transition ${
+												className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
 													mode === "signin" ?
-														"bg-[#0b71ee] text-white shadow-sm"
-													:	"text-blue-950/55 hover:text-[#062b6f]"
+														"bg-[var(--az-navy)] text-white shadow-sm"
+													:	"text-[var(--az-ink-soft)] hover:text-[var(--az-ink)]"
 												}`}>
 												Entrar
 											</button>
@@ -929,10 +930,10 @@ const Login = () => {
 													setError(null);
 													setSuccessMessage(null);
 												}}
-												className={`rounded-full px-4 py-2 text-sm font-black transition ${
+												className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
 													mode === "signup" ?
-														"bg-[#0b71ee] text-white shadow-sm"
-													:	"text-blue-950/55 hover:text-[#062b6f]"
+														"bg-[var(--az-navy)] text-white shadow-sm"
+													:	"text-[var(--az-ink-soft)] hover:text-[var(--az-ink)]"
 												}`}>
 												Criar conta
 											</button>
@@ -943,7 +944,7 @@ const Login = () => {
 												<div className="space-y-2">
 													<Label className={authLabelClass}>Nome da arena</Label>
 													<div className="relative">
-														<Trophy className={authIconClass} />
+														<Building2 className={authIconClass} />
 														<Input
 															value={arenaName}
 															onChange={(e) => setArenaName(e.target.value)}
@@ -1002,7 +1003,7 @@ const Login = () => {
 															setError(null);
 															setSuccessMessage(null);
 														}}
-														className="text-xs font-black uppercase tracking-[0.16em] text-[#0b71ee] transition hover:text-[#062b6f]">
+														className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--az-navy)] transition hover:text-[#10283f]">
 														Esqueceu a senha?
 													</button>
 												</div>
@@ -1013,15 +1014,15 @@ const Login = () => {
 													type="button"
 													aria-pressed={rememberMe}
 													onClick={() => setRememberMe(!rememberMe)}
-													className="flex w-full items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/72 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50">
+													className="flex w-full items-center gap-3 rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] p-3 text-left transition hover:border-[var(--az-navy)]">
 													<span
 														className={`toggle-premium ${rememberMe ? "active" : ""}`}
 													/>
 													<span>
-														<span className="block text-sm font-black text-[#062b6f]">
+														<span className="block text-sm font-semibold text-[var(--az-ink)]">
 															Lembrar neste dispositivo
 														</span>
-														<span className="block text-xs font-bold text-blue-950/50">
+														<span className="block text-xs font-medium text-[var(--az-ink-soft)]">
 															Mantém o email preenchido no próximo acesso.
 														</span>
 													</span>
@@ -1051,7 +1052,7 @@ const Login = () => {
 											</Button>
 
 											{mode === "signup" && (
-												<p className="text-center text-xs font-bold text-blue-950/48">
+												<p className="text-center text-xs font-medium text-[var(--az-ink-soft)]">
 													7 dias grátis. Sem cartão.
 												</p>
 											)}
@@ -1060,7 +1061,7 @@ const Login = () => {
 								}
 							</div>
 
-							<div className="mt-4 flex items-center justify-center gap-2 text-xs font-black [color:rgba(239,246,255,0.82)]">
+							<div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-[var(--az-ink-soft)]">
 								<Lock className="h-3.5 w-3.5" />
 								<span>SSL, Supabase Auth e acesso privado da sua operação</span>
 							</div>
