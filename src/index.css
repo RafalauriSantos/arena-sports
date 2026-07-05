@@ -447,32 +447,16 @@
 
 .login-light {
   color-scheme: light;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(22, 50, 79, 0.08), transparent 20rem),
-    radial-gradient(circle at 88% 12%, rgba(181, 101, 47, 0.08), transparent 18rem),
-    linear-gradient(180deg, var(--az-paper) 0%, #ece9df 100%) !important;
+  background: var(--az-navy) !important;
   color: var(--az-ink) !important;
 }
 
 .login-light .auth-field-photo {
-  background-image:
-    linear-gradient(90deg, rgba(246, 245, 241, 0.94), rgba(246, 245, 241, 0.88), rgba(231, 238, 243, 0.94)),
-    url('https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=2940&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-  filter: saturate(0.72) contrast(0.96);
-  opacity: 0.2;
-  transform: scale(1.02);
+  display: none;
 }
 
 .login-light .auth-gradient {
-  background:
-    linear-gradient(rgba(22, 50, 79, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 50, 79, 0.035) 1px, transparent 1px),
-    radial-gradient(circle at 12% 24%, rgba(22, 50, 79, 0.12), transparent 16rem),
-    radial-gradient(circle at 88% 18%, rgba(181, 101, 47, 0.12), transparent 15rem),
-    linear-gradient(180deg, rgba(246, 245, 241, 0.42), rgba(246, 245, 241, 0.74));
-  background-size: 44px 44px, 44px 44px, auto, auto, auto;
+  display: none;
 }
 
 .login-light.auth-landing-auth {
@@ -480,7 +464,7 @@
 }
 
 .login-light.auth-landing-auth .text-white {
-  color: #ffffff !important;
+  color: var(--az-surface) !important;
 }
 
 .login-light.auth-landing-auth .text-blue-50 {
@@ -507,11 +491,7 @@
 }
 
 .login-light .auth-card-glow {
-  background:
-    radial-gradient(circle at 18% 8%, rgba(22, 50, 79, 0.18), transparent 14rem),
-    radial-gradient(circle at 92% 16%, rgba(181, 101, 47, 0.16), transparent 13rem);
-  filter: blur(24px);
-  opacity: 0.82;
+  display: none;
 }
 
 .login-light .auth-login-card {
@@ -522,6 +502,7 @@
   background-color: var(--az-surface) !important;
   color: var(--az-ink) !important;
   border-color: var(--az-line) !important;
+  border-width: 0.5px !important;
 }
 
 .login-light input::placeholder {
@@ -531,11 +512,11 @@
 .login-light button[class*="bg-blue"],
 .login-light .bg-blue-600,
 .login-light .bg-\[\#0b71ee\] {
-  color: #ffffff !important;
+  color: var(--az-surface) !important;
 }
 
 .login-light .bg-\[\#ffd33d\] {
-  color: #ffffff !important;
+  color: var(--az-surface) !important;
 }
 
 .login-light .toggle-premium {
@@ -545,7 +526,7 @@
 }
 
 .login-light .toggle-premium::after {
-  background: #ffffff;
+  background: var(--az-surface);
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
 }
 

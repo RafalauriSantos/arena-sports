@@ -2,11 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
 	ArrowRight,
-	Building2,
 	CalendarDays,
 	CreditCard,
 	Lock,
-	ShieldCheck,
 	CheckCircle2,
 	Mail,
 	Users,
@@ -49,6 +47,13 @@ function isMissingApiKeyMessage(message: string): boolean {
 	);
 }
 
+function toVisibleAuthError(message: string): string {
+	return message
+		.replace(/\bSupabase\b/gi, "serviço de autenticação")
+		.replace(/\bAsaas\b/gi, "serviço de pagamento")
+		.replace(/\bAWS\b/gi, "infraestrutura");
+}
+
 function extractRetrySeconds(message: string): number {
 	const match = message.match(/(\d{1,4})\s*(seconds?|sec|s|minutes?|mins?|m)/i);
 	if (!match) return 60;
@@ -62,11 +67,9 @@ function extractRetrySeconds(message: string): number {
 const authLabelClass =
 	"text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--az-ink-soft)]";
 const authInputClass =
-	"h-12 rounded-lg border-[var(--az-line)] bg-[var(--az-surface)] pl-11 text-[var(--az-ink)] shadow-sm placeholder:text-[var(--az-ink-soft)] focus-visible:border-[var(--az-navy)] focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/15 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]";
-const authIconClass =
-	"absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--az-navy)] pointer-events-none";
+	"h-12 rounded-lg border-[0.5px] border-[var(--az-line)] bg-white px-3 text-[var(--az-ink)] shadow-none placeholder:text-[var(--az-ink-soft)] focus-visible:border-[var(--az-navy)] focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/15 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]";
 const authPrimaryButtonClass =
-	"h-12 rounded-lg bg-[var(--az-navy)] text-white font-semibold shadow-sm hover:bg-[#10283f] active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]";
+	"h-12 rounded-lg bg-[var(--az-navy)] text-[var(--az-surface)] font-semibold shadow-sm hover:bg-[var(--az-navy)] active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]";
 const authNoticeClass =
 	"rounded-lg border border-[var(--az-line)] bg-[var(--az-turf-soft)] p-3 text-sm font-semibold text-[var(--az-turf)] shadow-sm";
 const authErrorClass =
@@ -297,7 +300,7 @@ const Login = () => {
 					);
 					return;
 				}
-				setError(resetError.message);
+				setError(toVisibleAuthError(resetError.message));
 				return;
 			}
 
@@ -325,7 +328,7 @@ const Login = () => {
 					`Muitas tentativas em pouco tempo. Aguarde ${retryIn}s e tente novamente.`,
 				);
 			} else {
-				setError(`Erro ao enviar link de recuperação: ${message}`);
+				setError(`Erro ao enviar link de recuperação: ${toVisibleAuthError(message)}`);
 			}
 		} finally {
 			setIsLoading(false);
@@ -352,7 +355,7 @@ const Login = () => {
 		});
 		setIsLoading(false);
 		if (updateError) {
-			setError(updateError.message);
+			setError(toVisibleAuthError(updateError.message));
 			return;
 		}
 		const user = data.user;
@@ -515,7 +518,7 @@ const Login = () => {
 					errorMsg.includes("invalid redirect")
 				) {
 					setError(
-						"URL de redirecionamento não configurada. Configure a URL permitida no Supabase Dashboard (Authentication > URL Configuration > Redirect URLs).",
+						"URL de redirecionamento não configurada. Revise as configurações de autenticação do projeto.",
 					);
 					console.error(
 						"Redirect URL error:",
@@ -543,7 +546,7 @@ const Login = () => {
 					});
 					// Mostrar mensagem mais útil
 					setError(
-						`Erro ao criar conta: ${error.message || "Verifique se o email é válido e se a senha tem no mínimo 6 caracteres. Se o problema persistir, verifique as configurações de redirect URL no Supabase."}`,
+						`Erro ao criar conta: ${toVisibleAuthError(error.message) || "Verifique se o email é válido e se a senha tem no mínimo 6 caracteres. Se o problema persistir, revise as configurações de autenticação."}`,
 					);
 					setIsLoading(false);
 					return;
@@ -604,7 +607,7 @@ const Login = () => {
 				}
 			}
 
-			setError(message);
+			setError(toVisibleAuthError(message));
 			console.error("Auth error:", err);
 		} finally {
 			setIsLoading(false);
@@ -612,29 +615,18 @@ const Login = () => {
 	};
 
 	return (
-		<div className="login-light auth-landing-auth min-h-screen w-full overflow-hidden bg-[var(--az-paper)] text-[var(--az-ink)] selection:bg-[var(--az-navy-soft)] selection:text-[var(--az-navy)]">
-			<div className="fixed inset-0 z-0 overflow-hidden">
-				<div className="auth-field-photo absolute inset-0" />
-				<div className="auth-gradient absolute inset-0" />
-				<div
-					className="absolute inset-0 opacity-[0.035]"
-					style={{
-						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
-					}}
-				/>
-			</div>
-
+		<div className="login-light auth-landing-auth min-h-screen w-full overflow-hidden bg-[var(--az-navy)] text-[var(--az-ink)] selection:bg-[var(--az-navy-soft)] selection:text-[var(--az-navy)]">
 			<div className="relative z-10 flex min-h-[100dvh] w-full flex-col">
-				<header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+				<header className="mx-auto flex w-full max-w-[760px] items-center justify-between px-5 py-5 sm:px-8">
 					<button
 						type="button"
 						onClick={() => navigate("/")}
 						className="group inline-flex items-center gap-3 rounded-lg py-1.5 text-left transition hover:-translate-y-0.5">
-						<span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--az-navy)] text-sm font-semibold text-white shadow-sm">
+						<span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--az-surface)] text-sm font-semibold text-[var(--az-navy)] shadow-sm">
 							AS
 						</span>
 						<span className="leading-none">
-							<span className="block text-base font-semibold tracking-tight text-[var(--az-ink)]">
+							<span className="block text-base font-semibold tracking-tight text-[var(--az-surface)]">
 								ArenaSys
 							</span>
 						</span>
@@ -643,49 +635,50 @@ const Login = () => {
 					<button
 						type="button"
 						onClick={() => navigate("/")}
-						className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--az-ink)] shadow-sm transition hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/15">
+						className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--az-navy)] shadow-sm transition hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-surface)]/20">
 						Voltar ao site
 					</button>
 				</header>
 
-				<main className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 items-start gap-9 px-5 pb-8 pt-3 sm:px-8 lg:min-h-[680px] lg:grid-cols-[minmax(440px,0.95fr)_minmax(390px,460px)] lg:items-center lg:gap-14 lg:pb-14">
+				<main className="mx-auto grid w-full max-w-[760px] flex-1 grid-cols-1 items-start gap-5 px-5 pb-8 pt-3 sm:px-8 lg:min-h-[680px] lg:grid-cols-[320px_340px] lg:items-center lg:justify-center lg:gap-6 lg:pb-14">
 					<section className="auth-goomer hidden animate-in fade-in slide-in-from-left-6 duration-700 lg:flex lg:min-h-[620px] lg:flex-col lg:justify-center">
-						<div className="max-w-[34rem]">
-							<div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--az-line)] bg-[var(--az-surface)]/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--az-navy)] shadow-sm">
+						<div className="min-h-[620px] w-full rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)] p-5 shadow-[0_24px_70px_-52px_rgba(0,0,0,0.62)]">
+							<div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[var(--az-turf-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--az-turf)]">
 								<span className="h-2 w-2 rounded-full bg-[var(--az-turf)]" />
-								Operação protegida
+								Operação ao vivo
 							</div>
 
-							<h1 className="auth-hero-title text-5xl font-semibold leading-[0.98] text-[var(--az-ink)]">
+							<h1 className="auth-hero-title text-[30px] font-semibold leading-[1.02] text-[var(--az-ink)]">
 								Entre no cockpit da sua arena.
 							</h1>
 
-							<p className="mt-5 max-w-md text-base font-medium leading-7 text-[var(--az-ink-soft)]">
+							<p className="mt-3 text-sm font-medium leading-6 text-[var(--az-ink-soft)]">
 								Reservas, clientes e pagamentos aparecem em uma central privada,
 								pronta para a rotina da equipe.
 							</p>
 
-							<div className="mt-8 grid max-w-lg grid-cols-3 gap-3">
+							<div className="mt-6 grid grid-cols-3 gap-2.5">
 								{[
-									{ label: "Reservas hoje", value: "18" },
-									{ label: "Ocupação", value: "72%" },
-									{ label: "Pendências", value: "3" },
+									{ label: "Reservas hoje", value: "18", tone: "default" },
+									{ label: "Ocupação", value: "72%", tone: "default" },
+									{ label: "Pendências", value: "3", tone: "pending" },
 								].map((item) => (
 									<div
 										key={item.label}
-										className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)]/78 p-4 shadow-sm backdrop-blur">
-										<p className="text-2xl font-semibold text-[var(--az-navy)]">
+										className="rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-paper)] p-3">
+										<p
+											className={`text-[21px] font-semibold ${item.tone === "pending" ? "text-[var(--az-clay)]" : "text-[var(--az-ink)]"}`}>
 											{item.value}
 										</p>
-										<p className="mt-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--az-ink-soft)]">
+										<p className="mt-1 text-[10px] font-medium uppercase tracking-[0.05em] text-[var(--az-ink-soft)]">
 											{item.label}
 										</p>
 									</div>
 								))}
 							</div>
 
-							<div className="mt-5 max-w-lg overflow-hidden rounded-xl border border-[var(--az-line)] bg-[var(--az-surface)] shadow-[0_28px_80px_-56px_rgba(22,24,26,0.65)]">
-								<div className="flex items-center justify-between border-b border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-3">
+							<div className="mt-4 overflow-hidden rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)]">
+								<div className="flex items-center justify-between border-b-[0.5px] border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-3">
 									<div>
 										<p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--az-ink-soft)]">
 											Visão rápida
@@ -694,40 +687,46 @@ const Login = () => {
 											Sábado, 04 jul
 										</p>
 									</div>
-									<span className="rounded-full bg-[var(--az-navy-soft)] px-3 py-1 text-xs font-semibold text-[var(--az-navy)]">
+									<span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--az-turf-soft)] px-3 py-1 text-xs font-semibold text-[var(--az-turf)]">
+										<span className="h-1.5 w-1.5 rounded-full bg-[var(--az-turf)]" />
 										ao vivo
 									</span>
 								</div>
 
-								<div className="grid gap-3 p-4">
+								<div className="grid gap-2.5 p-4">
 									{[
 										{
 											icon: CalendarDays,
 											label: "Próxima reserva",
 											value: "19:00 · Quadra 2",
+											tone: "default",
 										},
 										{
 											icon: Users,
 											label: "Cliente",
 											value: "Mensalista confirmado",
+											tone: "default",
 										},
 										{
 											icon: CreditCard,
 											label: "Pagamento",
 											value: "Sinal pendente",
+											tone: "pending",
 										},
 									].map((item) => (
 										<div
 											key={item.label}
-											className="flex items-center gap-3 rounded-lg border border-[var(--az-line)] bg-[var(--az-paper)] px-3 py-3">
-											<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--az-navy)] text-white">
+											className="flex items-center gap-3 rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-paper)] px-3 py-3">
+											<div
+												className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.tone === "pending" ? "bg-[var(--az-clay-soft)] text-[var(--az-clay)]" : "bg-[var(--az-navy-soft)] text-[var(--az-navy)]"}`}>
 												<item.icon className="h-4 w-4" />
 											</div>
 											<div className="min-w-0">
 												<p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--az-ink-soft)]">
 													{item.label}
 												</p>
-												<p className="truncate text-sm font-semibold text-[var(--az-ink)]">
+												<p
+													className={`truncate text-sm font-semibold ${item.tone === "pending" ? "text-[var(--az-clay)]" : "text-[var(--az-ink)]"}`}>
 													{item.value}
 												</p>
 											</div>
@@ -739,34 +738,8 @@ const Login = () => {
 					</section>
 
 					<section className="flex w-full justify-center animate-in fade-in slide-in-from-right-6 duration-700 delay-150 lg:min-h-[620px] lg:items-center">
-						<div className="relative mx-auto w-full max-w-[460px]">
-							<div className="auth-card-glow absolute inset-0 rounded-xl" />
-
-							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-lg border border-[var(--az-line)] bg-[linear-gradient(180deg,var(--az-surface),#fbfaf6)] p-5 shadow-[0_30px_90px_-55px_rgba(22,24,26,0.68)] backdrop-blur-2xl sm:min-h-[620px] sm:p-7">
-								<div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[var(--az-navy)]" />
-								<div className="pointer-events-none absolute right-8 top-0 h-40 w-40 -translate-y-16 rounded-full bg-[var(--az-navy-soft)] blur-3xl" />
-								<div className="pointer-events-none absolute bottom-0 left-8 h-32 w-32 translate-y-14 rounded-full bg-[var(--az-clay)]/10 blur-3xl" />
-
-								<div className="relative mb-6 flex items-center justify-between rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)]/82 px-3 py-3 shadow-sm">
-									<div className="flex items-center gap-3">
-										<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--az-navy)] text-white">
-											<ShieldCheck className="h-4 w-4" />
-										</div>
-										<div>
-											<p className="text-sm font-semibold text-[var(--az-ink)]">
-												Área privada
-											</p>
-											<p className="text-xs text-[var(--az-ink-soft)]">
-												Supabase Auth + sessão protegida
-											</p>
-										</div>
-									</div>
-									<div className="hidden items-center gap-1.5 rounded-full bg-[var(--az-turf-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--az-turf)] sm:flex">
-										<span className="h-1.5 w-1.5 rounded-full bg-[var(--az-turf)]" />
-										Seguro
-									</div>
-								</div>
-
+						<div className="relative mx-auto w-full max-w-[340px]">
+							<div className="auth-login-card relative min-h-[580px] overflow-hidden rounded-lg border-[0.5px] border-[var(--az-line)] bg-[var(--az-surface)] p-5 shadow-[0_24px_70px_-52px_rgba(0,0,0,0.62)] sm:min-h-[620px] sm:p-6">
 								<div className="relative">
 								{mode === "email-confirmation" ?
 									<div className="space-y-5 text-center animate-in fade-in slide-in-from-bottom-4">
@@ -823,7 +796,7 @@ const Login = () => {
 													setIsLoading(false);
 													if (resendError) {
 														setError(
-															resendError.message ||
+															toVisibleAuthError(resendError.message) ||
 																"Erro ao reenviar email. Tente novamente.",
 														);
 														setSuccessMessage(null);
@@ -888,18 +861,15 @@ const Login = () => {
 											className="space-y-4 text-left">
 											<div className="space-y-2">
 												<Label className={authLabelClass}>Email</Label>
-												<div className="relative">
-													<ShieldCheck className={authIconClass} />
-													<Input
-														type="email"
-														value={email}
-														onChange={(e) => setEmail(e.target.value)}
-														autoComplete="email"
-														required
-														className={authInputClass}
-														placeholder="gestor@arenasys.com"
-													/>
-												</div>
+												<Input
+													type="email"
+													value={email}
+													onChange={(e) => setEmail(e.target.value)}
+													autoComplete="email"
+													required
+													className={authInputClass}
+													placeholder="gestor@arenasys.com"
+												/>
 											</div>
 											<Button
 												type="submit"
@@ -913,8 +883,8 @@ const Login = () => {
 											</Button>
 											{recoveryCooldownSeconds > 0 && (
 													<p className="text-center text-xs text-[var(--az-ink-soft)]">
-													Para evitar bloqueio do provedor de email, tente
-													novamente em {recoveryCooldownSeconds}s.
+													Para evitar bloqueio temporário, tente novamente em{" "}
+													{recoveryCooldownSeconds}s.
 												</p>
 											)}
 										</form>
@@ -925,7 +895,7 @@ const Login = () => {
 												setError(null);
 												setSuccessMessage(null);
 											}}
-											className="w-full text-sm font-semibold text-[var(--az-navy)] transition hover:text-[#10283f]">
+											className="w-full text-sm font-semibold text-[var(--az-navy)] transition hover:text-[var(--az-navy)]">
 											Voltar ao login
 										</button>
 									</div>
@@ -948,37 +918,31 @@ const Login = () => {
 											className="space-y-4 text-left">
 											<div className="space-y-2">
 												<Label className={authLabelClass}>Nova senha</Label>
-												<div className="relative">
-													<Lock className={authIconClass} />
-													<Input
-														type="password"
-														value={newPassword}
-														onChange={(e) => setNewPassword(e.target.value)}
-														autoComplete="new-password"
-														minLength={6}
-														required
-														className={authInputClass}
-														placeholder="Mínimo 6 caracteres"
-													/>
-												</div>
+												<Input
+													type="password"
+													value={newPassword}
+													onChange={(e) => setNewPassword(e.target.value)}
+													autoComplete="new-password"
+													minLength={6}
+													required
+													className={authInputClass}
+													placeholder="Mínimo 6 caracteres"
+												/>
 											</div>
 											<div className="space-y-2">
 												<Label className={authLabelClass}>Confirmar senha</Label>
-												<div className="relative">
-													<Lock className={authIconClass} />
-													<Input
-														type="password"
-														value={confirmNewPassword}
-														onChange={(e) =>
-															setConfirmNewPassword(e.target.value)
-														}
-														autoComplete="new-password"
-														minLength={6}
-														required
-														className={authInputClass}
-														placeholder="Repita a senha"
-													/>
-												</div>
+												<Input
+													type="password"
+													value={confirmNewPassword}
+													onChange={(e) =>
+														setConfirmNewPassword(e.target.value)
+													}
+													autoComplete="new-password"
+													minLength={6}
+													required
+													className={authInputClass}
+													placeholder="Repita a senha"
+												/>
 											</div>
 											<Button
 												type="submit"
@@ -1015,7 +979,7 @@ const Login = () => {
 												}}
 												className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
 													mode === "signin" ?
-														"bg-[var(--az-navy)] text-white shadow-sm"
+														"bg-[var(--az-navy)] text-[var(--az-surface)] shadow-sm"
 													:	"text-[var(--az-ink-soft)] hover:text-[var(--az-ink)]"
 												}`}>
 												Entrar
@@ -1029,7 +993,7 @@ const Login = () => {
 												}}
 												className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
 													mode === "signup" ?
-														"bg-[var(--az-navy)] text-white shadow-sm"
+														"bg-[var(--az-navy)] text-[var(--az-surface)] shadow-sm"
 													:	"text-[var(--az-ink-soft)] hover:text-[var(--az-ink)]"
 												}`}>
 												Criar conta
@@ -1040,53 +1004,44 @@ const Login = () => {
 											{mode === "signup" && (
 												<div className="space-y-2">
 													<Label className={authLabelClass}>Nome da arena</Label>
-													<div className="relative">
-														<Building2 className={authIconClass} />
-														<Input
-															value={arenaName}
-															onChange={(e) => setArenaName(e.target.value)}
-															autoComplete="organization"
-															className={authInputClass}
-															placeholder="Ex: ArenaSys Tatuí"
-														/>
-													</div>
+													<Input
+														value={arenaName}
+														onChange={(e) => setArenaName(e.target.value)}
+														autoComplete="organization"
+														className={authInputClass}
+														placeholder="Ex: ArenaSys Tatuí"
+													/>
 												</div>
 											)}
 
 											<div className="space-y-2">
 												<Label className={authLabelClass}>Email corporativo</Label>
-												<div className="relative">
-													<ShieldCheck className={authIconClass} />
-													<Input
-														type="email"
-														value={email}
-														onChange={(e) => setEmail(e.target.value)}
-														data-testid="login-email"
-														autoComplete="email"
-														className={authInputClass}
-														placeholder="gestor@arenasys.com"
-													/>
-												</div>
+												<Input
+													type="email"
+													value={email}
+													onChange={(e) => setEmail(e.target.value)}
+													data-testid="login-email"
+													autoComplete="email"
+													className={authInputClass}
+													placeholder="gestor@arenasys.com"
+												/>
 											</div>
 
 											<div className="space-y-2">
 												<Label className={authLabelClass}>Senha de acesso</Label>
-												<div className="relative">
-													<Lock className={authIconClass} />
-													<Input
-														type="password"
-														value={password}
-														onChange={(e) => setPassword(e.target.value)}
-														data-testid="login-password"
-														autoComplete={
-															mode === "signin" ? "current-password" : (
-																"new-password"
-															)
-														}
-														className={authInputClass}
-														placeholder="••••••••"
-													/>
-												</div>
+												<Input
+													type="password"
+													value={password}
+													onChange={(e) => setPassword(e.target.value)}
+													data-testid="login-password"
+													autoComplete={
+														mode === "signin" ? "current-password" : (
+															"new-password"
+														)
+													}
+													className={authInputClass}
+													placeholder="••••••••"
+												/>
 											</div>
 
 											{mode === "signin" && (
@@ -1100,7 +1055,7 @@ const Login = () => {
 															setError(null);
 															setSuccessMessage(null);
 														}}
-														className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--az-navy)] transition hover:text-[#10283f]">
+														className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--az-navy)] transition hover:text-[var(--az-navy)]">
 														Esqueceu a senha?
 													</button>
 												</div>
@@ -1159,9 +1114,9 @@ const Login = () => {
 								</div>
 							</div>
 
-							<div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-[var(--az-ink-soft)]">
+							<div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-[var(--az-surface)] opacity-[0.85]">
 								<Lock className="h-3.5 w-3.5" />
-								<span>SSL, Supabase Auth e acesso privado da sua operação</span>
+								<span>Conexão criptografada · dados privados da sua arena</span>
 							</div>
 						</div>
 					</section>
