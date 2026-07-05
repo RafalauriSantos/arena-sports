@@ -39,6 +39,9 @@ function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') {
     return error
   }
+  if (error && typeof error === 'object') {
+    return JSON.stringify(error)
+  }
   return 'Erro desconhecido'
 }
 
@@ -431,6 +434,29 @@ async function testWebhookSimulation(): Promise<TestResult[]> {
     console.log('   📤 Enviando webhook simulado...')
     const webhookUrl = `${supabaseUrl}/functions/v1/asaas-webhook`
 
+    const wrongTokenResponse = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseAnonKey,
+        'asaas-access-token': `wrong-token-${Date.now()}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(webhookPayload)
+    })
+
+    testResults.push({
+      name: 'Webhook - Rejeita token incorreto',
+      passed: wrongTokenResponse.status === 401,
+      severity: 'critical',
+      message: `Status recebido: ${wrongTokenResponse.status} (esperado: 401)`
+    })
+
+    if (wrongTokenResponse.status === 401) {
+      console.log('   ✅ Webhook rejeitou token incorreto')
+    } else {
+      console.log(`   ❌ Webhook com token incorreto retornou ${wrongTokenResponse.status}`)
+    }
+
     if (!webhookToken) {
       const unauthorizedResponse = await fetch(webhookUrl, {
         method: 'POST',
@@ -478,13 +504,14 @@ async function testWebhookSimulation(): Promise<TestResult[]> {
     const webhookData = await webhookResponse.json()
 
     if (!webhookResponse.ok) {
+      const webhookError = getErrorMessage(webhookData.error || webhookData)
       testResults.push({
         name: 'Webhook - Processamento',
         passed: false,
         severity: 'high',
-        message: `Status ${webhookResponse.status}: ${webhookData.error || JSON.stringify(webhookData)}`
+        message: `Status ${webhookResponse.status}: ${webhookError}`
       })
-      console.log(`   ❌ Webhook falhou: ${webhookData.error || JSON.stringify(webhookData)}`)
+      console.log(`   ❌ Webhook falhou: ${webhookError}`)
       return testResults
     }
 

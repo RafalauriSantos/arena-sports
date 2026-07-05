@@ -65,8 +65,7 @@ Deno.serve(async (req) => {
 			throw new Error("ASAAS_API_KEY está vazia");
 		}
 
-		console.log("✅ ASAAS_API_KEY encontrada:", ASAAS_API_KEY.substring(0, 20) + "...");
-		console.log("✅ ASAAS_API_KEY tamanho:", ASAAS_API_KEY.length);
+		console.log("✅ ASAAS_API_KEY configurada");
 		console.log("🌐 ASAAS_URL:", ASAAS_URL);
 
 		// Apenas um plano agora (removido start/pro)
@@ -366,8 +365,6 @@ Deno.serve(async (req) => {
 			console.log("📤 Fazendo requisição para criar customer no Asaas...");
 			console.log("URL:", `${ASAAS_URL}/customers`);
 			console.log("Chave presente:", !!ASAAS_API_KEY);
-			console.log("Chave tamanho:", ASAAS_API_KEY?.length || 0);
-			console.log("Chave início:", ASAAS_API_KEY?.substring(0, 20) || "vazia");
 
 			// Garantir que a chave não está vazia antes de fazer a requisição
 			if (!ASAAS_API_KEY || ASAAS_API_KEY.trim() === "") {
@@ -378,11 +375,6 @@ Deno.serve(async (req) => {
 				"Content-Type": "application/json",
 				"access_token": ASAAS_API_KEY.trim(),
 			};
-
-			console.log("Headers sendo enviados:", {
-				"Content-Type": requestHeaders["Content-Type"],
-				"access_token": requestHeaders["access_token"].substring(0, 20) + "...",
-			});
 
 			const customerRes = await fetch(`${ASAAS_URL}/customers`, {
 				method: "POST",

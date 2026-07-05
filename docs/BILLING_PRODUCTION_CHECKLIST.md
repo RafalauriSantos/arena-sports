@@ -20,15 +20,22 @@ gateway Asaas dentro do ArenaSys.
 
 ### Pronto
 
-- Checkout usa `ASAAS_API_URL` apontando para sandbox no ambiente local testado.
+- Checkout usa `ASAAS_API_URL` apontando para sandbox no ambiente testado.
 - Checkout cria assinatura no Asaas e retorna a cobranca vinculada a essa
   assinatura.
 - Teste automatizado valida que `paymentId` retornado pertence ao
   `subscriptionId`.
+- Webhook valida `asaas-access-token` por igualdade estrita contra
+  `ASAAS_WEBHOOK_SECRET`/`ASAAS_WEBHOOK_TOKEN`.
 - Webhook rejeita chamadas sem `asaas-access-token` quando o segredo esta
   configurado na Edge Function.
+- Webhook rejeita token nao vazio incorreto com `401` contra a funcao
+  deployada.
+- Teste autorizado contra a Edge Function deployada executa com
+  `TEST_ASAAS_WEBHOOK_TOKEN` e confirma atualizacao de status para `active`.
 - Webhook possui nucleo automatizado cobrindo:
   - pagamento recebido/confirmado ativando assinatura;
+  - pagamento recebido em dinheiro ativando assinatura;
   - evento duplicado sem dupla atualizacao;
   - evento pendente fora de ordem sem regredir assinatura ativa;
   - evento vencido marcando assinatura como `past_due`;
@@ -37,11 +44,25 @@ gateway Asaas dentro do ArenaSys.
   - pagamento sem subscription registrado como falha auditavel, sem ativar nada.
 - `npm run test:billing` executa os testes do nucleo do webhook e o fluxo sandbox
   de checkout.
+- Teste real no Asaas Sandbox confirmado em 2026-07-05:
+  - checkout criou `paymentId` e `subscriptionId`;
+  - pagamento foi confirmado pelo endpoint sandbox do Asaas;
+  - webhook real registrou `SUBSCRIPTION_CREATED` como `done`;
+  - webhook real registrou `PAYMENT_RECEIVED` como `done`;
+  - `tenant_subscriptions.status` foi atualizado para `active`.
 
 ### Ainda Nao Pronto
 
-- O teste autorizado contra a Edge Function deployada depende de
-  `TEST_ASAAS_WEBHOOK_TOKEN` no ambiente local/CI.
+- Producao ainda nao esta liberada. A evidencia atual mostra checkout sandbox
+  (`https://sandbox.asaas.com/...`) no ambiente testado.
+- A chave de API de producao do Asaas ainda precisa ser configurada e validada
+  no secret manager do ambiente de producao.
+- O webhook de producao do Asaas ainda precisa ser cadastrado/validado no painel
+  de producao com token proprio, diferente do token sandbox.
+- A separacao sandbox/producao depende das variaveis `ASAAS_API_URL`,
+  `ASAAS_API_KEY` e `ASAAS_WEBHOOK_SECRET` corretas por ambiente. Antes de
+  divulgar link real, confirmar no painel/secret manager que producao nao esta
+  usando secrets de sandbox.
 - Nao ha job de reconciliacao periodica consultando Asaas para pagamentos que
   ficaram pendentes por webhook perdido.
 - Nao ha monitoramento/alerta para eventos `failed` em `asaas_webhook_events`.
@@ -51,8 +72,8 @@ gateway Asaas dentro do ArenaSys.
   - cartao aprovado/recusado da reserva;
   - expiracao automatica de reserva pendente de gateway;
   - reembolso de reserva liberando horario.
-- Nao ha teste automatizado de webhook disparado diretamente pelo painel sandbox
-  do Asaas; o teste atual simula payloads equivalentes.
+- O teste de webhook real sandbox foi executado manualmente uma vez. Ele ainda
+  nao esta automatizado no CI.
 
 ## Comandos Obrigatorios Antes De Release
 
@@ -87,7 +108,7 @@ npm run test:billing
 - [ ] Token do webhook cadastrado no painel Asaas no header
       `asaas-access-token`.
 - [ ] URL do webhook cadastrada:
-      `https://<PROJECT_REF>.functions.supabase.co/asaas-webhook`.
+      `https://<PROJECT_REF>.supabase.co/functions/v1/asaas-webhook`.
 - [ ] A Edge Function `asaas-webhook` foi deployada com `--no-verify-jwt`.
 - [ ] A Edge Function `asaas-create-checkout` foi deployada depois da ultima
       alteracao de codigo.
@@ -151,6 +172,11 @@ limit 50;
 - [ ] Existe rotina periodica para buscar no Asaas payments pendentes e comparar
       com `tenant_subscriptions`.
 - [ ] Eventos `failed` geram alerta operacional.
+- [ ] Ate existir reconciliacao automatica, alguem deve checar manualmente todos
+      os dias, nos primeiros dias apos qualquer assinatura real:
+  - painel Asaas: pagamentos aprovados, vencidos, reembolsados e webhook failed;
+  - tabela `asaas_webhook_events`: eventos com `status = failed`;
+  - tabela `tenant_subscriptions`: status coerente com o pagamento real.
 - [ ] Primeiro pagamento real deve ser acompanhado em tres lugares:
   - tela do cliente/checkout;
   - `tenant_subscriptions`;
@@ -165,9 +191,9 @@ limit 50;
 1. O modulo nao possui reconciliacao periodica. Se o webhook nao chegar e o
    pagamento for aprovado no Asaas, o ArenaSys pode permanecer em `trial` ate
    intervencao manual.
-2. O teste autorizado do webhook depende de um token fora do repositorio. Sem
-   esse token, a automacao local valida a seguranca 401, mas nao valida o
-   processamento real deployado.
+2. Enquanto nao houver reconciliacao automatica e alerta para eventos `failed`,
+   a checagem manual diaria descrita em "Reconciliacao E Operacao" e obrigatoria
+   apos qualquer assinatura real.
 3. Reserva avulsa com pagamento Asaas ainda nao existe. O checklist de PIX,
    boleto, cartao recusado, expiracao de horario e reembolso de reserva continua
    fora do escopo atual.
@@ -175,6 +201,36 @@ limit 50;
 5. Arquivos legados como `index-improved.ts` e `index-fixed.ts` existem nas
    pastas de functions e podem confundir auditorias futuras se nao forem
    removidos em uma tarefa propria.
+6. O ambiente testado hoje ainda gera URL sandbox. Producao deve ser tratada
+   como No-Go ate validar chave, URL e webhook no painel Asaas de producao.
+
+## Auditoria De Producao - 2026-07-05
+
+1. Token do webhook: verificado. `asaas-webhook/index.ts` usa comparacao estrita
+   do header `asaas-access-token` contra o secret esperado.
+2. Token incorreto: verificado. `npm run test:billing` confirmou token nao vazio
+   incorreto retornando `401` contra a funcao deployada.
+3. Teste autorizado: verificado. `TEST_ASAAS_WEBHOOK_TOKEN` foi carregado no
+   ambiente local, `ASAAS_WEBHOOK_SECRET` foi sincronizado no Supabase e
+   `npm run test:billing` passou com processamento autorizado.
+4. Cinco status criticos: verificado nos testes do core:
+   - `PAYMENT_RECEIVED` ativa assinatura;
+   - `PAYMENT_CONFIRMED` ativa assinatura;
+   - `RECEIVED_IN_CASH` ativa assinatura;
+   - `OVERDUE` marca assinatura como `past_due`;
+   - `REFUNDED` marca assinatura como `past_due`.
+5. E2E real sandbox: verificado. Pagamento sandbox confirmado via endpoint
+   oficial do Asaas; webhook real registrou `SUBSCRIPTION_CREATED` e
+   `PAYMENT_RECEIVED` como `done`; assinatura ficou `active`.
+6. Configuracao de producao: No-Go. Secrets existem no Supabase, mas os valores
+   nao sao revelados pela CLI. A evidencia funcional atual ainda gera checkout
+   sandbox. Antes de divulgar link real, confirmar manualmente no Asaas Producao
+   e no secret manager:
+   - API key de producao configurada;
+   - `ASAAS_API_URL` apontando para ambiente de producao;
+   - webhook de producao apontando para a funcao deployada;
+   - token de producao diferente do token sandbox;
+   - evento real de producao acompanhado manualmente.
 
 ## Criterio Para Go-Live
 
@@ -183,6 +239,7 @@ O modulo de billing pode ser considerado pronto para producao somente quando:
 - todos os comandos obrigatorios passarem;
 - o teste autorizado com `TEST_ASAAS_WEBHOOK_TOKEN` passar;
 - webhook real estiver cadastrado no painel Asaas com token;
+- chave e webhook de producao forem validados fora do sandbox;
 - houver decisao documentada para reconciliacao de pagamentos pendentes;
 - houver rotina operacional para eventos `failed`;
 - primeiro pagamento real for acompanhado manualmente ate confirmar consistencia

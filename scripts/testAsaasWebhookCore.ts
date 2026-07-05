@@ -111,6 +111,36 @@ async function testPaymentReceivedActivatesSubscription() {
 	assert.equal(repo.events.get("evt_received")?.status, "done");
 }
 
+async function testPaymentConfirmedActivatesSubscription() {
+	const repo = new FakeWebhookRepository({ ...baseSubscription });
+
+	const result = await processAsaasWebhookEvent(
+		paymentEvent("evt_confirmed", "PAYMENT_CONFIRMED", "CONFIRMED"),
+		repo,
+		"2026-07-05T10:00:00.000Z"
+	);
+
+	assert.equal(result.received, true);
+	assert.equal(result.duplicate, false);
+	assert.equal(repo.subscriptions.get("sub_123")?.status, "active");
+	assert.equal(repo.events.get("evt_confirmed")?.status, "done");
+}
+
+async function testReceivedInCashActivatesSubscription() {
+	const repo = new FakeWebhookRepository({ ...baseSubscription });
+
+	const result = await processAsaasWebhookEvent(
+		paymentEvent("evt_received_cash", "PAYMENT_UPDATED", "RECEIVED_IN_CASH"),
+		repo,
+		"2026-07-05T10:00:00.000Z"
+	);
+
+	assert.equal(result.received, true);
+	assert.equal(result.duplicate, false);
+	assert.equal(repo.subscriptions.get("sub_123")?.status, "active");
+	assert.equal(repo.events.get("evt_received_cash")?.status, "done");
+}
+
 async function testDuplicateEventDoesNotDoubleUpdate() {
 	const repo = new FakeWebhookRepository({ ...baseSubscription });
 	const event = paymentEvent("evt_duplicate", "PAYMENT_CONFIRMED", "CONFIRMED");
@@ -208,6 +238,8 @@ async function testPaymentWithoutSubscriptionIsRecordedAsFailedButReturnsReceive
 
 async function main() {
 	await testPaymentReceivedActivatesSubscription();
+	await testPaymentConfirmedActivatesSubscription();
+	await testReceivedInCashActivatesSubscription();
 	await testDuplicateEventDoesNotDoubleUpdate();
 	await testPendingAfterConfirmedDoesNotRegressActiveSubscription();
 	await testOverdueMarksSubscriptionPastDue();

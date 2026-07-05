@@ -19,6 +19,29 @@ function jsonResponse(body: unknown, status = 200) {
 	});
 }
 
+function getWebhookEventType(payload: unknown): string {
+	if (payload && typeof payload === "object" && "event" in payload) {
+		const event = (payload as { event?: unknown }).event;
+		if (typeof event === "string" && event.trim()) {
+			return event;
+		}
+	}
+
+	return "UNKNOWN";
+}
+
+function errorMessage(error: unknown): string {
+	if (error instanceof Error) {
+		return error.message;
+	}
+
+	if (error && typeof error === "object") {
+		return JSON.stringify(error);
+	}
+
+	return String(error);
+}
+
 function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 	return {
 		async claimWebhookEvent(eventId: string, payload: unknown) {
@@ -26,6 +49,7 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.from("asaas_webhook_events")
 				.insert({
 					event_id: eventId,
+					event_type: getWebhookEventType(payload),
 					payload,
 					status: "processing",
 				});
@@ -55,6 +79,7 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 			const { error: updateError } = await supabaseAdmin
 				.from("asaas_webhook_events")
 				.update({
+					event_type: getWebhookEventType(payload),
 					payload,
 					status: "processing",
 					processed_at: null,
@@ -166,7 +191,7 @@ serve(async (req) => {
 
 		return jsonResponse(result);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
+		const message = errorMessage(error);
 		console.error("[ASAAS WEBHOOK] Erro fatal:", message);
 		return jsonResponse({ received: false, error: message }, 500);
 	}
