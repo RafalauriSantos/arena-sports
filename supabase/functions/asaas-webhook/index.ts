@@ -2,6 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
+	createRequestContext,
+	errorMessage,
+	jsonResponse as observableJsonResponse,
+	logEvent,
+	withLogFields,
+	type RequestLogContext,
+} from "../_shared/observability.ts";
+import {
 	processAsaasWebhookEvent,
 	type AsaasWebhookRepository,
 	type TenantSubscriptionStatus,
@@ -12,12 +20,7 @@ const ASAAS_WEBHOOK_TOKEN =
 	Deno.env.get("ASAAS_WEBHOOK_TOKEN") ??
 	"";
 
-function jsonResponse(body: unknown, status = 200) {
-	return new Response(JSON.stringify(body), {
-		status,
-		headers: { ...corsHeaders, "Content-Type": "application/json" },
-	});
-}
+const FUNCTION_NAME = "asaas-webhook";
 
 function getWebhookEventType(payload: unknown): string {
 	if (payload && typeof payload === "object" && "event" in payload) {
@@ -30,19 +33,18 @@ function getWebhookEventType(payload: unknown): string {
 	return "UNKNOWN";
 }
 
-function errorMessage(error: unknown): string {
-	if (error instanceof Error) {
-		return error.message;
-	}
-
-	if (error && typeof error === "object") {
-		return JSON.stringify(error);
-	}
-
-	return String(error);
+function jsonResponse(
+	body: unknown,
+	status: number,
+	context: RequestLogContext
+) {
+	return observableJsonResponse(body, status, context, corsHeaders);
 }
 
-function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
+function createWebhookRepository(
+	supabaseAdmin: any,
+	context: RequestLogContext
+): AsaasWebhookRepository {
 	return {
 		async claimWebhookEvent(eventId: string, payload: unknown) {
 			const { error: insertError } = await supabaseAdmin
@@ -59,6 +61,10 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 			}
 
 			if (insertError.code !== "23505") {
+				logEvent(context, "error", "webhook_event_claim_failed", {
+					event_id: eventId,
+					error: insertError,
+				});
 				throw insertError;
 			}
 
@@ -69,12 +75,21 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.maybeSingle();
 
 			if (selectError) {
+				logEvent(context, "error", "webhook_event_lookup_failed", {
+					event_id: eventId,
+					error: selectError,
+				});
 				throw selectError;
 			}
 
 			if (existingEvent?.status !== "failed") {
 				return "duplicate";
 			}
+
+			logEvent(context, "warn", "webhook_retry_claimed", {
+				event_id: eventId,
+				previous_status: existingEvent.status,
+			});
 
 			const { error: updateError } = await supabaseAdmin
 				.from("asaas_webhook_events")
@@ -87,10 +102,14 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.eq("event_id", eventId);
 
 			if (updateError) {
+				logEvent(context, "error", "webhook_retry_claim_failed", {
+					event_id: eventId,
+					error: updateError,
+				});
 				throw updateError;
 			}
 
-			return "claimed";
+			return "retry";
 		},
 
 		async markWebhookEventDone(eventId: string, processedAt: string) {
@@ -100,6 +119,10 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.eq("event_id", eventId);
 
 			if (error) {
+				logEvent(context, "error", "webhook_event_mark_done_failed", {
+					event_id: eventId,
+					error,
+				});
 				throw error;
 			}
 		},
@@ -111,6 +134,10 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.eq("event_id", eventId);
 
 			if (error) {
+				logEvent(context, "error", "webhook_event_mark_failed_failed", {
+					event_id: eventId,
+					error,
+				});
 				throw error;
 			}
 		},
@@ -123,6 +150,10 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.maybeSingle();
 
 			if (error) {
+				logEvent(context, "error", "subscription_lookup_failed", {
+					subscription_id: subscriptionId,
+					error,
+				});
 				throw error;
 			}
 
@@ -143,6 +174,11 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 				.eq("asaas_subscription_id", subscriptionId);
 
 			if (error) {
+				logEvent(context, "error", "subscription_update_failed", {
+					subscription_id: subscriptionId,
+					target_status: status,
+					error,
+				});
 				throw error;
 			}
 		},
@@ -150,24 +186,35 @@ function createWebhookRepository(supabaseAdmin: any): AsaasWebhookRepository {
 }
 
 serve(async (req) => {
+	const baseContext = createRequestContext(FUNCTION_NAME, req);
+
 	if (req.method === "OPTIONS") {
 		return new Response("ok", { headers: corsHeaders });
 	}
 
+	logEvent(baseContext, "info", "request_started", {
+		method: req.method,
+	});
+
 	if (req.method !== "POST") {
-		return jsonResponse({ error: "Method not allowed" }, 405);
+		logEvent(baseContext, "warn", "method_not_allowed", {
+			method: req.method,
+		});
+		return jsonResponse({ error: "Method not allowed" }, 405, baseContext);
 	}
 
 	if (ASAAS_WEBHOOK_TOKEN) {
 		const token = req.headers.get("asaas-access-token");
 		if (!token || token !== ASAAS_WEBHOOK_TOKEN) {
-			console.error("[ASAAS WEBHOOK] Token inválido ou ausente");
-			return jsonResponse({ error: "Unauthorized" }, 401);
+			logEvent(baseContext, "warn", "webhook_auth_failed", {
+				reason: token ? "invalid_token" : "missing_token",
+			});
+			return jsonResponse({ error: "Unauthorized" }, 401, baseContext);
 		}
 	} else {
-		console.warn(
-			"[ASAAS WEBHOOK] ASAAS_WEBHOOK_TOKEN/SECRET não configurado. Webhook sem validação."
-		);
+		logEvent(baseContext, "error", "webhook_secret_missing", {
+			reason: "ASAAS_WEBHOOK_TOKEN_OR_SECRET_NOT_CONFIGURED",
+		});
 	}
 
 	const supabaseAdmin = createClient(
@@ -177,22 +224,70 @@ serve(async (req) => {
 
 	try {
 		const payload = await req.json();
-		console.log("[ASAAS WEBHOOK] Payload recebido:", JSON.stringify(payload));
+		logEvent(baseContext, "info", "webhook_received", {
+			event_type: getWebhookEventType(payload),
+			event_id:
+				(payload as { id?: unknown })?.id ??
+				(payload as { payment?: { id?: unknown } })?.payment?.id ??
+				(payload as { subscription?: { id?: unknown } })?.subscription?.id,
+			subscription_id:
+				(payload as { payment?: { subscription?: unknown } })?.payment
+					?.subscription ??
+				(payload as { subscription?: { id?: unknown } })?.subscription?.id,
+			payment_id: (payload as { payment?: { id?: unknown } })?.payment?.id,
+		});
 
 		const result = await processAsaasWebhookEvent(
 			payload,
-			createWebhookRepository(supabaseAdmin)
+			createWebhookRepository(supabaseAdmin, baseContext)
 		);
+
+		const resultContext = withLogFields(baseContext, {
+			tenant_id: result.tenantId ?? null,
+			subscription_id: result.subscriptionId ?? null,
+			payment_id: result.paymentId ?? null,
+		});
+
+		if (result.duplicate) {
+			logEvent(resultContext, "warn", "webhook_duplicate_ignored", {
+				event_id: result.eventId,
+				event_type: result.eventType,
+			});
+		} else if (result.ignored) {
+			logEvent(resultContext, "warn", "webhook_event_ignored", {
+				event_id: result.eventId,
+				event_type: result.eventType,
+				reason: result.reason,
+				retried: Boolean(result.retried),
+			});
+		} else if (!result.received) {
+			logEvent(resultContext, "error", "webhook_processing_failed", {
+				event_id: result.eventId,
+				event_type: result.eventType,
+				error: result.error,
+				retried: Boolean(result.retried),
+			});
+		} else {
+			logEvent(resultContext, "info", "webhook_processed", {
+				event_id: result.eventId,
+				event_type: result.eventType,
+				status: result.status,
+				retried: Boolean(result.retried),
+			});
+		}
 
 		if (!result.received) {
 			const status = result.error === "missing_event_id" ? 400 : 500;
-			return jsonResponse(result, status);
+			return jsonResponse(result, status, resultContext);
 		}
 
-		return jsonResponse(result);
+		return jsonResponse(result, 200, resultContext);
 	} catch (error) {
 		const message = errorMessage(error);
-		console.error("[ASAAS WEBHOOK] Erro fatal:", message);
-		return jsonResponse({ received: false, error: message }, 500);
+		logEvent(baseContext, "error", "unexpected_error", {
+			error,
+			error_message: message,
+		});
+		return jsonResponse({ received: false, error: message }, 500, baseContext);
 	}
 });

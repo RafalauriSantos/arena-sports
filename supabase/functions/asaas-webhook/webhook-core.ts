@@ -11,7 +11,7 @@ export type AsaasWebhookRepository = {
 	claimWebhookEvent(
 		eventId: string,
 		payload: unknown
-	): Promise<"claimed" | "duplicate">;
+	): Promise<"claimed" | "duplicate" | "retry">;
 	markWebhookEventDone(eventId: string, processedAt: string): Promise<void>;
 	markWebhookEventFailed(eventId: string, processedAt: string): Promise<void>;
 	findSubscriptionByAsaasId(subscriptionId: string): Promise<TenantSubscription | null>;
@@ -39,9 +39,14 @@ type AsaasWebhookPayload = {
 export type ProcessWebhookResult = {
 	received: boolean;
 	duplicate: boolean;
+	retried?: boolean;
 	ignored?: boolean;
 	reason?: string;
 	eventId?: string;
+	eventType?: string;
+	tenantId?: string;
+	subscriptionId?: string;
+	paymentId?: string;
 	status?: TenantSubscriptionStatus;
 	error?: string;
 };
@@ -52,6 +57,14 @@ function asPayload(payload: unknown): AsaasWebhookPayload {
 
 function getEventId(payload: AsaasWebhookPayload): string | null {
 	return payload.id || payload.payment?.id || payload.subscription?.id || null;
+}
+
+function getEventType(payload: AsaasWebhookPayload): string {
+	return payload.event || "UNKNOWN";
+}
+
+function getPaymentId(payload: AsaasWebhookPayload): string | null {
+	return payload.payment?.id || null;
 }
 
 function mapPaymentStatus(status?: string): TenantSubscriptionStatus | null {
@@ -126,12 +139,18 @@ export async function processAsaasWebhookEvent(
 ): Promise<ProcessWebhookResult> {
 	const payload = asPayload(rawPayload);
 	const eventId = getEventId(payload);
+	const eventType = getEventType(payload);
+	const paymentId = getPaymentId(payload);
+	const subscriptionId = inferSubscriptionId(payload);
 
 	if (!eventId) {
 		return {
 			received: false,
 			duplicate: false,
 			error: "missing_event_id",
+			eventType,
+			subscriptionId: subscriptionId ?? undefined,
+			paymentId: paymentId ?? undefined,
 		};
 	}
 
@@ -141,6 +160,9 @@ export async function processAsaasWebhookEvent(
 			received: true,
 			duplicate: true,
 			eventId,
+			eventType,
+			subscriptionId: subscriptionId ?? undefined,
+			paymentId: paymentId ?? undefined,
 		};
 	}
 
@@ -151,21 +173,27 @@ export async function processAsaasWebhookEvent(
 			return {
 				received: true,
 				duplicate: false,
+				retried: claim === "retry",
 				ignored: true,
 				reason: "event_not_actionable",
 				eventId,
+				eventType,
+				subscriptionId: subscriptionId ?? undefined,
+				paymentId: paymentId ?? undefined,
 			};
 		}
 
-		const subscriptionId = inferSubscriptionId(payload);
 		if (!subscriptionId) {
 			await repository.markWebhookEventFailed(eventId, processedAt);
 			return {
 				received: true,
 				duplicate: false,
+				retried: claim === "retry",
 				ignored: true,
 				reason: "missing_subscription_id",
 				eventId,
+				eventType,
+				paymentId: paymentId ?? undefined,
 			};
 		}
 
@@ -176,9 +204,13 @@ export async function processAsaasWebhookEvent(
 			return {
 				received: true,
 				duplicate: false,
+				retried: claim === "retry",
 				ignored: true,
 				reason: "subscription_not_found",
 				eventId,
+				eventType,
+				subscriptionId,
+				paymentId: paymentId ?? undefined,
 			};
 		}
 
@@ -192,7 +224,12 @@ export async function processAsaasWebhookEvent(
 		return {
 			received: true,
 			duplicate: false,
+			retried: claim === "retry",
 			eventId,
+			eventType,
+			tenantId: subscription.tenant_id,
+			subscriptionId,
+			paymentId: paymentId ?? undefined,
 			status: targetStatus,
 		};
 	} catch (error) {
@@ -200,7 +237,11 @@ export async function processAsaasWebhookEvent(
 		return {
 			received: false,
 			duplicate: false,
+			retried: claim === "retry",
 			eventId,
+			eventType,
+			subscriptionId: subscriptionId ?? undefined,
+			paymentId: paymentId ?? undefined,
 			error: errorMessage(error),
 		};
 	}

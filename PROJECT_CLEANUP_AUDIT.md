@@ -168,17 +168,9 @@ Recomendacao:
   3. Criar nova baseline.
   4. Arquivar migrations antigas fora do fluxo ativo.
 
-Tambem ha funcoes com possiveis variantes:
-
-- `supabase/functions/asaas-create-checkout/index.ts`
-- `supabase/functions/asaas-create-checkout/index-fixed.ts`
-- `supabase/functions/asaas-webhook/index.ts`
-- `supabase/functions/asaas-webhook/index-improved.ts`
-
-Recomendacao:
-
-- Verificar qual arquivo e usado no deploy das functions.
-- Se o deploy usa somente `index.ts`, mover `index-fixed.ts` e `index-improved.ts` para arquivo historico ou remover apos comparacao.
+As variantes antigas de Edge Functions (`index-fixed.ts` e `index-improved.ts`)
+foram removidas durante a auditoria de observabilidade. As functions ativas
+ficam concentradas em `index.ts`.
 
 ## Documentos Raiz
 
@@ -258,4 +250,3 @@ Somente depois:
 - avaliar consolidation/baseline de migrations;
 - comparar functions Asaas duplicadas;
 - remover variantes antigas com seguranca.
-

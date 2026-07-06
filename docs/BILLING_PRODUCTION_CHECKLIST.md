@@ -198,10 +198,7 @@ limit 50;
    boleto, cartao recusado, expiracao de horario e reembolso de reserva continua
    fora do escopo atual.
 4. Nao ha alerta automatico para `asaas_webhook_events.status = failed`.
-5. Arquivos legados como `index-improved.ts` e `index-fixed.ts` existem nas
-   pastas de functions e podem confundir auditorias futuras se nao forem
-   removidos em uma tarefa propria.
-6. O ambiente testado hoje ainda gera URL sandbox. Producao deve ser tratada
+5. O ambiente testado hoje ainda gera URL sandbox. Producao deve ser tratada
    como No-Go ate validar chave, URL e webhook no painel Asaas de producao.
 
 ## Auditoria De Producao - 2026-07-05

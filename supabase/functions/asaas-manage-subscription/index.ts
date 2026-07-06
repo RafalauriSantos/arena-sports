@@ -4,6 +4,16 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+    createRequestContext,
+    errorMessage,
+    jsonResponse,
+    logEvent,
+    withLogFields,
+    type RequestLogContext,
+} from "../_shared/observability.ts";
+
+const FUNCTION_NAME = "asaas-manage-subscription";
 
 type Action = "cancel" | "reactivate" | "change_plan";
 
@@ -42,6 +52,7 @@ const OFFER_PRICE = {
 const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 async function asaasRequest(
+    context: RequestLogContext,
     endpoint: string,
     method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
     body?: Record<string, unknown>
@@ -61,13 +72,22 @@ async function asaasRequest(
         options.body = JSON.stringify(body);
     }
 
-    console.log(`[ASAAS REQUEST] ${method} ${url}`, body ? { body } : "");
+    logEvent(context, "info", "asaas_api_request_started", {
+        method,
+        endpoint,
+        has_body: Boolean(body),
+    });
 
     const response = await fetch(url, options);
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error(`[ASAAS ERROR] ${response.status}: ${errorText}`);
+        logEvent(context, "error", "asaas_api_request_failed", {
+            method,
+            endpoint,
+            status: response.status,
+            response_body: errorText,
+        });
         throw new Error(`ASAAS API error: ${response.status} - ${errorText}`);
     }
 
@@ -75,26 +95,42 @@ async function asaasRequest(
 }
 
 Deno.serve(async (req) => {
+    let logContext = createRequestContext(FUNCTION_NAME, req);
+
     if (req.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
     }
 
     try {
+        logEvent(logContext, "info", "request_started", {
+            method: req.method,
+        });
+
         // ─────────────────────────────────────────────
         // 1. Validação de método e autenticação
         // ─────────────────────────────────────────────
         if (req.method !== "POST") {
-            return new Response(
-                JSON.stringify({ error: "Método não permitido. Use POST." }),
-                { status: 405, headers: corsHeaders }
+            logEvent(logContext, "warn", "method_not_allowed", {
+                method: req.method,
+            });
+            return jsonResponse(
+                { error: "Método não permitido. Use POST." },
+                405,
+                logContext,
+                corsHeaders
             );
         }
 
         const authHeader = req.headers.get("Authorization");
         if (!authHeader?.startsWith("Bearer ")) {
-            return new Response(
-                JSON.stringify({ error: "Token de autenticação não fornecido" }),
-                { status: 401, headers: corsHeaders }
+            logEvent(logContext, "warn", "auth_failed", {
+                reason: "missing_bearer",
+            });
+            return jsonResponse(
+                { error: "Token de autenticação não fornecido" },
+                401,
+                logContext,
+                corsHeaders
             );
         }
 
@@ -108,11 +144,18 @@ Deno.serve(async (req) => {
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
 
         if (authError || !user) {
-            return new Response(
-                JSON.stringify({ error: "Token inválido ou expirado" }),
-                { status: 401, headers: corsHeaders }
+            logEvent(logContext, "warn", "auth_failed", {
+                reason: "invalid_token",
+                error: authError,
+            });
+            return jsonResponse(
+                { error: "Token inválido ou expirado" },
+                401,
+                logContext,
+                corsHeaders
             );
         }
+        logContext = withLogFields(logContext, { user_id: user.id });
 
         // ─────────────────────────────────────────────
         // 2. Resolver tenant do usuário
@@ -124,11 +167,17 @@ Deno.serve(async (req) => {
             .single();
 
         if (profileError || !profile?.tenant_id) {
-            return new Response(
-                JSON.stringify({ error: "Perfil ou tenant não encontrado" }),
-                { status: 404, headers: corsHeaders }
+            logEvent(logContext, "error", "profile_lookup_failed", {
+                error: profileError,
+            });
+            return jsonResponse(
+                { error: "Perfil ou tenant não encontrado" },
+                404,
+                logContext,
+                corsHeaders
             );
         }
+        logContext = withLogFields(logContext, { tenant_id: profile.tenant_id });
 
         // ─────────────────────────────────────────────
         // 3. Buscar assinatura atual
@@ -140,27 +189,42 @@ Deno.serve(async (req) => {
             .maybeSingle();
 
         if (subError) {
-            console.error("[MANAGE ERROR] Erro ao buscar assinatura:", subError);
-            return new Response(
-                JSON.stringify({ error: "Erro ao buscar assinatura" }),
-                { status: 500, headers: corsHeaders }
+            logEvent(logContext, "error", "subscription_lookup_failed", {
+                error: subError,
+            });
+            return jsonResponse(
+                { error: "Erro ao buscar assinatura" },
+                500,
+                logContext,
+                corsHeaders
             );
         }
 
         if (!subscription) {
-            return new Response(
-                JSON.stringify({ error: "Assinatura não encontrada" }),
-                { status: 404, headers: corsHeaders }
+            logEvent(logContext, "warn", "subscription_not_found");
+            return jsonResponse(
+                { error: "Assinatura não encontrada" },
+                404,
+                logContext,
+                corsHeaders
             );
         }
+        logContext = withLogFields(logContext, {
+            subscription_id: subscription.asaas_subscription_id ?? null,
+        });
 
         if (!subscription.asaas_subscription_id) {
-            return new Response(
-                JSON.stringify({
+            logEvent(logContext, "warn", "subscription_missing_provider_id", {
+                subscription_status: subscription.status,
+            });
+            return jsonResponse(
+                {
                     error: "Assinatura não possui ID do ASAAS. Não é possível gerenciar.",
                     subscription_status: subscription.status
-                }),
-                { status: 400, headers: corsHeaders }
+                },
+                400,
+                logContext,
+                corsHeaders
             );
         }
 
@@ -170,9 +234,14 @@ Deno.serve(async (req) => {
         const body: Body = await req.json();
 
         if (!body.action) {
-            return new Response(
-                JSON.stringify({ error: "Campo 'action' é obrigatório (cancel | reactivate | change_plan)" }),
-                { status: 400, headers: corsHeaders }
+            logEvent(logContext, "warn", "request_validation_failed", {
+                reason: "missing_action",
+            });
+            return jsonResponse(
+                { error: "Campo 'action' é obrigatório (cancel | reactivate | change_plan)" },
+                400,
+                logContext,
+                corsHeaders
             );
         }
 
@@ -185,6 +254,7 @@ Deno.serve(async (req) => {
             case "cancel":
                 // Cancelar assinatura no ASAAS
                 result = await asaasRequest(
+                    logContext,
                     `/subscriptions/${subscription.asaas_subscription_id}`,
                     "DELETE"
                 );
@@ -198,16 +268,20 @@ Deno.serve(async (req) => {
                     })
                     .eq("tenant_id", profile.tenant_id);
 
-                console.log(`[CANCEL SUCCESS] Tenant ${profile.tenant_id} cancelou assinatura ${subscription.asaas_subscription_id}`);
+                logEvent(logContext, "info", "subscription_cancelled", {
+                    action: "cancel",
+                });
 
-                return new Response(
-                    JSON.stringify({
+                return jsonResponse(
+                    {
                         success: true,
                         action: "cancel",
                         message: "Assinatura cancelada com sucesso",
                         subscription_id: subscription.asaas_subscription_id,
-                    }),
-                    { status: 200, headers: corsHeaders }
+                    },
+                    200,
+                    logContext,
+                    corsHeaders
                 );
 
             case "reactivate":
@@ -218,12 +292,17 @@ Deno.serve(async (req) => {
                 if (subscription.status === "canceled") {
                     // Criar nova assinatura (checkout seria melhor, mas por simplicidade atualizamos)
                     // Em produção, pode ser melhor redirecionar para checkout novamente
-                    return new Response(
-                        JSON.stringify({
+                    logEvent(logContext, "warn", "subscription_reactivate_unsupported", {
+                        subscription_status: subscription.status,
+                    });
+                    return jsonResponse(
+                        {
                             error: "Assinatura cancelada não pode ser reativada automaticamente. Por favor, crie uma nova assinatura.",
                             suggestion: "Use a função asaas-create-checkout para criar nova assinatura",
-                        }),
-                        { status: 400, headers: corsHeaders }
+                        },
+                        400,
+                        logContext,
+                        corsHeaders
                     );
                 }
 
@@ -236,30 +315,48 @@ Deno.serve(async (req) => {
                     })
                     .eq("tenant_id", profile.tenant_id);
 
-                return new Response(
-                    JSON.stringify({
+                logEvent(logContext, "info", "subscription_reactivated", {
+                    action: "reactivate",
+                });
+
+                return jsonResponse(
+                    {
                         success: true,
                         action: "reactivate",
                         message: "Assinatura reativada (pode precisar de pagamento pendente)",
-                    }),
-                    { status: 200, headers: corsHeaders }
+                    },
+                    200,
+                    logContext,
+                    corsHeaders
                 );
 
             case "change_plan":
                 // Validar plan_code e interval
                 if (!body.plan_code || !body.interval) {
-                    return new Response(
-                        JSON.stringify({
+                    logEvent(logContext, "warn", "request_validation_failed", {
+                        reason: "missing_plan_code_or_interval",
+                        action: body.action,
+                    });
+                    return jsonResponse(
+                        {
                             error: "Para trocar plano, 'plan_code' e 'interval' são obrigatórios"
-                        }),
-                        { status: 400, headers: corsHeaders }
+                        },
+                        400,
+                        logContext,
+                        corsHeaders
                     );
                 }
 
                 if (!(body.plan_code in PLANS)) {
-                    return new Response(
-                        JSON.stringify({ error: "Plan code inválido. Use 'start' ou 'pro'" }),
-                        { status: 400, headers: corsHeaders }
+                    logEvent(logContext, "warn", "request_validation_failed", {
+                        reason: "invalid_plan_code",
+                        plan_code: body.plan_code,
+                    });
+                    return jsonResponse(
+                        { error: "Plan code inválido. Use 'start' ou 'pro'" },
+                        400,
+                        logContext,
+                        corsHeaders
                     );
                 }
 
@@ -285,10 +382,14 @@ Deno.serve(async (req) => {
                     })
                     .eq("tenant_id", profile.tenant_id);
 
-                console.log(`[CHANGE PLAN] Tenant ${profile.tenant_id} trocou para ${body.plan_code} ${body.interval}`);
+                logEvent(logContext, "info", "subscription_plan_changed", {
+                    action: "change_plan",
+                    plan_code: body.plan_code,
+                    billing_interval: body.interval,
+                });
 
-                return new Response(
-                    JSON.stringify({
+                return jsonResponse(
+                    {
                         success: true,
                         action: "change_plan",
                         message: "Plano alterado. Próximo ciclo será cobrado com novo plano.",
@@ -299,29 +400,42 @@ Deno.serve(async (req) => {
                             price: value,
                         },
                         note: "Para aplicar imediatamente, pode ser necessário cancelar e criar nova assinatura via checkout",
-                    }),
-                    { status: 200, headers: corsHeaders }
+                    },
+                    200,
+                    logContext,
+                    corsHeaders
                 );
 
             default:
-                return new Response(
-                    JSON.stringify({
+                logEvent(logContext, "warn", "request_validation_failed", {
+                    reason: "unknown_action",
+                    action: body.action,
+                });
+                return jsonResponse(
+                    {
                         error: `Ação '${body.action}' não reconhecida. Use: cancel, reactivate, change_plan`
-                    }),
-                    { status: 400, headers: corsHeaders }
+                    },
+                    400,
+                    logContext,
+                    corsHeaders
                 );
         }
 
     } catch (error: unknown) {
-        console.error("[MANAGE SUBSCRIPTION ERROR]:", error);
-        const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+        const message = errorMessage(error);
+        logEvent(logContext, "error", "unexpected_error", {
+            error,
+            error_message: message,
+        });
 
-        return new Response(
-            JSON.stringify({
+        return jsonResponse(
+            {
                 error: "Erro ao gerenciar assinatura",
-                details: errorMessage
-            }),
-            { status: 500, headers: corsHeaders }
+                details: message
+            },
+            500,
+            logContext,
+            corsHeaders
         );
     }
 });

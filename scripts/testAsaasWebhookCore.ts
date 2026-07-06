@@ -41,7 +41,7 @@ class FakeWebhookRepository implements AsaasWebhookRepository {
 				status: "processing",
 				processed_at: undefined,
 			});
-			return "claimed" as const;
+			return "retry" as const;
 		}
 		return "duplicate" as const;
 	}
@@ -210,6 +210,7 @@ async function testFailedEventCanBeRecoveredOnRetry() {
 	const second = await processAsaasWebhookEvent(event, repo, "2026-07-05T10:01:00.000Z");
 	assert.equal(second.received, true);
 	assert.equal(second.duplicate, false);
+	assert.equal(second.retried, true);
 	assert.equal(repo.events.get("evt_retry")?.status, "done");
 	assert.equal(repo.subscriptions.get("sub_123")?.status, "active");
 	assert.equal(repo.updateCalls, 2);

@@ -4,6 +4,15 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+	createRequestContext,
+	errorMessage,
+	jsonResponse,
+	logEvent,
+	withLogFields,
+} from "../_shared/observability.ts";
+
+const FUNCTION_NAME = "asaas-create-checkout";
 
 const ASAAS_API_KEY =
 	Deno.env.get("ASAAS_API_KEY") ?? Deno.env.get("ASAAS_ACCESS_TOKEN");
@@ -22,11 +31,17 @@ const OFFER_PRICE = {
 const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 Deno.serve(async (req) => {
+	let logContext = createRequestContext(FUNCTION_NAME, req);
+
 	if (req.method === "OPTIONS") {
 		return new Response("ok", { headers: corsHeaders });
 	}
 
 	try {
+		logEvent(logContext, "info", "request_started", {
+			method: req.method,
+		});
+
 		const supabaseClient = createClient(
 			Deno.env.get("SUPABASE_URL") ?? "",
 			Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -54,19 +69,23 @@ Deno.serve(async (req) => {
 
 		// Validação e debug da chave de API
 		if (!ASAAS_API_KEY) {
-			console.error("❌ ASAAS_API_KEY não encontrada");
-			console.error("Variáveis de ambiente disponíveis:", Array.from(Object.keys(Deno.env)).filter((k: string) => k.includes("ASAAS")));
+			logEvent(logContext, "error", "config_missing", {
+				config_key: "ASAAS_API_KEY",
+			});
 			throw new Error("ASAAS_API_KEY não configurado");
 		}
 
 		// Verificar se a chave não está vazia
 		if (ASAAS_API_KEY.trim() === "") {
-			console.error("❌ ASAAS_API_KEY está vazia");
+			logEvent(logContext, "error", "config_empty", {
+				config_key: "ASAAS_API_KEY",
+			});
 			throw new Error("ASAAS_API_KEY está vazia");
 		}
 
-		console.log("✅ ASAAS_API_KEY configurada");
-		console.log("🌐 ASAAS_URL:", ASAAS_URL);
+		logEvent(logContext, "info", "config_loaded", {
+			asaas_environment: ASAAS_URL.includes("sandbox") ? "sandbox" : "production",
+		});
 
 		// Apenas um plano agora (removido start/pro)
 		const normalizedInterval: "month" | "year" =
@@ -76,14 +95,17 @@ Deno.serve(async (req) => {
 		const { data, error: authError } = await supabaseClient.auth.getUser();
 		const user = data?.user || null;
 		if (authError || !user) {
-			return new Response(
-				JSON.stringify({ error: "Unauthorized - Invalid token" }),
-				{
-					status: 401,
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-				}
+			logEvent(logContext, "warn", "auth_failed", {
+				error: authError,
+			});
+			return jsonResponse(
+				{ error: "Unauthorized - Invalid token" },
+				401,
+				logContext,
+				corsHeaders
 			);
 		}
+		logContext = withLogFields(logContext, { user_id: user.id });
 
 		// 1. Buscar profile do usuário para obter tenant_id
 		const { data: profile, error: profileError } = await supabaseClient
@@ -93,12 +115,16 @@ Deno.serve(async (req) => {
 			.single();
 
 		if (profileError || !profile?.tenant_id) {
+			logEvent(logContext, "error", "profile_lookup_failed", {
+				error: profileError,
+			});
 			throw new Error(
 				"Profile não encontrado ou sem tenant_id. Complete o onboarding primeiro."
 			);
 		}
 
 		const tenant_id = profile.tenant_id;
+		logContext = withLogFields(logContext, { tenant_id });
 
 		// 1.5. Verificar se ainda há vagas para Founders 20 e calcular preço
 		const { data: foundersData, error: foundersError } = await supabaseAdmin
@@ -109,7 +135,9 @@ Deno.serve(async (req) => {
 			.in("status", ["active", "trial", "past_due"]);
 
 		if (foundersError) {
-			console.error("Error fetching founder subscriptions:", foundersError);
+			logEvent(logContext, "error", "founder_subscriptions_lookup_failed", {
+				error: foundersError,
+			});
 			// Decide how to handle this error. For now, let's assume 0 founders if error.
 		}
 
@@ -128,8 +156,13 @@ Deno.serve(async (req) => {
 			? finalPrice / 12 // Se anual, dividir por 12
 			: finalPrice; // Se mensal, usar direto
 
-		console.log(`📊 Founders anuais: ${currentFoundersCount}/${FOUNDERS_CAP}, Vagas restantes: ${foundersRemaining}`);
-		console.log(`💰 Oferta: ${normalizedInterval}, Preço final: R$ ${finalPrice} ${isFounder ? "(Founder 20 anual)" : ""}`);
+		logEvent(logContext, "info", "offer_resolved", {
+			billing_interval: normalizedInterval,
+			is_founder: isFounder,
+			founders_count: currentFoundersCount,
+			founders_remaining: foundersRemaining,
+			price_cents: Math.round(finalPrice * 100),
+		});
 
 		// 2. Buscar dados do Tenant
 		const { data: tenant, error: tenantError } = await supabaseClient
@@ -139,19 +172,22 @@ Deno.serve(async (req) => {
 			.single();
 
 		if (tenantError || !tenant) {
+			logEvent(logContext, "error", "tenant_lookup_failed", {
+				error: tenantError,
+			});
 			throw new Error("Tenant not found");
 		}
 
 		// Verificar se o usuário tem permissão (deve ser owner do tenant)
 		if (tenant.owner_id !== user.id) {
-			return new Response(
-				JSON.stringify({
-					error: "Forbidden - You are not the owner of this tenant",
-				}),
+			logEvent(logContext, "warn", "tenant_owner_check_failed");
+			return jsonResponse(
 				{
-					status: 403,
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-				}
+					error: "Forbidden - You are not the owner of this tenant",
+				},
+				403,
+				logContext,
+				corsHeaders
 			);
 		}
 
@@ -163,6 +199,9 @@ Deno.serve(async (req) => {
 			.single();
 
 		if (ownerError || !owner) {
+			logEvent(logContext, "error", "owner_profile_lookup_failed", {
+				error: ownerError,
+			});
 			throw new Error("Owner profile not found");
 		}
 
@@ -187,17 +226,19 @@ Deno.serve(async (req) => {
 			null;
 
 		if (!customerCpfCnpj) {
-			return new Response(
-				JSON.stringify({
+			logEvent(logContext, "warn", "checkout_validation_failed", {
+				reason: "missing_cpf_cnpj",
+			});
+			return jsonResponse(
+				{
 					error: "CPF_CNPJ_REQUIRED",
 					message:
 						"CPF ou CNPJ é obrigatório para realizar a assinatura. Por favor, preencha seus dados cadastrais antes de continuar.",
 					requiredFields: ["cpfCnpj", "phone"],
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-				}
+				},
+				400,
+				logContext,
+				corsHeaders
 			);
 		}
 
@@ -206,17 +247,19 @@ Deno.serve(async (req) => {
 			customerDataFromRequest?.phone || tenant.phone || owner.whatsapp || null;
 
 		if (!customerPhone) {
-			return new Response(
-				JSON.stringify({
+			logEvent(logContext, "warn", "checkout_validation_failed", {
+				reason: "missing_phone",
+			});
+			return jsonResponse(
+				{
 					error: "PHONE_REQUIRED",
 					message:
 						"Telefone é obrigatório para realizar a assinatura. Por favor, preencha seus dados cadastrais antes de continuar.",
 					requiredFields: ["cpfCnpj", "phone"],
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-				}
+				},
+				400,
+				logContext,
+				corsHeaders
 			);
 		}
 
@@ -298,24 +341,26 @@ Deno.serve(async (req) => {
 		// Formatar telefone do cliente
 		const formattedPhone = formatPhone(customerPhone);
 		if (!formattedPhone) {
-			return new Response(
-				JSON.stringify({
+			logEvent(logContext, "warn", "checkout_validation_failed", {
+				reason: "invalid_phone",
+			});
+			return jsonResponse(
+				{
 					error: "INVALID_PHONE",
 					message:
 						"Telefone inválido. Use DDD + número (10 ou 11 dígitos). Exemplo: 11987654321",
 					requiredFields: ["cpfCnpj", "phone"],
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-				}
+				},
+				400,
+				logContext,
+				corsHeaders
 			);
 		}
 
 		// 5. Garantir que existe um Cliente no Asaas (Customer) COM CPF/CNPJ
 		// IMPORTANTE: O Asaas exige CPF/CNPJ para criar Subscriptions
 		if (!asaasCustomerId) {
-			console.log("Criando cliente no Asaas...");
+			logEvent(logContext, "info", "asaas_customer_create_started");
 
 			// Preparar dados do cliente usando dados reais coletados
 			const customerPayload: Record<string, string> = {
@@ -346,28 +391,25 @@ Deno.serve(async (req) => {
 				customerPayload.city = customerDataFromRequest.city;
 			}
 
-			console.log("Dados do cliente para Asaas:", {
-				name: customerPayload.name,
-				email: customerPayload.email,
-				cpfCnpj: customerPayload.cpfCnpj
-					? `${customerPayload.cpfCnpj.substring(0, 3)}***`
-					: null, // Log parcial por segurança
-				phone: customerPayload.phone
-					? `${customerPayload.phone.substring(0, 5)}***`
-					: null,
-			});
-
 			// Validar chave antes de fazer requisição
 			if (!ASAAS_API_KEY || ASAAS_API_KEY.trim() === "") {
+				logEvent(logContext, "error", "config_empty", {
+					config_key: "ASAAS_API_KEY",
+				});
 				throw new Error("ASAAS_API_KEY não está configurada ou está vazia");
 			}
 
-			console.log("📤 Fazendo requisição para criar customer no Asaas...");
-			console.log("URL:", `${ASAAS_URL}/customers`);
-			console.log("Chave presente:", !!ASAAS_API_KEY);
+			logEvent(logContext, "info", "asaas_api_request_started", {
+				operation: "create_customer",
+				method: "POST",
+				endpoint: "/customers",
+			});
 
 			// Garantir que a chave não está vazia antes de fazer a requisição
 			if (!ASAAS_API_KEY || ASAAS_API_KEY.trim() === "") {
+				logEvent(logContext, "error", "config_empty", {
+					config_key: "ASAAS_API_KEY",
+				});
 				throw new Error("ASAAS_API_KEY está vazia ou não foi configurada");
 			}
 
@@ -384,6 +426,11 @@ Deno.serve(async (req) => {
 
 			const customerResponse = await customerRes.json();
 			if (customerResponse.errors) {
+				logEvent(logContext, "error", "asaas_api_request_failed", {
+					operation: "create_customer",
+					status: customerRes.status,
+					errors: customerResponse.errors,
+				});
 				throw new Error(
 					`Erro Asaas Customer: ${customerResponse.errors[0]?.description ||
 					customerResponse.errors[0]?.message ||
@@ -393,6 +440,9 @@ Deno.serve(async (req) => {
 			}
 
 			asaasCustomerId = customerResponse.id;
+			logEvent(logContext, "info", "asaas_customer_created", {
+				customer_id: asaasCustomerId,
+			});
 
 			// Salvar customer_id em tenant_subscriptions
 			const { error: updateError } = await supabaseClient
@@ -408,9 +458,15 @@ Deno.serve(async (req) => {
 				);
 
 			if (updateError) {
-				console.error("Erro ao salvar asaas_customer_id:", updateError);
+				logEvent(logContext, "error", "subscription_customer_update_failed", {
+					customer_id: asaasCustomerId,
+					error: updateError,
+				});
 			}
 		} else {
+			logEvent(logContext, "info", "asaas_customer_reused", {
+				customer_id: asaasCustomerId,
+			});
 			// Se o customer já existe, verificar se tem CPF/CNPJ
 			// Se não tiver, atualizar com CPF de teste (para sandbox)
 			try {
@@ -425,9 +481,11 @@ Deno.serve(async (req) => {
 					const customerData = await customerCheckRes.json();
 					// Se não tiver CPF/CNPJ ou telefone, atualizar com dados reais
 					if (!customerData.cpfCnpj || !customerData.phone) {
-						console.log(
-							"Atualizando customer existente com dados cadastrais..."
-						);
+						logEvent(logContext, "info", "asaas_customer_update_started", {
+							customer_id: asaasCustomerId,
+							update_missing_cpf_cnpj: !customerData.cpfCnpj,
+							update_missing_phone: !customerData.phone,
+						});
 
 						const updatePayload: Record<string, string> = {};
 						if (!customerData.cpfCnpj && customerCpfCnpj) {
@@ -451,19 +509,20 @@ Deno.serve(async (req) => {
 							);
 							const updateData = await updateRes.json();
 							if (updateData.errors) {
-								console.warn(
-									"Aviso: não foi possível atualizar dados do customer:",
-									updateData.errors
-								);
+								logEvent(logContext, "warn", "asaas_customer_update_failed", {
+									customer_id: asaasCustomerId,
+									status: updateRes.status,
+									errors: updateData.errors,
+								});
 							}
 						}
 					}
 				}
 			} catch (error) {
-				console.warn(
-					"Aviso: não foi possível verificar/atualizar customer:",
-					error
-				);
+				logEvent(logContext, "warn", "asaas_customer_check_failed", {
+					customer_id: asaasCustomerId,
+					error,
+				});
 				// Não falhar - tentar continuar mesmo assim
 			}
 		}
@@ -474,7 +533,10 @@ Deno.serve(async (req) => {
 			: "Anual";
 
 		// 6. Criar a Assinatura (Subscription)
-		console.log("Criando assinatura...");
+		logEvent(logContext, "info", "asaas_subscription_create_started", {
+			customer_id: asaasCustomerId,
+			billing_interval: normalizedInterval,
+		});
 
 		// Usar preço calculado (com desconto se for founder)
 		const value = finalPrice;
@@ -500,13 +562,19 @@ Deno.serve(async (req) => {
 
 		const subscriptionData = await subscriptionRes.json();
 		if (subscriptionData.errors) {
+			logEvent(logContext, "error", "asaas_api_request_failed", {
+				operation: "create_subscription",
+				status: subscriptionRes.status,
+				errors: subscriptionData.errors,
+			});
 			throw new Error(
 				`Erro Asaas Subscription: ${subscriptionData.errors[0].description}`
 			);
 		}
 
 		const subscriptionId = subscriptionData.id;
-		console.log('ID do Asaas recebido:', subscriptionId);
+		logContext = withLogFields(logContext, { subscription_id: subscriptionId });
+		logEvent(logContext, "info", "asaas_subscription_created");
 
 		// Atualizar tabela tenant_subscriptions (usando admin para bypassar RLS)
 		const { error: subscriptionUpdateError } = await supabaseAdmin
@@ -529,10 +597,9 @@ Deno.serve(async (req) => {
 			);
 
 		if (subscriptionUpdateError) {
-			console.error(
-				"Erro ao atualizar tenant_subscriptions:",
-				subscriptionUpdateError
-			);
+			logEvent(logContext, "error", "subscription_upsert_failed", {
+				error: subscriptionUpdateError,
+			});
 			// Não falhar se não conseguir salvar - o webhook pode atualizar depois
 		}
 
@@ -540,7 +607,7 @@ Deno.serve(async (req) => {
 		// O Asaas já cria a primeira cobrança ao criar a subscription. Criar outro
 		// payment aqui gera cobrança duplicada e pode retornar uma URL sem vínculo
 		// com a assinatura, impedindo o webhook de ativar o tenant corretamente.
-		console.log("Buscando cobrança gerada pela assinatura...");
+		logEvent(logContext, "info", "asaas_payment_lookup_started");
 
 		const paymentsRes = await fetch(
 			`${ASAAS_URL}/payments?subscription=${encodeURIComponent(subscriptionId)}&limit=10`,
@@ -553,7 +620,11 @@ Deno.serve(async (req) => {
 
 		const paymentsData = await paymentsRes.json();
 		if (paymentsData.errors) {
-			console.error("Erro ao buscar cobrança da assinatura:", paymentsData.errors);
+			logEvent(logContext, "error", "asaas_api_request_failed", {
+				operation: "lookup_subscription_payment",
+				status: paymentsRes.status,
+				errors: paymentsData.errors,
+			});
 			throw new Error(
 				`Erro ao buscar cobrança: ${paymentsData.errors[0]?.description ||
 				paymentsData.errors[0]?.message ||
@@ -568,6 +639,7 @@ Deno.serve(async (req) => {
 			payments[0];
 
 		if (!paymentData?.id) {
+			logEvent(logContext, "error", "asaas_payment_missing");
 			throw new Error(
 				"Assinatura criada, mas nenhuma cobrança vinculada foi encontrada. Entre em contato com o suporte."
 			);
@@ -582,9 +654,13 @@ Deno.serve(async (req) => {
 			try {
 				const url = new URL(referer);
 				frontendUrl = url.origin;
-				console.log("URL base obtida do header:", frontendUrl);
+				logEvent(logContext, "info", "frontend_origin_resolved", {
+					source: "request_header",
+				});
 			} catch (e) {
-				console.warn("Erro ao parsear URL do header:", referer);
+				logEvent(logContext, "warn", "frontend_origin_parse_failed", {
+					error: e,
+				});
 			}
 		}
 
@@ -592,13 +668,14 @@ Deno.serve(async (req) => {
 		if (!frontendUrl) {
 			frontendUrl = Deno.env.get("FRONTEND_URL") || "";
 			if (frontendUrl) {
-				console.log("URL base obtida de FRONTEND_URL:", frontendUrl);
+				logEvent(logContext, "info", "frontend_origin_resolved", {
+					source: "FRONTEND_URL",
+				});
 			}
 		}
 
 		if (!frontendUrl) {
-			console.log("ℹ️ Callback não configurado. Webhook atualizará status automaticamente.");
-			console.log("   Para redirecionamento automático, configure FRONTEND_URL e cadastre domínio no Asaas.");
+			logEvent(logContext, "warn", "frontend_callback_not_configured");
 		}
 
 		// A invoiceUrl é a URL do checkout do Asaas
@@ -616,14 +693,18 @@ Deno.serve(async (req) => {
 
 				// URL padrão do Asaas para checkout de pagamento
 				checkoutUrl = `${baseUrl}/c/${paymentData.id}`;
-				console.log("Usando URL construída do payment ID:", checkoutUrl);
+				logEvent(logContext, "info", "checkout_url_derived", {
+					source: "payment_id",
+				});
 			} else if (paymentData.invoiceNumber) {
 				// Fallback: tentar construir com invoiceNumber
 				const baseUrl = ASAAS_URL.includes("sandbox")
 					? "https://sandbox.asaas.com"
 					: "https://www.asaas.com";
 				checkoutUrl = `${baseUrl}/c/${paymentData.invoiceNumber}`;
-				console.log("Usando URL construída do invoiceNumber:", checkoutUrl);
+				logEvent(logContext, "info", "checkout_url_derived", {
+					source: "invoice_number",
+				});
 			}
 		} else {
 			// Se tiver invoiceUrl, garantir que está usando o domínio correto para sandbox
@@ -633,45 +714,50 @@ Deno.serve(async (req) => {
 				!checkoutUrl.includes("sandbox")
 			) {
 				checkoutUrl = checkoutUrl.replace("www.asaas.com", "sandbox.asaas.com");
-				console.log("Ajustando URL para sandbox:", checkoutUrl);
+				logEvent(logContext, "info", "checkout_url_environment_adjusted", {
+					asaas_environment: "sandbox",
+				});
 			}
 		}
 
-		// Log para debug
-		console.log("Payment vinculado encontrado:", {
-			id: paymentData.id,
-			subscription: paymentData.subscription,
-			invoiceUrl: paymentData.invoiceUrl,
-			invoiceNumber: paymentData.invoiceNumber,
-			status: paymentData.status,
-			checkoutUrlFinal: checkoutUrl,
+		logContext = withLogFields(logContext, { payment_id: paymentData.id });
+		logEvent(logContext, "info", "asaas_payment_found", {
+			payment_status: paymentData.status,
+			has_invoice_url: Boolean(paymentData.invoiceUrl),
 		});
 
 		if (!checkoutUrl) {
+			logEvent(logContext, "error", "checkout_url_missing");
 			throw new Error(
 				"Assinatura criada, mas não foi possível gerar link de pagamento. Entre em contato com o suporte."
 			);
 		}
 
-		return new Response(
-			JSON.stringify({
+		logEvent(logContext, "info", "checkout_created");
+
+		return jsonResponse(
+			{
 				url: checkoutUrl,
 				subscriptionId: subscriptionId,
 				paymentId: paymentData.id,
-			}),
-			{ headers: { ...corsHeaders, "Content-Type": "application/json" } }
+			},
+			200,
+			logContext,
+			corsHeaders
 		);
 	} catch (error) {
-		console.error("[ASAAS CHECKOUT ERROR]:", error);
-		return new Response(
-			JSON.stringify({
-				error:
-					error instanceof Error ? error.message : "Erro interno do servidor",
-			}),
+		const message = errorMessage(error);
+		logEvent(logContext, "error", "unexpected_error", {
+			error,
+			error_message: message,
+		});
+		return jsonResponse(
 			{
-				status: 500,
-				headers: { ...corsHeaders, "Content-Type": "application/json" },
-			}
+				error: message || "Erro interno do servidor",
+			},
+			500,
+			logContext,
+			corsHeaders
 		);
 	}
 });
