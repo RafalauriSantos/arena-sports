@@ -1,0 +1,39 @@
+name: Billing Reconciliation
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Call billing reconciliation function
+        shell: bash
+        env:
+          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          BILLING_RECONCILIATION_TOKEN: ${{ secrets.BILLING_RECONCILIATION_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          BASE_URL="${SUPABASE_FUNCTIONS_URL:-${VITE_SUPABASE_URL:-}}"
+          if [ -z "$BASE_URL" ]; then
+            echo "Missing SUPABASE_FUNCTIONS_URL or VITE_SUPABASE_URL secret"
+            exit 1
+          fi
+
+          if [ -z "${BILLING_RECONCILIATION_TOKEN:-}" ]; then
+            echo "Missing BILLING_RECONCILIATION_TOKEN secret"
+            exit 1
+          fi
+
+          BASE_URL="${BASE_URL%/}"
+          curl --fail-with-body --show-error --silent \
+            --request POST "$BASE_URL/functions/v1/asaas-reconcile-billing" \
+            --header "Content-Type: application/json" \
+            --header "x-reconciliation-token: $BILLING_RECONCILIATION_TOKEN" \
+            --data '{"source":"github-actions","limit":100}'

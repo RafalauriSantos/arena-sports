@@ -14,6 +14,7 @@ type CapturedLog = {
 
 const activeEdgeEntrypoints = [
   'supabase/functions/asaas-create-checkout/index.ts',
+  'supabase/functions/asaas-reconcile-billing/index.ts',
   'supabase/functions/asaas-webhook/index.ts',
   'supabase/functions/ensure-tenant-subscription/index.ts',
   'supabase/functions/asaas-manage-subscription/index.ts',

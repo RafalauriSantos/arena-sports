@@ -15,6 +15,8 @@ gateway Asaas dentro do ArenaSys.
 - Idempotencia por `asaas_webhook_events.event_id`.
 - Atualizacao de `tenant_subscriptions.status` a partir de eventos de pagamento
   e assinatura.
+- Reconciliacao periodica em `asaas-reconcile-billing` para corrigir eventos de
+  pagamento perdidos ou divergencias entre Asaas e banco.
 
 ## Status De Prontidao
 
@@ -50,6 +52,9 @@ gateway Asaas dentro do ArenaSys.
   - webhook real registrou `SUBSCRIPTION_CREATED` como `done`;
   - webhook real registrou `PAYMENT_RECEIVED` como `done`;
   - `tenant_subscriptions.status` foi atualizado para `active`.
+- Core de reconciliacao automatica cobre pagamento recebido, confirmado,
+  recebido em dinheiro, vencido, reembolsado/chargeback, assinatura expirada,
+  evento sintetico duplicado e divergencia local.
 
 ### Ainda Nao Pronto
 
@@ -63,9 +68,11 @@ gateway Asaas dentro do ArenaSys.
   `ASAAS_API_KEY` e `ASAAS_WEBHOOK_SECRET` corretas por ambiente. Antes de
   divulgar link real, confirmar no painel/secret manager que producao nao esta
   usando secrets de sandbox.
-- Nao ha job de reconciliacao periodica consultando Asaas para pagamentos que
-  ficaram pendentes por webhook perdido.
-- Nao ha monitoramento/alerta para eventos `failed` em `asaas_webhook_events`.
+- O job de reconciliacao periodica foi implementado, deployado e validado em
+  dry-run. O alerta basico passa a ser falha do GitHub Actions quando a funcao
+  retorna erro.
+- Nao ha alerta externo dedicado para eventos `failed` em
+  `asaas_webhook_events`.
 - Fluxos Asaas para reserva avulsa de quadra nao existem no produto:
   - PIX da reserva;
   - boleto da reserva;
@@ -81,6 +88,7 @@ gateway Asaas dentro do ArenaSys.
 npm run lint
 npm run typecheck
 npm run test:billing
+npm run test:reconciliation
 npm run verify
 ```
 
@@ -112,6 +120,12 @@ npm run test:billing
 - [ ] A Edge Function `asaas-webhook` foi deployada com `--no-verify-jwt`.
 - [ ] A Edge Function `asaas-create-checkout` foi deployada depois da ultima
       alteracao de codigo.
+- [x] A Edge Function `asaas-reconcile-billing` foi deployada com
+      `--no-verify-jwt`.
+- [x] `BILLING_RECONCILIATION_TOKEN` configurado no Supabase.
+- [x] `BILLING_RECONCILIATION_TOKEN` configurado no GitHub Actions.
+- [x] Edge Function `asaas-reconcile-billing` executou pelo menos um dry-run sem
+      falhas.
 
 ### Checkout
 
@@ -169,9 +183,11 @@ limit 50;
 
 ### Reconciliacao E Operacao
 
-- [ ] Existe rotina periodica para buscar no Asaas payments pendentes e comparar
+- [x] Existe rotina periodica para buscar no Asaas payments pendentes e comparar
       com `tenant_subscriptions`.
-- [ ] Eventos `failed` geram alerta operacional.
+- [x] Execucoes de reconciliacao com falha geram falha no GitHub Actions.
+- [ ] Eventos `failed` persistidos em `asaas_webhook_events` geram alerta
+      externo dedicado.
 - [ ] Ate existir reconciliacao automatica, alguem deve checar manualmente todos
       os dias, nos primeiros dias apos qualquer assinatura real:
   - painel Asaas: pagamentos aprovados, vencidos, reembolsados e webhook failed;
@@ -188,17 +204,13 @@ limit 50;
 
 ## Riscos Conhecidos
 
-1. O modulo nao possui reconciliacao periodica. Se o webhook nao chegar e o
-   pagamento for aprovado no Asaas, o ArenaSys pode permanecer em `trial` ate
-   intervencao manual.
-2. Enquanto nao houver reconciliacao automatica e alerta para eventos `failed`,
-   a checagem manual diaria descrita em "Reconciliacao E Operacao" e obrigatoria
-   apos qualquer assinatura real.
+1. Ainda nao ha alerta externo dedicado para eventos
+   `asaas_webhook_events.status = failed`; por enquanto, a falha visivel vem do
+   GitHub Actions quando a reconciliacao retorna erro.
 3. Reserva avulsa com pagamento Asaas ainda nao existe. O checklist de PIX,
    boleto, cartao recusado, expiracao de horario e reembolso de reserva continua
    fora do escopo atual.
-4. Nao ha alerta automatico para `asaas_webhook_events.status = failed`.
-5. O ambiente testado hoje ainda gera URL sandbox. Producao deve ser tratada
+4. O ambiente testado hoje ainda gera URL sandbox. Producao deve ser tratada
    como No-Go ate validar chave, URL e webhook no painel Asaas de producao.
 
 ## Auditoria De Producao - 2026-07-05
@@ -237,7 +249,7 @@ O modulo de billing pode ser considerado pronto para producao somente quando:
 - o teste autorizado com `TEST_ASAAS_WEBHOOK_TOKEN` passar;
 - webhook real estiver cadastrado no painel Asaas com token;
 - chave e webhook de producao forem validados fora do sandbox;
-- houver decisao documentada para reconciliacao de pagamentos pendentes;
+- reconciliacao automatica estiver deployada e com dry-run validado;
 - houver rotina operacional para eventos `failed`;
 - primeiro pagamento real for acompanhado manualmente ate confirmar consistencia
   entre checkout, banco e painel Asaas.

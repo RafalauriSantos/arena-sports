@@ -111,6 +111,33 @@ Coberturas específicas:
 
 O payload bruto do webhook não é mais logado.
 
+### `asaas-reconcile-billing`
+
+Eventos registrados:
+
+- `request_started`
+- `reconciliation_auth_failed`
+- `reconciliation_token_missing`
+- `reconciliation_scan_started`
+- `asaas_api_request_started`
+- `asaas_api_request_failed`
+- `asaas_subscription_payments_endpoint_failed`
+- `reconciliation_action_recorded`
+- `reconciliation_subscription_failed`
+- `reconciliation_finished`
+- `unexpected_error`
+
+Coberturas específicas:
+
+- `tenant_id`;
+- `subscription_id`;
+- `payment_id` quando a divergência vem de cobrança;
+- divergência corrigida;
+- assinatura expirada;
+- assinatura remota ausente;
+- falha parcial por assinatura;
+- dry-run.
+
 ### `asaas-create-checkout`
 
 Eventos registrados:
@@ -272,7 +299,9 @@ Para investigar um incidente:
 ## Validação executada
 
 - `npm run test:observability`: passou.
+- `npm run test:reconciliation`: passou.
 - `tsx scripts/testAsaasWebhookCore.ts`: passou via início de `npm run test:asaas`.
+- `npm run test:billing`: passou.
 - `npm run test:security`: passou.
 - `npm run test:rls`: passou.
 - `npm run typecheck`: passou.

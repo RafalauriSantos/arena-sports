@@ -220,6 +220,9 @@ verify_jwt = false
 [functions.asaas-webhook]
 verify_jwt = false
 
+[functions.asaas-reconcile-billing]
+verify_jwt = false
+
 # Use a production-ready SMTP server
 # [auth.email.smtp]
 # enabled = true
