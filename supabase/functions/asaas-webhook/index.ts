@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { recordBillingOperationalEvent } from "../_shared/billing-ops.ts";
 import {
 	createRequestContext,
 	errorMessage,
@@ -253,6 +254,20 @@ serve(async (req) => {
 				event_id: result.eventId,
 				event_type: result.eventType,
 			});
+			await recordBillingOperationalEvent(supabaseAdmin, {
+				event_type: "webhook_duplicate_ignored",
+				severity: "warning",
+				source: "asaas-webhook",
+				function_name: FUNCTION_NAME,
+				tenant_id: result.tenantId ?? null,
+				subscription_id: result.subscriptionId ?? null,
+				payment_id: result.paymentId ?? null,
+				webhook_event_id: result.eventId ?? null,
+				message: "Webhook duplicado ignorado por idempotencia.",
+				metadata: {
+					asaas_event_type: result.eventType,
+				},
+			});
 		} else if (result.ignored) {
 			logEvent(resultContext, "warn", "webhook_event_ignored", {
 				event_id: result.eventId,
@@ -260,12 +275,44 @@ serve(async (req) => {
 				reason: result.reason,
 				retried: Boolean(result.retried),
 			});
+			await recordBillingOperationalEvent(supabaseAdmin, {
+				event_type: "webhook_event_ignored",
+				severity: "warning",
+				source: "asaas-webhook",
+				function_name: FUNCTION_NAME,
+				tenant_id: result.tenantId ?? null,
+				subscription_id: result.subscriptionId ?? null,
+				payment_id: result.paymentId ?? null,
+				webhook_event_id: result.eventId ?? null,
+				message: "Webhook recebido sem efeito operacional.",
+				metadata: {
+					asaas_event_type: result.eventType,
+					reason: result.reason,
+					retried: Boolean(result.retried),
+				},
+			});
 		} else if (!result.received) {
 			logEvent(resultContext, "error", "webhook_processing_failed", {
 				event_id: result.eventId,
 				event_type: result.eventType,
 				error: result.error,
 				retried: Boolean(result.retried),
+			});
+			await recordBillingOperationalEvent(supabaseAdmin, {
+				event_type: "webhook_processing_failed",
+				severity: "error",
+				source: "asaas-webhook",
+				function_name: FUNCTION_NAME,
+				tenant_id: result.tenantId ?? null,
+				subscription_id: result.subscriptionId ?? null,
+				payment_id: result.paymentId ?? null,
+				webhook_event_id: result.eventId ?? null,
+				message: "Falha ao processar webhook do Asaas.",
+				metadata: {
+					asaas_event_type: result.eventType,
+					error: result.error,
+					retried: Boolean(result.retried),
+				},
 			});
 		} else {
 			logEvent(resultContext, "info", "webhook_processed", {
@@ -287,6 +334,16 @@ serve(async (req) => {
 		logEvent(baseContext, "error", "unexpected_error", {
 			error,
 			error_message: message,
+		});
+		await recordBillingOperationalEvent(supabaseAdmin, {
+			event_type: "webhook_unexpected_error",
+			severity: "error",
+			source: "asaas-webhook",
+			function_name: FUNCTION_NAME,
+			message: "Erro inesperado na Edge Function de webhook.",
+			metadata: {
+				error_message: message,
+			},
 		});
 		return jsonResponse({ received: false, error: message }, 500, baseContext);
 	}

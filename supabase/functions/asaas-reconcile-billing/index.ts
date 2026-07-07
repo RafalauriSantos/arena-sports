@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { recordBillingOperationalEvent } from "../_shared/billing-ops.ts";
 import {
 	createRequestContext,
 	errorMessage,
@@ -259,6 +260,7 @@ async function fetchSubscriptionPayments(
 
 serve(async (req) => {
 	let context = createRequestContext(FUNCTION_NAME, req);
+	let supabaseAdmin: any | null = null;
 
 	if (req.method === "OPTIONS") {
 		return new Response("ok", { headers: corsHeaders });
@@ -308,7 +310,7 @@ serve(async (req) => {
 			);
 		}
 
-		const supabaseAdmin = createClient(
+		supabaseAdmin = createClient(
 			Deno.env.get("SUPABASE_URL") ?? "",
 			Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 		);
@@ -397,6 +399,27 @@ serve(async (req) => {
 					"reconciliation_action_recorded",
 					result
 				);
+
+				if (result.action !== "already_in_sync") {
+					await recordBillingOperationalEvent(supabaseAdmin, {
+						event_type: "reconciliation_action",
+						severity:
+							result.action === "webhook_replay_failed" ? "error" : "info",
+						source: "asaas-reconcile-billing",
+						function_name: FUNCTION_NAME,
+						tenant_id: result.tenantId,
+						subscription_id: result.subscriptionId,
+						payment_id: result.paymentId ?? null,
+						message: "Reconciliacao registrou acao operacional.",
+						metadata: {
+							action: result.action,
+							local_status: result.localStatus,
+							remote_subscription_status: result.remoteSubscriptionStatus,
+							remote_payment_status: result.remotePaymentStatus,
+							target_status: result.targetStatus,
+						},
+					});
+				}
 			} catch (error) {
 				summary.failed += 1;
 				const failure = {
@@ -408,6 +431,19 @@ serve(async (req) => {
 				};
 				actions.push(failure);
 				logEvent(context, "error", "reconciliation_subscription_failed", failure);
+				await recordBillingOperationalEvent(supabaseAdmin, {
+					event_type: "reconciliation_subscription_failed",
+					severity: "error",
+					source: "asaas-reconcile-billing",
+					function_name: FUNCTION_NAME,
+					tenant_id: row.tenant_id,
+					subscription_id: row.asaas_subscription_id,
+					message: "Falha ao reconciliar assinatura com Asaas.",
+					metadata: {
+						local_status: row.status,
+						error_message: errorMessage(error),
+					},
+				});
 			}
 		}
 
@@ -415,10 +451,32 @@ serve(async (req) => {
 		logEvent(context, summary.failed > 0 ? "warn" : "info", "reconciliation_finished", {
 			summary,
 		});
+		await recordBillingOperationalEvent(supabaseAdmin, {
+			event_type: "reconciliation_run_finished",
+			severity: summary.failed > 0 ? "error" : "info",
+			source: "asaas-reconcile-billing",
+			function_name: FUNCTION_NAME,
+			message: "Execucao da reconciliacao de billing finalizada.",
+			metadata: {
+				summary,
+				dry_run: dryRun,
+				limit,
+			},
+		});
 
 		return jsonResponse({ ok: summary.failed === 0, summary, actions }, status, context, corsHeaders);
 	} catch (error) {
 		logEvent(context, "error", "unexpected_error", { error });
+		await recordBillingOperationalEvent(supabaseAdmin, {
+			event_type: "reconciliation_unexpected_error",
+			severity: "error",
+			source: "asaas-reconcile-billing",
+			function_name: FUNCTION_NAME,
+			message: "Erro inesperado na reconciliacao de billing.",
+			metadata: {
+				error_message: errorMessage(error),
+			},
+		});
 		return jsonResponse(
 			{ error: errorMessage(error) },
 			500,

@@ -6,6 +6,7 @@ Esta pasta guarda documentos operacionais ou historicos que nao precisam ficar n
 
 Guias ainda potencialmente uteis para manutencao ou operacao:
 
+- `BILLING_OPERATIONS.md`
 - `CONFIGURAR_WEBHOOK_ASAAS.md`
 - `COMO_LIMPAR_CACHE.md`
 

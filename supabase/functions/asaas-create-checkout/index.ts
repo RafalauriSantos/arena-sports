@@ -3,6 +3,7 @@
 // Implementação seguindo o padrão Asaas oficial
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { recordBillingOperationalEvent } from "../_shared/billing-ops.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
 	createRequestContext,
@@ -32,6 +33,7 @@ const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 
 Deno.serve(async (req) => {
 	let logContext = createRequestContext(FUNCTION_NAME, req);
+	let supabaseAdmin: any | null = null;
 
 	if (req.method === "OPTIONS") {
 		return new Response("ok", { headers: corsHeaders });
@@ -55,7 +57,7 @@ Deno.serve(async (req) => {
 		);
 
 		// Cliente admin para operações que precisam bypassar RLS
-		const supabaseAdmin = createClient(
+		supabaseAdmin = createClient(
 			Deno.env.get("SUPABASE_URL") ?? "",
 			Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 		);
@@ -734,6 +736,21 @@ Deno.serve(async (req) => {
 		}
 
 		logEvent(logContext, "info", "checkout_created");
+		await recordBillingOperationalEvent(supabaseAdmin, {
+			event_type: "checkout_created",
+			severity: "info",
+			source: "asaas-create-checkout",
+			function_name: FUNCTION_NAME,
+			tenant_id,
+			subscription_id: subscriptionId,
+			payment_id: paymentData.id,
+			message: "Checkout de assinatura criado.",
+			metadata: {
+				billing_interval: normalizedInterval,
+				is_founder: isFounder,
+				payment_status: paymentData.status,
+			},
+		});
 
 		return jsonResponse(
 			{
@@ -750,6 +767,19 @@ Deno.serve(async (req) => {
 		logEvent(logContext, "error", "unexpected_error", {
 			error,
 			error_message: message,
+		});
+		await recordBillingOperationalEvent(supabaseAdmin, {
+			event_type: "checkout_failed",
+			severity: "error",
+			source: "asaas-create-checkout",
+			function_name: FUNCTION_NAME,
+			tenant_id: logContext.tenant_id ?? null,
+			subscription_id: logContext.subscription_id ?? null,
+			payment_id: logContext.payment_id ?? null,
+			message: "Falha ao criar checkout de assinatura.",
+			metadata: {
+				error_message: message,
+			},
 		});
 		return jsonResponse(
 			{
