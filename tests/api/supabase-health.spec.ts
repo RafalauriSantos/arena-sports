@@ -43,12 +43,15 @@ test.describe("Supabase API", () => {
 		expect(tenant?.business_name).toBeTruthy();
 
 		const courtsResponse = await fetch(
-			`${supabaseUrl}/rest/v1/courts?select=id,name,base_price,half_hour_price&tenant_id=eq.${tenant.id}&active=eq.true&order=base_price.asc`,
+			`${supabaseUrl}/rest/v1/rpc/fn_public_get_courts_by_subdomain`,
 			{
+				method: "POST",
 				headers: {
 					apikey: anonKey,
 					Authorization: `Bearer ${anonKey}`,
+					"Content-Type": "application/json",
 				},
+				body: JSON.stringify({ p_subdomain: subdomain }),
 			},
 		);
 

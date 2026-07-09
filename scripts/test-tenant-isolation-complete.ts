@@ -126,7 +126,7 @@ async function testRLSCrossTenantAccess(): Promise<TestResult[]> {
     const testEmailA = `test-tenant-a-${Date.now()}@test.com`
     const { data: userA, error: userErrorA } = await supabaseAdmin.auth.admin.createUser({
       email: testEmailA,
-      password: 'test123456',
+      password: 'Test123456!',
       email_confirm: true
     })
 
@@ -161,7 +161,7 @@ async function testRLSCrossTenantAccess(): Promise<TestResult[]> {
     const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey)
     const { data: signInData, error: signInError } = await supabaseAnon.auth.signInWithPassword({
       email: testEmailA,
-      password: 'test123456'
+      password: 'Test123456!'
     })
 
     if (signInError || !signInData.session) {

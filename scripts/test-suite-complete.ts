@@ -36,6 +36,7 @@ const isSignupRestricted = (message: string) =>
   /sign.?up.*(disabled|not allowed|invite)|email.*invalid|rate limit/i.test(message)
 
 const testEmailDomain = process.env.TEST_EMAIL_DOMAIN || 'example.com'
+const testPassword = 'Test123456!'
 
 // =============================================================================
 // 🧪 TESTE 1: BANCO DE DADOS - Verificar Conectividade
@@ -80,7 +81,7 @@ async function testAuthentication() {
     const testEmail = `test-${Date.now()}@${testEmailDomain}`
     const { data: signupData, error: signupError } = await supabase.auth.signUp({
       email: testEmail,
-      password: 'test123456'
+      password: testPassword
     })
 
     if (signupError) {
@@ -97,7 +98,7 @@ async function testAuthentication() {
     // Teste de signin
     const { data: signinData, error: signinError } = await supabase.auth.signInWithPassword({
       email: testEmail,
-      password: 'test123456'
+      password: testPassword
     })
 
     if (signinError) {
@@ -136,7 +137,7 @@ async function testTenantIsolation() {
     // Criar dois usuários de teste
     const user1Email = `tenant1-${Date.now()}@${testEmailDomain}`
     const user2Email = `tenant2-${Date.now()}@${testEmailDomain}`
-    const password = 'test123456'
+    const password = testPassword
 
     // Signup User 1
     const { data: user1, error: user1SignupError } = await supabase.auth.signUp({

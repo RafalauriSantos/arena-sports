@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const strongPasswordMessage =
+	"A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.";
+const isStrongPassword = (value: string) =>
+	value.trim().length >= 8 &&
+	/[a-z]/.test(value) &&
+	/[A-Z]/.test(value) &&
+	/\d/.test(value) &&
+	/[^A-Za-z0-9]/.test(value);
+
 const ResetPassword = () => {
 	const navigate = useNavigate();
 	const [password, setPassword] = useState("");
@@ -20,7 +29,7 @@ const ResetPassword = () => {
 		return (
 			isRecoveryMode &&
 			!isLoading &&
-			password.trim().length >= 6 &&
+			isStrongPassword(password) &&
 			password === confirmPassword
 		);
 	}, [confirmPassword, isLoading, isRecoveryMode, password]);
@@ -97,8 +106,8 @@ const ResetPassword = () => {
 		setError(null);
 		setMessage(null);
 
-		if (password.trim().length < 6) {
-			setError("A senha deve ter no mínimo 6 caracteres.");
+		if (!isStrongPassword(password)) {
+			setError(strongPasswordMessage);
 			return;
 		}
 
@@ -185,7 +194,7 @@ const ResetPassword = () => {
 									type="password"
 									value={password}
 									onChange={(e) => setPassword(e.target.value)}
-									placeholder="Mínimo 6 caracteres"
+									placeholder="Mínimo 8 caracteres"
 									autoComplete="new-password"
 									className="h-11 rounded-xl border-white/15 bg-white/5 pl-10 text-white placeholder:text-slate-400 focus-visible:ring-emerald-500/40"
 								/>

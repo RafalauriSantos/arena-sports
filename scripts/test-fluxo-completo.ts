@@ -76,7 +76,7 @@ async function simulateUserSignup(): Promise<TestUser | null> {
   console.log('📝 Simulando cadastro de novo usuário...')
 
   const testEmail = `fluxo-completo-${Date.now()}@${testEmailDomain}`
-  const testPassword = 'test123456'
+  const testPassword = 'Test123456!'
 
   try {
     const { data, error } = await supabase.auth.signUp({

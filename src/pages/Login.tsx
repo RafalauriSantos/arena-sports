@@ -74,6 +74,14 @@ const authNoticeClass =
 	"rounded-lg border border-[var(--az-line)] bg-[var(--az-turf-soft)] p-3 text-sm font-semibold text-[var(--az-turf)] shadow-sm";
 const authErrorClass =
 	"rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700 shadow-sm";
+const strongPasswordMessage =
+	"Senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.";
+const isStrongPassword = (value: string) =>
+	value.length >= 8 &&
+	/[a-z]/.test(value) &&
+	/[A-Z]/.test(value) &&
+	/\d/.test(value) &&
+	/[^A-Za-z0-9]/.test(value);
 
 const Login = () => {
 	const passwordRecoveryRef = useRef(false);
@@ -340,8 +348,8 @@ const Login = () => {
 		e.preventDefault();
 		setIsLoading(true);
 		setError(null);
-		if (newPassword.length < 6) {
-			setError("A nova senha deve ter no mínimo 6 caracteres.");
+		if (!isStrongPassword(newPassword)) {
+			setError(strongPasswordMessage);
 			setIsLoading(false);
 			return;
 		}
@@ -450,8 +458,8 @@ const Login = () => {
 				return;
 			}
 
-			if (!password || password.length < 6) {
-				setError("Senha deve ter no mínimo 6 caracteres.");
+			if (!password || !isStrongPassword(password)) {
+				setError(strongPasswordMessage);
 				setIsLoading(false);
 				return;
 			}
@@ -506,7 +514,7 @@ const Login = () => {
 
 				// Senha muito curta
 				if (errorMsg.includes("password") && errorMsg.includes("short")) {
-					setError("Senha muito curta. Use no mínimo 6 caracteres.");
+					setError(strongPasswordMessage);
 					setIsLoading(false);
 					return;
 				}
@@ -520,12 +528,6 @@ const Login = () => {
 					setError(
 						"URL de redirecionamento não configurada. Revise as configurações de autenticação do projeto.",
 					);
-					console.error(
-						"Redirect URL error:",
-						error,
-						"Tentou usar:",
-						redirectUrl,
-					);
 					setIsLoading(false);
 					return;
 				}
@@ -537,16 +539,9 @@ const Login = () => {
 					(error as { status?: number; statusCode?: number }).statusCode;
 
 				if (errorStatus === 400 || errorMsg.includes("bad request")) {
-					console.error("Signup 400 error details:", {
-						message: error.message,
-						status: errorStatus,
-						email: email.trim().toLowerCase(),
-						redirectUrl,
-						fullError: error,
-					});
 					// Mostrar mensagem mais útil
 					setError(
-						`Erro ao criar conta: ${toVisibleAuthError(error.message) || "Verifique se o email é válido e se a senha tem no mínimo 6 caracteres. Se o problema persistir, revise as configurações de autenticação."}`,
+						`Erro ao criar conta: ${toVisibleAuthError(error.message) || "Verifique se o email é válido e se a senha atende os requisitos de segurança. Se o problema persistir, revise as configurações de autenticação."}`,
 					);
 					setIsLoading(false);
 					return;
@@ -937,7 +932,7 @@ const Login = () => {
 													minLength={6}
 													required
 													className={authInputClass}
-													placeholder="Mínimo 6 caracteres"
+													placeholder="Mínimo 8 caracteres"
 												/>
 											</div>
 											<div className="space-y-2">
