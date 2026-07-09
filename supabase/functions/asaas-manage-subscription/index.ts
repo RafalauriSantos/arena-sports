@@ -3,6 +3,10 @@
 // Implementação robusta com validações, logs e tratamento de erros
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import {
+    assertAsaasEnvironment,
+    resolveAsaasApiUrl,
+} from "../_shared/asaas-env.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
     createRequestContext,
@@ -23,11 +27,7 @@ type Body = {
     interval?: "month" | "year"; // Obrigatório para change_plan
 };
 
-const ASAAS_BASE_URL = (
-    Deno.env.get("ASAAS_API_URL") ??
-    Deno.env.get("ASAAS_BASE_URL") ??
-    "https://sandbox.asaas.com/api/v3"
-).replace(/\/+$/, "");
+const ASAAS_BASE_URL = resolveAsaasApiUrl();
 
 const ASAAS_TOKEN =
     Deno.env.get("ASAAS_API_KEY") ?? Deno.env.get("ASAAS_ACCESS_TOKEN");
@@ -47,6 +47,23 @@ const OFFER_PRICE = {
     month: 69.9,
     year: 597,
     founderYear: 397,
+} as const;
+
+const PLANS = {
+    start: {
+        name: "ArenaSys",
+        prices: {
+            month: OFFER_PRICE.month,
+            year: OFFER_PRICE.year,
+        },
+    },
+    pro: {
+        name: "ArenaSys",
+        prices: {
+            month: OFFER_PRICE.month,
+            year: OFFER_PRICE.year,
+        },
+    },
 } as const;
 
 const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
@@ -156,6 +173,7 @@ Deno.serve(async (req) => {
             );
         }
         logContext = withLogFields(logContext, { user_id: user.id });
+        assertAsaasEnvironment(ASAAS_BASE_URL, ASAAS_TOKEN);
 
         // ─────────────────────────────────────────────
         // 2. Resolver tenant do usuário
@@ -259,14 +277,30 @@ Deno.serve(async (req) => {
                     "DELETE"
                 );
 
-                // Atualizar status local para canceled
-                await supabaseAdmin
+                // Atualizar status local para cancelled
+                const { error: cancellationUpdateError } = await supabaseAdmin
                     .from("tenant_subscriptions")
                     .update({
-                        status: "canceled",
+                        status: "cancelled",
                         updated_at: new Date().toISOString(),
                     })
                     .eq("tenant_id", profile.tenant_id);
+
+                if (cancellationUpdateError) {
+                    logEvent(logContext, "error", "subscription_local_update_failed", {
+                        action: "cancel",
+                        error: cancellationUpdateError,
+                    });
+                    return jsonResponse(
+                        {
+                            error: "Assinatura cancelada no Asaas, mas o status local precisa ser reconciliado.",
+                            code: "LOCAL_SUBSCRIPTION_UPDATE_FAILED",
+                        },
+                        502,
+                        logContext,
+                        corsHeaders
+                    );
+                }
 
                 logEvent(logContext, "info", "subscription_cancelled", {
                     action: "cancel",
@@ -289,7 +323,7 @@ Deno.serve(async (req) => {
                 // Nota: ASAAS pode não ter API direta para reativar, pode precisar criar nova assinatura
                 // Por enquanto, vamos tentar atualizar status manualmente e criar nova se necessário
 
-                if (subscription.status === "canceled") {
+                if (subscription.status === "cancelled") {
                     // Criar nova assinatura (checkout seria melhor, mas por simplicidade atualizamos)
                     // Em produção, pode ser melhor redirecionar para checkout novamente
                     logEvent(logContext, "warn", "subscription_reactivate_unsupported", {
@@ -306,7 +340,24 @@ Deno.serve(async (req) => {
                     );
                 }
 
-                // Se estiver em past_due, pode tentar atualizar manualmente (depende do ASAAS)
+                if (subscription.status === "past_due") {
+                    return jsonResponse(
+                        {
+                            error: "Pagamento pendente não pode ser reativado manualmente. Regularize a cobrança no Asaas e aguarde a confirmação.",
+                        },
+                        409,
+                        logContext,
+                        corsHeaders
+                    );
+                }
+
+                await asaasRequest(
+                    logContext,
+                    `/subscriptions/${subscription.asaas_subscription_id}`,
+                    "PUT",
+                    { status: "ACTIVE" }
+                );
+
                 await supabaseAdmin
                     .from("tenant_subscriptions")
                     .update({
@@ -364,23 +415,46 @@ Deno.serve(async (req) => {
                 const value = plan.prices[body.interval];
                 const description = `${plan.name} - ${body.interval === "year" ? "Anual" : "Mensal"}`;
 
-                // Atualizar assinatura no ASAAS
-                // Nota: ASAAS pode não ter API direta para trocar plano, pode precisar cancelar e criar nova
-                // Por simplicidade, vamos atualizar localmente e deixar webhook sincronizar
+                await asaasRequest(
+                    logContext,
+                    `/subscriptions/${subscription.asaas_subscription_id}`,
+                    "PUT",
+                    {
+                        value,
+                        cycle: body.interval === "year" ? "YEARLY" : "MONTHLY",
+                        description,
+                        updatePendingPayments: true,
+                    }
+                );
 
-                // Opção 1: Cancelar e criar nova (melhor fluxo)
-                // Por enquanto, apenas atualizamos local e deixamos o webhook sincronizar quando houver pagamento
-
-                await supabaseAdmin
+                const { error: planUpdateError } = await supabaseAdmin
                     .from("tenant_subscriptions")
                     .update({
                         plan_code: body.plan_code,
                         plan_name: plan.name,
-                        monthly_price: value,
+                        monthly_price: Math.round(
+                            (body.interval === "year" ? value / 12 : value) * 100
+                        ),
                         billing_interval: body.interval,
                         updated_at: new Date().toISOString(),
                     })
                     .eq("tenant_id", profile.tenant_id);
+
+                if (planUpdateError) {
+                    logEvent(logContext, "error", "subscription_local_update_failed", {
+                        action: "change_plan",
+                        error: planUpdateError,
+                    });
+                    return jsonResponse(
+                        {
+                            error: "Plano atualizado no Asaas, mas o status local precisa ser reconciliado.",
+                            code: "LOCAL_SUBSCRIPTION_UPDATE_FAILED",
+                        },
+                        502,
+                        logContext,
+                        corsHeaders
+                    );
+                }
 
                 logEvent(logContext, "info", "subscription_plan_changed", {
                     action: "change_plan",

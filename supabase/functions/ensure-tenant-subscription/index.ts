@@ -166,7 +166,7 @@ Deno.serve(async (req: Request) => {
                     tenant_id: tenantId,
                     plan_code: "start",
                     plan_name: "Arena Start",
-                    monthly_price: 149,
+                    monthly_price: 6990,
                     status: "trial",
                     billing_interval: "month",
                     // Trial starts only after user consent.

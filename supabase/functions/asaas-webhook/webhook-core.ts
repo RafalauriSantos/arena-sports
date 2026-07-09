@@ -184,7 +184,7 @@ export async function processAsaasWebhookEvent(
 		}
 
 		if (!subscriptionId) {
-			await repository.markWebhookEventFailed(eventId, processedAt);
+			await repository.markWebhookEventDone(eventId, processedAt);
 			return {
 				received: true,
 				duplicate: false,
@@ -200,7 +200,7 @@ export async function processAsaasWebhookEvent(
 		const subscription =
 			await repository.findSubscriptionByAsaasId(subscriptionId);
 		if (!subscription) {
-			await repository.markWebhookEventFailed(eventId, processedAt);
+			await repository.markWebhookEventDone(eventId, processedAt);
 			return {
 				received: true,
 				duplicate: false,

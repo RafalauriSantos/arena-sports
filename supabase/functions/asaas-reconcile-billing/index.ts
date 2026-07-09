@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+	assertAsaasEnvironment,
+	isAsaasSandboxUrl,
+	resolveAsaasApiUrl,
+} from "../_shared/asaas-env.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { recordBillingOperationalEvent } from "../_shared/billing-ops.ts";
 import {
@@ -27,11 +32,7 @@ const DEFAULT_LIMIT = 100;
 
 const ASAAS_API_KEY =
 	Deno.env.get("ASAAS_API_KEY") ?? Deno.env.get("ASAAS_ACCESS_TOKEN");
-const ASAAS_URL = (
-	Deno.env.get("ASAAS_API_URL") ||
-	Deno.env.get("ASAAS_BASE_URL") ||
-	"https://sandbox.asaas.com/api/v3"
-).replace(/\/+$/, "");
+const ASAAS_URL = resolveAsaasApiUrl();
 const RECONCILIATION_TOKEN =
 	Deno.env.get("BILLING_RECONCILIATION_TOKEN") ??
 	Deno.env.get("ASAAS_RECONCILIATION_TOKEN") ??
@@ -201,11 +202,12 @@ async function asaasRequest<T>(
 	if (!ASAAS_API_KEY?.trim()) {
 		throw new Error("ASAAS_API_KEY não configurada");
 	}
+	assertAsaasEnvironment(ASAAS_URL, ASAAS_API_KEY);
 
 	logEvent(context, "info", "asaas_api_request_started", {
 		operation,
 		path,
-		asaas_environment: ASAAS_URL.includes("sandbox") ? "sandbox" : "production",
+		asaas_environment: isAsaasSandboxUrl(ASAAS_URL) ? "sandbox" : "production",
 	});
 
 	const res = await fetch(`${ASAAS_URL}${path}`, {
@@ -309,6 +311,7 @@ serve(async (req) => {
 				corsHeaders
 			);
 		}
+		assertAsaasEnvironment(ASAAS_URL, ASAAS_API_KEY);
 
 		supabaseAdmin = createClient(
 			Deno.env.get("SUPABASE_URL") ?? "",

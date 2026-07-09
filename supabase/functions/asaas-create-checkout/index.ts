@@ -3,6 +3,11 @@
 // Implementação seguindo o padrão Asaas oficial
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import {
+	assertAsaasEnvironment,
+	isAsaasSandboxUrl,
+	resolveAsaasApiUrl,
+} from "../_shared/asaas-env.ts";
 import { recordBillingOperationalEvent } from "../_shared/billing-ops.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
@@ -17,10 +22,7 @@ const FUNCTION_NAME = "asaas-create-checkout";
 
 const ASAAS_API_KEY =
 	Deno.env.get("ASAAS_API_KEY") ?? Deno.env.get("ASAAS_ACCESS_TOKEN");
-const ASAAS_URL =
-	Deno.env.get("ASAAS_API_URL") ||
-	Deno.env.get("ASAAS_BASE_URL") ||
-	"https://sandbox.asaas.com/api/v3";
+const ASAAS_URL = resolveAsaasApiUrl();
 
 // Oferta comercial atual
 const OFFER_PRICE = {
@@ -34,6 +36,7 @@ const FOUNDERS_CAP = 20; // Apenas 20 primeiros clientes
 Deno.serve(async (req) => {
 	let logContext = createRequestContext(FUNCTION_NAME, req);
 	let supabaseAdmin: any | null = null;
+	let checkoutAttemptId: string | null = null;
 
 	if (req.method === "OPTIONS") {
 		return new Response("ok", { headers: corsHeaders });
@@ -69,26 +72,6 @@ Deno.serve(async (req) => {
 			customer: customerDataFromRequest,
 		} = await req.json();
 
-		// Validação e debug da chave de API
-		if (!ASAAS_API_KEY) {
-			logEvent(logContext, "error", "config_missing", {
-				config_key: "ASAAS_API_KEY",
-			});
-			throw new Error("ASAAS_API_KEY não configurado");
-		}
-
-		// Verificar se a chave não está vazia
-		if (ASAAS_API_KEY.trim() === "") {
-			logEvent(logContext, "error", "config_empty", {
-				config_key: "ASAAS_API_KEY",
-			});
-			throw new Error("ASAAS_API_KEY está vazia");
-		}
-
-		logEvent(logContext, "info", "config_loaded", {
-			asaas_environment: ASAAS_URL.includes("sandbox") ? "sandbox" : "production",
-		});
-
 		// Apenas um plano agora (removido start/pro)
 		const normalizedInterval: "month" | "year" =
 			interval === "year" || interval === "month" ? interval : "month";
@@ -109,6 +92,20 @@ Deno.serve(async (req) => {
 		}
 		logContext = withLogFields(logContext, { user_id: user.id });
 
+		// Validate provider configuration only after authenticating the caller so
+		// configuration state is not exposed to unauthenticated requests.
+		if (!ASAAS_API_KEY?.trim()) {
+			logEvent(logContext, "error", "config_missing", {
+				config_key: "ASAAS_API_KEY",
+			});
+			throw new Error("ASAAS_API_KEY não configurado");
+		}
+
+		assertAsaasEnvironment(ASAAS_URL, ASAAS_API_KEY);
+		logEvent(logContext, "info", "config_loaded", {
+			asaas_environment: isAsaasSandboxUrl(ASAAS_URL) ? "sandbox" : "production",
+		});
+
 		// 1. Buscar profile do usuário para obter tenant_id
 		const { data: profile, error: profileError } = await supabaseClient
 			.from("profiles")
@@ -127,6 +124,45 @@ Deno.serve(async (req) => {
 
 		const tenant_id = profile.tenant_id;
 		logContext = withLogFields(logContext, { tenant_id });
+
+		// A tenant must have at most one provider subscription in flight. A
+		// retry after a successful Asaas call must not create a second recurrence.
+		const { data: existingBillingSubscription, error: existingSubscriptionError } =
+			await supabaseAdmin
+				.from("tenant_subscriptions")
+				.select("status,asaas_subscription_id")
+				.eq("tenant_id", tenant_id)
+				.maybeSingle();
+
+		if (existingSubscriptionError) {
+			logEvent(logContext, "error", "existing_subscription_lookup_failed", {
+				error: existingSubscriptionError,
+			});
+			throw existingSubscriptionError;
+		}
+
+		if (
+			existingBillingSubscription &&
+			(existingBillingSubscription.status === "active" ||
+				existingBillingSubscription.status === "past_due" ||
+				(existingBillingSubscription.status === "trial" &&
+					Boolean(existingBillingSubscription.asaas_subscription_id)))
+		) {
+			logEvent(logContext, "warn", "checkout_duplicate_blocked", {
+				existing_status: existingBillingSubscription.status,
+				existing_subscription_id:
+					existingBillingSubscription.asaas_subscription_id,
+			});
+			return jsonResponse(
+				{
+					error: "Este tenant já possui uma assinatura ou checkout em andamento.",
+					code: "SUBSCRIPTION_ALREADY_EXISTS",
+				},
+				409,
+				logContext,
+				corsHeaders
+			);
+		}
 
 		// 1.5. Verificar se ainda há vagas para Founders 20 e calcular preço
 		const { data: foundersData, error: foundersError } = await supabaseAdmin
@@ -535,6 +571,40 @@ Deno.serve(async (req) => {
 			: "Anual";
 
 		// 6. Criar a Assinatura (Subscription)
+		const requestKey =
+			req.headers.get("idempotency-key")?.trim() || crypto.randomUUID();
+		const { data: checkoutAttempt, error: checkoutAttemptError } =
+			await supabaseAdmin
+				.from("billing_checkout_attempts")
+				.insert({
+					tenant_id,
+					request_key: requestKey,
+					billing_interval: normalizedInterval,
+					status: "creating",
+				})
+				.select("id")
+				.single();
+
+		if (checkoutAttemptError) {
+			if (checkoutAttemptError.code === "23505") {
+				return jsonResponse(
+					{
+						error: "Já existe um checkout de assinatura em andamento para este tenant.",
+						code: "CHECKOUT_ALREADY_IN_PROGRESS",
+					},
+					409,
+					logContext,
+					corsHeaders
+				);
+			}
+			logEvent(logContext, "error", "checkout_attempt_create_failed", {
+				error: checkoutAttemptError,
+			});
+			throw checkoutAttemptError;
+		}
+
+		checkoutAttemptId = checkoutAttempt.id;
+
 		logEvent(logContext, "info", "asaas_subscription_create_started", {
 			customer_id: asaasCustomerId,
 			billing_interval: normalizedInterval,
@@ -602,8 +672,27 @@ Deno.serve(async (req) => {
 			logEvent(logContext, "error", "subscription_upsert_failed", {
 				error: subscriptionUpdateError,
 			});
-			// Não falhar se não conseguir salvar - o webhook pode atualizar depois
+			return jsonResponse(
+				{
+					error: "A assinatura foi criada no Asaas, mas não foi vinculada ao tenant.",
+					code: "SUBSCRIPTION_PERSISTENCE_FAILED",
+					subscription_id: subscriptionId,
+				},
+				502,
+				logContext,
+				corsHeaders
+			);
 		}
+
+		await supabaseAdmin
+			.from("billing_checkout_attempts")
+			.update({
+				status: "created",
+				asaas_customer_id: asaasCustomerId,
+				asaas_subscription_id: subscriptionId,
+				updated_at: new Date().toISOString(),
+			})
+			.eq("id", checkoutAttemptId);
 
 		// 7. Buscar a cobrança gerada pela assinatura.
 		// O Asaas já cria a primeira cobrança ao criar a subscription. Criar outro
@@ -689,7 +778,7 @@ Deno.serve(async (req) => {
 			// Tentar invoiceUrl primeiro, depois construir manualmente
 			if (paymentData.id) {
 				// Determinar base URL baseado no ambiente (sandbox vs produção)
-				const baseUrl = ASAAS_URL.includes("sandbox")
+				const baseUrl = isAsaasSandboxUrl(ASAAS_URL)
 					? "https://sandbox.asaas.com"
 					: "https://www.asaas.com";
 
@@ -700,7 +789,7 @@ Deno.serve(async (req) => {
 				});
 			} else if (paymentData.invoiceNumber) {
 				// Fallback: tentar construir com invoiceNumber
-				const baseUrl = ASAAS_URL.includes("sandbox")
+				const baseUrl = isAsaasSandboxUrl(ASAAS_URL)
 					? "https://sandbox.asaas.com"
 					: "https://www.asaas.com";
 				checkoutUrl = `${baseUrl}/c/${paymentData.invoiceNumber}`;
@@ -711,7 +800,7 @@ Deno.serve(async (req) => {
 		} else {
 			// Se tiver invoiceUrl, garantir que está usando o domínio correto para sandbox
 			if (
-				ASAAS_URL.includes("sandbox") &&
+				isAsaasSandboxUrl(ASAAS_URL) &&
 				checkoutUrl.includes("asaas.com") &&
 				!checkoutUrl.includes("sandbox")
 			) {
@@ -764,6 +853,16 @@ Deno.serve(async (req) => {
 		);
 	} catch (error) {
 		const message = errorMessage(error);
+		if (checkoutAttemptId && supabaseAdmin) {
+			await supabaseAdmin
+				.from("billing_checkout_attempts")
+				.update({
+					status: "failed",
+					error_message: message,
+					updated_at: new Date().toISOString(),
+				})
+				.eq("id", checkoutAttemptId);
+		}
 		logEvent(logContext, "error", "unexpected_error", {
 			error,
 			error_message: message,
