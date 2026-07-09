@@ -394,10 +394,7 @@ export default function ConfiguracoesView() {
 				},
 			});
 
-			console.log("✅ Resposta da Edge Function:", data);
-
 			if (!data?.url) {
-				console.error("❌ Checkout não retornou URL. Resposta completa:", data);
 				throw new Error(
 					"Checkout não retornou URL. Verifique os logs da Edge Function.",
 				);
@@ -405,17 +402,14 @@ export default function ConfiguracoesView() {
 
 			// Validar que a URL parece válida
 			if (!data.url.startsWith("http://") && !data.url.startsWith("https://")) {
-				console.error("❌ URL inválida retornada:", data.url);
-				throw new Error(`URL de checkout inválida: ${data.url}`);
+				throw new Error("URL de checkout inválida.");
 			}
 
-			console.log("🔄 Redirecionando para checkout:", data.url);
 			localStorage.setItem("asaas_checkout_pending", "1");
 
 			// Redirecionar para o checkout do Asaas
 			window.location.href = data.url as string;
 		} catch (err: unknown) {
-			console.error(err);
 			const message = err instanceof Error ? err.message : "Tente novamente.";
 			const isNetworkError =
 				err instanceof TypeError &&

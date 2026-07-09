@@ -48,22 +48,14 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 	// Carrega horários atuais
 	useEffect(() => {
 		async function loadHours() {
-			console.log("🔄 [OperatingHoursSettings] Carregando horários...");
 			setLoading(true);
 			const hours = await getTenantHours(tenantId);
-			console.log("📥 [OperatingHoursSettings] Horários carregados:", hours);
 
 			if (hours) {
 				setSundayStart(hours.sunday.start);
 				setSundayEnd(hours.sunday.end);
 				setWeekdayStart(hours.weekday.start);
 				setWeekdayEnd(hours.weekday.end);
-				console.log("✅ [OperatingHoursSettings] States atualizados:", {
-					sundayStart: hours.sunday.start,
-					sundayEnd: hours.sunday.end,
-					weekdayStart: hours.weekday.start,
-					weekdayEnd: hours.weekday.end,
-				});
 			}
 
 			setLoading(false);
@@ -74,7 +66,6 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 
 	// Salva alterações
 	const handleSave = async () => {
-		console.log("💾 [OperatingHoursSettings] Iniciando salvamento...");
 		// Validações
 		if (sundayStart > sundayEnd) {
 			toast({
@@ -101,14 +92,11 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 			weekday: { start: weekdayStart, end: weekdayEnd },
 		};
 
-		console.log("📤 [OperatingHoursSettings] Enviando config:", config);
-
 		const { error } = await updateTenantHours(config);
 
 		setSaving(false);
 
 		if (error) {
-			console.error("❌ [OperatingHoursSettings] Erro ao salvar:", error);
 			toast({
 				title: "Erro ao salvar",
 				description: error.message || "Não foi possível atualizar os horários",
@@ -117,7 +105,6 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 			return;
 		}
 
-		console.log("✅ [OperatingHoursSettings] Salvo com sucesso!");
 		toast({
 			title: "Horários atualizados!",
 			description: "As mudanças já estão visíveis no calendário público.",
@@ -125,7 +112,6 @@ export function OperatingHoursSettings({ tenantId }: OperatingHoursSettingsProps
 		
 		// Recarrega os dados do banco para confirmar
 		const hours = await getTenantHours(tenantId);
-		console.log("🔄 [OperatingHoursSettings] Recarregando após salvar:", hours);
 		if (hours) {
 			setSundayStart(hours.sunday.start);
 			setSundayEnd(hours.sunday.end);

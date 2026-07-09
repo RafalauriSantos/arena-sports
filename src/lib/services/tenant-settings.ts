@@ -81,14 +81,6 @@ export async function updateTenantHours(
 			);
 		}
 
-		// Chama a nova RPC segura (sem precisar passar tenant_id)
-		console.log("🔄 Chamando RPC fn_update_my_tenant_hours com:", {
-			p_sunday_start: config.sunday.start,
-			p_sunday_end: config.sunday.end,
-			p_weekday_start: config.weekday.start,
-			p_weekday_end: config.weekday.end,
-		});
-
 		const { data, error } = await supabase.rpc("fn_update_my_tenant_hours", {
 			p_sunday_start: config.sunday.start,
 			p_sunday_end: config.sunday.end,
@@ -97,14 +89,11 @@ export async function updateTenantHours(
 		});
 
 		if (error) {
-			console.error("❌ Erro ao atualizar horários:", error);
 			throw error;
 		}
 
-		console.log("✅ Horários atualizados com sucesso! Settings retornado:", data);
 		return { data, error: null };
 	} catch (error) {
-		console.error("Erro inesperado ao atualizar horários:", error);
 		return {
 			data: null,
 			error: error instanceof Error ? error : new Error(String(error)),
@@ -122,8 +111,6 @@ export async function getTenantHours(
 	tenantId: string
 ): Promise<TenantHoursConfig | null> {
 	try {
-		console.log("🔍 Buscando horários para tenant:", tenantId);
-
 		const { data, error } = await supabase
 			.from("tenants")
 			.select("settings")
@@ -131,16 +118,11 @@ export async function getTenantHours(
 			.single();
 
 		if (error || !data) {
-			console.error("❌ Erro ao buscar horários:", error);
 			return null;
 		}
 
-		console.log("📦 Settings completo do banco:", JSON.stringify(data.settings, null, 2));
-
 		const settings = data.settings as Record<string, unknown> | null;
 		const booking = settings?.booking as Record<string, unknown> | undefined;
-
-		console.log("📖 Booking extraído:", JSON.stringify(booking, null, 2));
 
 		// Valores padrão
 		const defaultHours: TenantHoursConfig = {
@@ -149,7 +131,6 @@ export async function getTenantHours(
 		};
 
 		if (!booking) {
-			console.log("⚠️ Sem configuração de booking, usando padrão");
 			return defaultHours;
 		}
 
@@ -160,18 +141,13 @@ export async function getTenantHours(
 			| { start: number; end: number }
 			| undefined;
 
-		console.log("🕐 Sunday hours:", sundayHours);
-		console.log("📅 Weekday hours:", weekdayHours);
-
 		const result = {
 			sunday: sundayHours || defaultHours.sunday,
 			weekday: weekdayHours || defaultHours.weekday,
 		};
 
-		console.log("✅ Retornando horários:", result);
 		return result;
 	} catch (error) {
-		console.error("❌ Erro inesperado ao buscar horários:", error);
 		return null;
 	}
 }
