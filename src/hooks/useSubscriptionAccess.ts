@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { invokeEdgeFunction } from "@/lib/edgeFunctions";
 
-export type SubscriptionStatus = "trial" | "active" | "past_due" | "canceled";
+export type SubscriptionStatus = "trial" | "active" | "past_due" | "cancelled";
 
 export type TenantSubscription = {
     tenant_id?: string;

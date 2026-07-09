@@ -43,7 +43,7 @@ const environment = isSandbox ? 'SANDBOX (Testes)' : 'PRODUÇÃO'
 
 console.log(`📦 Ambiente configurado: ${environment}`)
 console.log(`🌐 URL da API: ${ASAAS_API_URL}`)
-console.log(`🔑 Chave API: ${ASAAS_API_KEY.substring(0, 20)}...`)
+console.log('🔑 Chave API: configurada')
 
 // Testar a chave fazendo uma requisição simples
 console.log('\n🧪 Testando chave de API...\n')
@@ -70,8 +70,6 @@ try {
   if (response.ok) {
     console.log('✅ Chave de API válida!')
     console.log(`\n📊 Informações da conta:`)
-    console.log(`   Nome: ${responseData.name || 'N/A'}`)
-    console.log(`   Email: ${responseData.email || 'N/A'}`)
     console.log(`   Ambiente: ${responseData.sandbox ? 'SANDBOX' : 'PRODUÇÃO'}`)
     
     // Verificar se o ambiente da chave corresponde à URL configurada
@@ -92,7 +90,6 @@ try {
   } else {
     console.error('❌ Erro ao validar chave de API')
     console.error(`   Status: ${response.status}`)
-    console.error(`   Resposta: ${responseText}`)
     
     if (response.status === 401) {
       console.log('\n💡 A chave de API está incorreta ou inválida')

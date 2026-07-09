@@ -57,7 +57,7 @@ interface TenantData {
 
 interface Subscription {
   plan_name: string;
-  status: "trial" | "active" | "past_due" | "canceled";
+  status: "trial" | "active" | "past_due" | "cancelled";
   monthly_price: number;
   plan_code?: string | null;
   billing_interval?: "month" | "year" | null;

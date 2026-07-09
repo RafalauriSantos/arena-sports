@@ -73,7 +73,7 @@ async function testSupabaseConnection(): Promise<TestResult[]> {
     })
     console.log('   ❌ VITE_SUPABASE_URL: NÃO CONFIGURADO')
   } else {
-    console.log(`   ✅ VITE_SUPABASE_URL: ${supabaseUrl.substring(0, 30)}...`)
+    console.log('   ✅ VITE_SUPABASE_URL: configurado')
   }
 
   if (!supabaseAnonKey || supabaseAnonKey.includes('your_') || supabaseAnonKey === '') {
@@ -84,13 +84,13 @@ async function testSupabaseConnection(): Promise<TestResult[]> {
     })
     console.log('   ❌ VITE_SUPABASE_ANON_KEY: NÃO CONFIGURADO')
   } else {
-    console.log(`   ✅ VITE_SUPABASE_ANON_KEY: ${supabaseAnonKey.substring(0, 20)}...`)
+    console.log('   ✅ VITE_SUPABASE_ANON_KEY: configurado')
   }
 
   if (!supabaseServiceKey || supabaseServiceKey.includes('your_') || supabaseServiceKey === '') {
     console.log('   ⚠️  SUPABASE_SERVICE_ROLE_KEY: NÃO CONFIGURADO (opcional para alguns testes)')
   } else {
-    console.log(`   ✅ SUPABASE_SERVICE_ROLE_KEY: ${supabaseServiceKey.substring(0, 20)}...`)
+    console.log('   ✅ SUPABASE_SERVICE_ROLE_KEY: configurado')
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -314,7 +314,7 @@ async function testAsaasConnection(): Promise<TestResult[]> {
     return asaasResults
   }
 
-  console.log(`   ✅ ASAAS_API_KEY: ${ASAAS_API_KEY.substring(0, 20)}...`)
+  console.log('   ✅ ASAAS_API_KEY: configurado')
   console.log(`   ✅ ASAAS_API_URL: ${ASAAS_API_URL}`)
 
   const isSandbox = ASAAS_API_URL.includes('sandbox')
@@ -344,8 +344,6 @@ async function testAsaasConnection(): Promise<TestResult[]> {
 
     if (response.ok) {
       console.log('   ✅ Chave de API válida!')
-      console.log(`   📊 Nome: ${responseData.name || 'N/A'}`)
-      console.log(`   📊 Email: ${responseData.email || 'N/A'}`)
       
       const keyIsSandbox = responseData.sandbox === true
       if (keyIsSandbox !== isSandbox) {
@@ -365,7 +363,6 @@ async function testAsaasConnection(): Promise<TestResult[]> {
       }
     } else {
       console.log(`   ❌ Erro ao validar chave: Status ${response.status}`)
-      console.log(`   📄 Resposta: ${responseText.substring(0, 200)}`)
       asaasResults.push({
         name: 'Validação da Chave',
         passed: false,

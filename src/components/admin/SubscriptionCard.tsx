@@ -36,7 +36,7 @@ export function SubscriptionCard({
 	const isTrial = subscription.status === "trial";
 	const isActive = subscription.status === "active";
 	const isPastDue = subscription.status === "past_due";
-	const isCanceled = subscription.status === "canceled";
+	const isCanceled = subscription.status === "cancelled";
 
 	const computeTrialDaysLeft = (): number | null => {
 		if (

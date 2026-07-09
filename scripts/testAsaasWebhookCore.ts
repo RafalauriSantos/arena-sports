@@ -216,7 +216,7 @@ async function testFailedEventCanBeRecoveredOnRetry() {
 	assert.equal(repo.updateCalls, 2);
 }
 
-async function testPaymentWithoutSubscriptionIsRecordedAsFailedButReturnsReceived() {
+async function testPaymentWithoutSubscriptionIsIgnoredAsDone() {
 	const repo = new FakeWebhookRepository({ ...baseSubscription });
 	const event = {
 		id: "evt_no_subscription",
@@ -233,7 +233,7 @@ async function testPaymentWithoutSubscriptionIsRecordedAsFailedButReturnsReceive
 	assert.equal(result.received, true);
 	assert.equal(result.ignored, true);
 	assert.equal(result.reason, "missing_subscription_id");
-	assert.equal(repo.events.get("evt_no_subscription")?.status, "failed");
+	assert.equal(repo.events.get("evt_no_subscription")?.status, "done");
 	assert.equal(repo.updateCalls, 0);
 }
 
@@ -246,7 +246,7 @@ async function main() {
 	await testOverdueMarksSubscriptionPastDue();
 	await testRefundedMarksSubscriptionPastDue();
 	await testFailedEventCanBeRecoveredOnRetry();
-	await testPaymentWithoutSubscriptionIsRecordedAsFailedButReturnsReceived();
+	await testPaymentWithoutSubscriptionIsIgnoredAsDone();
 	console.log("✅ Webhook core tests passed");
 }
 
