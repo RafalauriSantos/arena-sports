@@ -28,6 +28,8 @@
 		"test:security": "tsx scripts/test-security-production.ts",
 		"test:reconciliation": "tsx scripts/testAsaasReconciliationCore.ts",
 		"test:billing": "tsx scripts/testAsaasWebhookCore.ts && tsx scripts/testAsaasReconciliationCore.ts && tsx scripts/test-billing-operational-alerts.ts && tsx scripts/test-billing-e2e.ts",
+		"test:billing:sandbox:core": "tsx scripts/test-billing-sandbox-core.ts",
+		"test:billing:sandbox": "tsx scripts/test-billing-sandbox.ts --strict",
 		"check:billing-ops": "tsx scripts/check-billing-operational-alerts.ts",
 		"test:user-journey": "tsx scripts/test-user-journey-complete.ts",
 		"test:hours-rpc": "tsx scripts/test-hours-rpc.ts",

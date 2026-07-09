@@ -267,3 +267,16 @@ Com esta camada, o operador consegue descobrir:
   esse limite e aceitavel.
 - `billing_operational_events` deve ter politica de retencao futura para evitar
   crescimento indefinido.
+# Teste automatizado de sandbox
+
+Use uma chave `sandbox.asaas.com` e nunca uma chave de produção:
+
+```bash
+npm run test:billing:sandbox
+```
+
+O comando valida a chave contra `/myAccount`, confirma que o webhook rejeita chamadas sem token e, quando configurados, testa o contrato autorizado do webhook e da reconciliação. Ele nunca imprime os segredos.
+
+Variáveis necessárias: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ASAAS_API_KEY`. Para o fluxo completo, configure também `TEST_ASAAS_WEBHOOK_TOKEN` e `BILLING_RECONCILIATION_TOKEN` (ou `ASAAS_RECONCILIATION_TOKEN`). Sem esses tokens o resultado é `BLOCKED`, não `PASS`.
+
+O teste de checkout que cria cobrança real no sandbox deve ser executado manualmente após o preflight, com uma conta de teste e limpeza garantida; não o coloque em um job automático de cada PR.
