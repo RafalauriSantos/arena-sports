@@ -107,6 +107,9 @@ const Index = () => {
 			});
 
 			const newBooking: Booking = {
+				customerName: name,
+				totalPrice: (paymentType === "pix" ? field.priceOnline : field.priceLocal),
+				paymentStatus: paymentType === "pix" ? "paid" : "pending",
 				id: `b${Date.now()}`,
 				slotId: slot.id,
 				fieldId: slot.fieldId,

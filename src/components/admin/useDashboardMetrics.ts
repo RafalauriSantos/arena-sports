@@ -207,7 +207,7 @@ export function useDashboardMetrics(tenantId?: string) {
       
       // Lookup de horários reservados da semana (para ocupação)
       const weekBookedLookup = new Set(
-        (weekBookings as Array<{ court_id: string | null; start_time: string }> | null) ?? []
+        ((weekBookings as Array<{ court_id: string | null; start_time: string }> | null) ?? [])
           .filter((b) => !!b.court_id)
           .map((b) => `${b.court_id}-${toLocalDateStr(b.start_time)}-${toLocalTimeStr(b.start_time)}`)
       );

@@ -94,7 +94,7 @@ export default function FolgasView() {
 		await supabase
 			.from("tenants")
 			.update({
-				settings: { ...currentSettings, folgas: newFolgas },
+				settings: ({ ...currentSettings, folgas: newFolgas } as unknown) as never,
 			})
 			.eq("id", tenantId);
 	};

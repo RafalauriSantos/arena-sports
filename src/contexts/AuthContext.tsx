@@ -94,7 +94,7 @@ const ensureProfileRowById = async (userId: string, email?: string | null) => {
 		if (email) payload.email = email;
 		const { error } = await supabase
 			.from("profiles")
-			.upsert(payload, { onConflict: "id" });
+			.upsert(payload as never, { onConflict: "id" });
 		if (error) {
 			if (isUniqueViolation(error)) return;
 			// Se falhou por RLS/policy, tentar via RPC (SECURITY DEFINER)

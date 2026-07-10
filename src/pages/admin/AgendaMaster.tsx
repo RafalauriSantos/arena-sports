@@ -737,7 +737,7 @@ Nos vemos em breve! Qualquer duvida, e so responder aqui.`;
 			<AdminToolbar>
 				<AdminSegmentedControl
 					value={viewMode}
-					onChange={setViewMode}
+					onChange={(v) => setViewMode(v as typeof viewMode)}
 					options={VIEW_MODE_OPTIONS}
 				/>
 

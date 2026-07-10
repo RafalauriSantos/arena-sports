@@ -1344,7 +1344,7 @@ export default function DashboardHome() {
 				};
 				const { error: seedError } = await supabase
 					.from("profiles")
-					.insert(profileSeed);
+					.insert(profileSeed as never);
 				if (seedError) {
 					const message = getStringProp(seedError, "message") || "";
 					const code = getStringProp(seedError, "code") || "";

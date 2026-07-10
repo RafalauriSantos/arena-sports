@@ -52,6 +52,7 @@ const generateTimeSlots = (): TimeSlot[] => {
           status: "available",
           date: dateStr,
           fieldId: field.id,
+          pricePerPlayer: 0,
         });
 
         slotId++;

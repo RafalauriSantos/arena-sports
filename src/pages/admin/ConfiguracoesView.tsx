@@ -1049,7 +1049,7 @@ export default function ConfiguracoesView() {
 														onChange={(e) =>
 															updateBookingSettings(
 																"deposit_type",
-																e.target.value,
+																e.target.value as "fixed" | "percent",
 															)
 														}>
 														<option value="percent">Porcentagem (%)</option>
@@ -1182,7 +1182,7 @@ export default function ConfiguracoesView() {
 								onBillingIntervalChange={setBillingInterval}
 								onStartCheckout={startCheckout}
 								isStartingCheckout={startingCheckout}
-								isFounder={Boolean(subscription.is_founder)}
+								isFounder={Boolean((subscription as unknown as Record<string, unknown>)?.is_founder)}
 							/>
 						</div>
 					</TabsContent>

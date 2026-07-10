@@ -89,7 +89,7 @@ Valor: R$ ${(booking.pricePerPlayer * booking.totalPlayers)
 	};
 
 	const handleShare = () => {
-		const shareText = `✅ Agendamento confirmado!\n\n📍 ${ARENA_CONFIG.name}\n⚽ ${booking.fieldName}\n📅 ${displayDate}\n🕐 ${booking.time}\n🔢 Código: ${bookingCode}`;
+		const shareText = `✅ Agendamento confirmado!\n\n📍 ${ARENA_SPORTS_CONFIG.name}\n⚽ ${booking.fieldName}\n📅 ${displayDate}\n🕐 ${booking.time}\n🔢 Código: ${bookingCode}`;
 
 		if (navigator.share) {
 			navigator.share({

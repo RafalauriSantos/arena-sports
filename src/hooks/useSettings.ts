@@ -198,7 +198,7 @@ export function useSettings() {
             neighborhood: tenantRes.data.neighborhood || "",
             city: tenantRes.data.city || "",
             state: tenantRes.data.state || "",
-            settings: tenantRes.data.settings || {},
+            settings: (tenantRes.data.settings || {}) as Record<string, unknown>,
           },
           courts: Array.isArray(courtsRes.data)
             ? courtsRes.data
@@ -226,7 +226,7 @@ export function useSettings() {
             active: promoRes.data?.active ?? false,
             discount_percentage: Number(promoRes.data?.discount_percentage ?? 20),
             promo_days: Array.isArray(promoRes.data?.promo_days)
-              ? promoRes.data.promo_days
+              ? (promoRes.data.promo_days as string[])
               : ["monday", "tuesday", "wednesday"],
           },
         };
@@ -334,7 +334,7 @@ export function useSettings() {
           neighborhood: formData.tenant.neighborhood || null,
           city: formData.tenant.city || null,
           state: formData.tenant.state?.toUpperCase() || null,
-          settings: updatedSettingsJSON, // <--- SALVA O JSON COM AS REGRAS FINANCEIRAS
+          settings: updatedSettingsJSON as never, // <--- SALVA O JSON COM AS REGRAS FINANCEIRAS
         })
         .eq("id", tenantId);
 
