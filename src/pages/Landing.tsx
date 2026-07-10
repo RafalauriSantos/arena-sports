@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Zap,
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
 import { PremiumFooter } from "@/components/PremiumFooter";
 
-// --- CONSTANTES PRÃ‰-CALCULADAS (evita recÃ¡lculo a cada render) ---
+// --- CONSTANTES PRÉ-CALCULADAS (evita recálculo a cada render) ---
 const STARS_CONFIG = Array.from({ length: 25 }, (_, i) => ({
 	id: i,
 	width: Math.random() > 0.8 ? 2 : 1,
@@ -52,7 +52,7 @@ function usePrefersReducedMotion() {
 	return prefersReducedMotion;
 }
 
-// --- HOOK: ANIMAÃ‡ÃƒO DE CONTAGEM (Count-Up) ---
+// --- HOOK: ANIMAÇÃO DE CONTAGEM (Count-Up) ---
 function useCountUp(
 	end: number,
 	duration: number = 2000,
@@ -85,7 +85,7 @@ function useCountUp(
 
 			const current = startValue + (end - startValue) * easeOutExpo;
 
-			// Se decimals=0, arredonda. Se >0, mantÃ©m precisÃ£o.
+			// Se decimals=0, arredonda. Se >0, mantém precisão.
 			setCount(decimals === 0 ? Math.round(current) : current);
 
 			if (progress < 1) requestAnimationFrame(animate);
@@ -274,7 +274,7 @@ function OutcomeStrip() {
 		{
 			value: "24/7",
 			label: "reservas pelo link",
-			desc: "O cliente consulta horÃ¡rios mesmo fora do atendimento da equipe.",
+			desc: "O cliente consulta horários mesmo fora do atendimento da equipe.",
 		},
 		{
 			value: "- mensagens",
@@ -284,7 +284,7 @@ function OutcomeStrip() {
 		{
 			value: "+ controle",
 			label: "por quadra",
-			desc: "Reservas, bloqueios e pagamentos ficam claros para a operaÃ§Ã£o.",
+			desc: "Reservas, bloqueios e pagamentos ficam claros para a operação.",
 		},
 	];
 
@@ -320,32 +320,32 @@ function ProductSuiteSection({
 		{
 			icon: CalendarDays,
 			title: "Reservas por quadra",
-			desc: "Mostre horÃ¡rios livres, bloqueios e reservas confirmadas por data, campo e modalidade.",
-			result: "Agenda sempre consultÃ¡vel",
-			action: "Organizar horÃ¡rios",
+			desc: "Mostre horários livres, bloqueios e reservas confirmadas por data, campo e modalidade.",
+			result: "Agenda sempre consultável",
+			action: "Organizar horários",
 			tone: "blue",
 		},
 		{
 			icon: MessageSquare,
-			title: "Link pÃºblico da arena",
-			desc: "Compartilhe um endereÃ§o simples para o cliente escolher o horÃ¡rio sem instalar aplicativo.",
+			title: "Link público da arena",
+			desc: "Compartilhe um endereço simples para o cliente escolher o horário sem instalar aplicativo.",
 			result: "Menos conversa operacional",
 			action: "Publicar link",
 			tone: "cyan",
 		},
 		{
 			icon: BarChart3,
-			title: "Painel da operaÃ§Ã£o",
-			desc: "Acompanhe ocupaÃ§Ã£o, receita prevista, pendÃªncias e fluxo do dia sem abrir planilhas.",
-			result: "DecisÃ£o mais rÃ¡pida",
+			title: "Painel da operação",
+			desc: "Acompanhe ocupação, receita prevista, pendências e fluxo do dia sem abrir planilhas.",
+			result: "Decisão mais rápida",
 			action: "Ver painel",
 			tone: "indigo",
 		},
 		{
 			icon: Users,
 			title: "Mensalistas",
-			desc: "Separe clientes fixos, horÃ¡rios recorrentes e pendÃªncias do fluxo de reservas avulsas.",
-			result: "RecorrÃªncia sob controle",
+			desc: "Separe clientes fixos, horários recorrentes e pendências do fluxo de reservas avulsas.",
+			result: "Recorrência sob controle",
 			action: "Gerenciar fixos",
 			tone: "amber",
 		},
@@ -364,21 +364,21 @@ function ProductSuiteSection({
 				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
 						<p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
-							SoluÃ§Ãµes para arenas
+							Soluções para arenas
 						</p>
 						<h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-[var(--az-ink)] md:text-5xl">
-							Tudo que a operaÃ§Ã£o precisa para vender horÃ¡rios com clareza.
+							Tudo que a operação precisa para vender horários com clareza.
 						</h2>
 						<p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-							Assim como um cardÃ¡pio digital organiza pedidos, o ArenaSys
+							Assim como um cardápio digital organiza pedidos, o ArenaSys
 							organiza a disponibilidade da sua arena: reservas, quadras,
-							clientes e pagamentos em uma experiÃªncia Ãºnica.
+							clientes e pagamentos em uma experiência única.
 						</p>
 					</div>
 					<button
 						onClick={onPrimaryAction}
 						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[var(--az-navy)] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#10283f] lg:justify-self-end">
-						Escolher soluÃ§Ã£o ideal
+						Escolher solução ideal
 						<ArrowRight className="h-4 w-4" />
 					</button>
 				</div>
@@ -418,14 +418,14 @@ function ProductSuiteSection({
 	);
 }
 
-// --- PÃGINA PRINCIPAL ---
+// --- PÁGINA PRINCIPAL ---
 
 export default function LandingPage() {
 	const navigate = useNavigate();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const startSignup = () => navigate("/login?mode=signup");
 
-	// RecuperaÃ§Ã£o de senha: o email Ã s vezes redireciona para a Site URL (/) em vez de /reset-password.
+	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
 	// Sem isto, o token fica na home e a tela de "Nova senha" nunca aparece.
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -454,8 +454,8 @@ export default function LandingPage() {
 		<>
 			<SEO
 				title="Sistema de reservas para arenas esportivas | ArenaSys"
-				description="Organize quadras, horÃ¡rios, clientes e pagamentos em um link pÃºblico e um painel simples para sua equipe acompanhar a operaÃ§Ã£o da arena."
-				keywords="sistema para gestÃ£o de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horÃ¡rios de quadras, sistema para aluguel de quadras, gestÃ£o de arena esportiva"
+				description="Organize quadras, horários, clientes e pagamentos em um link público e um painel simples para sua equipe acompanhar a operação da arena."
+				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
 				canonical="/"
 			/>
 			<main
@@ -463,9 +463,9 @@ export default function LandingPage() {
 				id="main-content"
 				data-seo-ready
 				className="landing-light relative min-h-dvh overflow-x-hidden scroll-smooth font-sans text-[var(--az-ink)] selection:bg-[var(--az-navy-soft)]">
-				{/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-				    ðŸŒŒ COSMIC BACKGROUND â€” De cair o queixo
-				    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+				{/* ═══════════════════════════════════════════════════════════════════
+				    🌌 COSMIC BACKGROUND — De cair o queixo
+				    ═══════════════════════════════════════════════════════════════════ */}
 
 				{/* Base: Gradiente profundo do cosmos */}
 				<div
@@ -480,7 +480,7 @@ export default function LandingPage() {
 					}}
 				/>
 
-				{/* Aurora Borealis - ondas de luz etÃ©reas (GPU accelerated) */}
+				{/* Aurora Borealis - ondas de luz etéreas (GPU accelerated) */}
 				<div
 					className="fixed inset-0 pointer-events-none overflow-hidden"
 					style={{ willChange: "transform" }}>
@@ -568,7 +568,7 @@ export default function LandingPage() {
 					/>
 				</div>
 
-				{/* Nebula clouds - nuvens de gÃ¡s cÃ³smico */}
+				{/* Nebula clouds - nuvens de gás cósmico */}
 				<div className="fixed inset-0 pointer-events-none">
 					<div
 						className="absolute top-[10%] right-[5%] w-[500px] h-[500px] rounded-full opacity-[0.04]"
@@ -621,26 +621,13 @@ export default function LandingPage() {
 					}}
 				/>
 
-				{/* Estilos para AnimaÃ§Ãµes Apple-level (GPU optimized) */}
+				{/* Estilos para Animações Apple-level (GPU optimized) */}
 				<style>{`
         /* GPU Acceleration hints */
         .gpu-accelerate {
           transform: translateZ(0);
           backface-visibility: hidden;
           perspective: 1000px;
-        }
-        /* Hero device mockup animations */
-        @keyframes heroFloat {
-          0%, 100% { transform: translateY(0px) translateZ(0); }
-          50% { transform: translateY(-12px) translateZ(0); }
-        }
-        @keyframes heroMockupIn {
-          0% { opacity: 0; transform: translateY(30px) scale(0.96); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .hero-mockup-laptop,
-        .hero-mockup-phone {
-          will-change: transform;
         }
         @keyframes aurora {
           0%, 100% { transform: translateX(-50%) translateY(0) skewX(0deg) translateZ(0); }
@@ -830,9 +817,9 @@ export default function LandingPage() {
 					/>
 				</div>
 
-				{/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-				    NAVBAR â€” EXPERIÃŠNCIA VISUAL ÃšNICA
-				    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+				{/* ═══════════════════════════════════════════════════════════════════
+				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
+				    ═══════════════════════════════════════════════════════════════════ */}
 				<header className="landing-hero-header fixed left-0 right-0 top-0 z-50 flex justify-center px-5 py-5">
 					<nav className="landing-hero-nav relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
@@ -856,7 +843,7 @@ export default function LandingPage() {
 									href="#solucoes"
 									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									SoluÃ§Ãµes
+									Soluções
 								</a>
 								<a
 									href="#como-funciona"
@@ -868,7 +855,7 @@ export default function LandingPage() {
 									href="#comecar"
 									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									ComeÃ§ar
+									Começar
 								</a>
 								<a
 									href="#faq"
@@ -902,7 +889,7 @@ export default function LandingPage() {
 
 							<button
 								className="relative rounded-lg border border-white/45 bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 md:hidden"
-								aria-label="Abrir menu de navegaÃ§Ã£o"
+								aria-label="Abrir menu de navegação"
 								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 								style={{ color: "#fff" }}>
 								<div
@@ -922,7 +909,7 @@ export default function LandingPage() {
 										href="#solucoes"
 										onClick={() => setMobileMenuOpen(false)}
 										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
-										SoluÃ§Ãµes
+										Soluções
 									</a>
 									<a
 										href="#como-funciona"
@@ -934,7 +921,7 @@ export default function LandingPage() {
 										href="#comecar"
 										onClick={() => setMobileMenuOpen(false)}
 										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
-										ComeÃ§ar
+										Começar
 									</a>
 									<a
 										href="#faq"
@@ -969,7 +956,7 @@ export default function LandingPage() {
 				</header>
 
 				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
-				<section className="relative isolate overflow-hidden bg-[var(--az-navy)] px-5 pb-16 pt-36 text-white sm:pt-40 lg:pb-28 lg:pt-44">
+				<section className="relative isolate overflow-hidden bg-[var(--az-navy)] px-5 pb-16 pt-36 text-white sm:pt-40 lg:pb-24 lg:pt-44">
 					<div className="absolute inset-0 bg-[var(--az-navy)]" />
 					<div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(22,50,79,0.98),rgba(47,107,69,0.86))]" />
 					<div className="absolute left-[6%] top-32 hidden h-24 w-24 rounded-[2rem] border border-white/18 bg-white/10 rotate-12 lg:block" />
@@ -995,13 +982,13 @@ export default function LandingPage() {
 									<h1
 										className="text-[2.75rem] font-semibold leading-[0.96] text-white sm:text-5xl lg:text-[4.1rem] xl:text-[4.6rem]"
 										style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-										A soluÃ§Ã£o completa para vender horÃ¡rios.
+										A solução completa para vender horários.
 									</h1>
 									<p
 										className="max-w-xl text-lg font-extrabold leading-8 text-blue-50 sm:text-xl lg:mx-0"
 										style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
 										Transforme sua agenda em um link de reservas, organize cada
-										quadra por horÃ¡rio e acompanhe pagamentos, clientes e ocupaÃ§Ã£o
+										quadra por horário e acompanhe pagamentos, clientes e ocupação
 										em um painel simples.
 									</p>
 								</div>
@@ -1010,7 +997,7 @@ export default function LandingPage() {
 									<button
 										onClick={startSignup}
 										className="btn-shine relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-lg bg-[var(--az-surface)] px-8 text-base font-semibold text-[var(--az-navy)] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
-										aria-label="Testar grÃ¡tis agora - comeÃ§ar teste de 7 dias">
+										aria-label="Testar grátis agora - começar teste de 7 dias">
 										Criar minha agenda online
 										<ArrowRight className="h-5 w-5" />
 									</button>
@@ -1029,9 +1016,9 @@ export default function LandingPage() {
 
 								<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50 lg:justify-start">
 									{[
-										"Link prÃ³prio para reservas",
+										"Link próprio para reservas",
 										"Sem app para o cliente",
-										"Pagamento no balcÃ£o ou combinado",
+										"Pagamento no balcão ou combinado",
 									].map((item) => (
 										<div key={item} className="inline-flex items-center gap-2">
 											<Check className="h-4 w-4 text-amber-200" />
@@ -1045,14 +1032,14 @@ export default function LandingPage() {
 
 							{/* Right: Device mockups */}
 							<div className="relative mx-auto w-full max-w-2xl lg:mx-0 lg:max-w-none">
-								{/* MacBook â€” Dashboard */}
+								{/* MacBook */}
 								<div
 									className="hero-mockup-laptop relative z-10"
 									style={{ animation: "heroFloat 6s ease-in-out infinite", animationDelay: "0.3s" }}>
 									<div className="relative rounded-xl shadow-[0_35px_100px_-25px_rgba(0,0,0,0.55)]">
 										<img
 											src="/images/mockup-dashboard.png"
-											alt="Painel de gestÃ£o ArenaSys â€” visÃ£o geral com grade de horÃ¡rios, quadras e reservas do dia"
+											alt="Painel de gestão ArenaSys"
 											className="w-full rounded-xl"
 											loading="eager"
 											style={{ opacity: 0, animation: "heroMockupIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s forwards" }}
@@ -1061,14 +1048,14 @@ export default function LandingPage() {
 									</div>
 								</div>
 
-								{/* iPhone â€” Reservas */}
+								{/* iPhone */}
 								<div
 									className="hero-mockup-phone absolute -bottom-8 -right-4 z-20 w-[35%] sm:-right-2 sm:w-[32%] lg:-bottom-12 lg:-right-6 lg:w-[35%]"
 									style={{ animation: "heroFloat 6s ease-in-out infinite", animationDelay: "1.5s" }}>
 									<div className="relative rounded-2xl shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6)]">
 										<img
 											src="/images/mockup-mobile.png"
-											alt="Tela de reservas pelo celular â€” cliente escolhendo horÃ¡rio na arena"
+											alt="Tela de reservas pelo celular"
 											className="w-full rounded-2xl"
 											loading="eager"
 											style={{ opacity: 0, animation: "heroMockupIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.8s forwards" }}
@@ -1086,7 +1073,7 @@ export default function LandingPage() {
 
 				<OutcomeStrip />
 
-				{/* --- SEÃ‡ÃƒO PROBLEMA: diagnostico da operacao --- */}
+				{/* --- SEÇÃO PROBLEMA: diagnostico da operacao --- */}
 				<section className="relative bg-[var(--az-paper)] px-4 py-20">
 					<div className="mx-auto max-w-6xl">
 						<ScrollReveal className="mx-auto mb-14 max-w-3xl text-center">
@@ -1094,12 +1081,12 @@ export default function LandingPage() {
 								O custo invisivel da agenda manual
 							</p>
 							<h2 className="text-3xl font-semibold text-[var(--az-ink)] md:text-4xl lg:text-5xl">
-								Enquanto a reserva depende de conversa, sua operaÃ§Ã£o depende de
-								memÃ³ria.
+								Enquanto a reserva depende de conversa, sua operação depende de
+								memória.
 							</h2>
 							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-								O WhatsApp continua Ãºtil para relacionamento. O problema comeÃ§a
-								quando ele vira agenda, caixa, histÃ³rico e controle ao mesmo
+								O WhatsApp continua útil para relacionamento. O problema começa
+								quando ele vira agenda, caixa, histórico e controle ao mesmo
 								tempo.
 							</p>
 						</ScrollReveal>
@@ -1109,20 +1096,20 @@ export default function LandingPage() {
 								{
 									icon: MessageSquare,
 									label: "Atendimento preso no chat",
-									pain: "A equipe responde a mesma pergunta de horÃ¡rio vÃ¡rias vezes por dia, mesmo quando a quadra estÃ¡ livre.",
+									pain: "A equipe responde a mesma pergunta de horário várias vezes por dia, mesmo quando a quadra está livre.",
 									impact: "tempo perdido",
 								},
 								{
 									icon: CalendarDays,
-									label: "Agenda sem fonte Ãºnica",
-									pain: "Reservas ficam em mensagens, cadernos e lembranÃ§as. Basta uma troca de turno para o conflito aparecer.",
+									label: "Agenda sem fonte única",
+									pain: "Reservas ficam em mensagens, cadernos e lembranças. Basta uma troca de turno para o conflito aparecer.",
 									impact: "risco de conflito",
 								},
 								{
 									icon: CreditCard,
-									label: "Receita difÃ­cil de enxergar",
-									pain: "Sem um painel simples, fica mais difÃ­cil saber o que entrou, o que estÃ¡ pendente e quais horÃ¡rios vendem melhor.",
-									impact: "visÃ£o fraca",
+									label: "Receita difícil de enxergar",
+									pain: "Sem um painel simples, fica mais difícil saber o que entrou, o que está pendente e quais horários vendem melhor.",
+									impact: "visão fraca",
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.label} delay={i * 100}>
@@ -1149,7 +1136,7 @@ export default function LandingPage() {
 						<ScrollReveal delay={250}>
 							<div className="mt-8 rounded-lg border border-[var(--az-line)] bg-[var(--az-navy)] p-6 text-center shadow-[0_24px_70px_-48px_rgba(22,24,26,0.42)]">
 								<p className="text-lg font-semibold leading-8 text-white">
-									A soluÃ§Ã£o nÃ£o Ã© abandonar o WhatsApp. Ã‰ tirar a agenda de
+									A solução não é abandonar o WhatsApp. É tirar a agenda de
 									dentro dele.
 								</p>
 							</div>
@@ -1167,10 +1154,10 @@ export default function LandingPage() {
 								Da primeira quadra ao primeiro link
 							</p>
 							<h2 className="mb-4 text-3xl font-semibold text-[var(--az-ink)] md:text-5xl">
-								ComeÃ§a simples. Continua organizado.
+								Começa simples. Continua organizado.
 							</h2>
 							<p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-								A ideia nÃ£o Ã© trocar toda a operaÃ§Ã£o de uma vez. Ã‰ colocar o
+								A ideia não é trocar toda a operação de uma vez. É colocar o
 								fluxo principal de reservas em um lugar que a equipe consiga
 								confiar.
 							</p>
@@ -1181,7 +1168,7 @@ export default function LandingPage() {
 								{
 									step: "1",
 									title: "Configure a base",
-									desc: "Cadastre quadras, horÃ¡rios, valores e regras principais da sua operaÃ§Ã£o.",
+									desc: "Cadastre quadras, horários, valores e regras principais da sua operação.",
 								},
 								{
 									step: "2",
@@ -1191,7 +1178,7 @@ export default function LandingPage() {
 								{
 									step: "3",
 									title: "Acompanhe no painel",
-									desc: "Sua equipe confirma pagamentos, visualiza reservas e mantÃ©m a agenda atualizada.",
+									desc: "Sua equipe confirma pagamentos, visualiza reservas e mantém a agenda atualizada.",
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.step} delay={i * 150}>
@@ -1212,7 +1199,7 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- PRÃ“XIMO PASSO: descoberta antes de preÃ§o --- */}
+				{/* --- PRÓXIMO PASSO: descoberta antes de preço --- */}
 				<section
 					id="comecar"
 					className="landing-dark-section relative scroll-mt-24 overflow-hidden border-y border-white/10 bg-[var(--az-navy)] px-4 py-28 sm:py-32">
@@ -1224,7 +1211,7 @@ export default function LandingPage() {
 						<ScrollReveal className="mb-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
 							<div>
 								<p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/72">
-									PrÃ³ximo passo
+									Próximo passo
 								</p>
 								<h2 className="max-w-3xl text-3xl font-semibold leading-tight text-white md:text-5xl lg:text-6xl">
 									Comece pela agenda piloto. Decida o resto com clareza.
@@ -1241,19 +1228,19 @@ export default function LandingPage() {
 							<div className="mb-8 grid gap-4 md:grid-cols-3">
 								{[
 									{
-										label: "DiagnÃ³stico",
-										title: "Ler a operaÃ§Ã£o",
+										label: "Diagnóstico",
+										title: "Ler a operação",
 										desc: "Entender como chegam as reservas, quais quadras entram primeiro e onde a equipe perde tempo.",
 									},
 									{
 										label: "Agenda piloto",
 										title: "Publicar um link real",
-										desc: "Colocar uma versÃ£o enxuta no ar para testar o fluxo com reservas da rotina da arena.",
+										desc: "Colocar uma versão enxuta no ar para testar o fluxo com reservas da rotina da arena.",
 									},
 									{
-										label: "DecisÃ£o",
-										title: "Expandir com seguranÃ§a",
-										desc: "Depois da validaÃ§Ã£o, ampliar quadras, regras e acompanhamento sem mudar tudo no escuro.",
+										label: "Decisão",
+										title: "Expandir com segurança",
+										desc: "Depois da validação, ampliar quadras, regras e acompanhamento sem mudar tudo no escuro.",
 									},
 								].map((item) => (
 									<div
@@ -1282,10 +1269,10 @@ export default function LandingPage() {
 											Agenda piloto
 										</p>
 										<h3 className="max-w-xl text-3xl font-semibold leading-tight md:text-4xl">
-											Publique uma experiÃªncia pequena, real e fÃ¡cil de avaliar.
+											Publique uma experiência pequena, real e fácil de avaliar.
 										</h3>
 										<p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-											O dono da arena nÃ£o precisa comprar uma promessa. Ele precisa
+											O dono da arena não precisa comprar uma promessa. Ele precisa
 											ver uma quadra funcionando no link, a equipe acompanhando no
 											painel e o cliente entendendo como reservar.
 										</p>
@@ -1295,7 +1282,7 @@ export default function LandingPage() {
 													Entrada leve
 												</p>
 												<p className="mt-1 text-base font-semibold text-[var(--az-ink)]">
-													7 dias grÃ¡tis, sem cartÃ£o
+													7 dias grátis, sem cartão
 												</p>
 											</div>
 											<div className="border-l-4 border-[var(--az-turf)] pl-4">
@@ -1316,11 +1303,11 @@ export default function LandingPage() {
 									</p>
 									<ul className="space-y-4">
 										{[
-											"Agenda online com quadras, horÃ¡rios e bloqueios",
-											"Link pÃºblico para o cliente consultar disponibilidade",
-											"Painel para acompanhar reservas, receita e pendÃªncias",
-											"Pagamento no balcÃ£o ou combinado no fluxo atual",
-											"ImplantaÃ§Ã£o assistida para colocar a primeira arena no ar",
+											"Agenda online com quadras, horários e bloqueios",
+											"Link público para o cliente consultar disponibilidade",
+											"Painel para acompanhar reservas, receita e pendências",
+											"Pagamento no balcão ou combinado no fluxo atual",
+											"Implantação assistida para colocar a primeira arena no ar",
 										].map((item) => (
 											<li
 												key={item}
@@ -1336,7 +1323,7 @@ export default function LandingPage() {
 									<button
 										onClick={() => navigate("/login?mode=signup")}
 										className="btn-shine relative mt-8 h-16 w-full overflow-hidden rounded-lg bg-[var(--az-surface)] text-lg font-semibold text-[var(--az-navy)] transition-all duration-300 hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-navy)]"
-										aria-label="Criar minha agenda online - teste grÃ¡tis de 7 dias">
+										aria-label="Criar minha agenda online - teste grátis de 7 dias">
 										Criar minha agenda online
 									</button>
 								</div>
@@ -1355,26 +1342,21 @@ export default function LandingPage() {
 								Antes de testar
 							</p>
 							<h2 className="text-3xl font-semibold text-[var(--az-ink)] md:text-5xl">
-								Respostas diretas para decidir sem enrolaÃ§Ã£o.
+								Respostas diretas para decidir sem enrolação.
 							</h2>
 						</ScrollReveal>
 
-						<div className="mx-auto max-w-2xl text-left">
-							<Accordion type="single" collapsible className="w-full space-y-4">
-								{faqList.map((item, i) => (
-									<AccordionItem
-										key={i}
-										value={`item-${i}`}
-										className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-6 data-[state=open]:border-[var(--az-navy)] transition-colors duration-300">
-										<AccordionTrigger className="text-left text-lg font-semibold text-[var(--az-ink)] hover:no-underline hover:text-[var(--az-navy)]">
+						<div className="space-y-4">
+							{faqList.map((item, i) => (
+								<ScrollReveal key={i} delay={i * 75}>
+									<div className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-6 transition-colors duration-300 hover:border-[var(--az-navy)]">
+										<h3 className="mb-2 text-lg font-semibold text-[var(--az-ink)]">
 											{item.question}
-										</AccordionTrigger>
-										<AccordionContent className="text-base text-[var(--az-ink-soft)] leading-relaxed pb-6 pt-2">
-											{item.answer}
-										</AccordionContent>
-									</AccordionItem>
-								))}
-							</Accordion>
+										</h3>
+										<p className="text-[var(--az-ink-soft)]">{item.answer}</p>
+									</div>
+								</ScrollReveal>
+							))}
 						</div>
 					</div>
 				</section>
@@ -1389,21 +1371,21 @@ export default function LandingPage() {
 					<ScrollReveal>
 						<div className="max-w-3xl mx-auto text-center relative z-10">
 							<h2 className="mb-8 text-4xl font-semibold leading-tight text-[var(--az-ink)] md:text-5xl lg:text-6xl">
-								Comece pela prÃ³xima reserva.
+								Comece pela próxima reserva.
 								<br />
 								<span className="text-[var(--az-turf)]">
 									Organize o resto a partir dela.
 								</span>
 							</h2>
 							<p className="mx-auto mb-10 max-w-xl text-xl text-[var(--az-ink-soft)]">
-								Teste por 7 dias sem cartÃ£o, coloque seu link no ar e veja se o
+								Teste por 7 dias sem cartão, coloque seu link no ar e veja se o
 								fluxo encaixa na rotina da sua arena.
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
 								className="btn-shine relative inline-flex h-16 items-center gap-3 overflow-hidden rounded-lg bg-[var(--az-navy)] px-14 text-lg font-semibold text-white shadow-sm transition-all duration-300 hover:scale-[1.01] hover:bg-[#10283f] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
-								aria-label="ComeÃ§ar teste grÃ¡tis do ArenaSys">
-								ComeÃ§ar teste grÃ¡tis <ArrowRight className="w-5 h-5" />
+								aria-label="Começar teste grátis do ArenaSys">
+								Começar teste grátis <ArrowRight className="w-5 h-5" />
 							</button>
 						</div>
 					</ScrollReveal>
