@@ -1,5 +1,4 @@
-impo
-rt { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Zap,
