@@ -1106,6 +1106,18 @@ export default function LandingPage() {
           backface-visibility: hidden;
           perspective: 1000px;
         }
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0px) translateZ(0); }
+          50% { transform: translateY(-12px) translateZ(0); }
+        }
+        @keyframes heroMockupIn {
+          0% { opacity: 0; transform: translateY(30px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .hero-mockup-laptop,
+        .hero-mockup-phone {
+          will-change: transform;
+        }
         @keyframes aurora {
           0%, 100% { transform: translateX(-50%) translateY(0) skewX(0deg) translateZ(0); }
           25% { transform: translateX(-45%) translateY(-5%) skewX(-2deg) translateZ(0); }
