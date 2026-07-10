@@ -1,6 +1,6 @@
 
 export type PaymentStatus = 'paid' | 'pending' | 'failed' | 'refunded';
-export type PaymentType = 'per_player' | 'full' | 'deposit' | 'mensalista';
+export type PaymentType = 'per_player' | 'full' | 'deposit' | 'mensalista' | 'pix' | 'local';
 export type BookingStatus =
   | 'confirmed'
   | 'pending_approval'
@@ -46,12 +46,12 @@ export interface TimeSlot {
   fieldId: string;
   date: string;
   time: string;
-  status: 'available' | 'reserved' | 'blocked';
-  // 👇 AQUI ESTAVA FALTANDO ESSA LINHA:
+  status: 'available' | 'reserved' | 'blocked' | 'pending';
   pricePerPlayer: number;
   courtName?: string;
   bookedBy?: string;
-  startTime?: Date;   // Opcional para facilitar cálculos no front
-  endTime?: Date;     // Opcional
+  paymentType?: PaymentType;
+  startTime?: Date;
+  endTime?: Date;
   tenantId?: string;
 }

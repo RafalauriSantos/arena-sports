@@ -69,6 +69,8 @@ interface BookingsContextType {
 	addBooking: (booking: Partial<Booking>) => Promise<void>;
 	updateBooking: (id: string, updates: Partial<Booking>) => Promise<void>;
 	deleteBooking: (id: string) => Promise<void>;
+	updateTimeSlot?: (id: string, updates: Partial<TimeSlot>) => void;
+	blockTimeSlot?: (slotId: string, reason?: string) => Promise<void>;
 }
 
 const BookingsContext = createContext<BookingsContextType | undefined>(
@@ -363,8 +365,10 @@ export function BookingsProvider({ children }: { children: ReactNode }) {
 						}
 
 						// Verifica se o tenant_id do evento corresponde ao tenant atual
+						const newRecord = payload.new as Record<string, unknown>;
+						const oldRecord = payload.old as Record<string, unknown>;
 						const eventTenantId =
-							payload.new?.tenant_id || payload.old?.tenant_id;
+							newRecord?.tenant_id || oldRecord?.tenant_id;
 						if (eventTenantId !== currentTenantId) {
 							console.warn(
 								"⚠️ [REALTIME] Evento de tenant diferente ignorado:",

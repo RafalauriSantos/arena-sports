@@ -25,7 +25,7 @@ export interface TenantHoursConfig {
  * Resposta da RPC de atualização
  */
 interface UpdateHoursResponse {
-	data: Record<string, unknown> | null;
+	data: unknown;
 	error: Error | null;
 }
 

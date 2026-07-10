@@ -164,8 +164,9 @@ export function useSettings() {
 
         // --- AQUI ESTÁ A MÁGICA DO MULTI-TENANT ---
         // Lemos as configurações salvas no JSON 'settings' do banco
-        if (tenantRes.data.settings?.booking) {
-          setBookingSettings(prev => ({ ...prev, ...tenantRes.data.settings.booking }));
+        if ((tenantRes.data.settings as Record<string, unknown>)?.booking) {
+          const s = tenantRes.data.settings as Record<string, unknown>;
+          setBookingSettings(prev => ({ ...prev, ...(s.booking as object) }));
         }
 
         // Atualiza Subscription
