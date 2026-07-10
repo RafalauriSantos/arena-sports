@@ -1,6 +1,14 @@
 
 export type PaymentStatus = 'paid' | 'pending' | 'failed' | 'refunded';
-export type BookingStatus = 'confirmed' | 'pending_approval' | 'pending_payment' | 'cancelled' | 'pending';
+export type PaymentType = 'per_player' | 'full' | 'deposit' | 'mensalista';
+export type BookingStatus =
+  | 'confirmed'
+  | 'pending_approval'
+  | 'pending_payment'
+  | 'cancelled'
+  | 'pending'
+  | 'approved'
+  | 'rejected';
 
 export interface Booking {
   id: string;
@@ -26,6 +34,11 @@ export interface Booking {
   startedAt?: string | null; // Quando o jogo começou
   completedAt?: string | null; // Quando o jogo terminou
   cancelledAt?: string | null; // Quando foi cancelado
+  // Campos de pagamento e tipo de reserva
+  paymentType?: PaymentType;
+  pricePerPlayer?: number;
+  totalPlayers?: number;
+  isMensalista?: boolean;
 }
 
 export interface TimeSlot {

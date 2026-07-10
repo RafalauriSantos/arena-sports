@@ -23,3 +23,6 @@ export const ARENA_CONFIG = {
 } as const;
 
 export type FieldId = typeof ARENA_CONFIG.fields[number]["id"];
+
+// Alias mantido para compatibilidade com imports existentes
+export const ARENA_SPORTS_CONFIG = ARENA_CONFIG;
