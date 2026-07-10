@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+﻿import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Zap,
@@ -12,11 +12,17 @@ import {
 	Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
 import { PremiumFooter } from "@/components/PremiumFooter";
 
-// --- CONSTANTES PRÉ-CALCULADAS (evita recálculo a cada render) ---
+// --- CONSTANTES PRÃ‰-CALCULADAS (evita recÃ¡lculo a cada render) ---
 const STARS_CONFIG = Array.from({ length: 25 }, (_, i) => ({
 	id: i,
 	width: Math.random() > 0.8 ? 2 : 1,
@@ -46,7 +52,7 @@ function usePrefersReducedMotion() {
 	return prefersReducedMotion;
 }
 
-// --- HOOK: ANIMAÇÃO DE CONTAGEM (Count-Up) ---
+// --- HOOK: ANIMAÃ‡ÃƒO DE CONTAGEM (Count-Up) ---
 function useCountUp(
 	end: number,
 	duration: number = 2000,
@@ -79,7 +85,7 @@ function useCountUp(
 
 			const current = startValue + (end - startValue) * easeOutExpo;
 
-			// Se decimals=0, arredonda. Se >0, mantém precisão.
+			// Se decimals=0, arredonda. Se >0, mantÃ©m precisÃ£o.
 			setCount(decimals === 0 ? Math.round(current) : current);
 
 			if (progress < 1) requestAnimationFrame(animate);
@@ -263,834 +269,12 @@ function ScrollReveal({
 }
 
 // --- HOOK: TYPEWRITER EFFECT ---
-function useTypewriter(
-	words: string[],
-	typingSpeed = 100,
-	deletingSpeed = 50,
-	pauseDuration = 2000,
-	prefersReducedMotion: boolean = false,
-) {
-	const [currentWordIndex, setCurrentWordIndex] = useState(0);
-	const [currentText, setCurrentText] = useState("");
-	const [isDeleting, setIsDeleting] = useState(false);
-	const [isPaused, setIsPaused] = useState(false);
-
-	useEffect(() => {
-		if (prefersReducedMotion) {
-			setCurrentText(words[0] ?? "");
-			return;
-		}
-		const currentWord = words[currentWordIndex];
-
-		if (isPaused) {
-			const pauseTimer = setTimeout(() => {
-				setIsPaused(false);
-				setIsDeleting(true);
-			}, pauseDuration);
-			return () => clearTimeout(pauseTimer);
-		}
-
-		if (isDeleting) {
-			if (currentText === "") {
-				setIsDeleting(false);
-				setCurrentWordIndex((prev) => (prev + 1) % words.length);
-			} else {
-				const deleteTimer = setTimeout(() => {
-					setCurrentText(currentText.slice(0, -1));
-				}, deletingSpeed);
-				return () => clearTimeout(deleteTimer);
-			}
-		} else {
-			if (currentText === currentWord) {
-				setIsPaused(true);
-			} else {
-				const typeTimer = setTimeout(() => {
-					setCurrentText(currentWord.slice(0, currentText.length + 1));
-				}, typingSpeed);
-				return () => clearTimeout(typeTimer);
-			}
-		}
-	}, [
-		currentText,
-		isDeleting,
-		isPaused,
-		currentWordIndex,
-		words,
-		typingSpeed,
-		deletingSpeed,
-		pauseDuration,
-		prefersReducedMotion,
-	]);
-
-	return { text: currentText, isTyping: !isDeleting && !isPaused };
-}
-
-// --- COMPONENTE: HERO COM EFEITO TYPEWRITER ---
-function RotatingHeroText() {
-	const words = ["confusão.", "calote.", "bagunça.", "estresse."];
-	const prefersReducedMotion = usePrefersReducedMotion();
-	const { text } = useTypewriter(words, 80, 40, 1800, prefersReducedMotion);
-
-	return (
-		<h1 className="animate-in fade-in slide-in-from-bottom-8 text-[2.75rem] font-semibold leading-[1.0] tracking-tight text-white duration-1000 sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
-			Sua arena cheia.
-			<br />
-			<span className="text-[var(--az-turf)]">
-				Sem{" "}
-				<span className="block sm:inline-block min-w-0 sm:min-w-[220px] md:min-w-[320px] lg:min-w-[400px] text-center sm:text-left">
-					{text}
-					<span className="ml-1 inline-block h-[0.9em] w-[3px] animate-blink align-middle bg-[var(--az-turf)] md:w-[4px]" />
-				</span>
-			</span>
-		</h1>
-	);
-}
-
-// --- COMPONENTE: NÚMERO ANIMADO ---
-function AnimatedValue({
-	value,
-	prefix = "",
-	suffix = "",
-	className = "",
-	duration = 2000,
-	decimals = 0,
-}: {
-	value: number;
-	prefix?: string;
-	suffix?: string;
-	className?: string;
-	duration?: number;
-	decimals?: number;
-}) {
-	const prefersReducedMotion = usePrefersReducedMotion();
-	const [ref, isInView] = useInView(undefined, prefersReducedMotion);
-	const count = useCountUp(
-		value,
-		duration,
-		isInView,
-		decimals,
-		prefersReducedMotion,
-	);
-
-	return (
-		<span ref={ref} className={`number-display ${className}`}>
-			{prefix}
-			{count.toLocaleString("pt-BR", {
-				minimumFractionDigits: decimals,
-				maximumFractionDigits: decimals,
-			})}
-			{suffix}
-		</span>
-	);
-}
-
-// --- DEPOIMENTOS REMOVIDOS ---
-// Removidos para manter autenticidade. Adicione depoimentos reais conforme receber feedback dos clientes.
-
-// --- FAQ: linguagem simples ---
-const faqList = [
-	{
-		question: "Quanto tempo leva para começar?",
-		answer:
-			"A configuração inicial é simples: você cadastra quadras, horários, valores e já pode compartilhar o link de reserva com seus clientes.",
-	},
-	{
-		question: "Meu cliente precisa instalar aplicativo?",
-		answer:
-			"Não. O cliente acessa o link pelo navegador do celular, escolhe o horário disponível e envia a solicitação de reserva.",
-	},
-	{
-		question: "Eu preciso parar de usar WhatsApp?",
-		answer:
-			"Não. O WhatsApp pode continuar como canal de relacionamento. A diferença é que a agenda e o controle deixam de depender só das conversas.",
-	},
-	{
-		question: "Como funciona o pagamento da reserva?",
-		answer:
-			"Você pode manter o fluxo atual: pagamento no local ou combinado pelo WhatsApp. O ArenaSys ajuda a organizar reserva, status e acompanhamento.",
-	},
-	{
-		question: "Funciona para mais de uma quadra?",
-		answer:
-			"Sim. Você pode cadastrar múltiplas quadras, horários e regras para organizar a disponibilidade da arena em uma visão única.",
-	},
-	{
-		question: "Preciso de cartão para testar?",
-		answer:
-			"Não. O teste começa sem cartão, para você validar se o fluxo faz sentido na operação real da sua arena.",
-	},
-	{
-		question: "Posso cancelar se não fizer sentido?",
-		answer:
-			"Pode. A proposta é simples: testar, validar na rotina e continuar apenas se o ArenaSys ajudar sua operação.",
-	},
-];
-
-// --- MOCKUPS VISUAIS ---
-function IPhoneMockup({ children }: { children: React.ReactNode }) {
-	return (
-		<div className="landing-device relative transform hover:scale-[1.02] transition-transform duration-500">
-			<div className="relative w-[180px] md:w-[220px] h-[380px] md:h-[460px] bg-[#121212] rounded-[30px] md:rounded-[45px] p-[8px] md:p-[10px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#333] ring-1 ring-white/10">
-				<div className="absolute top-[10px] md:top-[15px] left-1/2 -translate-x-1/2 w-[60px] md:w-[80px] h-[18px] md:h-[24px] bg-black rounded-full z-20" />
-				<div className="relative w-full h-full bg-black rounded-[24px] md:rounded-[36px] overflow-hidden border border-white/5">
-					<div className="absolute top-0 inset-x-0 h-8 flex justify-between px-4 pt-2 text-[8px] font-medium text-white z-10">
-						<span>9:41</span>
-						<div className="flex gap-1">
-							<div className="w-3 h-1.5 bg-white rounded-sm" />
-						</div>
-					</div>
-					<div className="pt-8 h-full">{children}</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function MacBookMockup({ children }: { children: React.ReactNode }) {
-	return (
-		<div className="landing-device relative transform hover:scale-[1.01] transition-transform duration-500">
-			<div className="relative w-[280px] md:w-[580px] bg-[#121212] rounded-t-xl p-1.5 border border-[#333] shadow-2xl">
-				<div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 marketing-dark-deep rounded-full" />
-				<div className="w-full h-[160px] md:h-[360px] bg-black rounded-lg overflow-hidden border border-white/5 relative group">
-					{children}
-					<div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none group-hover:opacity-50 transition-opacity duration-700" />
-				</div>
-			</div>
-			<div className="relative w-[320px] md:w-[660px] h-[8px] md:h-[12px] bg-[#1a1a1a] rounded-b-lg -ml-[20px] md:-ml-[40px] border-b border-l border-r border-[#333] flex justify-center">
-				<div className="w-16 md:w-24 h-1 bg-[#0f0f0f] rounded-b opacity-50" />
-			</div>
-		</div>
-	);
-}
-
-// --- TELAS FAKE — ULTRA REALISTAS ---
-
-// Tela do iPhone: App de Reservas do Cliente (decorativo - aria-hidden)
-function CalendarAppScreen() {
-	const [selectedTime, setSelectedTime] = useState<string | null>("19:00");
-
-	return (
-		<div
-			className="h-full marketing-dark-deep font-sans flex flex-col overflow-hidden"
-			aria-hidden="true">
-			{/* Header com Arena Info */}
-			<div className="relative px-4 pt-2 pb-3 border-b border-white/5">
-				<div className="absolute inset-0 bg-gradient-to-b from-[var(--az-navy)]/20 to-transparent" />
-				<div className="relative flex items-center gap-3">
-					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/30">
-						<span className="text-lg">⚽</span>
-					</div>
-					<div className="flex-1">
-						<span
-							className="text-white font-bold text-[11px] leading-tight block"
-							aria-hidden="true">
-							Arena Gol de Placa
-						</span>
-						<div className="flex items-center gap-1.5 mt-0.5">
-							<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--az-turf)]" />
-							<span className="text-[8px] font-medium text-[var(--az-turf)]">
-								Aberto agora
-							</span>
-							<span className="text-gray-300 text-[8px]">• 4.9 ⭐</span>
-						</div>
-					</div>
-					<div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
-						<span className="text-[10px]">💬</span>
-					</div>
-				</div>
-			</div>
-
-			{/* Seletor de Quadra */}
-			<div className="px-3 py-2 flex gap-2 overflow-x-auto hide-scrollbar">
-				{["Quadra 1", "Quadra 2", "Society"].map((q, i) => (
-					<button
-						key={q}
-						className={`px-3 py-1.5 rounded-full text-[8px] font-bold whitespace-nowrap transition-all ${
-							i === 0 ?
-								"bg-[var(--az-navy)] text-white shadow-lg shadow-[var(--az-navy)]/30"
-							:	"bg-white/5 text-gray-300 border border-white/10"
-						}`}>
-						{q}
-					</button>
-				))}
-			</div>
-
-			{/* Calendário Mini */}
-			<div className="px-3 py-2">
-				<div className="flex items-center justify-between mb-2">
-					<span className="text-[9px] text-gray-300 font-medium">
-						Janeiro 2026
-					</span>
-					<div className="flex gap-1">
-						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-300">
-							←
-						</div>
-						<div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-[8px] text-gray-300">
-							→
-						</div>
-					</div>
-				</div>
-				<div className="flex gap-1">
-					{[
-						{ day: "SEG", date: "13", available: true },
-						{ day: "TER", date: "14", available: true },
-						{ day: "QUA", date: "15", available: false },
-						{ day: "QUI", date: "16", available: true, selected: true },
-						{ day: "SEX", date: "17", available: true },
-					].map((d, i) => (
-						<div
-							key={i}
-							className={`flex-1 py-1.5 rounded-lg flex flex-col items-center transition-all ${
-								d.selected ? "bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/40"
-								: d.available ? "bg-white/5 hover:bg-white/10"
-								: "bg-white/[0.02] opacity-40"
-							}`}>
-							<span
-								className={`text-[6px] font-medium ${d.selected ? "text-white/70" : "text-gray-300"}`}>
-								{d.day}
-							</span>
-							<span
-								className={`text-[11px] font-bold ${d.selected ? "text-white" : "text-white"}`}>
-								{d.date}
-							</span>
-							{!d.available && (
-								<span className="text-[5px] text-red-400">Lotado</span>
-							)}
-						</div>
-					))}
-				</div>
-			</div>
-
-			{/* Horários Disponíveis */}
-			<div className="flex-1 px-3 overflow-hidden">
-				<span className="text-[8px] text-gray-300 font-medium uppercase tracking-wider">
-					Horários disponíveis
-				</span>
-				<div className="mt-2 space-y-1.5 overflow-y-auto max-h-[140px] hide-scrollbar">
-					{[
-						{ time: "18:00", price: "R$ 120", status: "available" },
-						{ time: "19:00", price: "R$ 120", status: "selected" },
-						{
-							time: "20:00",
-							price: "R$ 150",
-							status: "available",
-							tag: "🔥 Último",
-						},
-						{
-							time: "21:00",
-							price: "R$ 150",
-							status: "occupied",
-							occupant: "João M.",
-						},
-						{ time: "22:00", price: "R$ 100", status: "available" },
-					].map((slot) => (
-						<div
-							key={slot.time}
-							onClick={() =>
-								slot.status !== "occupied" && setSelectedTime(slot.time)
-							}
-							className={`p-2 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
-								slot.status === "selected" || selectedTime === slot.time ?
-									"border-2 border-[var(--az-navy)] bg-[var(--az-navy)]/20 shadow-lg shadow-[var(--az-navy)]/10"
-								: slot.status === "occupied" ?
-									"bg-white/[0.02] border border-white/5 opacity-50"
-								:	"bg-white/5 border border-white/5 hover:border-white/20"
-							}`}>
-							<div className="flex items-center gap-2">
-								<div
-									className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-										slot.status === "selected" || selectedTime === slot.time ?
-											"bg-[var(--az-navy)] text-white"
-										: slot.status === "occupied" ? "bg-red-500/20 text-red-400"
-										: "bg-white/10 text-white"
-									}`}>
-									<span className="text-[10px] font-bold">
-										{slot.time.split(":")[0]}
-									</span>
-								</div>
-								<div>
-									<span className="text-white font-bold text-[10px] block">
-										{slot.time}
-									</span>
-									<span className="text-gray-300 text-[7px]">
-										{slot.status === "occupied" ?
-											`Reservado • ${slot.occupant}`
-										:	"1h de jogo"}
-									</span>
-								</div>
-							</div>
-							<div className="text-right">
-								{slot.tag && (
-									<span className="text-[6px] text-orange-400 font-bold block mb-0.5">
-										{slot.tag}
-									</span>
-								)}
-								<span
-									className={`font-bold text-[10px] ${
-										slot.status === "selected" || selectedTime === slot.time ?
-											"text-[var(--az-turf)]"
-										:	"text-white"
-									}`}>
-									{slot.price}
-								</span>
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-
-			{/* Bottom CTA */}
-			<div className="p-3 border-t border-white/5 marketing-dark-deep-muted backdrop-blur">
-				<button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--az-navy)] py-2.5 text-[11px] font-bold text-white shadow-lg shadow-[var(--az-navy)]/30 transition-transform active:scale-[0.98]">
-					Confirmar Reserva • R$ 120
-					<span className="text-[10px]">→</span>
-				</button>
-			</div>
-		</div>
-	);
-}
-
-// Tela do MacBook: Dashboard Admin (decorativo - aria-hidden)
-function DashboardAppScreen() {
-	return (
-		<div
-			className="h-full marketing-dark-panel font-sans relative overflow-hidden flex"
-			aria-hidden="true">
-			{/* Sidebar Mini */}
-			<div className="w-12 md:w-14 marketing-dark-deep border-r border-white/5 flex flex-col items-center py-3 gap-3">
-				<div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/30 md:h-8 md:w-8">
-					<Zap className="h-3 w-3 text-white md:h-4 md:w-4" />
-				</div>
-				<div className="w-6 h-[1px] bg-white/10 my-1" />
-				{[
-					{ icon: "📊", active: true },
-					{ icon: "📅", active: false },
-					{ icon: "👥", active: false },
-					{ icon: "💰", active: false },
-					{ icon: "⚙️", active: false },
-				].map((item, i) => (
-					<div
-						key={i}
-						className={`w-8 h-8 rounded-lg flex items-center justify-center text-[12px] transition-all cursor-pointer ${
-							item.active ?
-								"bg-[var(--az-navy)]/20 shadow-lg shadow-[var(--az-navy)]/10"
-							:	"hover:bg-white/5"
-						}`}>
-						{item.icon}
-					</div>
-				))}
-			</div>
-
-			{/* Main Content */}
-			<div className="flex-1 overflow-hidden">
-				{/* Top Bar */}
-				<div className="h-10 md:h-12 border-b border-white/5 flex items-center justify-between px-4">
-					<div className="flex items-center gap-2">
-						<span
-							className="text-white font-bold text-[11px] md:text-xs"
-							aria-hidden="true">
-							Dashboard
-						</span>
-						<span className="rounded-full border border-[var(--az-line)] bg-[var(--az-navy)]/20 px-2 py-0.5 text-[8px] font-bold text-[var(--az-turf)]">
-							Tempo real
-						</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<div className="relative">
-							<div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-[10px]">
-								🔔
-							</div>
-							<div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-						</div>
-						<div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--az-navy)] text-[8px] font-bold text-white">
-							RL
-						</div>
-					</div>
-				</div>
-
-				{/* Stats Grid */}
-				<div className="p-3 md:p-4">
-					{/* KPIs */}
-					<div className="grid grid-cols-4 gap-2 md:gap-3 mb-4">
-						{[
-							{
-								label: "Hoje",
-								value: "R$ 2.340",
-								change: "+18%",
-								up: true,
-								icon: "💰",
-							},
-							{
-								label: "Reservas",
-								value: "23",
-								change: "+5",
-								up: true,
-								icon: "📅",
-							},
-							{
-								label: "Ocupação",
-								value: "87%",
-								change: "+12%",
-								up: true,
-								icon: "📈",
-							},
-							{
-								label: "Cancelamentos",
-								value: "2",
-								change: "-3",
-								up: false,
-								icon: "❌",
-							},
-						].map((kpi, i) => (
-							<div
-								key={i}
-								className="p-2 md:p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all group">
-								<div className="flex items-center justify-between mb-1">
-									<span className="text-[7px] md:text-[8px] text-gray-300 font-medium uppercase tracking-wider">
-										{kpi.label}
-									</span>
-									<span className="text-[10px] opacity-60 group-hover:opacity-100 transition-opacity">
-										{kpi.icon}
-									</span>
-								</div>
-								<p className="text-white font-bold text-sm md:text-lg">
-									{kpi.value}
-								</p>
-								<span
-									className={`text-[7px] font-bold md:text-[8px] ${kpi.up ? "text-[var(--az-turf)]" : "text-[var(--az-clay)]"}`}>
-									{kpi.change}
-								</span>
-							</div>
-						))}
-					</div>
-
-					{/* Chart + Agenda Row */}
-					<div className="grid grid-cols-5 gap-3">
-						{/* Chart */}
-						<div className="col-span-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-							<div className="flex items-center justify-between mb-3">
-								<span className="text-[9px] text-gray-300 font-medium">
-									Faturamento Semanal
-								</span>
-								<div className="flex gap-1">
-									{["D", "S", "M"].map((p, i) => (
-										<button
-											key={p}
-											className={`px-2 py-0.5 rounded text-[7px] font-bold ${
-												i === 1 ?
-													"bg-[var(--az-turf)]/20 text-[var(--az-turf)]"
-												:	"text-gray-300"
-											}`}>
-											{p}
-										</button>
-									))}
-								</div>
-							</div>
-							<div className="h-16 md:h-24 flex items-end gap-1">
-								{[45, 65, 40, 80, 70, 95, 85].map((h, i) => (
-									<div
-										key={i}
-										className="flex-1 flex flex-col items-center gap-1">
-										<div
-											className={`w-full rounded-t transition-all ${
-												i === 5 ?
-													"bg-[var(--az-navy)] shadow-lg shadow-[var(--az-navy)]/30"
-												:	"bg-gradient-to-t from-white/10 to-white/20"
-											}`}
-											style={{ height: `${h}%` }}
-										/>
-										<span className="text-[6px] text-gray-400">
-											{["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"][i]}
-										</span>
-									</div>
-								))}
-							</div>
-						</div>
-
-						{/* Próximas Reservas */}
-						<div className="col-span-2 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-							<span className="text-[9px] text-gray-300 font-medium block mb-2">
-								Próximas Reservas
-							</span>
-							<div className="space-y-1.5">
-								{[
-									{
-										time: "14:00",
-										client: "Carlos S.",
-										court: "Quadra 1",
-										status: "confirmed",
-									},
-									{
-										time: "15:00",
-										client: "Ana M.",
-										court: "Society",
-										status: "pending",
-									},
-									{
-										time: "16:00",
-										client: "Pedro L.",
-										court: "Quadra 2",
-										status: "confirmed",
-									},
-								].map((res, i) => (
-									<div
-										key={i}
-										className="flex items-center gap-2 p-1.5 rounded-lg bg-white/[0.02] border border-white/5">
-										<div
-											className={`w-1 h-6 rounded-full ${
-												res.status === "confirmed" ?
-													"bg-[var(--az-turf)]"
-												:	"bg-yellow-500"
-											}`}
-										/>
-										<div className="flex-1 min-w-0">
-											<div className="flex items-center gap-1">
-												<span className="text-white font-bold text-[9px]">
-													{res.time}
-												</span>
-												<span className="text-gray-400 text-[7px]">•</span>
-												<span className="text-gray-300 text-[8px] truncate">
-													{res.client}
-												</span>
-											</div>
-											<span className="text-gray-400 text-[7px]">
-												{res.court}
-											</span>
-										</div>
-										<div
-											className={`px-1.5 py-0.5 rounded text-[6px] font-bold ${
-												res.status === "confirmed" ?
-													"bg-[var(--az-turf)]/20 text-[var(--az-turf)]"
-												:	"bg-yellow-500/20 text-yellow-400"
-											}`}>
-											{res.status === "confirmed" ? "✓" : "⏳"}
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function HeroProductPreview() {
-	const daySlots = [
-		{
-			time: "18:00",
-			court: "Society 1",
-			client: "Lucas P.",
-			status: "Confirmada",
-			tone: "green",
-		},
-		{
-			time: "19:00",
-			court: "Society 2",
-			client: "Mariana S.",
-			status: "Sinal",
-			tone: "amber",
-		},
-		{
-			time: "20:00",
-			court: "Beach Tennis",
-			client: "Horario livre",
-			status: "Livre",
-			tone: "blue",
-		},
-		{
-			time: "21:00",
-			court: "Society 1",
-			client: "Rafael L.",
-			status: "Confirmada",
-			tone: "green",
-		},
-	];
-
-	return (
-		<div className="relative mx-auto w-full max-w-[620px] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-			<div className="absolute -inset-5 rounded-xl bg-[var(--az-navy)]/10 blur-3xl" />
-			<div className="absolute -bottom-8 -right-4 hidden h-48 w-48 rounded-full bg-[var(--az-turf)]/10 blur-3xl sm:block" />
-
-			<div className="relative rounded-[1.65rem] border border-slate-200 bg-white p-3 shadow-[0_30px_100px_-45px_rgba(15,23,42,0.62)]">
-				<div className="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-950">
-					<div className="flex items-center justify-between border-b border-white/10 bg-slate-900 px-4 py-3">
-						<div className="flex items-center gap-2">
-							<div className="flex gap-1.5">
-								<span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-								<span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-								<span className="h-2.5 w-2.5 rounded-full bg-[var(--az-turf)]" />
-							</div>
-							<span className="ml-2 text-xs font-bold text-slate-400">
-								app.arenasys.com.br/dashboard
-							</span>
-						</div>
-						<span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-							Online agora
-						</span>
-					</div>
-
-					<div className="grid min-h-[420px] gap-0 lg:grid-cols-[0.92fr_1.08fr]">
-						<div className="border-b border-white/10 bg-slate-950 p-4 lg:border-b-0 lg:border-r">
-							<div className="mb-5 flex items-center justify-between">
-								<div>
-									<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-										Visao da arena
-									</p>
-									<h3 className="mt-1 text-xl font-black text-white">
-										Hoje, 16 jan
-									</h3>
-								</div>
-								<div className="rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-right">
-									<p className="text-[10px] font-bold uppercase text-slate-300">
-										Ocupacao
-									</p>
-									<p className="text-lg font-black text-white">72%</p>
-								</div>
-							</div>
-
-							<div className="grid grid-cols-2 gap-3">
-								{[
-									["Reservas", "18", "+5 hoje"],
-									["Receita", "R$ 1.840", "previsto"],
-									["Livres", "6", "proximos horarios"],
-									["Pendentes", "3", "sinal/balcao"],
-								].map(([label, value, hint]) => (
-									<div
-										key={label}
-										className="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
-										<p className="text-[10px] font-bold uppercase tracking-wide text-slate-300">
-											{label}
-										</p>
-										<p className="mt-2 text-xl font-black text-white">
-											{value}
-										</p>
-								<p className="mt-1 text-[11px] font-semibold text-white/62">
-											{hint}
-										</p>
-									</div>
-								))}
-							</div>
-
-							<div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.08] p-4">
-								<div className="mb-3 flex items-center justify-between">
-									<p className="text-xs font-black uppercase tracking-wide text-slate-300">
-										Fluxo de hoje
-									</p>
-									<span className="text-[11px] font-bold text-[var(--az-turf)]">
-										tempo real
-									</span>
-								</div>
-								<div className="space-y-3">
-									{[
-										["Confirmadas", "12", "78%", "bg-[var(--az-turf)]"],
-										["Aguardando sinal", "3", "42%", "bg-amber-300"],
-										["Horarios livres", "6", "58%", "bg-white/70"],
-									].map(([label, value, width, color]) => (
-										<div key={label}>
-											<div className="mb-1 flex items-center justify-between">
-												<span className="text-[11px] font-bold text-slate-200">
-													{label}
-												</span>
-												<span className="text-[11px] font-black text-white">
-													{value}
-												</span>
-											</div>
-											<div className="h-1.5 overflow-hidden rounded-full bg-white/15">
-												<div
-													className={cn("h-full rounded-full", color)}
-													style={{ width }}
-												/>
-											</div>
-										</div>
-									))}
-								</div>
-							</div>
-						</div>
-
-						<div className="bg-slate-50 p-4">
-							<div className="mb-4 flex items-center justify-between">
-								<div>
-									<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
-										Agenda publica + painel
-									</p>
-									<h3 className="mt-1 text-xl font-black text-slate-950">
-										Quadras e horarios em uma fila clara
-									</h3>
-								</div>
-							</div>
-
-							<div className="space-y-2.5">
-								{daySlots.map((slot) => (
-									<div
-										key={`${slot.time}-${slot.court}`}
-										className="grid grid-cols-[4.25rem_1fr_auto] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm">
-										<span className="font-mono text-sm font-black text-slate-950">
-											{slot.time}
-										</span>
-										<div className="min-w-0">
-											<p className="truncate text-sm font-black text-slate-800">
-												{slot.court}
-											</p>
-											<p className="truncate text-xs font-semibold text-slate-500">
-												{slot.client}
-											</p>
-										</div>
-										<span
-											className={cn(
-												"rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide",
-												slot.tone === "green" &&
-													"bg-[var(--az-turf-soft)] text-[var(--az-turf)]",
-												slot.tone === "amber" && "bg-amber-50 text-amber-700",
-												slot.tone === "blue" &&
-													"bg-[var(--az-navy-soft)] text-[var(--az-navy)]",
-											)}>
-											{slot.status}
-										</span>
-									</div>
-								))}
-							</div>
-
-							<div className="mt-4 grid gap-3 sm:grid-cols-[1fr_0.95fr]">
-								<div
-									className="rounded-2xl bg-[var(--az-navy)] p-4 text-white shadow-lg shadow-blue-950/20">
-									<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-										Link proprio
-									</p>
-									<p className="mt-2 text-xl font-black leading-tight">
-										/agendar/arena-society
-									</p>
-									<p className="mt-3 text-sm font-medium leading-5 text-white/75">
-										Cliente escolhe horario sem esperar resposta manual.
-									</p>
-								</div>
-								<div className="rounded-2xl border border-slate-200 bg-white p-4">
-									<p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">
-										Pagamento
-									</p>
-									<p className="mt-2 text-lg font-black text-slate-950">
-										Balcao hoje
-									</p>
-									<p className="mt-2 text-sm font-semibold leading-5 text-slate-500">
-										Pix/cartao pelo link em evolucao.
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
 function OutcomeStrip() {
 	const outcomes = [
 		{
 			value: "24/7",
 			label: "reservas pelo link",
-			desc: "O cliente consulta horários mesmo fora do atendimento da equipe.",
+			desc: "O cliente consulta horÃ¡rios mesmo fora do atendimento da equipe.",
 		},
 		{
 			value: "- mensagens",
@@ -1100,7 +284,7 @@ function OutcomeStrip() {
 		{
 			value: "+ controle",
 			label: "por quadra",
-			desc: "Reservas, bloqueios e pagamentos ficam claros para a operação.",
+			desc: "Reservas, bloqueios e pagamentos ficam claros para a operaÃ§Ã£o.",
 		},
 	];
 
@@ -1136,32 +320,32 @@ function ProductSuiteSection({
 		{
 			icon: CalendarDays,
 			title: "Reservas por quadra",
-			desc: "Mostre horários livres, bloqueios e reservas confirmadas por data, campo e modalidade.",
-			result: "Agenda sempre consultável",
-			action: "Organizar horários",
+			desc: "Mostre horÃ¡rios livres, bloqueios e reservas confirmadas por data, campo e modalidade.",
+			result: "Agenda sempre consultÃ¡vel",
+			action: "Organizar horÃ¡rios",
 			tone: "blue",
 		},
 		{
 			icon: MessageSquare,
-			title: "Link público da arena",
-			desc: "Compartilhe um endereço simples para o cliente escolher o horário sem instalar aplicativo.",
+			title: "Link pÃºblico da arena",
+			desc: "Compartilhe um endereÃ§o simples para o cliente escolher o horÃ¡rio sem instalar aplicativo.",
 			result: "Menos conversa operacional",
 			action: "Publicar link",
 			tone: "cyan",
 		},
 		{
 			icon: BarChart3,
-			title: "Painel da operação",
-			desc: "Acompanhe ocupação, receita prevista, pendências e fluxo do dia sem abrir planilhas.",
-			result: "Decisão mais rápida",
+			title: "Painel da operaÃ§Ã£o",
+			desc: "Acompanhe ocupaÃ§Ã£o, receita prevista, pendÃªncias e fluxo do dia sem abrir planilhas.",
+			result: "DecisÃ£o mais rÃ¡pida",
 			action: "Ver painel",
 			tone: "indigo",
 		},
 		{
 			icon: Users,
 			title: "Mensalistas",
-			desc: "Separe clientes fixos, horários recorrentes e pendências do fluxo de reservas avulsas.",
-			result: "Recorrência sob controle",
+			desc: "Separe clientes fixos, horÃ¡rios recorrentes e pendÃªncias do fluxo de reservas avulsas.",
+			result: "RecorrÃªncia sob controle",
 			action: "Gerenciar fixos",
 			tone: "amber",
 		},
@@ -1180,21 +364,21 @@ function ProductSuiteSection({
 				<div className="mb-12 grid gap-6 lg:grid-cols-[1fr_0.46fr] lg:items-end">
 					<div>
 						<p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--az-navy)]">
-							Soluções para arenas
+							SoluÃ§Ãµes para arenas
 						</p>
 						<h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight text-[var(--az-ink)] md:text-5xl">
-							Tudo que a operação precisa para vender horários com clareza.
+							Tudo que a operaÃ§Ã£o precisa para vender horÃ¡rios com clareza.
 						</h2>
 						<p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-							Assim como um cardápio digital organiza pedidos, o ArenaSys
+							Assim como um cardÃ¡pio digital organiza pedidos, o ArenaSys
 							organiza a disponibilidade da sua arena: reservas, quadras,
-							clientes e pagamentos em uma experiência única.
+							clientes e pagamentos em uma experiÃªncia Ãºnica.
 						</p>
 					</div>
 					<button
 						onClick={onPrimaryAction}
 						className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[var(--az-navy)] px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#10283f] lg:justify-self-end">
-						Escolher solução ideal
+						Escolher soluÃ§Ã£o ideal
 						<ArrowRight className="h-4 w-4" />
 					</button>
 				</div>
@@ -1234,14 +418,14 @@ function ProductSuiteSection({
 	);
 }
 
-// --- PÁGINA PRINCIPAL ---
+// --- PÃGINA PRINCIPAL ---
 
 export default function LandingPage() {
 	const navigate = useNavigate();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const startSignup = () => navigate("/login?mode=signup");
 
-	// Recuperação de senha: o email às vezes redireciona para a Site URL (/) em vez de /reset-password.
+	// RecuperaÃ§Ã£o de senha: o email Ã s vezes redireciona para a Site URL (/) em vez de /reset-password.
 	// Sem isto, o token fica na home e a tela de "Nova senha" nunca aparece.
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -1270,8 +454,8 @@ export default function LandingPage() {
 		<>
 			<SEO
 				title="Sistema de reservas para arenas esportivas | ArenaSys"
-				description="Organize quadras, horários, clientes e pagamentos em um link público e um painel simples para sua equipe acompanhar a operação da arena."
-				keywords="sistema para gestão de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horários de quadras, sistema para aluguel de quadras, gestão de arena esportiva"
+				description="Organize quadras, horÃ¡rios, clientes e pagamentos em um link pÃºblico e um painel simples para sua equipe acompanhar a operaÃ§Ã£o da arena."
+				keywords="sistema para gestÃ£o de quadras esportivas, sistema de agendamento de quadras, software para quadras esportivas, sistema para arenas esportivas, controle de horÃ¡rios de quadras, sistema para aluguel de quadras, gestÃ£o de arena esportiva"
 				canonical="/"
 			/>
 			<main
@@ -1279,9 +463,9 @@ export default function LandingPage() {
 				id="main-content"
 				data-seo-ready
 				className="landing-light relative min-h-dvh overflow-x-hidden scroll-smooth font-sans text-[var(--az-ink)] selection:bg-[var(--az-navy-soft)]">
-				{/* ═══════════════════════════════════════════════════════════════════
-				    🌌 COSMIC BACKGROUND — De cair o queixo
-				    ═══════════════════════════════════════════════════════════════════ */}
+				{/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+				    ðŸŒŒ COSMIC BACKGROUND â€” De cair o queixo
+				    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
 				{/* Base: Gradiente profundo do cosmos */}
 				<div
@@ -1296,7 +480,7 @@ export default function LandingPage() {
 					}}
 				/>
 
-				{/* Aurora Borealis - ondas de luz etéreas (GPU accelerated) */}
+				{/* Aurora Borealis - ondas de luz etÃ©reas (GPU accelerated) */}
 				<div
 					className="fixed inset-0 pointer-events-none overflow-hidden"
 					style={{ willChange: "transform" }}>
@@ -1384,7 +568,7 @@ export default function LandingPage() {
 					/>
 				</div>
 
-				{/* Nebula clouds - nuvens de gás cósmico */}
+				{/* Nebula clouds - nuvens de gÃ¡s cÃ³smico */}
 				<div className="fixed inset-0 pointer-events-none">
 					<div
 						className="absolute top-[10%] right-[5%] w-[500px] h-[500px] rounded-full opacity-[0.04]"
@@ -1437,13 +621,26 @@ export default function LandingPage() {
 					}}
 				/>
 
-				{/* Estilos para Animações Apple-level (GPU optimized) */}
+				{/* Estilos para AnimaÃ§Ãµes Apple-level (GPU optimized) */}
 				<style>{`
         /* GPU Acceleration hints */
         .gpu-accelerate {
           transform: translateZ(0);
           backface-visibility: hidden;
           perspective: 1000px;
+        }
+        /* Hero device mockup animations */
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0px) translateZ(0); }
+          50% { transform: translateY(-12px) translateZ(0); }
+        }
+        @keyframes heroMockupIn {
+          0% { opacity: 0; transform: translateY(30px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .hero-mockup-laptop,
+        .hero-mockup-phone {
+          will-change: transform;
         }
         @keyframes aurora {
           0%, 100% { transform: translateX(-50%) translateY(0) skewX(0deg) translateZ(0); }
@@ -1633,9 +830,9 @@ export default function LandingPage() {
 					/>
 				</div>
 
-				{/* ═══════════════════════════════════════════════════════════════════
-				    NAVBAR — EXPERIÊNCIA VISUAL ÚNICA
-				    ═══════════════════════════════════════════════════════════════════ */}
+				{/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+				    NAVBAR â€” EXPERIÃŠNCIA VISUAL ÃšNICA
+				    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 				<header className="landing-hero-header fixed left-0 right-0 top-0 z-50 flex justify-center px-5 py-5">
 					<nav className="landing-hero-nav relative flex h-16 w-full max-w-6xl items-center justify-between overflow-visible">
 						<div className="relative z-10 flex w-full items-center justify-between">
@@ -1659,7 +856,7 @@ export default function LandingPage() {
 									href="#solucoes"
 									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									Soluções
+									SoluÃ§Ãµes
 								</a>
 								<a
 									href="#como-funciona"
@@ -1671,7 +868,7 @@ export default function LandingPage() {
 									href="#comecar"
 									className="nav-link rounded-lg px-3 py-2 text-[0.93rem] font-semibold text-white transition-colors duration-300 hover:bg-white/12"
 									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									Começar
+									ComeÃ§ar
 								</a>
 								<a
 									href="#faq"
@@ -1705,7 +902,7 @@ export default function LandingPage() {
 
 							<button
 								className="relative rounded-lg border border-white/45 bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 md:hidden"
-								aria-label="Abrir menu de navegação"
+								aria-label="Abrir menu de navegaÃ§Ã£o"
 								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 								style={{ color: "#fff" }}>
 								<div
@@ -1725,7 +922,7 @@ export default function LandingPage() {
 										href="#solucoes"
 										onClick={() => setMobileMenuOpen(false)}
 										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
-										Soluções
+										SoluÃ§Ãµes
 									</a>
 									<a
 										href="#como-funciona"
@@ -1737,7 +934,7 @@ export default function LandingPage() {
 										href="#comecar"
 										onClick={() => setMobileMenuOpen(false)}
 										className="block rounded-lg p-4 text-lg font-semibold text-[var(--az-ink)] transition-colors hover:bg-[var(--az-paper)] hover:text-[var(--az-navy)]">
-										Começar
+										ComeÃ§ar
 									</a>
 									<a
 										href="#faq"
@@ -1772,76 +969,116 @@ export default function LandingPage() {
 				</header>
 
 				{/* --- HERO: Produto SaaS com prova visual imediata --- */}
-				<section className="relative isolate overflow-hidden bg-[var(--az-navy)] px-5 pb-28 pt-36 text-white sm:pt-40 lg:pb-28 lg:pt-44">
+				<section className="relative isolate overflow-hidden bg-[var(--az-navy)] px-5 pb-16 pt-36 text-white sm:pt-40 lg:pb-28 lg:pt-44">
 					<div className="absolute inset-0 bg-[var(--az-navy)]" />
 					<div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(22,50,79,0.98),rgba(47,107,69,0.86))]" />
 					<div className="absolute left-[6%] top-32 hidden h-24 w-24 rounded-[2rem] border border-white/18 bg-white/10 rotate-12 lg:block" />
 					<div className="absolute right-[12%] top-28 hidden h-28 w-28 rounded-full border border-white/18 bg-white/10 lg:block" />
+					{/* Ambient glow behind mockups */}
+					<div className="absolute right-[-5%] top-[30%] hidden h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,rgba(47,107,69,0.3)_0%,transparent_70%)] blur-3xl lg:block animate-pulse-glow" />
+					<div className="absolute right-[15%] top-[50%] hidden h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.15)_0%,transparent_70%)] blur-2xl lg:block animate-pulse-glow" style={{ animationDelay: "2s" }} />
 
-					<div className="relative z-10 mx-auto max-w-5xl">
-						<div className="mx-auto max-w-4xl space-y-8 text-center">
-							<div className="flex flex-wrap justify-center gap-2">
-								<div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/14 px-5 py-2.5 text-sm font-black text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-									<Sparkles className="h-4 w-4 text-amber-200" />
-									<span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-										O sistema completo para reservas esportivas
-									</span>
+					<div className="relative z-10 mx-auto max-w-7xl">
+						<div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+							{/* Left: Text */}
+							<div className="mx-auto max-w-2xl space-y-8 text-center lg:mx-0 lg:text-left">
+								<div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+									<div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/14 px-5 py-2.5 text-sm font-black text-white shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+										<Sparkles className="h-4 w-4 text-amber-200" />
+										<span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
+											O sistema completo para reservas esportivas
+										</span>
+									</div>
+								</div>
+
+								<div className="space-y-5">
+									<h1
+										className="text-[2.75rem] font-semibold leading-[0.96] text-white sm:text-5xl lg:text-[4.1rem] xl:text-[4.6rem]"
+										style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
+										A soluÃ§Ã£o completa para vender horÃ¡rios.
+									</h1>
+									<p
+										className="max-w-xl text-lg font-extrabold leading-8 text-blue-50 sm:text-xl lg:mx-0"
+										style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
+										Transforme sua agenda em um link de reservas, organize cada
+										quadra por horÃ¡rio e acompanhe pagamentos, clientes e ocupaÃ§Ã£o
+										em um painel simples.
+									</p>
+								</div>
+
+								<div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row lg:justify-start">
+									<button
+										onClick={startSignup}
+										className="btn-shine relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-lg bg-[var(--az-surface)] px-8 text-base font-semibold text-[var(--az-navy)] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
+										aria-label="Testar grÃ¡tis agora - comeÃ§ar teste de 7 dias">
+										Criar minha agenda online
+										<ArrowRight className="h-5 w-5" />
+									</button>
+									<button
+										onClick={() =>
+											document
+												.getElementById("como-funciona")
+												?.scrollIntoView({ behavior: "smooth" })
+										}
+										className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-white/45 bg-white/12 px-8 text-base font-semibold text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 sm:w-auto sm:min-w-[210px]"
+										aria-label="Ver como funciona o ArenaSys"
+										style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
+										Ver como funciona
+									</button>
+								</div>
+
+								<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50 lg:justify-start">
+									{[
+										"Link prÃ³prio para reservas",
+										"Sem app para o cliente",
+										"Pagamento no balcÃ£o ou combinado",
+									].map((item) => (
+										<div key={item} className="inline-flex items-center gap-2">
+											<Check className="h-4 w-4 text-amber-200" />
+											<span style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
+												{item}
+											</span>
+										</div>
+									))}
 								</div>
 							</div>
 
-							<div className="space-y-5">
-								<h1
-									className="text-[3.05rem] font-semibold leading-[0.96] text-white sm:text-6xl lg:text-[5.15rem]"
-									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									A solução completa para vender horários.
-								</h1>
-								<p
-									className="mx-auto max-w-2xl text-lg font-extrabold leading-8 text-blue-50 sm:text-xl"
-									style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}>
-									Transforme sua agenda em um link de reservas, organize cada
-									quadra por horário e acompanhe pagamentos, clientes e ocupação
-									em um painel simples.
-								</p>
-							</div>
-
-							<div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row">
-								<button
-									onClick={startSignup}
-									className="relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-lg bg-[var(--az-surface)] px-8 text-base font-semibold text-[var(--az-navy)] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
-									aria-label="Testar grátis agora - começar teste de 7 dias">
-									Criar minha agenda online
-									<ArrowRight className="h-5 w-5" />
-								</button>
-								<button
-									onClick={() =>
-										document
-											.getElementById("como-funciona")
-											?.scrollIntoView({ behavior: "smooth" })
-									}
-									className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-white/45 bg-white/12 px-8 text-base font-semibold text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 sm:w-auto sm:min-w-[210px]"
-									aria-label="Ver como funciona o ArenaSys"
-									style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>
-									Ver como funciona
-								</button>
-							</div>
-
-							<div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50">
-								{[
-									"Link próprio para reservas",
-									"Sem app para o cliente",
-									"Pagamento no balcão ou combinado",
-								].map((item) => (
-									<div key={item} className="inline-flex items-center gap-2">
-										<Check className="h-4 w-4 text-amber-200" />
-										<span
-											style={{
-												color: "#eff6ff",
-												WebkitTextFillColor: "#eff6ff",
-											}}>
-											{item}
-										</span>
+							{/* Right: Device mockups */}
+							<div className="relative mx-auto w-full max-w-2xl lg:mx-0 lg:max-w-none">
+								{/* MacBook â€” Dashboard */}
+								<div
+									className="hero-mockup-laptop relative z-10"
+									style={{ animation: "heroFloat 6s ease-in-out infinite", animationDelay: "0.3s" }}>
+									<div className="relative rounded-xl shadow-[0_35px_100px_-25px_rgba(0,0,0,0.55)]">
+										<img
+											src="/images/mockup-dashboard.png"
+											alt="Painel de gestÃ£o ArenaSys â€” visÃ£o geral com grade de horÃ¡rios, quadras e reservas do dia"
+											className="w-full rounded-xl"
+											loading="eager"
+											style={{ opacity: 0, animation: "heroMockupIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s forwards" }}
+										/>
+										<div className="absolute -inset-[1px] -z-10 rounded-xl bg-gradient-to-br from-white/25 via-white/5 to-[var(--az-turf)]/30 blur-[1px]" />
 									</div>
-								))}
+								</div>
+
+								{/* iPhone â€” Reservas */}
+								<div
+									className="hero-mockup-phone absolute -bottom-8 -right-4 z-20 w-[35%] sm:-right-2 sm:w-[32%] lg:-bottom-12 lg:-right-6 lg:w-[35%]"
+									style={{ animation: "heroFloat 6s ease-in-out infinite", animationDelay: "1.5s" }}>
+									<div className="relative rounded-2xl shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6)]">
+										<img
+											src="/images/mockup-mobile.png"
+											alt="Tela de reservas pelo celular â€” cliente escolhendo horÃ¡rio na arena"
+											className="w-full rounded-2xl"
+											loading="eager"
+											style={{ opacity: 0, animation: "heroMockupIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.8s forwards" }}
+										/>
+										<div className="absolute -inset-[1px] -z-10 rounded-2xl bg-gradient-to-br from-white/20 via-transparent to-[var(--az-turf)]/25 blur-[1px]" />
+									</div>
+								</div>
+
+								{/* Ambient reflection */}
+								<div className="absolute -bottom-8 left-[10%] right-[10%] h-16 rounded-full bg-white/5 blur-2xl" />
 							</div>
 						</div>
 					</div>
@@ -1849,7 +1086,7 @@ export default function LandingPage() {
 
 				<OutcomeStrip />
 
-				{/* --- SEÇÃO PROBLEMA: diagnostico da operacao --- */}
+				{/* --- SEÃ‡ÃƒO PROBLEMA: diagnostico da operacao --- */}
 				<section className="relative bg-[var(--az-paper)] px-4 py-20">
 					<div className="mx-auto max-w-6xl">
 						<ScrollReveal className="mx-auto mb-14 max-w-3xl text-center">
@@ -1857,12 +1094,12 @@ export default function LandingPage() {
 								O custo invisivel da agenda manual
 							</p>
 							<h2 className="text-3xl font-semibold text-[var(--az-ink)] md:text-4xl lg:text-5xl">
-								Enquanto a reserva depende de conversa, sua operação depende de
-								memória.
+								Enquanto a reserva depende de conversa, sua operaÃ§Ã£o depende de
+								memÃ³ria.
 							</h2>
 							<p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-								O WhatsApp continua útil para relacionamento. O problema começa
-								quando ele vira agenda, caixa, histórico e controle ao mesmo
+								O WhatsApp continua Ãºtil para relacionamento. O problema comeÃ§a
+								quando ele vira agenda, caixa, histÃ³rico e controle ao mesmo
 								tempo.
 							</p>
 						</ScrollReveal>
@@ -1872,20 +1109,20 @@ export default function LandingPage() {
 								{
 									icon: MessageSquare,
 									label: "Atendimento preso no chat",
-									pain: "A equipe responde a mesma pergunta de horário várias vezes por dia, mesmo quando a quadra está livre.",
+									pain: "A equipe responde a mesma pergunta de horÃ¡rio vÃ¡rias vezes por dia, mesmo quando a quadra estÃ¡ livre.",
 									impact: "tempo perdido",
 								},
 								{
 									icon: CalendarDays,
-									label: "Agenda sem fonte única",
-									pain: "Reservas ficam em mensagens, cadernos e lembranças. Basta uma troca de turno para o conflito aparecer.",
+									label: "Agenda sem fonte Ãºnica",
+									pain: "Reservas ficam em mensagens, cadernos e lembranÃ§as. Basta uma troca de turno para o conflito aparecer.",
 									impact: "risco de conflito",
 								},
 								{
 									icon: CreditCard,
-									label: "Receita difícil de enxergar",
-									pain: "Sem um painel simples, fica mais difícil saber o que entrou, o que está pendente e quais horários vendem melhor.",
-									impact: "visão fraca",
+									label: "Receita difÃ­cil de enxergar",
+									pain: "Sem um painel simples, fica mais difÃ­cil saber o que entrou, o que estÃ¡ pendente e quais horÃ¡rios vendem melhor.",
+									impact: "visÃ£o fraca",
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.label} delay={i * 100}>
@@ -1912,7 +1149,7 @@ export default function LandingPage() {
 						<ScrollReveal delay={250}>
 							<div className="mt-8 rounded-lg border border-[var(--az-line)] bg-[var(--az-navy)] p-6 text-center shadow-[0_24px_70px_-48px_rgba(22,24,26,0.42)]">
 								<p className="text-lg font-semibold leading-8 text-white">
-									A solução não é abandonar o WhatsApp. É tirar a agenda de
+									A soluÃ§Ã£o nÃ£o Ã© abandonar o WhatsApp. Ã‰ tirar a agenda de
 									dentro dele.
 								</p>
 							</div>
@@ -1930,10 +1167,10 @@ export default function LandingPage() {
 								Da primeira quadra ao primeiro link
 							</p>
 							<h2 className="mb-4 text-3xl font-semibold text-[var(--az-ink)] md:text-5xl">
-								Começa simples. Continua organizado.
+								ComeÃ§a simples. Continua organizado.
 							</h2>
 							<p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-								A ideia não é trocar toda a operação de uma vez. É colocar o
+								A ideia nÃ£o Ã© trocar toda a operaÃ§Ã£o de uma vez. Ã‰ colocar o
 								fluxo principal de reservas em um lugar que a equipe consiga
 								confiar.
 							</p>
@@ -1944,7 +1181,7 @@ export default function LandingPage() {
 								{
 									step: "1",
 									title: "Configure a base",
-									desc: "Cadastre quadras, horários, valores e regras principais da sua operação.",
+									desc: "Cadastre quadras, horÃ¡rios, valores e regras principais da sua operaÃ§Ã£o.",
 								},
 								{
 									step: "2",
@@ -1954,7 +1191,7 @@ export default function LandingPage() {
 								{
 									step: "3",
 									title: "Acompanhe no painel",
-									desc: "Sua equipe confirma pagamentos, visualiza reservas e mantém a agenda atualizada.",
+									desc: "Sua equipe confirma pagamentos, visualiza reservas e mantÃ©m a agenda atualizada.",
 								},
 							].map((item, i) => (
 								<ScrollReveal key={item.step} delay={i * 150}>
@@ -1975,7 +1212,7 @@ export default function LandingPage() {
 					</div>
 				</section>
 
-				{/* --- PRÓXIMO PASSO: descoberta antes de preço --- */}
+				{/* --- PRÃ“XIMO PASSO: descoberta antes de preÃ§o --- */}
 				<section
 					id="comecar"
 					className="landing-dark-section relative scroll-mt-24 overflow-hidden border-y border-white/10 bg-[var(--az-navy)] px-4 py-28 sm:py-32">
@@ -1987,7 +1224,7 @@ export default function LandingPage() {
 						<ScrollReveal className="mb-14 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
 							<div>
 								<p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/72">
-									Próximo passo
+									PrÃ³ximo passo
 								</p>
 								<h2 className="max-w-3xl text-3xl font-semibold leading-tight text-white md:text-5xl lg:text-6xl">
 									Comece pela agenda piloto. Decida o resto com clareza.
@@ -2004,19 +1241,19 @@ export default function LandingPage() {
 							<div className="mb-8 grid gap-4 md:grid-cols-3">
 								{[
 									{
-										label: "Diagnóstico",
-										title: "Ler a operação",
+										label: "DiagnÃ³stico",
+										title: "Ler a operaÃ§Ã£o",
 										desc: "Entender como chegam as reservas, quais quadras entram primeiro e onde a equipe perde tempo.",
 									},
 									{
 										label: "Agenda piloto",
 										title: "Publicar um link real",
-										desc: "Colocar uma versão enxuta no ar para testar o fluxo com reservas da rotina da arena.",
+										desc: "Colocar uma versÃ£o enxuta no ar para testar o fluxo com reservas da rotina da arena.",
 									},
 									{
-										label: "Decisão",
-										title: "Expandir com segurança",
-										desc: "Depois da validação, ampliar quadras, regras e acompanhamento sem mudar tudo no escuro.",
+										label: "DecisÃ£o",
+										title: "Expandir com seguranÃ§a",
+										desc: "Depois da validaÃ§Ã£o, ampliar quadras, regras e acompanhamento sem mudar tudo no escuro.",
 									},
 								].map((item) => (
 									<div
@@ -2045,10 +1282,10 @@ export default function LandingPage() {
 											Agenda piloto
 										</p>
 										<h3 className="max-w-xl text-3xl font-semibold leading-tight md:text-4xl">
-											Publique uma experiência pequena, real e fácil de avaliar.
+											Publique uma experiÃªncia pequena, real e fÃ¡cil de avaliar.
 										</h3>
 										<p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--az-ink-soft)]">
-											O dono da arena não precisa comprar uma promessa. Ele precisa
+											O dono da arena nÃ£o precisa comprar uma promessa. Ele precisa
 											ver uma quadra funcionando no link, a equipe acompanhando no
 											painel e o cliente entendendo como reservar.
 										</p>
@@ -2058,7 +1295,7 @@ export default function LandingPage() {
 													Entrada leve
 												</p>
 												<p className="mt-1 text-base font-semibold text-[var(--az-ink)]">
-													7 dias grátis, sem cartão
+													7 dias grÃ¡tis, sem cartÃ£o
 												</p>
 											</div>
 											<div className="border-l-4 border-[var(--az-turf)] pl-4">
@@ -2079,11 +1316,11 @@ export default function LandingPage() {
 									</p>
 									<ul className="space-y-4">
 										{[
-											"Agenda online com quadras, horários e bloqueios",
-											"Link público para o cliente consultar disponibilidade",
-											"Painel para acompanhar reservas, receita e pendências",
-											"Pagamento no balcão ou combinado no fluxo atual",
-											"Implantação assistida para colocar a primeira arena no ar",
+											"Agenda online com quadras, horÃ¡rios e bloqueios",
+											"Link pÃºblico para o cliente consultar disponibilidade",
+											"Painel para acompanhar reservas, receita e pendÃªncias",
+											"Pagamento no balcÃ£o ou combinado no fluxo atual",
+											"ImplantaÃ§Ã£o assistida para colocar a primeira arena no ar",
 										].map((item) => (
 											<li
 												key={item}
@@ -2099,7 +1336,7 @@ export default function LandingPage() {
 									<button
 										onClick={() => navigate("/login?mode=signup")}
 										className="btn-shine relative mt-8 h-16 w-full overflow-hidden rounded-lg bg-[var(--az-surface)] text-lg font-semibold text-[var(--az-navy)] transition-all duration-300 hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-navy)]"
-										aria-label="Criar minha agenda online - teste grátis de 7 dias">
+										aria-label="Criar minha agenda online - teste grÃ¡tis de 7 dias">
 										Criar minha agenda online
 									</button>
 								</div>
@@ -2118,21 +1355,26 @@ export default function LandingPage() {
 								Antes de testar
 							</p>
 							<h2 className="text-3xl font-semibold text-[var(--az-ink)] md:text-5xl">
-								Respostas diretas para decidir sem enrolação.
+								Respostas diretas para decidir sem enrolaÃ§Ã£o.
 							</h2>
 						</ScrollReveal>
 
-						<div className="space-y-4">
-							{faqList.map((item, i) => (
-								<ScrollReveal key={i} delay={i * 75}>
-									<div className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-6 transition-colors duration-300 hover:border-[var(--az-navy)]">
-										<h3 className="mb-2 text-lg font-semibold text-[var(--az-ink)]">
+						<div className="mx-auto max-w-2xl text-left">
+							<Accordion type="single" collapsible className="w-full space-y-4">
+								{faqList.map((item, i) => (
+									<AccordionItem
+										key={i}
+										value={`item-${i}`}
+										className="rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] px-6 data-[state=open]:border-[var(--az-navy)] transition-colors duration-300">
+										<AccordionTrigger className="text-left text-lg font-semibold text-[var(--az-ink)] hover:no-underline hover:text-[var(--az-navy)]">
 											{item.question}
-										</h3>
-										<p className="text-[var(--az-ink-soft)]">{item.answer}</p>
-									</div>
-								</ScrollReveal>
-							))}
+										</AccordionTrigger>
+										<AccordionContent className="text-base text-[var(--az-ink-soft)] leading-relaxed pb-6 pt-2">
+											{item.answer}
+										</AccordionContent>
+									</AccordionItem>
+								))}
+							</Accordion>
 						</div>
 					</div>
 				</section>
@@ -2147,21 +1389,21 @@ export default function LandingPage() {
 					<ScrollReveal>
 						<div className="max-w-3xl mx-auto text-center relative z-10">
 							<h2 className="mb-8 text-4xl font-semibold leading-tight text-[var(--az-ink)] md:text-5xl lg:text-6xl">
-								Comece pela próxima reserva.
+								Comece pela prÃ³xima reserva.
 								<br />
 								<span className="text-[var(--az-turf)]">
 									Organize o resto a partir dela.
 								</span>
 							</h2>
 							<p className="mx-auto mb-10 max-w-xl text-xl text-[var(--az-ink-soft)]">
-								Teste por 7 dias sem cartão, coloque seu link no ar e veja se o
+								Teste por 7 dias sem cartÃ£o, coloque seu link no ar e veja se o
 								fluxo encaixa na rotina da sua arena.
 							</p>
 							<button
 								onClick={() => navigate("/login?mode=signup")}
 								className="btn-shine relative inline-flex h-16 items-center gap-3 overflow-hidden rounded-lg bg-[var(--az-navy)] px-14 text-lg font-semibold text-white shadow-sm transition-all duration-300 hover:scale-[1.01] hover:bg-[#10283f] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
-								aria-label="Começar teste grátis do ArenaSys">
-								Começar teste grátis <ArrowRight className="w-5 h-5" />
+								aria-label="ComeÃ§ar teste grÃ¡tis do ArenaSys">
+								ComeÃ§ar teste grÃ¡tis <ArrowRight className="w-5 h-5" />
 							</button>
 						</div>
 					</ScrollReveal>
