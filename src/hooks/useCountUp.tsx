@@ -122,40 +122,4 @@ export function useInView(
 	return [ref, isInView];
 }
 
-/**
- * Componente de contagem animada para uso inline
- */
-interface AnimatedNumberProps {
-	value: number;
-	prefix?: string;
-	suffix?: string;
-	duration?: number;
-	decimals?: number;
-	className?: string;
-}
-
-export function AnimatedNumber({
-	value,
-	prefix = "",
-	suffix = "",
-	duration = 2000,
-	decimals = 0,
-	className = "",
-}: AnimatedNumberProps) {
-	const [ref, isInView] = useInView();
-	const count = useCountUp({
-		end: isInView ? value : 0,
-		duration,
-		decimals,
-		prefix,
-		suffix,
-	});
-
-	return (
-		<span ref={ref} className={`number-display ${className}`}>
-			{count}
-		</span>
-	);
-}
-
 export default useCountUp;

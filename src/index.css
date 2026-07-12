@@ -157,6 +157,7 @@
     --az-navy-soft: #E7EEF3;
     --az-clay: #B5652F;
     --az-turf: #2F6B45;
+    --az-turf-soft: #E2F0E7;
     --az-line: #E3E1D8;
     --az-radius-card: 12px;
     --az-radius-control: 8px;
@@ -250,6 +251,7 @@
     --az-navy-soft: rgba(79, 117, 153, 0.18);
     --az-clay: #c7824d;
     --az-turf: #6fa67a;
+    --az-turf-soft: rgba(111, 166, 122, 0.18);
     --az-line: #29333d;
     --az-border: 0.5px solid var(--az-line);
 
@@ -1747,13 +1749,7 @@
     linear-gradient(180deg, var(--az-paper) 0%, #fbfaf6 46%, #ece9df 100%);
 }
 
-.landing-light>.fixed:first-of-type {
-  background:
-    radial-gradient(ellipse 80% 52% at 50% -20%, rgba(22, 50, 79, 0.10) 0%, transparent 56%),
-    radial-gradient(ellipse 58% 42% at 100% 36%, rgba(181, 101, 47, 0.08) 0%, transparent 44%),
-    radial-gradient(ellipse 54% 38% at 0% 78%, rgba(47, 107, 69, 0.07) 0%, transparent 46%),
-    linear-gradient(180deg, var(--az-paper) 0%, #fbfaf6 54%, #ece9df 100%) !important;
-}
+
 
 .landing-light>.fixed:nth-of-type(2),
 .landing-light>.fixed:nth-of-type(3) {
@@ -1764,9 +1760,20 @@
   opacity: 0.38;
 }
 
-.landing-light .text-white {
-  color: #ffffff !important;
-}
+.landing-hero { background: linear-gradient(135deg, var(--az-navy), #1f4d47); }
+.landing-header { color: var(--az-ink); }
+.landing-hero .landing-product-caption { color: rgb(255 255 255 / 0.78); }
+
+.landing-product-showcase { position: relative; isolation: isolate; width: min(100%, 760px); margin-inline: auto; }
+.landing-product-laptop { position: relative; z-index: 1; width: 100%; }
+.landing-product-phone { position: absolute; z-index: 2; right: -2%; bottom: -4%; width: min(34%, 230px); }
+.landing-product-image { display: block; width: 100%; height: auto; border-radius: 24px; box-shadow: 0 32px 72px -36px rgb(0 0 0 / 0.65); }
+.landing-product-caption { margin-bottom: 0.75rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgb(255 255 255 / 0.78); }
+.landing-device-float { animation: landing-device-float 7s ease-in-out infinite; }
+.landing-product-phone.landing-device-float { animation-delay: 1.2s; }
+@keyframes landing-device-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@media (max-width: 639px) { .landing-product-showcase { display: grid; gap: 1.5rem; } .landing-product-phone { position: relative; right: auto; bottom: auto; width: min(68%, 260px); margin-inline: auto; } }
+@media (prefers-reduced-motion: reduce) { .landing-device-float { animation: none; } }
 
 .landing-light .text-gray-300,
 .landing-light .text-gray-400 {
@@ -1958,4 +1965,92 @@
 .landing-light .landing-dark-section .border-white\/5,
 .landing-light .landing-dark-section .border-white\/10 {
   border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ---------- Landing Page Animations ---------- */
+@keyframes aurora {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  25% {
+    transform: translateX(-48%) translateY(-10px) scale(1.02);
+  }
+  50% {
+    transform: translateX(-52%) translateY(5px) scale(0.98);
+  }
+  75% {
+    transform: translateX(-49%) translateY(-5px) scale(1.01);
+  }
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(-100px) translateY(0);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.8;
+  }
+  15% {
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(calc(100vw + 200px)) translateY(100px);
+    opacity: 0;
+  }
+}
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes heroMockupIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Button Shine Effect ---------- */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: none;
+  animation: btnShine 3s ease-in-out infinite;
+}
+
+@keyframes btnShine {
+  0% {
+    left: -100%;
+  }
+  20% {
+    left: 150%;
+  }
+  100% {
+    left: 150%;
+  }
 }

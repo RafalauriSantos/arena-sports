@@ -10,7 +10,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default tseslint.config(
-	{ ignores: ["dist", "supabase/functions/**"] },
+	{
+		ignores: [
+			"dist",
+			"supabase/functions/**",
+			"src/pages/LandingOld.tsx",
+			"src/types/database.ts",
+		],
+	},
 	{
 		extends: [js.configs.recommended, ...tseslint.configs.recommended],
 		files: ["**/*.{ts,tsx}"],
@@ -30,5 +37,5 @@ export default tseslint.config(
 			],
 			"@typescript-eslint/no-unused-vars": "off",
 		},
-	}
+	},
 );
