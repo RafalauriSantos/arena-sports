@@ -239,7 +239,7 @@ function LandingPage() {
                 className="relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-lg bg-[var(--az-navy)] px-7 text-[0.93rem] font-semibold text-white shadow-lg shadow-blue-950/20 transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-[#10283f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/30"
                 id="btn-signup"
               >
-                Criar agenda
+                Começar teste grátis
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -301,7 +301,7 @@ function LandingPage() {
                 className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-[var(--az-navy)] text-lg font-semibold text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--az-navy)]/40"
                 id="mobile-signup-btn"
               >
-                Criar agenda
+                Começar teste grátis
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -322,88 +322,88 @@ function LandingPage() {
           />
 
           <div className="relative z-10 mx-auto max-w-7xl">
-            <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
-              {/* Text & Primary CTA */}
-              <div className="mx-auto max-w-2xl space-y-8 text-center lg:mx-0 lg:text-left">
-                <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/14 px-5 py-2.5 text-sm font-black text-white shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <Sparkles className="h-4 w-4 text-amber-200" />
-                    <span
-                      style={{ color: "#fff", WebkitTextFillColor: "#fff" }}
-                    >
-                      O sistema completo para reservas esportivas
-                    </span>
-                  </div>
+            <div className="mx-auto max-w-4xl space-y-8 text-center mb-16 lg:mb-24">
+              <div className="flex flex-wrap justify-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--az-turf)]/40 bg-[var(--az-turf)]/10 px-3 py-1 text-sm font-semibold text-[var(--az-turf-soft)] backdrop-blur-sm">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--az-turf)] opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--az-turf)]"></span>
+                  </span>
+                  Lançamento Antecipado
                 </div>
-
-                <div className="space-y-5">
-                  <h1
-                    className="font-display text-[2.75rem] font-bold tracking-tight leading-[1.0] text-white sm:text-5xl md:text-6xl lg:text-[4.1rem] xl:text-[4.6rem]"
-                    style={{ color: "#fff", WebkitTextFillColor: "#fff" }}
-                  >
-                    Transforme conversas no WhatsApp em reservas organizadas.
-                  </h1>
-                  <p
-                    className="max-w-xl text-lg font-medium leading-8 text-blue-50 sm:text-xl lg:mx-0"
-                    style={{
-                      color: "#eff6ff",
-                      WebkitTextFillColor: "#eff6ff",
-                    }}
-                  >
-                    O dono da arena não perde mais tempo e controle. O cliente reserva pelo link público sem esperar resposta. E sua equipe visualiza horários, clientes e receita em um lugar simples.
-                  </p>
-                </div>
-
-                <div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row lg:justify-start">
-                  <Link
-                    to="/login?mode=signup"
-                    className="btn-shine relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-[var(--az-surface)] px-8 text-base font-semibold text-[var(--az-navy)] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
-                    aria-label="Testar grátis agora - começar teste de 7 dias"
-                  >
-                    Começar Teste Grátis
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                  <a
-                    href="#pricing"
-                    className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-white/45 bg-white/12 px-8 text-base font-semibold text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35 sm:w-auto sm:min-w-[210px]"
-                    aria-label="Ver Oferta Founders"
-                  >
-                    Ver Oferta Founders
-                  </a>
-                </div>
-
-                <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50 lg:justify-start">
-                  <div id="benefit-1" className="inline-flex items-center gap-2">
-                    <Check className="h-4 w-4 text-amber-200" />
-                    <span
-                      style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}
-                    >
-                      Link próprio para reservas
-                    </span>
-                  </div>
-                  <div id="benefit-2" className="inline-flex items-center gap-2">
-                    <Check className="h-4 w-4 text-amber-200" />
-                    <span
-                      style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}
-                    >
-                      Sem app para o cliente
-                    </span>
-                  </div>
-                  <div id="benefit-3" className="inline-flex items-center gap-2">
-                    <Check className="h-4 w-4 text-amber-200" />
-                    <span
-                      style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}
-                    >
-                      Pagamento no balcão ou combinado
-                    </span>
-                  </div>
+                <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-semibold text-white/80 backdrop-blur-sm">
+                  O CUSTO INVISÍVEL DAS MENSAGENS
                 </div>
               </div>
 
-              {/* Device Mockups */}
-              <div className="relative mx-auto w-full max-w-2xl lg:mx-0 lg:max-w-none">
-                <ProductShowcase reducedMotion={prefersReducedMotion} />
+              <div className="space-y-5">
+                <h1
+                  className="font-display text-[2.75rem] font-bold tracking-tight leading-[1.0] text-white sm:text-5xl md:text-6xl lg:text-[4.1rem] xl:text-[4.6rem]"
+                  style={{ color: "#fff", WebkitTextFillColor: "#fff" }}
+                >
+                  Transforme conversas no WhatsApp em{" "}
+                  <span className="text-[var(--az-turf)]">reservas organizadas.</span>
+                </h1>
+                <p
+                  className="mx-auto max-w-2xl text-lg font-medium leading-8 text-blue-50 sm:text-xl"
+                  style={{
+                    color: "#eff6ff",
+                    WebkitTextFillColor: "#eff6ff",
+                  }}
+                >
+                  O dono da arena não perde mais tempo e controle. O cliente reserva pelo link público sem esperar resposta. E sua equipe visualiza horários, clientes e receita em um lugar simples.
+                </p>
               </div>
+
+              <div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row">
+                <Link
+                  to="/login?mode=signup"
+                  className="btn-shine relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-[var(--az-surface)] px-8 text-base font-semibold text-[var(--az-navy)] shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-[var(--az-paper)] active:scale-[0.98] sm:w-auto sm:min-w-[292px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35"
+                  aria-label="Testar grátis agora - começar teste de 7 dias"
+                >
+                  Começar teste grátis
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <a
+                  href="#pricing"
+                  className="flex h-14 w-full items-center justify-center whitespace-nowrap rounded-lg border border-white/45 bg-white/12 px-8 text-base font-semibold text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35 sm:w-auto sm:min-w-[210px]"
+                  aria-label="Ver oferta Founders"
+                >
+                  Ver oferta Founders
+                </a>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-bold text-blue-50">
+                <div id="benefit-1" className="inline-flex items-center gap-2">
+                  <Check className="h-4 w-4 text-amber-200" />
+                  <span
+                    style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}
+                  >
+                    Link próprio para reservas
+                  </span>
+                </div>
+                <div id="benefit-2" className="inline-flex items-center gap-2">
+                  <Check className="h-4 w-4 text-amber-200" />
+                  <span
+                    style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}
+                  >
+                    Sem app para o cliente
+                  </span>
+                </div>
+                <div id="benefit-3" className="inline-flex items-center gap-2">
+                  <Check className="h-4 w-4 text-amber-200" />
+                  <span
+                    style={{ color: "#eff6ff", WebkitTextFillColor: "#eff6ff" }}
+                  >
+                    Pagamento no balcão ou combinado
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Device Mockups Carousel */}
+            <div className="relative mx-auto w-full px-2 sm:px-4">
+              <ProductShowcase reducedMotion={prefersReducedMotion} />
             </div>
           </div>
         </section>
@@ -426,7 +426,7 @@ function LandingPage() {
           </section>
 
           {/* ---- Problema Section ---- */}
-          <section id="problema" className="relative bg-[var(--az-surface)] px-4 py-28 border-t border-[var(--az-line)]">
+          <section id="problema" className="relative bg-[var(--az-surface)] px-4 py-16 md:py-20 border-t border-[var(--az-line)]">
             <div className="max-w-5xl mx-auto text-center">
               <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
                 O jeito antigo não escala
@@ -456,7 +456,7 @@ function LandingPage() {
           </section>
 
           {/* ---- Product Suite ---- */}
-          <section id="soluções" className="relative bg-[var(--az-paper)] px-4 py-28 border-t border-[var(--az-line)]">
+          <section id="soluções" className="relative bg-[var(--az-paper)] px-4 py-16 md:py-20 border-t border-[var(--az-line)]">
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-16">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
@@ -470,7 +470,7 @@ function LandingPage() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-4">
                 {products.map((product) => {
                   const Icon = product.icon;
                   return (
@@ -515,7 +515,7 @@ function LandingPage() {
           </section>
 
           {/* ---- How It Works (3 steps) ---- */}
-          <section id="como-funciona" className="relative bg-[var(--az-paper)] px-4 py-28">
+          <section id="como-funciona" className="relative bg-[var(--az-paper)] px-4 py-16 md:py-20">
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-16">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
@@ -569,23 +569,19 @@ function LandingPage() {
           {/* ---- Next Step Call to Action ---- */}
           <section
             id="comecar"
-            className="landing-dark-section relative scroll-mt-24 overflow-hidden border-y border-white/10 bg-[var(--az-navy)] px-4 py-28 sm:py-32"
+            className="relative scroll-mt-24 overflow-hidden border-t border-[var(--az-line)] bg-[var(--az-surface)] px-4 py-16 md:py-20"
           >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-            <div className="absolute left-[8%] top-12 h-56 w-56 rounded-full bg-white/10 blur-[110px]" />
-            <div className="absolute bottom-10 right-[12%] h-64 w-64 rounded-full bg-[var(--az-turf)]/20 blur-[130px]" />
-
             <div className="relative z-10 mx-auto max-w-6xl">
-              <div className="relative scroll-mt-24 rounded-3xl border border-white/10 bg-white/[0.03] px-4 py-28 backdrop-blur-md shadow-2xl">
+              <div className="relative scroll-mt-24 rounded-3xl border border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-16 md:py-20 shadow-sm">
                 <div className="max-w-3xl mx-auto text-center">
-                  <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/72">
+                  <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
                     Próximo passo
                   </p>
-                  <h2 className="font-display max-w-3xl text-3xl font-bold tracking-tight leading-tight text-white md:text-5xl lg:text-6xl">
+                  <h2 className="font-display max-w-3xl text-3xl font-bold tracking-tight leading-tight text-[var(--az-ink)] md:text-5xl lg:text-6xl">
                     Comece pela próxima reserva.<br />
                     <span className="text-[var(--az-turf)]">Organize o resto a partir dela.</span>
                   </h2>
-                  <p className="mx-auto mb-10 max-w-xl text-lg leading-8 text-white/72 lg:justify-self-end">
+                  <p className="mx-auto mb-10 max-w-xl text-lg leading-8 text-[var(--az-ink-soft)] lg:justify-self-end">
                     A primeira conversa precisa mostrar valor real: uma agenda
                     publicada, quadras configuradas e um caminho simples para o
                     cliente reservar sem depender de troca de mensagens.
@@ -611,60 +607,28 @@ function LandingPage() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="group h-full rounded-lg border border-white/12 bg-white/[0.06] p-6 transition-colors duration-300 hover:border-white/35"
+                      className="group h-full rounded-lg border border-[var(--az-line)] bg-[var(--az-surface)] p-6 transition-colors duration-300 hover:border-[var(--az-navy)]"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/66">{item.label}</p>
-                      <p className="mt-4 text-2xl font-semibold text-white">{item.title}</p>
-                      <p className="mt-3 text-sm leading-6 text-white/70">{item.desc}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--az-ink-soft)]">{item.label}</p>
+                      <p className="mt-4 text-2xl font-semibold text-[var(--az-ink)]">{item.title}</p>
+                      <p className="mt-3 text-sm leading-6 text-[var(--az-ink-soft)]">{item.desc}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="rounded-lg border border-white/12 bg-white/[0.06] p-7 backdrop-blur-sm md:p-8">
-                  <p className="mb-6 text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-                    O que entra no piloto
-                  </p>
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-3 text-base font-semibold leading-6 text-white">
-                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/12">
-                        <Check className="h-4 w-4 text-white" />
-                      </div>
-                      <span>Agenda online com quadras, horários e bloqueios</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-base font-semibold leading-6 text-white">
-                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/12">
-                        <Check className="h-4 w-4 text-white" />
-                      </div>
-                      <span>Link público para o cliente consultar disponibilidade</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-base font-semibold leading-6 text-white">
-                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/12">
-                        <Check className="h-4 w-4 text-white" />
-                      </div>
-                      <span>Painel para acompanhar reservas, receita e pendências</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-base font-semibold leading-6 text-white">
-                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/12">
-                        <Check className="h-4 w-4 text-white" />
-                      </div>
-                      <span>Implantação assistida para colocar a primeira arena no ar</span>
-                    </li>
-                  </ul>
-                </div>
-
                 <Link
                   to="/login?mode=signup"
-                  className="btn-shine relative mt-8 inline-flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-[var(--az-surface)] text-lg font-semibold text-[var(--az-navy)] transition-colors duration-300 hover:bg-[var(--az-paper)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
+                  className="btn-shine relative mt-8 inline-flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-[var(--az-navy)] text-lg font-semibold text-white shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-colors duration-300 hover:bg-[#10283f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
                   aria-label="Criar minha agenda online - teste grátis de 7 dias"
                 >
-                  Criar minha agenda online
+                  Começar teste grátis
                 </Link>
               </div>
             </div>
           </section>
 
           {/* ---- FAQ Section ---- */}
-          <section id="faq" className="relative scroll-mt-24 border-t border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-28">
+          <section id="faq" className="relative scroll-mt-24 border-t border-[var(--az-line)] bg-[var(--az-paper)] px-4 py-16 md:py-20">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-16">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-[var(--az-navy)]">
@@ -698,7 +662,7 @@ function LandingPage() {
           </section>
 
           {/* ---- Final CTA ---- */}
-          <section className="relative overflow-hidden bg-[var(--az-surface)] px-4 py-32">
+          <section className="relative overflow-hidden bg-[var(--az-surface)] px-4 py-16 md:py-20">
             {/* Dramatic background */}
             <div className="absolute inset-0">
               <div
@@ -712,8 +676,8 @@ function LandingPage() {
             <div className="ScrollReveal">
               <div className="max-w-3xl mx-auto text-center relative z-10">
                 <h2 className="font-display mb-8 text-4xl font-bold tracking-tight leading-tight text-[var(--az-ink)] md:text-5xl lg:text-6xl">
-                  Coloque Seu Link de Reservas no Ar.<br />
-                  <span className="text-[var(--az-turf)]">Valide Em 7 Dias Com Sua Rotina Real.</span>
+                  Coloque seu link de reservas no ar.<br />
+                  <span className="text-[var(--az-turf)]">Valide em 7 dias com sua rotina real.</span>
                 </h2>
                 <p className="mx-auto mb-10 max-w-xl text-xl text-[var(--az-ink-soft)]">
                   Teste por 7 dias sem cartão, coloque seu link no ar e veja se o
