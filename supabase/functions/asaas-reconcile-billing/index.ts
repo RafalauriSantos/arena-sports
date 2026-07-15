@@ -270,10 +270,13 @@ serve(async (req) => {
 
 	logEvent(context, "info", "request_started", { method: req.method });
 
-	if (req.method !== "POST") {
-		logEvent(context, "warn", "method_not_allowed", { method: req.method });
-		return jsonResponse({ error: "Method not allowed" }, 405, context, corsHeaders);
-	}
+	// Reconciliação temporariamente desativada
+	return jsonResponse(
+		{ message: "Billing reconciliation is temporarily disabled" },
+		200,
+		context,
+		corsHeaders
+	);
 
 	if (!RECONCILIATION_TOKEN) {
 		logEvent(context, "error", "reconciliation_token_missing");
