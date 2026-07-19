@@ -236,7 +236,7 @@ function LandingPage() {
               <Link
                 to="/login?mode=signup"
                 aria-label="Criar agenda online no ArenaSys"
-                className="relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-lg bg-[var(--az-navy)] px-7 text-[0.93rem] font-semibold text-white shadow-lg shadow-blue-950/20 transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-[#10283f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/30"
+                className="relative inline-flex h-12 items-center gap-2 overflow-hidden rounded-lg bg-[var(--az-navy)] px-7 text-[0.93rem] font-semibold text-white shadow-lg shadow-blue-950/20 transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-[#163a5c] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/30"
                 id="btn-signup"
               >
                 Começar teste grátis
@@ -618,7 +618,7 @@ function LandingPage() {
 
                 <Link
                   to="/login?mode=signup"
-                  className="btn-shine relative mt-8 inline-flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-[var(--az-navy)] text-lg font-semibold text-white shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-colors duration-300 hover:bg-[#10283f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
+                  className="btn-shine relative mt-8 inline-flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-[var(--az-navy)] text-lg font-semibold text-white shadow-[0_18px_38px_-20px_rgba(2,6,23,0.72)] transition-colors duration-300 hover:bg-[#163a5c] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
                   aria-label="Criar minha agenda online - teste grátis de 7 dias"
                 >
                   Começar teste grátis
@@ -685,7 +685,7 @@ function LandingPage() {
                 </p>
                 <Link
                   to="/login?mode=signup"
-                  className="btn-shine relative inline-flex h-16 items-center gap-3 overflow-hidden rounded-lg bg-[var(--az-navy)] px-14 text-lg font-semibold text-white shadow-sm transition-[background-color,transform] duration-300 hover:scale-[1.01] hover:bg-[#10283f] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
+                  className="btn-shine relative inline-flex h-16 items-center gap-3 overflow-hidden rounded-lg bg-[var(--az-navy)] px-14 text-lg font-semibold text-white shadow-sm transition-[background-color,transform] duration-300 hover:scale-[1.01] hover:bg-[#163a5c] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--az-navy)]/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--az-surface)]"
                   aria-label="Começar teste grátis do ArenaSys"
                 >
                   Começar teste grátis <ArrowRight className="w-5 h-5" />
