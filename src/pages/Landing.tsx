@@ -331,7 +331,7 @@ function LandingPage() {
                   </span>
                   Lançamento Antecipado
                 </div>
-                <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-semibold text-white/80 backdrop-blur-sm">
+                <div className="inline-flex items-center rounded-full border border-[var(--az-navy-soft)]/30 bg-[var(--az-navy-soft)]/10 px-3 py-1 text-sm font-semibold text-[var(--az-navy-soft)] backdrop-blur-sm">
                   O CUSTO INVISÍVEL DAS MENSAGENS
                 </div>
               </div>
